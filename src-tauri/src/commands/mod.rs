@@ -2,11 +2,25 @@
 //! Their TypeScript types are generated into `src/lib/bindings.ts` by tauri-specta.
 
 mod app;
+mod error;
+mod player;
+pub mod waveform;
 
-use tauri_specta::{Builder, collect_commands};
+pub use error::{AppError, ErrorKind};
+use tauri_specta::{Builder, collect_commands, collect_events};
+
+use crate::playback::PlaybackStatus;
 
 pub fn builder() -> Builder<tauri::Wry> {
-    Builder::<tauri::Wry>::new().commands(collect_commands![app::app_info])
+    Builder::<tauri::Wry>::new()
+        .commands(collect_commands![
+            app::app_info,
+            player::open_file,
+            player::play,
+            player::pause,
+            player::seek,
+        ])
+        .events(collect_events![PlaybackStatus])
 }
 
 /// Writes the TypeScript bindings used by the UI. Only called in debug builds and tests.

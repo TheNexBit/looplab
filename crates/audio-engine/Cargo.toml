@@ -7,6 +7,26 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
+cpal = "0.18.2"
+rtrb = "0.4.1"
+rubato = "5.0.1"
+symphonia = { version = "0.6.1", default-features = false, features = [
+  "aac",
+  "alac",
+  "flac",
+  "mp3",
+  "pcm",
+  "vorbis",
+  "aiff",
+  "isomp4",
+  "mkv",
+  "ogg",
+  "wav",
+  "id3v1",
+  "id3v2",
+  "ape",
+  "opt-simd",
+] }
 
 [lints]
 workspace = true

@@ -1,3 +1,5 @@
+import type { ErrorKind } from "@/lib/bindings";
+
 // Every UI string lives here. Other languages must match this shape (see index.ts).
 export const it = {
   app: {
@@ -9,19 +11,41 @@ export const it = {
   },
   empty: {
     title: "Trascina qui un file audio o video",
-    formats: "mp3, wav, flac, m4a, ogg · mp4, mkv, webm, mov",
     openFile: "Apri un file",
     dropNow: "Rilascia per aprire",
     shortcutsTitle: "Scorciatoie principali",
   },
+  library: {
+    loading: "Caricamento",
+    mediaFiles: "Audio e video",
+    retry: "Riprova",
+    dismiss: "Chiudi",
+  },
+  errors: {
+    fileNotFound: "Il file non esiste più.",
+    fileUnreadable: "Impossibile leggere il file.",
+    unsupportedFormat: "Questo formato non è supportato.",
+    unsupportedCodec: "Il codec audio di questo file non è ancora supportato (per esempio Opus).",
+    noAudioTrack: "Il file non contiene una traccia audio.",
+    emptyFile: "Il file non contiene audio.",
+    corruptFile: "Il file sembra danneggiato.",
+    audioDevice: "La scheda audio non risponde: controlla l'uscita audio e riprova.",
+    noTrack: "Nessun brano aperto.",
+    internal: "Errore imprevisto.",
+  } satisfies Record<ErrorKind, string>,
   sidePanel: {
     sections: "Sezioni",
     eq: "EQ",
     sectionsEmpty: "Le sezioni del brano compariranno qui.",
     eqEmpty: "L'equalizzatore arriverà nella fase 5.",
   },
+  waveform: {
+    overview: "Panoramica del brano",
+    detail: "Forma d'onda",
+  },
   transport: {
     play: "Riproduci",
+    pause: "Pausa",
     loop: "Loop",
     speed: "Velocità",
     pitch: "Tonalità",
@@ -30,8 +54,10 @@ export const it = {
   },
   shortcuts: {
     playPause: "Play / pausa",
-    seekBack: "Indietro",
-    seekForward: "Avanti",
+    seekBack: "Indietro 5 s",
+    seekForward: "Avanti 5 s",
+    seekBackFine: "Indietro 1 s",
+    seekForwardFine: "Avanti 1 s",
     loopStart: "Inizio loop",
     loopEnd: "Fine loop",
     loopToggle: "Loop on/off",
@@ -41,6 +67,8 @@ export const it = {
     speedDown: "Più lento",
     pitchUp: "Tonalità su",
     pitchDown: "Tonalità giù",
+    zoomIn: "Zoom avanti",
+    zoomOut: "Zoom indietro",
     commandPalette: "Cerca azioni",
     openFile: "Apri file",
   },

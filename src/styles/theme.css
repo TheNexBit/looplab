@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 /* Single source of every design token. Components use the generated utilities
-   (bg-accent, text-fg-muted, rounded-control, …), never raw colors. */
-@theme {
+   (bg-accent, text-fg-muted, rounded-control, …), never raw colors.
+   "static" emits every token as a CSS variable, so canvas drawing can read them too. */
+@theme static {
   --color-accent: #6366f1;
   --color-accent-hover: #4f46e5;
   --color-accent-soft: rgb(99 102 241 / 0.15);

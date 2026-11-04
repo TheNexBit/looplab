@@ -24,3 +24,40 @@ opt-level = 0
 # DSP must be fast even in development, otherwise the audio crackles
 [profile.dev.package.audio-engine]
 opt-level = 2
+
+# Decoding and resampling: without optimisation opening a song in dev takes many seconds.
+# Cargo has no wildcard for package names, so each crate is listed.
+[profile.dev.package.symphonia]
+opt-level = 2
+[profile.dev.package.symphonia-core]
+opt-level = 2
+[profile.dev.package.symphonia-common]
+opt-level = 2
+[profile.dev.package.symphonia-metadata]
+opt-level = 2
+[profile.dev.package.symphonia-bundle-flac]
+opt-level = 2
+[profile.dev.package.symphonia-bundle-mp3]
+opt-level = 2
+[profile.dev.package.symphonia-codec-aac]
+opt-level = 2
+[profile.dev.package.symphonia-codec-alac]
+opt-level = 2
+[profile.dev.package.symphonia-codec-pcm]
+opt-level = 2
+[profile.dev.package.symphonia-codec-vorbis]
+opt-level = 2
+[profile.dev.package.symphonia-format-isomp4]
+opt-level = 2
+[profile.dev.package.symphonia-format-mkv]
+opt-level = 2
+[profile.dev.package.symphonia-format-ogg]
+opt-level = 2
+[profile.dev.package.symphonia-format-riff]
+opt-level = 2
+[profile.dev.package.rubato]
+opt-level = 2
+[profile.dev.package.realfft]
+opt-level = 2
+[profile.dev.package.rustfft]
+opt-level = 2

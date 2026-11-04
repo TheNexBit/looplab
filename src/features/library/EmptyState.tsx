@@ -4,10 +4,12 @@ import { Kbd } from "@/components/ui/Kbd";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { type ShortcutId, shortcutLabel } from "@/lib/shortcuts";
-import { useFileDrop } from "./useFileDrop";
+import { formatsLabel } from "./formats";
+import { pickAndOpenFile } from "./pickFile";
 
 const highlighted: ShortcutId[] = [
   "playPause",
+  "seekBack",
   "loopStart",
   "loopEnd",
   "loopToggle",
@@ -16,12 +18,7 @@ const highlighted: ShortcutId[] = [
   "commandPalette",
 ];
 
-// Opening files arrives in phase 2: drops are only acknowledged visually for now
-const ignoreDrop = () => {};
-
-export function EmptyState() {
-  const hovering = useFileDrop(ignoreDrop);
-
+export function EmptyState({ hovering }: { hovering: boolean }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-10 p-8">
       <div
@@ -40,9 +37,9 @@ export function EmptyState() {
         </div>
         <div className="space-y-1">
           <h1 className="text-lg font-semibold">{hovering ? t.empty.dropNow : t.empty.title}</h1>
-          <p className="text-sm text-fg-subtle">{t.empty.formats}</p>
+          <p className="text-sm text-fg-subtle">{formatsLabel}</p>
         </div>
-        <Button variant="primary" disabled className="mt-2">
+        <Button variant="primary" className="mt-2" onClick={() => void pickAndOpenFile()}>
           <FolderOpen className="size-4" />
           {t.empty.openFile}
           <Kbd shortcut="openFile" />

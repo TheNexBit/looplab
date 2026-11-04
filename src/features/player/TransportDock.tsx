@@ -1,31 +1,46 @@
-import { Play, Repeat } from "lucide-react";
+import { Pause, Play, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
+import { usePlayerStore } from "@/stores/player";
 import { SEMITONES, SPEED } from "./limits";
+import { TimeDisplay } from "./TimeDisplay";
 
 const noop = () => {};
 const formatSpeed = (value: number) => `${Math.round(value * 100)}%`;
 const formatSemitones = (value: number) =>
   `${value > 0 ? "+" : ""}${value} ${t.transport.semitones}`;
 
-/** Bottom dock: transport, loop, speed and pitch. Controls are inactive until a file is open. */
+/** Bottom dock: transport, loop, speed and pitch. Loop, speed and pitch arrive in phase 3. */
 export function TransportDock() {
-  const disabled = true;
+  const hasTrack = usePlayerStore((s) => s.track !== null);
+  const playing = usePlayerStore((s) => s.playing);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
     <footer className="flex h-20 shrink-0 items-center gap-6 border-t border-border px-6">
-      <Tooltip label={t.transport.play} shortcut="playPause">
-        <Button variant="primary" size="lg-icon" disabled={disabled} aria-label={t.transport.play}>
-          <Play className="size-5 fill-current" />
+      <Tooltip label={playLabel} shortcut="playPause">
+        <Button
+          variant="primary"
+          size="lg-icon"
+          disabled={!hasTrack}
+          onClick={togglePlay}
+          aria-label={playLabel}
+        >
+          {playing ? (
+            <Pause className="size-5 fill-current" />
+          ) : (
+            <Play className="size-5 fill-current" />
+          )}
         </Button>
       </Tooltip>
 
-      <span className="w-36 text-sm text-fg-muted tabular">0:00.0 / 0:00.0</span>
+      <TimeDisplay />
 
       <Tooltip label={t.transport.loop} shortcut="loopToggle">
-        <Button size="icon" disabled={disabled} aria-label={t.transport.loop}>
+        <Button size="icon" disabled aria-label={t.transport.loop}>
           <Repeat className="size-4" />
         </Button>
       </Tooltip>
@@ -40,7 +55,7 @@ export function TransportDock() {
           step={SPEED.step}
           format={formatSpeed}
           onChange={noop}
-          disabled={disabled}
+          disabled
         />
         <Slider
           label={t.transport.pitch}
@@ -51,7 +66,7 @@ export function TransportDock() {
           step={SEMITONES.step}
           format={formatSemitones}
           onChange={noop}
-          disabled={disabled}
+          disabled
         />
       </div>
     </footer>
