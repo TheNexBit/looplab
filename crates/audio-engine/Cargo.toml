@@ -1,0 +1,12 @@
+[package]
+name = "audio-engine"
+description = "Looplab audio engine: decoding, playback, DSP. Pure Rust, no Tauri."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+
+[lints]
+workspace = true

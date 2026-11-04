@@ -1,0 +1,23 @@
+[package]
+name = "looplab"
+description = "Looplab desktop app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+audio-engine = { path = "../crates/audio-engine" }
+tauri = { version = "2.12.5", features = [] }
+tauri-plugin-single-instance = "2.5.5"
+serde = { version = "1.0.229", features = ["derive"] }
+# tauri-specta has no stable 2.x yet: rc versions are pinned exactly and must move together
+specta = { version = "=2.0.0-rc.26", features = ["derive"] }
+specta-typescript = "0.0.13"
+tauri-specta = { version = "=2.0.0-rc.26", features = ["derive", "typescript"] }
+
+[lints]
+workspace = true

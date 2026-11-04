@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Single source of every design token. Components use the generated utilities
+   (bg-accent, text-fg-muted, rounded-control, …), never raw colors. */
+@theme {
+  --color-accent: #6366f1;
+  --color-accent-hover: #4f46e5;
+  --color-accent-soft: rgb(99 102 241 / 0.15);
+
+  --color-bg-from: #0f172a;
+  --color-bg-to: #020617;
+  --color-surface: rgb(30 41 59 / 0.45);
+  --color-surface-hover: rgb(51 65 85 / 0.45);
+
+  --color-fg: #f1f5f9;
+  --color-fg-muted: #94a3b8;
+  --color-fg-subtle: #64748b;
+
+  --color-border: rgb(51 65 85 / 0.5);
+
+  --radius-control: 8px;
+  --radius-panel: 12px;
+
+  --font-sans: system-ui, "Segoe UI", sans-serif;
+
+  --default-transition-duration: 180ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom, var(--color-bg-from), var(--color-bg-to));
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    cursor: default;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Times and numeric values never shift width while they change */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}

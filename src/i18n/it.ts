@@ -1,0 +1,51 @@
+// Every UI string lives here. Other languages must match this shape (see index.ts).
+export const it = {
+  app: {
+    noFile: "Nessun file aperto",
+    open: "Apri",
+    searchActions: "Cerca un'azione…",
+    toggleSidePanel: "Pannello laterale",
+    engine: "motore",
+  },
+  empty: {
+    title: "Trascina qui un file audio o video",
+    formats: "mp3, wav, flac, m4a, ogg · mp4, mkv, webm, mov",
+    openFile: "Apri un file",
+    dropNow: "Rilascia per aprire",
+    shortcutsTitle: "Scorciatoie principali",
+  },
+  sidePanel: {
+    sections: "Sezioni",
+    eq: "EQ",
+    sectionsEmpty: "Le sezioni del brano compariranno qui.",
+    eqEmpty: "L'equalizzatore arriverà nella fase 5.",
+  },
+  transport: {
+    play: "Riproduci",
+    loop: "Loop",
+    speed: "Velocità",
+    pitch: "Tonalità",
+    semitones: "st",
+    cents: "ct",
+  },
+  shortcuts: {
+    playPause: "Play / pausa",
+    seekBack: "Indietro",
+    seekForward: "Avanti",
+    loopStart: "Inizio loop",
+    loopEnd: "Fine loop",
+    loopToggle: "Loop on/off",
+    addMarker: "Aggiungi marker",
+    addSection: "Aggiungi sezione",
+    speedUp: "Più veloce",
+    speedDown: "Più lento",
+    pitchUp: "Tonalità su",
+    pitchDown: "Tonalità giù",
+    commandPalette: "Cerca azioni",
+    openFile: "Apri file",
+  },
+  keys: {
+    Space: "Spazio",
+    Shift: "Maiusc",
+  },
+} as const;

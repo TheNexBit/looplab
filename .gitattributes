@@ -1,0 +1,6 @@
+# Source files use LF everywhere; Windows launchers need CRLF to run correctly in cmd.exe
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.ico binary

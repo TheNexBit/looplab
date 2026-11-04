@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules/
+dist/
+# Rust builds go to the shared CARGO_TARGET_DIR; a local target/ must never appear
+target/
+
+# Tauri generated files and bundled sidecars
+src-tauri/gen/
+src-tauri/binaries/*
+!src-tauri/binaries/.gitkeep
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS noise
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
+Thumbs.db
+.DS_Store
