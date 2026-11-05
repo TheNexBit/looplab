@@ -15,6 +15,19 @@ const clock = () => {
   return { position: currentPosition(), playing, speed };
 };
 
+/**
+ * Space always left to the waveforms, in CSS pixels: overview, section lane and a usable
+ * detailed view on top; a readable waveform width at the side.
+ */
+const WAVEFORMS_MIN_HEIGHT = 260;
+const WAVEFORMS_MIN_WIDTH = 420;
+
+/** The chosen size, shrunk when the window is too small, so the video never pushes the waveforms out. */
+const panelSize = (top: boolean, size: number) =>
+  top
+    ? { height: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px))` }
+    : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
+
 /** Drag handle between the video and the waveforms. */
 function Resizer({ vertical }: { vertical: boolean }) {
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -55,7 +68,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
     <section
       aria-label={t.video.title}
       className="flex shrink-0 flex-col overflow-hidden"
-      style={video.collapsed ? undefined : top ? { height: video.size } : { width: video.size }}
+      style={video.collapsed ? undefined : panelSize(top, video.size)}
     >
       <header className="flex h-8 shrink-0 items-center gap-1 px-3 text-xs text-fg-subtle">
         <span className="mr-auto font-medium tracking-wide uppercase">{t.video.title}</span>
@@ -114,10 +127,10 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className={cn("flex h-full", top ? "flex-col" : "flex-row")}>
+    <div className={cn("flex h-full overflow-hidden", top ? "flex-col" : "flex-row")}>
       {panel}
       {!video.collapsed && <Resizer vertical={top} />}
-      <div className="min-h-0 min-w-0 flex-1">{children}</div>
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>
     </div>
   );
 }
