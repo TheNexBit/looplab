@@ -25,7 +25,7 @@ fn main() {
     let typed = specta.invoke_handler();
     let binary = commands::waveform::handler();
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         // Must be the first plugin: a second launch focuses the running window instead
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(main) = app.get_webview_window(window::MAIN) {
@@ -33,7 +33,18 @@ fn main() {
                 let _ = main.set_focus();
             }
         }))
-        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_dialog::init());
+
+    // Updates exist only in official builds: their config (public key, address) is added by
+    // scripts/build.ps1. Without it the plugin is left out instead of failing at start-up
+    let context = tauri::generate_context!();
+    let builder = if context.config().plugins.0.contains_key("updater") {
+        builder.plugin(tauri_plugin_updater::Builder::new().build())
+    } else {
+        builder
+    };
+
+    builder
         .manage(state::AppState::default())
         .invoke_handler(move |invoke| {
             if invoke.message.command() == commands::waveform::GET_PEAKS {
@@ -81,7 +92,7 @@ fn main() {
             playback::spawn_status_loop(app.handle().clone());
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("failed to run Looplab");
 }
 

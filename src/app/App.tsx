@@ -17,6 +17,9 @@ import { t } from "@/i18n";
 import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
 import { usePlayerStore } from "@/stores/player";
+import { AboutDialog } from "./AboutDialog";
+import { CommandPalette } from "./CommandPalette";
+import { SettingsDialog } from "./SettingsDialog";
 import { SidePanel } from "./SidePanel";
 import { shortcutHandlers } from "./shortcutHandlers";
 import { TopBar } from "./TopBar";
@@ -79,6 +82,9 @@ export function App() {
           <SidePanel />
         </div>
         <TransportDock />
+        <CommandPalette />
+        <SettingsDialog />
+        <AboutDialog />
       </div>
     </TooltipProvider>
   );

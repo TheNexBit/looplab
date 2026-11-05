@@ -2,12 +2,13 @@
 #  Cancella le cartelle generate da Looplab:
 #  - dist                 interfaccia compilata (si rigenera da sola)
 #  - dati di sviluppo     impostazioni, cache e profilo WebView2 di prova
+#  - dati di prova build  quelli usati da prova-build.cmd
 #  Sorgenti, node_modules e la cache Rust condivisa NON vengono toccati.
 # ===================================================================
 . "$PSScriptRoot\config.ps1"
 $Host.UI.RawUI.WindowTitle = 'Looplab - pulisci'
 
-$targets = @((Join-Path $Repo 'dist'), $DevData) | Where-Object { Test-Path $_ }
+$targets = @((Join-Path $Repo 'dist'), $DevData, 'D:\.cache\looplab\build-data') | Where-Object { Test-Path $_ }
 if ($targets.Count -eq 0) {
     Write-Host 'Niente da cancellare.'
     exit 0

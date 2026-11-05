@@ -49,6 +49,9 @@ Set-Content (Join-Path $Tools 'VERSION.txt') "$Asset`nSHA-256 $actual`n$(Get-Dat
 
 New-Item -ItemType Directory -Force (Split-Path $Sidecar) | Out-Null
 Copy-Item (Join-Path $Tools 'bin\ffmpeg.exe') $Sidecar -Force
+# The LGPL text ships with the installer next to ffmpeg.exe
+$license = Get-ChildItem $Tools -Filter 'LICENSE*' | Select-Object -First 1
+if ($license) { Copy-Item $license.FullName (Join-Path (Split-Path $Sidecar) 'FFMPEG-LICENSE.txt') -Force }
 
 Write-Host "`nFFmpeg pronto:" -ForegroundColor Green
 & $Sidecar -hide_banner -version | Select-Object -First 1

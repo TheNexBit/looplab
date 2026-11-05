@@ -1,14 +1,17 @@
 import { pickAndOpenFile } from "@/features/library/pickFile";
-import { SEMITONES, SPEED_KEY_STEP } from "@/features/player/limits";
+import { SEMITONES } from "@/features/player/limits";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useLoopStore } from "@/stores/loop";
 import { neighbourPoint, useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
+import { useSettingsStore } from "@/stores/settings";
+import { useUiStore } from "@/stores/ui";
 import { useViewStore } from "@/stores/view";
 
 const KEYBOARD_ZOOM = 1.5;
 
 const player = () => usePlayerStore.getState();
+const settings = () => useSettingsStore.getState();
 const duration = () => player().track?.duration ?? 0;
 const zoomAroundPlayhead = (factor: number) =>
   useViewStore.getState().zoom(factor, currentPosition());
@@ -23,13 +26,13 @@ const shiftPitch = (by: number) => {
   setPitch(Math.min(SEMITONES.max, Math.max(SEMITONES.min, semitones + by)), cents);
 };
 
-/** What every shortcut of `lib/shortcuts.ts` does. Those not listed yet arrive in later phases. */
-export const shortcutHandlers: ShortcutHandlers = {
+/** What every shortcut of `lib/shortcuts.ts` does. The command palette reuses them. */
+export const shortcutHandlers: Required<ShortcutHandlers> = {
   playPause: () => player().togglePlay(),
-  seekBack: () => player().seekBy(-5),
-  seekForward: () => player().seekBy(5),
-  seekBackFine: () => player().seekBy(-1),
-  seekForwardFine: () => player().seekBy(1),
+  seekBack: () => player().seekBy(-settings().seekStep),
+  seekForward: () => player().seekBy(settings().seekStep),
+  seekBackFine: () => player().seekBy(-settings().fineSeekStep),
+  seekForwardFine: () => player().seekBy(settings().fineSeekStep),
   loopStart: () => useLoopStore.getState().setStart(currentPosition(), duration()),
   loopEnd: () => useLoopStore.getState().setEnd(currentPosition(), duration()),
   loopToggle: () => useLoopStore.getState().toggle(),
@@ -38,11 +41,13 @@ export const shortcutHandlers: ShortcutHandlers = {
   addSection: () => hasTrack() && useMarkersStore.getState().addSection(currentPosition()),
   previousMarker: () => jumpToNeighbour(-1),
   nextMarker: () => jumpToNeighbour(1),
-  speedUp: () => player().setSpeed(player().speed + SPEED_KEY_STEP),
-  speedDown: () => player().setSpeed(player().speed - SPEED_KEY_STEP),
+  speedUp: () => player().setSpeed(player().speed + settings().speedStep),
+  speedDown: () => player().setSpeed(player().speed - settings().speedStep),
   pitchUp: () => shiftPitch(1),
   pitchDown: () => shiftPitch(-1),
   zoomIn: () => zoomAroundPlayhead(1 / KEYBOARD_ZOOM),
   zoomOut: () => zoomAroundPlayhead(KEYBOARD_ZOOM),
+  commandPalette: () => useUiStore.getState().openDialog("palette"),
+  openSettings: () => useUiStore.getState().openDialog("settings"),
   openFile: () => void pickAndOpenFile(),
 };

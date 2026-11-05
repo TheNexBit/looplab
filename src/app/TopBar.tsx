@@ -1,4 +1,4 @@
-import { ChevronDown, FolderOpen, PanelRight, Search } from "lucide-react";
+import { ChevronDown, FolderOpen, PanelRight, Search, Settings } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
@@ -49,6 +49,7 @@ function RecentMenu() {
 export function TopBar() {
   const sidePanelOpen = useUiStore((s) => s.sidePanelOpen);
   const toggleSidePanel = useUiStore((s) => s.toggleSidePanel);
+  const openDialog = useUiStore((s) => s.openDialog);
   const trackName = usePlayerStore((s) => s.track?.name);
 
   return (
@@ -67,8 +68,8 @@ export function TopBar() {
 
       <button
         type="button"
-        disabled
-        className="mx-auto flex h-8 w-80 shrink-0 items-center gap-2 rounded-control border border-border bg-surface px-3 text-sm text-fg-subtle disabled:opacity-60"
+        onClick={() => openDialog("palette")}
+        className="mx-auto flex h-8 w-80 shrink-0 items-center gap-2 rounded-control border border-border bg-surface px-3 text-sm text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
       >
         <Search className="size-4" />
         {t.app.searchActions}
@@ -77,6 +78,15 @@ export function TopBar() {
         </span>
       </button>
 
+      <Tooltip label={t.shortcuts.openSettings} shortcut="openSettings">
+        <Button
+          size="icon"
+          onClick={() => openDialog("settings")}
+          aria-label={t.shortcuts.openSettings}
+        >
+          <Settings className="size-4" />
+        </Button>
+      </Tooltip>
       <Tooltip label={t.app.toggleSidePanel}>
         <Button
           size="icon"

@@ -109,6 +109,40 @@ export const it = {
     collapse: "Comprimi",
     expand: "Espandi",
   },
+  palette: {
+    results: "Azioni",
+    none: "Nessuna azione trovata",
+    resetPitch: "Tonalità originale",
+    groups: {
+      shortcuts: "Comandi",
+      playback: "Riproduzione",
+      view: "Vista",
+      sound: "Suono",
+      app: "App",
+    },
+  },
+  settings: {
+    title: "Impostazioni",
+    seekStep: "Salto con le frecce",
+    seekStepHint: "Quanto si sposta il playhead con ← e →",
+    fineSeekStep: "Salto fine",
+    fineSeekStepHint: "Con Maiusc + ← e →",
+    speedStep: "Passo della velocità",
+    speedStepHint: "Quanto cambia la velocità con + e −",
+    follow: "Segui il playhead",
+    followHint: "La forma d'onda scorre da sola durante l'ascolto",
+    reset: "Valori predefiniti",
+  },
+  about: {
+    title: "Informazioni e licenze",
+  },
+  updates: {
+    check: "Cerca aggiornamenti",
+    latest: "Hai già l'ultima versione.",
+    installing: "Installo la versione",
+    unavailable:
+      "Aggiornamenti non disponibili: funzionano solo nella versione installata, con la connessione attiva.",
+  },
   recent: {
     title: "Aperti di recente",
     missing: "File non trovato",
@@ -155,6 +189,7 @@ export const it = {
     zoomIn: "Zoom avanti",
     zoomOut: "Zoom indietro",
     commandPalette: "Cerca azioni",
+    openSettings: "Impostazioni",
     openFile: "Apri file",
   },
   keys: {

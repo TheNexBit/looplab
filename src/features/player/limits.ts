@@ -4,8 +4,6 @@
  */
 export const SPEED = { min: 0.25, max: 2, step: 0.01, default: 1 } as const;
 export const SPEED_PRESETS = [0.5, 0.75, 1] as const;
-/** Change per press of the speed shortcuts (+ / −). */
-export const SPEED_KEY_STEP = 0.05;
 export const SEMITONES = { min: -12, max: 12, step: 1, default: 0 } as const;
 export const CENTS = { min: -50, max: 50, step: 1, default: 0 } as const;
 /** Seconds played before the loop start on every repetition. */

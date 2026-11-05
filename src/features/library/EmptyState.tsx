@@ -16,6 +16,7 @@ const highlighted: ShortcutId[] = [
   "loopToggle",
   "addMarker",
   "addSection",
+  "commandPalette",
 ];
 
 export function EmptyState({ hovering }: { hovering: boolean }) {

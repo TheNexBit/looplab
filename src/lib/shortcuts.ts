@@ -27,6 +27,7 @@ export const shortcuts = {
   zoomIn: "Ctrl++",
   zoomOut: "Ctrl+-",
   commandPalette: "Ctrl+K",
+  openSettings: "Ctrl+,",
   openFile: "Ctrl+O",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 

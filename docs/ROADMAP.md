@@ -8,7 +8,7 @@
 | 4   | Marker e sezioni           | ✅ completata — da provare |
 | 5   | EQ e isolamento base       | ✅ completata — da provare |
 | 6   | Video                      | ✅ completata — da provare |
-| 7   | Rifinitura e distribuzione | ⏳ da fare                 |
+| 7   | Rifinitura e distribuzione | ✅ completata — da provare |
 
 ## 1. Fondamenta ✅
 
@@ -89,9 +89,28 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Posizione e dimensione delle finestre ricordate per monitor (`window_state.rs`, in `windows.json` nella cartella
   dati; non uso il plugin window-state perché scriverebbe in AppData anche in sviluppo).
 
-## 7. Rifinitura e distribuzione
+## 7. Rifinitura e distribuzione ✅
 
-Command palette, impostazioni, ricordo delle finestre, icona, installer NSIS, aggiornamenti firmati, licenze di terze parti.
+- Command palette (Ctrl+K o la barra di ricerca): tutte le scorciatoie più preset, canali, pannelli, video,
+  file recenti, informazioni; ricerca senza badare a maiuscole e accenti.
+- Impostazioni (Ctrl+, o l'ingranaggio): salto con le frecce, salto fine, passo della velocità, segui il playhead.
+- Informazioni: versione, "Cerca aggiornamenti", licenze di terze parti (`docs/THIRD_PARTY_LICENSES.md`, unica fonte,
+  inclusa anche nell'installer).
+- Finestre ricordate per monitor (fase 6); icona generata da `src-tauri/icons/icon.svg`.
+- Build di rilascio separata dallo sviluppo: `scripts/release-config.ps1` genera la configurazione aggiuntiva
+  (FFmpeg come sidecar, licenze, installer NSIS per utente in italiano/inglese, updater) nella cache Rust.
+- Aggiornamenti firmati (plugin updater): chiave in `D:\.config\tauri\looplab.key` creata da `genera-chiave.cmd`;
+  il plugin si attiva solo se la configurazione lo contiene (sviluppo e prova-build ne fanno a meno).
+- `prova-build.cmd`: build di rilascio senza installer, con dati in `D:\.cache\looplab\build-data`
+  (variabile `LOOPLAB_DATA_DIR`).
+
+### Da decidere con l'utente
+
+- **Licenza di Looplab** (nel README è "da definire").
+- **Repository GitHub**: il prompt lo vuole privato, ma l'aggiornamento automatico scarica da GitHub Releases, che
+  per gli utenti deve essere pubblico (repository pubblico, oppure un secondo repository pubblico solo per le release).
+- **NSIS su C:\**: Tauri scarica sempre NSIS in `%LOCALAPPDATA%\tauri`; `build.cmd` propone un collegamento verso
+  `D:\.cache\tauri`.
 
 ## Dopo la prima versione
 

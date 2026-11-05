@@ -5,6 +5,7 @@ import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useLoopStore } from "@/stores/loop";
 import { currentPosition, usePlayerStore } from "@/stores/player";
+import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 import { drawRuler, drawWaveform } from "./draw";
 import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
@@ -53,7 +54,8 @@ export function DetailView() {
     const player = usePlayerStore.getState();
     const position = currentPosition(player);
     const viewStore = useViewStore.getState();
-    if (player.playing) viewStore.followPlayhead(position);
+    if (player.playing && useSettingsStore.getState().followPlayhead)
+      viewStore.followPlayhead(position);
     viewStore.step();
     const { start, span } = useViewStore.getState();
     const { width, height, dpr } = size.current;
