@@ -1,12 +1,13 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::{LoopSettings, time};
+use audio_engine::{LoadError, LoopSettings, time};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
 
 use super::{AppError, ErrorKind};
 use crate::state::AppState;
+use crate::{media, paths};
 
 #[derive(Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -33,11 +34,24 @@ pub async fn open_file(
     let output_rate = engine.sample_rate();
     let file = PathBuf::from(&path);
     let name = file_name(&file);
+    let cache = paths::cache_dir(&app).map_err(AppError::internal)?;
 
-    let loaded = tauri::async_runtime::spawn_blocking(move || {
-        audio_engine::load(&file, output_rate, |fraction| {
+    let loaded = tauri::async_runtime::spawn_blocking(move || -> Result<_, AppError> {
+        let report = |fraction: f32| {
             let _ = on_progress.send(fraction);
-        })
+        };
+        match audio_engine::load(&file, output_rate, report) {
+            // symphonia cannot read it (e.g. Opus): let FFmpeg extract the audio, then retry
+            Err(LoadError::UnsupportedCodec | LoadError::UnsupportedFormat)
+                if media::ffmpeg().is_some() =>
+            {
+                let extracted = media::extract_audio(&cache, &file, |p| report(p * 0.5))?;
+                Ok(audio_engine::load(&extracted, output_rate, |p| {
+                    report(0.5 + p * 0.5)
+                })?)
+            }
+            other => Ok(other?),
+        }
     })
     .await
     .map_err(AppError::internal)??;

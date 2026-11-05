@@ -6,10 +6,12 @@ mod error;
 mod library;
 mod player;
 mod sound;
+mod video;
 pub mod waveform;
 
 pub use error::{AppError, ErrorKind};
 use tauri_specta::{Builder, collect_commands, collect_events};
+pub use video::VideoWindowHidden;
 
 use crate::playback::PlaybackStatus;
 
@@ -32,8 +34,11 @@ pub fn builder() -> Builder<tauri::Wry> {
             sound::set_eq,
             sound::set_channel_mode,
             sound::eq_response,
+            video::prepare_video,
+            video::make_video_proxy,
+            video::ffmpeg_available,
         ])
-        .events(collect_events![PlaybackStatus])
+        .events(collect_events![PlaybackStatus, VideoWindowHidden])
 }
 
 /// Writes the TypeScript bindings used by the UI. Only called in debug builds and tests.

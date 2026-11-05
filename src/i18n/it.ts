@@ -25,12 +25,16 @@ export const it = {
     fileNotFound: "Il file non esiste più.",
     fileUnreadable: "Impossibile leggere il file.",
     unsupportedFormat: "Questo formato non è supportato.",
-    unsupportedCodec: "Il codec audio di questo file non è ancora supportato (per esempio Opus).",
+    unsupportedCodec:
+      "Questo codec audio (per esempio Opus) richiede FFmpeg: esegui scripts\\fetch-ffmpeg.cmd e riapri il file.",
     noAudioTrack: "Il file non contiene una traccia audio.",
     emptyFile: "Il file non contiene audio.",
     corruptFile: "Il file sembra danneggiato.",
     audioDevice: "La scheda audio non risponde: controlla l'uscita audio e riprova.",
     noTrack: "Nessun brano aperto.",
+    ffmpegMissing:
+      "Per questo file serve FFmpeg, che non è installato: esegui scripts\\fetch-ffmpeg.cmd.",
+    ffmpegFailed: "FFmpeg non è riuscito a convertire il file.",
     projectFile:
       "Il file .looplab.json di questo brano non si legge o non si scrive: marker e sezioni non vengono salvati.",
     internal: "Errore imprevisto.",
@@ -93,6 +97,17 @@ export const it = {
       isolateCenter: "Solo centro",
       hint: '"Senza centro" toglie ciò che è al centro del mix (spesso voce e basso).',
     },
+  },
+  video: {
+    title: "Video",
+    none: "Nessun video",
+    unavailable: "Video non disponibile",
+    proxying: "Preparo una versione del video compatibile…",
+    detach: "Apri in una finestra separata",
+    dockTop: "Aggancia sopra",
+    dockSide: "Aggancia a lato",
+    collapse: "Comprimi",
+    expand: "Espandi",
   },
   recent: {
     title: "Aperti di recente",

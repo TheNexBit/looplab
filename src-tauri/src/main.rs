@@ -2,14 +2,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod hash;
+mod media;
 mod paths;
 mod playback;
 mod project;
 mod recent;
 mod state;
 mod window;
+mod window_state;
 
-use tauri::Manager;
+use tauri::{Manager, WindowEvent};
+use tauri_specta::Event;
 
 fn main() {
     let specta = commands::builder();
@@ -38,9 +42,37 @@ fn main() {
                 typed(invoke)
             }
         })
+        .on_window_event(|window, event| {
+            // Checked first: once destroyed, the window can no longer be looked up
+            if window.label() == window::MAIN && matches!(event, WindowEvent::Destroyed) {
+                // The hidden video window would otherwise keep the app alive
+                window.app_handle().exit(0);
+                return;
+            }
+            let Some(webview) = window.app_handle().get_webview_window(window.label()) else {
+                return;
+            };
+            match (window.label(), event) {
+                // Closing the detached video only hides it: it must reopen instantly
+                (window::VIDEO, WindowEvent::CloseRequested { api, .. }) => {
+                    api.prevent_close();
+                    window_state::save(&webview);
+                    let _ = webview.hide();
+                    let _ = commands::VideoWindowHidden.emit(window.app_handle());
+                }
+                (window::MAIN, WindowEvent::CloseRequested { .. }) => {
+                    window_state::save(&webview);
+                    if let Some(video) = window.app_handle().get_webview_window(window::VIDEO) {
+                        window_state::save(&video);
+                    }
+                }
+                _ => {}
+            }
+        })
         .setup(move |app| {
             specta.mount_events(app);
             window::create_main(app.handle())?;
+            window::create_video(app.handle())?;
             // Open the audio device off the main thread so the window appears at once
             let handle = app.handle().clone();
             std::thread::spawn(move || {

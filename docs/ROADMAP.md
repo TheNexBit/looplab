@@ -7,7 +7,7 @@
 | 3   | Velocità, tonalità e loop  | ✅ completata              |
 | 4   | Marker e sezioni           | ✅ completata — da provare |
 | 5   | EQ e isolamento base       | ✅ completata — da provare |
-| 6   | Video                      | ⏳ da fare                 |
+| 6   | Video                      | ✅ completata — da provare |
 | 7   | Rifinitura e distribuzione | ⏳ da fare                 |
 
 ## 1. Fondamenta ✅
@@ -74,9 +74,20 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Catena: lettore → stretch → EQ → canali. La futura separazione AI andrà prima dello stretch.
 - EQ e canali salvati nel `.looplab.json`; i valori predefiniti esistono solo in Rust (`default_project`).
 
-## 6. Video
+## 6. Video ✅
 
-Sidecar FFmpeg, pannello agganciato, sincronizzazione, finestra staccabile istantanea, proxy per codec non supportati.
+- FFmpeg 9.0 LGPL statico (BtbN) scaricato da `scripts/fetch-ffmpeg.cmd` in `D:\tools\ffmpeg`, con verifica
+  SHA-256; copia per il pacchetto in `src-tauri/binaries/` (fuori da git). **Da lanciare a mano una volta.**
+- FFmpeg è facoltativo: senza, Opus e proxy mostrano un messaggio; tutto il resto funziona.
+  Avviato da Rust (`media.rs`) senza finestra di console, con avanzamento letto da `-progress`.
+- Audio che symphonia non legge (es. Opus): estratto in FLAC nella cache dell'app e poi caricato.
+- Video nella WebView (`<video>` muto, asset protocol con permesso solo per il file aperto); se WebView2 non lo
+  riproduce, proxy H.264 720p (libopenh264 o Media Foundation, entrambi compatibili LGPL) nella cache.
+- Sincronizzazione: l'audio comanda; il video segue con piccole correzioni di velocità, seek oltre 0,25 s.
+- Pannello agganciato sopra o a lato, ridimensionabile e comprimibile (preferenze nella WebView).
+- Finestra video creata nascosta all'avvio: si stacca all'istante; chiuderla la riaggancia.
+- Posizione e dimensione delle finestre ricordate per monitor (`window_state.rs`, in `windows.json` nella cartella
+  dati; non uso il plugin window-state perché scriverebbe in AppData anche in sviluppo).
 
 ## 7. Rifinitura e distribuzione
 

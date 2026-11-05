@@ -9,6 +9,9 @@ import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
 import { syncWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
+import { feedDetachedVideo } from "@/features/video/detach";
+import { VideoLayout } from "@/features/video/VideoLayout";
+import { followTrackVideo } from "@/features/video/videoLoader";
 import { WaveformPanel } from "@/features/waveform/WaveformPanel";
 import { t } from "@/i18n";
 import { type AppInfo, commands, events } from "@/lib/bindings";
@@ -36,11 +39,15 @@ export function App() {
     window.addEventListener("wheel", blockPageZoom, { passive: false });
     const stopEngineSync = syncWithEngine();
     const stopProjectSync = syncProject();
+    const stopVideo = followTrackVideo();
+    const stopDetached = feedDetachedVideo();
     return () => {
       void unlisten.then((stop) => stop());
       window.removeEventListener("wheel", blockPageZoom);
       stopEngineSync();
       stopProjectSync();
+      stopVideo();
+      stopDetached();
     };
   }, []);
 
@@ -55,7 +62,9 @@ export function App() {
             {loading ? (
               <LoadingState />
             ) : hasTrack ? (
-              <WaveformPanel />
+              <VideoLayout>
+                <WaveformPanel />
+              </VideoLayout>
             ) : (
               <EmptyState hovering={hovering} />
             )}

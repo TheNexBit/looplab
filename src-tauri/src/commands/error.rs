@@ -17,6 +17,8 @@ pub enum ErrorKind {
     AudioDevice,
     NoTrack,
     ProjectFile,
+    FfmpegMissing,
+    FfmpegFailed,
     Internal,
 }
 
@@ -52,6 +54,16 @@ impl From<LoadError> for AppError {
             LoadError::NoAudioTrack => ErrorKind::NoAudioTrack,
             LoadError::Empty => ErrorKind::EmptyFile,
             LoadError::Corrupt(_) => ErrorKind::CorruptFile,
+        };
+        Self::new(kind, err)
+    }
+}
+
+impl From<crate::media::MediaError> for AppError {
+    fn from(err: crate::media::MediaError) -> Self {
+        let kind = match err {
+            crate::media::MediaError::Missing => ErrorKind::FfmpegMissing,
+            _ => ErrorKind::FfmpegFailed,
         };
         Self::new(kind, err)
     }

@@ -12,6 +12,8 @@ use std::path::{Path, PathBuf};
 use audio_engine::{ChannelMode, EqSettings};
 use serde::{Deserialize, Serialize};
 
+use crate::hash::fnv1a;
+
 /// Bumped when the format changes in a way older readers cannot handle.
 pub const VERSION: u32 = 1;
 const EXTENSION: &str = "looplab.json";
@@ -149,13 +151,6 @@ pub fn in_app_data(data_dir: &Path, track: &Path) -> PathBuf {
     data_dir
         .join("projects")
         .join(format!("{:016x}.{EXTENSION}", fnv1a(key.as_bytes())))
-}
-
-/// FNV-1a: tiny, and unlike `DefaultHasher` guaranteed to stay the same across Rust versions.
-fn fnv1a(bytes: &[u8]) -> u64 {
-    bytes.iter().fold(0xcbf2_9ce4_8422_2325, |hash, &byte| {
-        (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3)
-    })
 }
 
 /// Reads the track's project from wherever it was saved, or `None` if it has none yet.

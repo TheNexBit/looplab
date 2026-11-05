@@ -36,11 +36,21 @@ export const commands = {
 	setChannelMode: (mode: ChannelMode) => typedError<null, AppError>(__TAURI_INVOKE("set_channel_mode", { mode })),
 	/**  Gain in dB of `settings` at each frequency, so the UI draws exactly what the engine does. */
 	eqResponse: (settings: EqSettings_Deserialize, frequencies: (number | null)[]) => __TAURI_INVOKE<(number | null)[]>("eq_response", { settings, frequencies }),
+	/**  Makes a video file readable by the video panel. */
+	prepareVideo: (path: string) => typedError<null, AppError>(__TAURI_INVOKE("prepare_video", { path })),
+	/**
+	 *  Builds (or reuses) a silent H.264 copy WebView2 can play, and returns its path.
+	 *  `on_progress` receives values from 0 to 1.
+	 */
+	makeVideoProxy: (path: string, onProgress: Channel<number | null>) => typedError<string, AppError>(__TAURI_INVOKE("make_video_proxy", { path, onProgress })),
+	/**  Whether FFmpeg is installed (Opus audio and video proxies need it). */
+	ffmpegAvailable: () => __TAURI_INVOKE<boolean>("ffmpeg_available"),
 };
 
 /** Events */
 export const events = {
 	playbackStatus: makeEvent<PlaybackStatus, PlaybackStatus>("playback-status"),
+	videoWindowHidden: makeEvent<VideoWindowHidden, VideoWindowHidden>("video-window-hidden"),
 };
 
 /* Types */
@@ -93,7 +103,7 @@ export type EqSettings_Serialize = {
 };
 
 /**  What went wrong, as a stable code: the UI turns it into a translated message. */
-export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "projectFile" | "internal";
+export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "projectFile" | "ffmpegMissing" | "ffmpegFailed" | "internal";
 
 export type LoadedProject = LoadedProject_Serialize | LoadedProject_Deserialize;
 
@@ -238,6 +248,9 @@ export type TrackInfo = {
 	/**  Rate of the original file */
 	sourceSampleRate: number,
 };
+
+/**  The detached video window was closed by the user (it is only hidden): dock the video again. */
+export type VideoWindowHidden = null;
 
 /* Tauri Specta runtime */
 async function typedError<T, E>(result: Promise<T>): Promise<{ status: "ok"; data: T } | { status: "error"; error: E }> {

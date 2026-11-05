@@ -21,6 +21,16 @@ pub fn data_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
     }
 }
 
+/// Files Looplab can rebuild at any time: audio extracted from videos, video proxies.
+pub fn cache_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
+    Ok(data_dir(app)?.join("cache"))
+}
+
+/// Remembered window positions and sizes.
+pub fn window_state_file(app: &AppHandle) -> tauri::Result<PathBuf> {
+    Ok(data_dir(app)?.join("windows.json"))
+}
+
 /// WebView2 profile folder (cookies, cache, local storage of the UI).
 pub fn webview_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
     Ok(data_dir(app)?.join("webview"))
