@@ -259,14 +259,15 @@ impl Renderer {
         let Some(end) = self.track_frames() else {
             return;
         };
-        let heard = self.heard_position();
-        if self.settings.is_active() {
-            // Outside the loop: start the loop over, lead-in included
-            if heard < self.settings.restart_at() || heard >= self.settings.end {
-                self.pending_seek = Some(self.settings.restart_at());
-            }
-        } else if heard >= end {
-            self.pending_seek = Some(0);
+        // Play always resumes where the playhead is: the loop only takes over when playback
+        // reaches its end. Only at the very end of the track does it start over
+        if self.heard_position() >= end {
+            let restart = if self.settings.is_active() {
+                self.settings.restart_at()
+            } else {
+                0
+            };
+            self.pending_seek = Some(restart);
         }
         self.playing = true;
     }
@@ -527,6 +528,7 @@ mod tests {
             gap: 0,
         };
         h.send(Command::SetLoop(region));
+        h.send(Command::Seek(SECOND));
         h.send(Command::Play);
         h.render(0.2);
         let mut seen_restart = false;
@@ -556,6 +558,7 @@ mod tests {
             gap: 0,
         };
         h.send(Command::SetLoop(region));
+        h.send(Command::Seek(region.restart_at()));
         h.send(Command::Play);
         h.render(0.1);
         let first = h.position();
@@ -582,6 +585,7 @@ mod tests {
             gap: SECOND / 2,
         };
         h.send(Command::SetLoop(region));
+        h.send(Command::Seek(SECOND));
         h.send(Command::Play);
         let out = h.render(2.0);
         // Find a run of near-silence of at least 0.3 s after the first repetition
@@ -612,6 +616,43 @@ mod tests {
             h.position() < SECOND / 10,
             "restarted from the top: {}",
             h.position()
+        );
+    }
+
+    #[test]
+    fn play_resumes_where_the_playhead_is_even_outside_the_loop() {
+        let mut h = Harness::new(6.0);
+        let region = LoopSettings {
+            enabled: true,
+            start: SECOND,
+            end: 2 * SECOND,
+            lead_in: 0,
+            gap: 0,
+        };
+        h.send(Command::SetLoop(region));
+        h.send(Command::Seek(4 * SECOND));
+        h.render(0.05);
+        h.send(Command::Play);
+        h.render(0.5);
+        let position = h.position();
+        assert!(position > 4 * SECOND, "kept the chosen point: {position}");
+    }
+
+    #[test]
+    fn play_after_pause_continues_from_the_same_point() {
+        let mut h = Harness::new(6.0);
+        h.send(Command::Play);
+        h.render(1.0);
+        h.send(Command::Pause);
+        h.render(0.2);
+        let paused_at = h.position();
+        h.render(1.0);
+        h.send(Command::Play);
+        h.render(0.05);
+        let resumed = h.position();
+        assert!(
+            resumed >= paused_at && resumed - paused_at < SECOND / 10,
+            "paused at {paused_at}, resumed at {resumed}"
         );
     }
 

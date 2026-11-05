@@ -118,16 +118,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const { track, playing } = get();
       if (!track) return;
       const position = currentPosition();
-      // Same starting rules as the engine: outside an active loop it starts the loop over,
-      // at the very end it starts the track over
+      // Same rule as the engine: play resumes where the playhead is; only at the very end of
+      // the track does it start over (from the loop, if one is active)
       const loop = useLoopStore.getState();
       const region = loop.enabled ? loop.region() : null;
       let from = position;
-      if (!playing && region) {
-        const restart = restartAt(region, loop.leadIn);
-        if (position < restart || position >= region.end) from = restart;
-      } else if (!playing && position >= track.duration - 0.01) {
-        from = 0;
+      if (!playing && position >= track.duration - 0.01) {
+        from = region ? restartAt(region, loop.leadIn) : 0;
       }
       anchor(from, !playing);
       if (!playing) useViewStore.getState().setFollow(true);
