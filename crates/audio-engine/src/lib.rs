@@ -18,6 +18,8 @@ mod render;
 pub mod resample;
 pub mod time;
 
+pub use dsp::channels::ChannelMode;
+pub use dsp::eq::{BANDS, Band, BandKind, EqSettings};
 pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status};
 pub use load::{LoadError, LoadedTrack, load};
 pub use pcm::Pcm;

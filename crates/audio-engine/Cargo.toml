@@ -6,7 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 publish = false
 
+[features]
+# Serde + specta derives on the types the app sends and saves (EQ, channel mode)
+typed = ["dep:serde", "dep:specta"]
+
 [dependencies]
+serde = { version = "1.0.229", features = ["derive"], optional = true }
+# Same pinned rc as the app (tauri-specta has no stable release yet)
+specta = { version = "=2.0.0-rc.26", features = ["derive"], optional = true }
 cpal = "0.18.2"
 rtrb = "0.4.1"
 rubato = "5.0.1"

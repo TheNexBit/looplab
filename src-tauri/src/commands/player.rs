@@ -122,7 +122,9 @@ pub fn set_loop(state: State<'_, AppState>, settings: LoopRequest) -> Result<(),
 }
 
 /// Transport commands need a healthy engine; they never restart it (that would lose the track).
-fn playing_engine(state: &AppState) -> Result<std::sync::Arc<audio_engine::Engine>, AppError> {
+pub(super) fn playing_engine(
+    state: &AppState,
+) -> Result<std::sync::Arc<audio_engine::Engine>, AppError> {
     let engine = state
         .running_engine()
         .ok_or_else(|| AppError::new(ErrorKind::NoTrack, "no track loaded"))?;

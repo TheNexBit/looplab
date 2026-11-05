@@ -38,7 +38,6 @@ export const it = {
   sidePanel: {
     sections: "Sezioni",
     eq: "EQ",
-    eqEmpty: "L'equalizzatore arriverà nella fase 5.",
   },
   waveform: {
     overview: "Panoramica del brano",
@@ -58,6 +57,42 @@ export const it = {
     remove: "Elimina",
     savedInAppData:
       "La cartella del brano è protetta: il progetto è salvato nella cartella dell'app.",
+  },
+  eq: {
+    title: "Equalizzatore",
+    bypass: "A/B",
+    bypassHint: "Confronta con il suono originale",
+    band: "Banda",
+    enabled: "Attiva",
+    kind: "Tipo",
+    frequency: "Frequenza",
+    gain: "Guadagno",
+    q: "Q",
+    dragHint: "Trascina i punti sulla curva; rotella sul punto = larghezza (Q).",
+    kinds: {
+      lowShelf: "Shelf bassi",
+      peak: "Campana",
+      highShelf: "Shelf acuti",
+      highPass: "Passa-alto",
+      lowPass: "Passa-basso",
+    },
+    presets: {
+      title: "Preset",
+      flat: "Piatto",
+      bass: "Focus basso",
+      guitar: "Focus chitarra",
+      voice: "Focus voce",
+    },
+    channels: {
+      title: "Canali",
+      stereo: "Stereo",
+      left: "Solo L",
+      right: "Solo R",
+      mono: "Mono",
+      removeCenter: "Senza centro",
+      isolateCenter: "Solo centro",
+      hint: '"Senza centro" toglie ciò che è al centro del mix (spesso voce e basso).',
+    },
   },
   recent: {
     title: "Aperti di recente",

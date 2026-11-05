@@ -1,5 +1,6 @@
-import { CENTS, GAP, LEAD_IN, SEMITONES, SPEED } from "@/features/player/limits";
-import type { Project_Deserialize, Project_Serialize } from "@/lib/bindings";
+import { GAP, LEAD_IN, SPEED } from "@/features/player/limits";
+import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/bindings";
+import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
 import type { MarkerData, SectionData } from "@/stores/markers";
 
@@ -11,20 +12,14 @@ export interface ProjectData {
   speed: number;
   semitones: number;
   cents: number;
+  eq: EqData;
+  channels: ChannelMode;
 }
 
 const num = (value: number | null | undefined, fallback: number) =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
-export const emptyProject = (): ProjectData => ({
-  markers: [],
-  sections: [],
-  loop: { enabled: false, start: null, end: null, leadIn: LEAD_IN.default, gap: GAP.default },
-  speed: SPEED.default,
-  semitones: SEMITONES.default,
-  cents: CENTS.default,
-});
-
+/** Reads a project from Rust; defaults come from Rust too (`default_project`). */
 export function fromFile(file: Project_Serialize): ProjectData {
   return {
     markers: file.markers.map((m) => ({ ...m, time: num(m.time, 0) })),
@@ -39,9 +34,11 @@ export function fromFile(file: Project_Serialize): ProjectData {
     speed: num(file.speed, SPEED.default),
     semitones: file.semitones,
     cents: file.cents,
+    eq: eqFromFile(file.eq),
+    channels: file.channels,
   };
 }
 
 export function toFile(data: ProjectData): Project_Deserialize {
-  return { version: 1, ...data };
+  return { version: 1, ...data, eq: eqToRust(data.eq) };
 }

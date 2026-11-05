@@ -1,4 +1,4 @@
-//! The audio callback: track → loop-aware reader → stretch (speed, pitch) → fades → device.
+//! The audio callback: track → loop-aware reader → stretch (speed, pitch) → EQ → channels → fades → device.
 //!
 //! Real-time safe: every buffer is allocated in `Renderer::new`, nothing here
 //! locks, allocates or does I/O.
@@ -8,6 +8,8 @@ use std::sync::atomic::Ordering;
 
 use cpal::{FromSample, Sample};
 
+use crate::dsp::channels::Channels;
+use crate::dsp::eq::Eq;
 use crate::dsp::stretch::Stretch;
 use crate::engine::{Command, LoopSettings, MAX_SPEED, Shared};
 use crate::pcm::{CHANNELS, Pcm};
@@ -119,6 +121,8 @@ pub(crate) struct Renderer {
     track: Option<Arc<Pcm>>,
     reader: Reader,
     stretch: Stretch,
+    eq: Eq,
+    channels: Channels,
     settings: LoopSettings,
 
     input: Vec<f32>,
@@ -168,6 +172,8 @@ impl Renderer {
             track: None,
             reader: Reader::new(sample_rate),
             stretch,
+            eq: Eq::new(sample_rate),
+            channels: Channels::new(sample_rate),
             settings: LoopSettings::default(),
             input: vec![0.0; max_input * CHANNELS],
             output: vec![0.0; CHUNK * CHANNELS],
@@ -243,6 +249,8 @@ impl Renderer {
                 Command::SetSpeed(speed) => self.target_speed = speed,
                 Command::SetTranspose(factor) => self.stretch.set_transpose(factor),
                 Command::SetLoop(settings) => self.settings = settings,
+                Command::SetEq(settings) => self.eq.set(settings),
+                Command::SetChannelMode(mode) => self.channels.set(mode),
             }
         }
     }
@@ -308,6 +316,8 @@ impl Renderer {
 
         self.stretch
             .process(&self.input[..frames * CHANNELS], &mut self.output);
+        self.eq.process(&mut self.output);
+        self.channels.process(&mut self.output);
         self.output_index = 0;
     }
 

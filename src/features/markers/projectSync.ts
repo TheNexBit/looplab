@@ -1,10 +1,11 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { commands } from "@/lib/bindings";
+import { useEqStore } from "@/stores/eq";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
-import { emptyProject, fromFile, type ProjectData, toFile } from "./projectFile";
+import { fromFile, type ProjectData, toFile } from "./projectFile";
 
 /** Pause after the last change before writing, so a burst of edits is one save. */
 const SAVE_DELAY_MS = 800;
@@ -13,7 +14,17 @@ function snapshot(): ProjectData {
   const { markers, sections } = useMarkersStore.getState();
   const { start, end, enabled, leadIn, gap } = useLoopStore.getState();
   const { speed, semitones, cents } = usePlayerStore.getState();
-  return { markers, sections, loop: { start, end, enabled, leadIn, gap }, speed, semitones, cents };
+  const { settings: eq, channels } = useEqStore.getState();
+  return {
+    markers,
+    sections,
+    loop: { start, end, enabled, leadIn, gap },
+    speed,
+    semitones,
+    cents,
+    eq,
+    channels,
+  };
 }
 
 function apply(data: ProjectData) {
@@ -22,6 +33,20 @@ function apply(data: ProjectData) {
   const player = usePlayerStore.getState();
   player.setSpeed(data.speed);
   player.setPitch(data.semitones, data.cents);
+  useEqStore.getState().setSettings(data.eq);
+  useEqStore.getState().setChannels(data.channels);
+}
+
+let defaults: Promise<ProjectData> | null = null;
+
+/** Settings of a track with no project yet, asked once to Rust (the only copy of the defaults). */
+export function projectDefaults(): Promise<ProjectData> {
+  defaults ??= commands.defaultProject().then((file) => {
+    const data = fromFile(file);
+    useEqStore.getState().setFlat(data.eq);
+    return data;
+  });
+  return defaults;
 }
 
 /**
@@ -66,14 +91,14 @@ export function syncProject(): () => void {
     applying = true;
     await previous;
     useMarkersStore.getState().setSavedTo(null);
-    const result = await commands.loadProject(path);
+    const [result, fallback] = await Promise.all([commands.loadProject(path), projectDefaults()]);
     if (track !== path) return;
     if (result.status === "ok") {
-      apply(result.data ? fromFile(result.data.project) : emptyProject());
+      apply(result.data ? fromFile(result.data.project) : fallback);
       if (result.data) useMarkersStore.getState().setSavedTo(result.data.location);
       writable = true;
     } else {
-      apply(emptyProject());
+      apply(fallback);
       usePlayerStore.getState().reportError(path, result.error);
     }
     lastSaved = JSON.stringify(snapshot());
@@ -96,7 +121,11 @@ export function syncProject(): () => void {
       if (state.markers !== previous.markers || state.sections !== previous.sections) schedule();
     }),
     useLoopStore.subscribe(schedule),
+    useEqStore.subscribe((state, previous) => {
+      if (state.settings !== previous.settings || state.channels !== previous.channels) schedule();
+    }),
   ];
+  void projectDefaults();
 
   // Write pending edits before the window goes away
   const unlistenClose = getCurrentWindow().onCloseRequested(() => save());

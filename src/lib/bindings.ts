@@ -27,6 +27,15 @@ export const commands = {
 	saveProject: (track: string, project: Project_Deserialize) => typedError<ProjectLocation, AppError>(__TAURI_INVOKE("save_project", { track, project })),
 	recentFiles: () => typedError<RecentFile[], AppError>(__TAURI_INVOKE("recent_files")),
 	forgetRecent: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_recent", { track })),
+	/**
+	 *  A project with every default, for tracks opened for the first time.
+	 *  The defaults live in Rust only, so the UI never keeps its own copy.
+	 */
+	defaultProject: () => __TAURI_INVOKE<Project_Serialize>("default_project"),
+	setEq: (settings: EqSettings_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("set_eq", { settings })),
+	setChannelMode: (mode: ChannelMode) => typedError<null, AppError>(__TAURI_INVOKE("set_channel_mode", { mode })),
+	/**  Gain in dB of `settings` at each frequency, so the UI draws exactly what the engine does. */
+	eqResponse: (settings: EqSettings_Deserialize, frequencies: (number | null)[]) => __TAURI_INVOKE<(number | null)[]>("eq_response", { settings, frequencies }),
 };
 
 /** Events */
@@ -45,6 +54,42 @@ export type AppInfo = {
 	name: string,
 	version: string,
 	engineVersion: string,
+};
+
+export type Band = {
+	enabled: boolean,
+	kind: BandKind,
+	/**  Hz */
+	frequency: number | null,
+	/**  dB (shelves and peaks only) */
+	gain: number | null,
+	q: number | null,
+};
+
+export type BandKind = "lowShelf" | "peak" | "highShelf" | "highPass" | "lowPass";
+
+export type ChannelMode = "stereo" | 
+/**  Left channel on both speakers */
+"left" | 
+/**  Right channel on both speakers */
+"right" | "mono" | 
+/**  Left minus right: removes what is panned in the centre */
+"removeCenter" | 
+/**  Left plus right: keeps the centre, the sides get quieter */
+"isolateCenter";
+
+export type EqSettings = EqSettings_Serialize | EqSettings_Deserialize;
+
+export type EqSettings_Deserialize = {
+	/**  A/B comparison: true plays the original sound */
+	bypass?: boolean,
+	bands?: [Band, Band, Band, Band, Band],
+};
+
+export type EqSettings_Serialize = {
+	/**  A/B comparison: true plays the original sound */
+	bypass: boolean,
+	bands: [Band, Band, Band, Band, Band],
 };
 
 /**  What went wrong, as a stable code: the UI turns it into a translated message. */
@@ -148,6 +193,8 @@ export type Project_Deserialize = {
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
+	eq?: EqSettings_Deserialize,
+	channels?: ChannelMode,
 };
 
 /**
@@ -162,6 +209,8 @@ export type Project_Serialize = {
 	speed: number | null,
 	semitones: number,
 	cents: number,
+	eq: EqSettings_Serialize,
+	channels: ChannelMode,
 };
 
 export type RecentFile = {

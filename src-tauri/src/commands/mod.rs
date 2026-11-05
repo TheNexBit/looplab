@@ -5,6 +5,7 @@ mod app;
 mod error;
 mod library;
 mod player;
+mod sound;
 pub mod waveform;
 
 pub use error::{AppError, ErrorKind};
@@ -27,6 +28,10 @@ pub fn builder() -> Builder<tauri::Wry> {
             library::save_project,
             library::recent_files,
             library::forget_recent,
+            library::default_project,
+            sound::set_eq,
+            sound::set_channel_mode,
+            sound::eq_response,
         ])
         .events(collect_events![PlaybackStatus])
 }

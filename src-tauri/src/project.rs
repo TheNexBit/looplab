@@ -9,6 +9,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use audio_engine::{ChannelMode, EqSettings};
 use serde::{Deserialize, Serialize};
 
 /// Bumped when the format changes in a way older readers cannot handle.
@@ -82,6 +83,8 @@ pub struct Project {
     pub speed: f64,
     pub semitones: i32,
     pub cents: i32,
+    pub eq: EqSettings,
+    pub channels: ChannelMode,
 }
 
 impl Default for Project {
@@ -94,6 +97,8 @@ impl Default for Project {
             speed: 1.0,
             semitones: 0,
             cents: 0,
+            eq: EqSettings::default(),
+            channels: ChannelMode::Stereo,
         }
     }
 }

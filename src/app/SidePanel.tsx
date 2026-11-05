@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Tabs } from "radix-ui";
 import type { ReactNode } from "react";
+import { EqPanel } from "@/features/eq/EqPanel";
 import { SectionList } from "@/features/markers/SectionList";
 import { t } from "@/i18n";
 import { type SidePanelTab, useUiStore } from "@/stores/ui";
@@ -9,11 +10,7 @@ const WIDTH = 300;
 
 const tabs: { id: SidePanelTab; label: string; content: ReactNode }[] = [
   { id: "sections", label: t.sidePanel.sections, content: <SectionList /> },
-  {
-    id: "eq",
-    label: t.sidePanel.eq,
-    content: <p className="p-4 text-sm text-fg-subtle">{t.sidePanel.eqEmpty}</p>,
-  },
+  { id: "eq", label: t.sidePanel.eq, content: <EqPanel /> },
 ];
 
 export function SidePanel() {

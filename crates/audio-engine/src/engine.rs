@@ -11,6 +11,8 @@ use std::sync::{Arc, Mutex};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, SampleFormat, SizedSample, StreamConfig};
 
+use crate::dsp::channels::ChannelMode;
+use crate::dsp::eq::EqSettings;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
 
@@ -53,6 +55,8 @@ pub(crate) enum Command {
     SetSpeed(f32),
     SetTranspose(f32),
     SetLoop(LoopSettings),
+    SetEq(EqSettings),
+    SetChannelMode(ChannelMode),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -177,6 +181,14 @@ impl Engine {
 
     pub fn set_loop(&self, settings: LoopSettings) {
         self.send(Command::SetLoop(settings));
+    }
+
+    pub fn set_eq(&self, settings: EqSettings) {
+        self.send(Command::SetEq(settings));
+    }
+
+    pub fn set_channel_mode(&self, mode: ChannelMode) {
+        self.send(Command::SetChannelMode(mode));
     }
 
     fn send(&self, command: Command) {

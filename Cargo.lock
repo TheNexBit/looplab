@@ -249,6 +249,8 @@ dependencies = [
  "cpal",
  "rtrb",
  "rubato",
+ "serde",
+ "specta",
  "symphonia",
 ]
 

@@ -7,7 +7,7 @@ import { LoadingState } from "@/features/library/LoadingState";
 import { openDroppedFiles } from "@/features/library/pickFile";
 import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
-import { syncLoopWithEngine } from "@/features/player/syncEngine";
+import { syncWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
 import { WaveformPanel } from "@/features/waveform/WaveformPanel";
 import { t } from "@/i18n";
@@ -34,12 +34,12 @@ export function App() {
       if (event.ctrlKey) event.preventDefault();
     };
     window.addEventListener("wheel", blockPageZoom, { passive: false });
-    const stopLoopSync = syncLoopWithEngine();
+    const stopEngineSync = syncWithEngine();
     const stopProjectSync = syncProject();
     return () => {
       void unlisten.then((stop) => stop());
       window.removeEventListener("wheel", blockPageZoom);
-      stopLoopSync();
+      stopEngineSync();
       stopProjectSync();
     };
   }, []);

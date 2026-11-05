@@ -43,6 +43,14 @@ pub fn save_project(
     Ok(project::save(&data_dir, Path::new(&track), &project)?)
 }
 
+/// A project with every default, for tracks opened for the first time.
+/// The defaults live in Rust only, so the UI never keeps its own copy.
+#[tauri::command]
+#[specta::specta]
+pub fn default_project() -> Project {
+    Project::default()
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn recent_files(app: AppHandle) -> Result<Vec<RecentFile>, AppError> {

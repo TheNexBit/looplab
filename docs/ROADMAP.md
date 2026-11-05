@@ -6,7 +6,7 @@
 | 2   | Cuore audio                | ✅ completata              |
 | 3   | Velocità, tonalità e loop  | ✅ completata              |
 | 4   | Marker e sezioni           | ✅ completata — da provare |
-| 5   | EQ e isolamento base       | ⏳ da fare                 |
+| 5   | EQ e isolamento base       | ✅ completata — da provare |
 | 6   | Video                      | ⏳ da fare                 |
 | 7   | Rifinitura e distribuzione | ⏳ da fare                 |
 
@@ -63,9 +63,16 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   mai sovrascritto; cartella protetta → copia nella cartella dati dell'app.
 - File recenti (10) nello stato vuoto e nel menu accanto ad "Apri" (`src-tauri/src/recent.rs`).
 
-## 5. EQ e isolamento base
+## 5. EQ e isolamento base ✅
 
-EQ parametrico con preset e bypass, canale centrale, selezione canali.
+- EQ a 5 bande nel motore (`dsp/biquad.rs`, `dsp/eq.rs`, formule RBJ): shelf bassi/acuti, campana, passa-alto,
+  passa-basso; ogni parametro scivola verso il nuovo valore (~20 ms) e accendere/spegnere fa una dissolvenza.
+- Bypass A/B con dissolvenza; preset Piatto / Focus basso / Focus chitarra / Focus voce (`features/eq/presets.ts`).
+- Curva calcolata dal motore stesso (`eq_response`): ciò che si vede è ciò che si sente. Punti trascinabili
+  (frequenza e guadagno), rotella sul punto = Q; campi numerici per ogni banda.
+- Canali (`dsp/channels.rs`): stereo, solo L, solo R, mono, senza centro, solo centro, con dissolvenza di 10 ms.
+- Catena: lettore → stretch → EQ → canali. La futura separazione AI andrà prima dello stretch.
+- EQ e canali salvati nel `.looplab.json`; i valori predefiniti esistono solo in Rust (`default_project`).
 
 ## 6. Video
 
