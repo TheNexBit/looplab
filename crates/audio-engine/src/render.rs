@@ -1,0 +1,616 @@
+//! The audio callback: track → loop-aware reader → stretch (speed, pitch) → fades → device.
+//!
+//! Real-time safe: every buffer is allocated in `Renderer::new`, nothing here
+//! locks, allocates or does I/O.
+
+use std::sync::Arc;
+use std::sync::atomic::Ordering;
+
+use cpal::{FromSample, Sample};
+
+use crate::dsp::stretch::Stretch;
+use crate::engine::{Command, LoopSettings, MAX_SPEED, Shared};
+use crate::pcm::{CHANNELS, Pcm};
+
+/// Output frames produced per stretch call.
+const CHUNK: usize = 256;
+/// Fade of the output on play, pause and seek, so they never click.
+const FADE_SECONDS: f32 = 0.005;
+/// Crossfade of the source where a loop wraps around.
+const SPLICE_SECONDS: f32 = 0.005;
+/// Share of the remaining speed change applied per chunk (~25 ms to settle at 48 kHz).
+const SPEED_SMOOTHING: f32 = 0.2;
+/// Chunks remembered to map what is heard back to a track position (covers the stretch latency).
+const HISTORY: usize = 128;
+
+/// Reads the track frame by frame, wrapping around the loop with a short crossfade.
+struct Reader {
+    /// Next frame of the track to read
+    position: u64,
+    /// Tail of the audio before a loop wrap, fading out
+    fade_out_from: u64,
+    fade_out_left: usize,
+    fade_in_left: usize,
+    gap_left: u64,
+    splice: usize,
+}
+
+impl Reader {
+    fn new(sample_rate: u32) -> Self {
+        Self {
+            position: 0,
+            fade_out_from: 0,
+            fade_out_left: 0,
+            fade_in_left: 0,
+            gap_left: 0,
+            splice: ((SPLICE_SECONDS * sample_rate as f32) as usize).max(1),
+        }
+    }
+
+    fn jump(&mut self, position: u64) {
+        self.position = position;
+        self.fade_out_left = 0;
+        self.fade_in_left = 0;
+        self.gap_left = 0;
+    }
+
+    fn read(&mut self, track: Option<&Pcm>, settings: &LoopSettings, out: &mut [f32]) {
+        let sample = |frame: u64| match track {
+            Some(pcm) if frame < pcm.frames() => pcm.frame(frame as usize),
+            _ => [0.0; CHANNELS],
+        };
+        let splice = self.splice as f32;
+
+        for frame in out.as_chunks_mut::<CHANNELS>().0 {
+            let mut mixed = [0.0_f32; CHANNELS];
+
+            if self.fade_out_left > 0 {
+                let weight = self.fade_out_left as f32 / splice;
+                for (m, s) in mixed.iter_mut().zip(sample(self.fade_out_from)) {
+                    *m += s * weight;
+                }
+                self.fade_out_from += 1;
+                self.fade_out_left -= 1;
+            }
+
+            if self.gap_left > 0 {
+                self.gap_left -= 1;
+            } else {
+                let weight = if self.fade_in_left > 0 {
+                    self.fade_in_left -= 1;
+                    1.0 - self.fade_in_left as f32 / splice
+                } else {
+                    1.0
+                };
+                for (m, s) in mixed.iter_mut().zip(sample(self.position)) {
+                    *m += s * weight;
+                }
+                self.position += 1;
+                if settings.is_active() && self.position == settings.end {
+                    self.wrap(settings);
+                }
+            }
+
+            frame.copy_from_slice(&mixed);
+        }
+    }
+
+    /// Loop end reached: let the old audio fade out while the restart fades in (after the gap).
+    fn wrap(&mut self, settings: &LoopSettings) {
+        self.fade_out_from = self.position;
+        self.fade_out_left = self.splice;
+        self.position = settings.restart_at();
+        self.gap_left = settings.gap;
+        self.fade_in_left = self.splice;
+    }
+}
+
+/// Which track frame entered the stretcher at a given point of the input stream.
+#[derive(Clone, Copy, Default)]
+struct Mark {
+    fed: u64,
+    position: u64,
+}
+
+pub(crate) struct Renderer {
+    commands: rtrb::Consumer<Command>,
+    garbage: rtrb::Producer<Arc<Pcm>>,
+    shared: Arc<Shared>,
+    track: Option<Arc<Pcm>>,
+    reader: Reader,
+    stretch: Stretch,
+    settings: LoopSettings,
+
+    input: Vec<f32>,
+    output: Vec<f32>,
+    /// Next frame to play from `output`; `CHUNK` means a new chunk is needed
+    output_index: usize,
+
+    /// What the user asked for; the actual sound fades towards it
+    playing: bool,
+    pending_seek: Option<u64>,
+    gain: f32,
+    gain_step: f32,
+
+    speed: f32,
+    target_speed: f32,
+    /// Fraction of an input frame carried to the next chunk, so speeds average out exactly
+    input_debt: f64,
+
+    /// Total frames fed to the stretcher, and where they came from
+    fed: u64,
+    history: [Mark; HISTORY],
+    history_next: usize,
+    /// After a seek, report the target until the new audio is actually heard
+    seek_mark: Option<Mark>,
+}
+
+impl Renderer {
+    pub fn new(
+        sample_rate: u32,
+        commands: rtrb::Consumer<Command>,
+        garbage: rtrb::Producer<Arc<Pcm>>,
+        shared: Arc<Shared>,
+    ) -> Self {
+        let stretch = Stretch::new(sample_rate);
+        let max_input = stretch
+            .input_latency()
+            .max((CHUNK as f32 * MAX_SPEED).ceil() as usize + 1);
+        assert!(
+            max_input <= stretch.max_block(),
+            "stretch blocks too small for the speed range"
+        );
+
+        Self {
+            commands,
+            garbage,
+            shared,
+            track: None,
+            reader: Reader::new(sample_rate),
+            stretch,
+            settings: LoopSettings::default(),
+            input: vec![0.0; max_input * CHANNELS],
+            output: vec![0.0; CHUNK * CHANNELS],
+            output_index: CHUNK,
+            playing: false,
+            pending_seek: None,
+            gain: 0.0,
+            gain_step: 1.0 / (FADE_SECONDS * sample_rate as f32).max(1.0),
+            speed: 1.0,
+            target_speed: 1.0,
+            input_debt: 0.0,
+            fed: 0,
+            history: [Mark::default(); HISTORY],
+            history_next: 0,
+            seek_mark: None,
+        }
+    }
+
+    pub fn render<T: Sample + FromSample<f32>>(&mut self, out: &mut [T], channels: usize) {
+        self.apply_commands();
+        for frame in out.chunks_exact_mut(channels) {
+            let [left, right] = self.next_frame();
+            if let [first, second, rest @ ..] = frame {
+                *first = T::from_sample(left);
+                *second = T::from_sample(right);
+                rest.fill(T::EQUILIBRIUM);
+            } else if let [mono] = frame {
+                *mono = T::from_sample((left + right) * 0.5);
+            }
+        }
+
+        let heard = self.heard_position();
+        if self.playing
+            && self.settings_allow_end()
+            && self.track_frames().is_some_and(|end| heard >= end)
+        {
+            self.playing = false;
+            self.gain = 0.0;
+        }
+        self.shared.position.store(heard, Ordering::Relaxed);
+        self.shared.playing.store(self.playing, Ordering::Relaxed);
+    }
+
+    fn track_frames(&self) -> Option<u64> {
+        self.track.as_ref().map(|t| t.frames())
+    }
+
+    /// A looping track never ends on its own.
+    fn settings_allow_end(&self) -> bool {
+        !self.settings.is_active()
+    }
+
+    fn apply_commands(&mut self) {
+        while let Ok(command) = self.commands.pop() {
+            match command {
+                Command::SetTrack(pcm) => {
+                    if let Some(old) = self.track.replace(pcm)
+                        && let Err(rtrb::PushError::Full(old)) = self.garbage.push(old)
+                    {
+                        // Never free memory here: leaking is better than a glitch
+                        std::mem::forget(old);
+                    }
+                    self.playing = false;
+                    self.gain = 0.0;
+                    self.settings = LoopSettings::default();
+                    self.jump(0);
+                }
+                Command::Play => self.play(),
+                Command::Pause => self.playing = false,
+                Command::Seek(frame) => {
+                    self.pending_seek = Some(frame.min(self.track_frames().unwrap_or(0)));
+                }
+                Command::SetSpeed(speed) => self.target_speed = speed,
+                Command::SetTranspose(factor) => self.stretch.set_transpose(factor),
+                Command::SetLoop(settings) => self.settings = settings,
+            }
+        }
+    }
+
+    fn play(&mut self) {
+        let Some(end) = self.track_frames() else {
+            return;
+        };
+        let heard = self.heard_position();
+        if self.settings.is_active() {
+            // Outside the loop: start the loop over, lead-in included
+            if heard < self.settings.restart_at() || heard >= self.settings.end {
+                self.pending_seek = Some(self.settings.restart_at());
+            }
+        } else if heard >= end {
+            self.pending_seek = Some(0);
+        }
+        self.playing = true;
+    }
+
+    #[inline]
+    fn next_frame(&mut self) -> [f32; 2] {
+        let target = if self.playing && self.pending_seek.is_none() {
+            1.0
+        } else {
+            0.0
+        };
+        if self.gain < target {
+            self.gain = (self.gain + self.gain_step).min(1.0);
+        } else if self.gain > target {
+            self.gain = (self.gain - self.gain_step).max(0.0);
+        }
+
+        if self.gain == 0.0 {
+            if let Some(frame) = self.pending_seek.take() {
+                self.jump(frame);
+            }
+            // Paused: the reader and the stretcher stay frozen until play
+            if !self.playing {
+                return [0.0; 2];
+            }
+        }
+
+        if self.output_index == CHUNK {
+            self.render_chunk();
+        }
+        let i = self.output_index * CHANNELS;
+        self.output_index += 1;
+        [self.output[i] * self.gain, self.output[i + 1] * self.gain]
+    }
+
+    fn render_chunk(&mut self) {
+        self.speed += (self.target_speed - self.speed) * SPEED_SMOOTHING;
+        self.input_debt += CHUNK as f64 * f64::from(self.speed);
+        let frames = self.input_debt.floor() as usize;
+        self.input_debt -= frames as f64;
+
+        self.remember();
+        let input = &mut self.input[..frames * CHANNELS];
+        self.reader
+            .read(self.track.as_deref(), &self.settings, input);
+        self.fed += frames as u64;
+
+        self.stretch
+            .process(&self.input[..frames * CHANNELS], &mut self.output);
+        self.output_index = 0;
+    }
+
+    /// Restarts the stretcher at `frame`, pre-rolled so the next output starts exactly there.
+    fn jump(&mut self, frame: u64) {
+        self.stretch.reset();
+        self.reader.jump(frame);
+        self.output_index = CHUNK;
+        self.input_debt = 0.0;
+
+        let preroll = self.stretch.input_latency();
+        self.remember();
+        self.seek_mark = Some(Mark {
+            fed: self.fed,
+            position: frame,
+        });
+        let input = &mut self.input[..preroll * CHANNELS];
+        self.reader
+            .read(self.track.as_deref(), &self.settings, input);
+        self.fed += preroll as u64;
+        self.stretch
+            .seek(&self.input[..preroll * CHANNELS], f64::from(self.speed));
+    }
+
+    fn remember(&mut self) {
+        self.history[self.history_next] = Mark {
+            fed: self.fed,
+            position: self.reader.position,
+        };
+        self.history_next = (self.history_next + 1) % HISTORY;
+    }
+
+    /// Track frame being heard now: the input point minus the stretcher latency and the
+    /// output not yet played, mapped back through recent history (so loop wraps are undone).
+    fn heard_position(&self) -> u64 {
+        let pending_output = (CHUNK - self.output_index) + self.stretch.output_latency();
+        let lag =
+            self.stretch.input_latency() as f64 + pending_output as f64 * f64::from(self.speed);
+        let heard_fed = (self.fed as f64 - lag).max(0.0) as u64;
+
+        if let Some(mark) = self.seek_mark
+            && heard_fed < mark.fed + self.stretch.input_latency() as u64
+        {
+            return mark.position;
+        }
+
+        // Most recent mark at or before the point being heard
+        let mut best: Option<Mark> = None;
+        for mark in &self.history {
+            if mark.fed <= heard_fed && best.is_none_or(|b| mark.fed > b.fed) {
+                best = Some(*mark);
+            }
+        }
+        let position = best.map_or(0, |m| m.position + (heard_fed - m.fed));
+        position.min(self.track_frames().unwrap_or(0))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::engine::{Control, channel};
+
+    const RATE: u32 = 48_000;
+    const SECOND: u64 = RATE as u64;
+
+    /// Two-channel 220 Hz tone, `seconds` long.
+    fn track(seconds: f32) -> Arc<Pcm> {
+        let frames = (seconds * RATE as f32) as usize;
+        let mut pcm = Pcm::with_capacity(RATE, frames);
+        let samples: Vec<f32> = (0..frames)
+            .flat_map(|i| {
+                let s = (i as f32 * 220.0 * std::f32::consts::TAU / RATE as f32).sin() * 0.5;
+                [s, s]
+            })
+            .collect();
+        pcm.extend_from_f32(&samples);
+        Arc::new(pcm)
+    }
+
+    struct Harness {
+        control: Control,
+        shared: Arc<Shared>,
+        renderer: Renderer,
+    }
+
+    impl Harness {
+        fn new(seconds: f32) -> Self {
+            let (mut control, shared, renderer) = channel(RATE);
+            control
+                .commands
+                .push(Command::SetTrack(track(seconds)))
+                .ok();
+            Self {
+                control,
+                shared,
+                renderer,
+            }
+        }
+
+        fn send(&mut self, command: Command) {
+            self.control.commands.push(command).ok();
+        }
+
+        /// Renders `seconds` of audio in device-sized blocks and returns it.
+        fn render(&mut self, seconds: f32) -> Vec<f32> {
+            let frames = (seconds * RATE as f32) as usize;
+            let mut all = Vec::with_capacity(frames * 2);
+            let mut block = vec![0.0_f32; 480 * 2];
+            for _ in 0..frames.div_ceil(480) {
+                self.renderer.render(&mut block, 2);
+                all.extend_from_slice(&block);
+            }
+            all
+        }
+
+        fn position(&self) -> u64 {
+            self.shared.position.load(Ordering::Relaxed)
+        }
+
+        fn playing(&self) -> bool {
+            self.shared.playing.load(Ordering::Relaxed)
+        }
+    }
+
+    fn loudness(samples: &[f32]) -> f32 {
+        samples.iter().fold(0.0_f32, |m, s| m.max(s.abs()))
+    }
+
+    fn close(actual: u64, expected: u64, tolerance: u64) -> bool {
+        actual.abs_diff(expected) <= tolerance
+    }
+
+    #[test]
+    fn silent_until_play() {
+        let mut h = Harness::new(2.0);
+        assert_eq!(loudness(&h.render(0.2)), 0.0);
+        assert_eq!(h.position(), 0);
+    }
+
+    #[test]
+    fn plays_and_reports_what_is_heard() {
+        let mut h = Harness::new(3.0);
+        h.send(Command::Play);
+        let out = h.render(1.0);
+        assert!(loudness(&out[out.len() / 2..]) > 0.3, "the tone is audible");
+        assert!(h.playing());
+        // Rendered 1 s; what is heard trails by the stretcher's output latency at most
+        let position = h.position();
+        assert!(
+            position <= SECOND && position > SECOND * 8 / 10,
+            "position {position}"
+        );
+    }
+
+    #[test]
+    fn half_speed_advances_half_as_fast() {
+        let mut h = Harness::new(4.0);
+        h.send(Command::SetSpeed(0.5));
+        h.send(Command::Play);
+        h.render(1.0);
+        let start = h.position();
+        h.render(2.0);
+        let advanced = h.position() - start;
+        assert!(
+            close(advanced, SECOND, SECOND / 20),
+            "advanced {advanced} frames in 2 s"
+        );
+    }
+
+    #[test]
+    fn pause_freezes_the_position() {
+        let mut h = Harness::new(3.0);
+        h.send(Command::Play);
+        h.render(0.5);
+        h.send(Command::Pause);
+        h.render(0.1);
+        let stopped = h.position();
+        let silence = h.render(0.5);
+        assert_eq!(loudness(&silence), 0.0);
+        assert_eq!(h.position(), stopped);
+        assert!(!h.playing());
+    }
+
+    #[test]
+    fn seek_reports_the_target_at_once() {
+        let mut h = Harness::new(5.0);
+        h.send(Command::Play);
+        h.render(0.3);
+        h.send(Command::Seek(3 * SECOND));
+        h.render(0.05);
+        let position = h.position();
+        assert!(
+            close(position, 3 * SECOND, SECOND / 10),
+            "position {position}"
+        );
+    }
+
+    #[test]
+    fn loop_keeps_playing_inside_the_region() {
+        let mut h = Harness::new(5.0);
+        let region = LoopSettings {
+            enabled: true,
+            start: SECOND,
+            end: 2 * SECOND,
+            lead_in: 0,
+            gap: 0,
+        };
+        h.send(Command::SetLoop(region));
+        h.send(Command::Play);
+        h.render(0.2);
+        let mut seen_restart = false;
+        let mut last = h.position();
+        for _ in 0..40 {
+            h.render(0.1);
+            let position = h.position();
+            assert!(
+                (SECOND - SECOND / 50..=2 * SECOND).contains(&position),
+                "position {position}"
+            );
+            seen_restart |= position < last;
+            last = position;
+        }
+        assert!(seen_restart, "the loop wrapped around");
+        assert!(h.playing(), "a loop never ends on its own");
+    }
+
+    #[test]
+    fn lead_in_starts_each_repetition_earlier() {
+        let mut h = Harness::new(5.0);
+        let region = LoopSettings {
+            enabled: true,
+            start: 2 * SECOND,
+            end: 3 * SECOND,
+            lead_in: SECOND / 2,
+            gap: 0,
+        };
+        h.send(Command::SetLoop(region));
+        h.send(Command::Play);
+        h.render(0.1);
+        let first = h.position();
+        assert!(
+            close(first, 2 * SECOND - SECOND / 2, SECOND / 5),
+            "starts at the lead-in: {first}"
+        );
+        h.render(1.6);
+        let after_wrap = h.position();
+        assert!(
+            after_wrap < 2 * SECOND,
+            "lead-in again after the wrap: {after_wrap}"
+        );
+    }
+
+    #[test]
+    fn gap_inserts_silence_between_repetitions() {
+        let mut h = Harness::new(5.0);
+        let region = LoopSettings {
+            enabled: true,
+            start: SECOND,
+            end: SECOND + SECOND / 2,
+            lead_in: 0,
+            gap: SECOND / 2,
+        };
+        h.send(Command::SetLoop(region));
+        h.send(Command::Play);
+        let out = h.render(2.0);
+        // Find a run of near-silence of at least 0.3 s after the first repetition
+        let quiet_frames = out
+            .chunks(2)
+            .map(|f| f[0].abs() < 0.01)
+            .fold((0_usize, 0_usize), |(run, best), quiet| {
+                let run = if quiet { run + 1 } else { 0 };
+                (run, best.max(run))
+            })
+            .1;
+        assert!(
+            quiet_frames as u64 > SECOND * 3 / 10,
+            "longest silence {quiet_frames} frames"
+        );
+    }
+
+    #[test]
+    fn stops_at_the_end_and_restarts_on_play() {
+        let mut h = Harness::new(0.5);
+        h.send(Command::Play);
+        h.render(1.5);
+        assert!(!h.playing());
+        assert_eq!(h.position(), SECOND / 2);
+        h.send(Command::Play);
+        h.render(0.05);
+        assert!(
+            h.position() < SECOND / 10,
+            "restarted from the top: {}",
+            h.position()
+        );
+    }
+
+    #[test]
+    fn replaced_track_is_freed_outside_the_audio_thread() {
+        let mut h = Harness::new(0.5);
+        h.render(0.01);
+        h.send(Command::SetTrack(track(0.5)));
+        h.render(0.01);
+        assert!(h.control.garbage.pop().is_ok());
+    }
+}

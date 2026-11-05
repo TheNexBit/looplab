@@ -245,6 +245,7 @@ checksum = "1254ebf6529f3763c491acfb5ab6e960809e3c75a38584cc664f8c5667fb7107"
 name = "audio-engine"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "cpal",
  "rtrb",
  "rubato",

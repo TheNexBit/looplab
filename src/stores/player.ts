@@ -1,8 +1,10 @@
 import { Channel } from "@tauri-apps/api/core";
 import { create } from "zustand";
+import { CENTS, SEMITONES, SPEED } from "@/features/player/limits";
 import { fetchPeaks, type Peaks } from "@/features/waveform/peaks";
 import { type AppError, commands, type PlaybackStatus, type TrackInfo } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
+import { advanceInLoop, restartAt, useLoopStore } from "./loop";
 import { useViewStore } from "./view";
 
 /** After a local action, ignore engine updates that may predate it. */
@@ -28,6 +30,10 @@ interface PlayerState {
   anchorPosition: number;
   anchorTime: number;
   holdUntil: number;
+  /** 1 = original speed */
+  speed: number;
+  semitones: number;
+  cents: number;
   open: (path: string) => Promise<void>;
   reportError: (path: string, error: AppError) => void;
   dismissError: () => void;
@@ -35,13 +41,22 @@ interface PlayerState {
   seek: (seconds: number) => void;
   seekBy: (delta: number) => void;
   applyStatus: (status: PlaybackStatus) => void;
+  setSpeed: (speed: number) => void;
+  setPitch: (semitones: number, cents: number) => void;
 }
 
-/** Playhead position in seconds, interpolated between engine updates. */
+/** Playhead position in seconds, interpolated between engine updates (speed and loop included). */
 export function currentPosition(state: PlayerState = usePlayerStore.getState()): number {
   const duration = state.track?.duration ?? 0;
-  const elapsed = state.playing ? (performance.now() - state.anchorTime) / 1000 : 0;
-  return clamp(state.anchorPosition + elapsed, 0, duration);
+  const elapsed = state.playing ? ((performance.now() - state.anchorTime) / 1000) * state.speed : 0;
+  const loop = useLoopStore.getState();
+  return clamp(advanceInLoop(state.anchorPosition, elapsed, loop.region(), loop), 0, duration);
+}
+
+/** Pushes speed and pitch to the engine (also after a track change, in case it was restarted). */
+function sendTempoAndPitch({ speed, semitones, cents }: PlayerState) {
+  void commands.setSpeed(speed);
+  void commands.setPitch(semitones + cents / 100);
 }
 
 let loadToken = 0;
@@ -65,6 +80,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     anchorPosition: 0,
     anchorTime: 0,
     holdUntil: 0,
+    speed: SPEED.default,
+    semitones: SEMITONES.default,
+    cents: CENTS.default,
 
     open: async (path) => {
       const token = ++loadToken;
@@ -87,6 +105,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const track: Track = { ...result.data, duration: result.data.duration ?? 0 };
       set({ track, peaks, load: { kind: "idle" } });
       anchor(0, false);
+      // The engine forgets the loop on a new track; speed and pitch carry over
+      useLoopStore.getState().clear();
+      sendTempoAndPitch(get());
       useViewStore.getState().reset(track.duration);
     },
 
@@ -97,8 +118,17 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const { track, playing } = get();
       if (!track) return;
       const position = currentPosition();
-      // Playing again from the very end starts over, like the engine does
-      const from = !playing && position >= track.duration - 0.01 ? 0 : position;
+      // Same starting rules as the engine: outside an active loop it starts the loop over,
+      // at the very end it starts the track over
+      const loop = useLoopStore.getState();
+      const region = loop.enabled ? loop.region() : null;
+      let from = position;
+      if (!playing && region) {
+        const restart = restartAt(region, loop.leadIn);
+        if (position < restart || position >= region.end) from = restart;
+      } else if (!playing && position >= track.duration - 0.01) {
+        from = 0;
+      }
       anchor(from, !playing);
       if (!playing) useViewStore.getState().setFollow(true);
       void (playing ? commands.pause() : commands.play()).then((r) => {
@@ -138,6 +168,23 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const error = reported - predicted;
       const position = Math.abs(error) > SNAP_SECONDS ? reported : predicted + error * BLEND;
       set({ playing: true, anchorPosition: position, anchorTime: performance.now() });
+    },
+
+    setSpeed: (value) => {
+      const speed = Math.round(clamp(value, SPEED.min, SPEED.max) * 100) / 100;
+      if (speed === get().speed) return;
+      // Re-anchor first, so the time already played keeps its old speed
+      anchor(currentPosition());
+      set({ speed });
+      sendTempoAndPitch(get());
+    },
+
+    setPitch: (semitones, cents) => {
+      set({
+        semitones: Math.round(clamp(semitones, SEMITONES.min, SEMITONES.max)),
+        cents: Math.round(clamp(cents, CENTS.min, CENTS.max)),
+      });
+      sendTempoAndPitch(get());
     },
   };
 });

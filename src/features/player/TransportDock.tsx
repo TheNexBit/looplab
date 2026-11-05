@@ -1,26 +1,35 @@
-import { Pause, Play, Repeat } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
+import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
-import { SEMITONES, SPEED } from "./limits";
+import { LoopMenu } from "./LoopMenu";
+import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
 
-const noop = () => {};
 const formatSpeed = (value: number) => `${Math.round(value * 100)}%`;
-const formatSemitones = (value: number) =>
-  `${value > 0 ? "+" : ""}${value} ${t.transport.semitones}`;
+/** Speeds are typed as percentages: "75" → 0.75. */
+const parseSpeed = (text: string) => {
+  const value = parseNumber(text);
+  return value === null ? null : value / 100;
+};
+const signed = (value: number, unit: string) => `${value > 0 ? "+" : ""}${value} ${unit}`;
 
-/** Bottom dock: transport, loop, speed and pitch. Loop, speed and pitch arrive in phase 3. */
+/** Bottom dock: transport, loop, speed and pitch. */
 export function TransportDock() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const playing = usePlayerStore((s) => s.playing);
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const speed = usePlayerStore((s) => s.speed);
+  const semitones = usePlayerStore((s) => s.semitones);
+  const cents = usePlayerStore((s) => s.cents);
+  const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
-    <footer className="flex h-20 shrink-0 items-center gap-6 border-t border-border px-6">
+    <footer className="flex h-20 shrink-0 items-center gap-5 border-t border-border px-6">
       <Tooltip label={playLabel} shortcut="playPause">
         <Button
           variant="primary"
@@ -38,36 +47,64 @@ export function TransportDock() {
       </Tooltip>
 
       <TimeDisplay />
+      <LoopMenu disabled={!hasTrack} />
 
-      <Tooltip label={t.transport.loop} shortcut="loopToggle">
-        <Button size="icon" disabled aria-label={t.transport.loop}>
-          <Repeat className="size-4" />
-        </Button>
-      </Tooltip>
+      <div className="ml-auto flex items-center gap-6">
+        <div className="flex items-center gap-1">
+          <Slider
+            label={t.transport.speed}
+            value={speed}
+            defaultValue={SPEED.default}
+            min={SPEED.min}
+            max={SPEED.max}
+            step={SPEED.step}
+            onChange={setSpeed}
+            format={formatSpeed}
+            parse={parseSpeed}
+          />
+          {SPEED_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => setSpeed(preset)}
+              aria-label={`${t.transport.speedPreset} ${formatSpeed(preset)}`}
+              className={cn(
+                "h-6 rounded-control px-1.5 text-[11px] tabular transition-colors",
+                speed === preset
+                  ? "bg-accent-soft text-accent"
+                  : "text-fg-subtle hover:bg-surface-hover hover:text-fg",
+              )}
+            >
+              {formatSpeed(preset)}
+            </button>
+          ))}
+        </div>
 
-      <div className="ml-auto flex items-center gap-8">
-        <Slider
-          label={t.transport.speed}
-          value={SPEED.default}
-          defaultValue={SPEED.default}
-          min={SPEED.min}
-          max={SPEED.max}
-          step={SPEED.step}
-          format={formatSpeed}
-          onChange={noop}
-          disabled
-        />
-        <Slider
-          label={t.transport.pitch}
-          value={SEMITONES.default}
-          defaultValue={SEMITONES.default}
-          min={SEMITONES.min}
-          max={SEMITONES.max}
-          step={SEMITONES.step}
-          format={formatSemitones}
-          onChange={noop}
-          disabled
-        />
+        <div className="flex items-center gap-1">
+          <Slider
+            label={t.transport.pitch}
+            value={semitones}
+            defaultValue={SEMITONES.default}
+            min={SEMITONES.min}
+            max={SEMITONES.max}
+            step={SEMITONES.step}
+            onChange={(value) => setPitch(value, cents)}
+            format={(value) => signed(value, t.transport.semitones)}
+          />
+          <Tooltip label={t.transport.fineTune}>
+            <span>
+              <NumberField
+                label={t.transport.fineTune}
+                value={cents}
+                min={CENTS.min}
+                max={CENTS.max}
+                step={CENTS.step}
+                onChange={(value) => setPitch(semitones, value)}
+                format={(value) => signed(value, t.transport.cents)}
+              />
+            </span>
+          </Tooltip>
+        </div>
       </div>
     </footer>
   );

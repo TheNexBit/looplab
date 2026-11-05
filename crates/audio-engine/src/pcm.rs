@@ -19,13 +19,20 @@ pub struct Pcm {
 
 impl Pcm {
     pub fn with_capacity(sample_rate: u32, frames: usize) -> Self {
-        Self { samples: Vec::with_capacity(frames * CHANNELS), sample_rate }
+        Self {
+            samples: Vec::with_capacity(frames * CHANNELS),
+            sample_rate,
+        }
     }
 
     /// Appends interleaved stereo f32 frames (values in -1.0..=1.0, clipped beyond).
     pub fn extend_from_f32(&mut self, interleaved: &[f32]) {
         debug_assert_eq!(interleaved.len() % CHANNELS, 0);
-        self.samples.extend(interleaved.iter().map(|&s| (s.clamp(-1.0, 1.0) * TO_I16).round() as i16));
+        self.samples.extend(
+            interleaved
+                .iter()
+                .map(|&s| (s.clamp(-1.0, 1.0) * TO_I16).round() as i16),
+        );
     }
 
     /// Releases the spare capacity reserved while loading.
@@ -49,7 +56,10 @@ impl Pcm {
     #[inline]
     pub fn frame(&self, index: usize) -> [f32; CHANNELS] {
         let i = index * CHANNELS;
-        [f32::from(self.samples[i]) * FROM_I16, f32::from(self.samples[i + 1]) * FROM_I16]
+        [
+            f32::from(self.samples[i]) * FROM_I16,
+            f32::from(self.samples[i + 1]) * FROM_I16,
+        ]
     }
 }
 

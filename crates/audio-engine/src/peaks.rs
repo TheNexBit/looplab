@@ -52,7 +52,10 @@ impl Peaks {
         let scale = if loudest > 0.0 { 127.0 / loudest } else { 0.0 };
         let base: Vec<i8> = raw.iter().map(|&v| (v * scale).round() as i8).collect();
 
-        let mut levels = vec![Level { bin_frames: BASE_BIN_FRAMES, data: base }];
+        let mut levels = vec![Level {
+            bin_frames: BASE_BIN_FRAMES,
+            data: base,
+        }];
         while let Some(last) = levels.last()
             && last.bins() > MIN_BINS
         {
@@ -65,10 +68,16 @@ impl Peaks {
                     _ => unreachable!("bins are (min, max) pairs"),
                 })
                 .collect();
-            levels.push(Level { bin_frames: last.bin_frames * 2, data });
+            levels.push(Level {
+                bin_frames: last.bin_frames * 2,
+                data,
+            });
         }
 
-        Self { sample_rate: pcm.sample_rate(), levels }
+        Self {
+            sample_rate: pcm.sample_rate(),
+            levels,
+        }
     }
 
     /// Little-endian binary layout read by the UI (`src/features/waveform/peaks.ts`):

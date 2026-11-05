@@ -3,8 +3,8 @@
 | #   | Fase                       | Stato                           |
 | --- | -------------------------- | ------------------------------- |
 | 1   | Fondamenta                 | ✅ completata                   |
-| 2   | Cuore audio                | ✅ completata — in attesa di ok |
-| 3   | Velocità, tonalità e loop  | ⏳ da fare                      |
+| 2   | Cuore audio                | ✅ completata                   |
+| 3   | Velocità, tonalità e loop  | ✅ completata — in attesa di ok |
 | 4   | Marker e sezioni           | ⏳ da fare                      |
 | 5   | EQ e isolamento base       | ⏳ da fare                      |
 | 6   | Video                      | ⏳ da fare                      |
@@ -34,9 +34,18 @@
 - Scorciatoie: Spazio, ← → (5 s), Maiusc+← → (1 s), Ctrl+O, Ctrl +/−.
 - Rimandati: Opus e immagine video (fase 6), file recenti (fase 4), cambio automatico della scheda audio (fase 7).
 
-## 3. Velocità, tonalità e loop
+## 3. Velocità, tonalità e loop ✅
 
-Stretch e pitch con cents, loop A-B trascinabile, lead-in, scorciatoie base.
+- Signalsmith Stretch 1.4.0 (MIT) incluso in `crates/audio-engine/vendor/` con un binding C scritto da noi
+  (`cpp/stretch.cpp` + `dsp/stretch.rs`): niente LLVM/libclang, compilato con MSVC e ottimizzato anche in sviluppo.
+- Velocità 25–200% senza cambiare tonalità (rampa di ~25 ms), tonalità ±12 semitoni + ±50 cents.
+- Il playhead mostra ciò che si sente davvero: il motore compensa la latenza dello stretch.
+- Loop A-B nel motore, preciso al campione, con dissolvenza incrociata di 5 ms al punto di ritorno;
+  lead-in a ogni ripetizione e pausa opzionale tra le ripetizioni.
+- Loop creato trascinando sulla forma d'onda, bordi trascinabili, visibile anche nella panoramica.
+- Dock: slider con valore modificabile a mano, preset di velocità 50/75/100%, cents, menu del loop.
+- Scorciatoie: `[` `]` inizio/fine loop, `L` loop, `+`/`−` velocità ±5%, Maiusc+↑↓ tonalità.
+- Rimandato: salvataggio di velocità, tonalità e loop per brano (fase 4, `.looplab.json`).
 
 ## 4. Marker e sezioni
 

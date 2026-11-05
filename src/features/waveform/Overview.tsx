@@ -5,6 +5,7 @@ import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useViewStore } from "@/stores/view";
 import { drawWaveform } from "./draw";
+import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
 import { useCanvas } from "./useCanvas";
 
 /**
@@ -17,6 +18,7 @@ export function Overview() {
   const containerRef = useRef<HTMLDivElement>(null);
   const windowRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
+  const loopRef = useRef<HTMLDivElement>(null);
   const dirty = useRef(true);
   const { ref: canvasRef, size } = useCanvas(() => {
     dirty.current = true;
@@ -48,6 +50,7 @@ export function Overview() {
       box.style.left = `${(start / duration) * 100}%`;
       box.style.width = `${(span / duration) * 100}%`;
     }
+    placeLoopOverlay(loopRef.current, (time) => (time / duration) * 100, "%");
     const playhead = playheadRef.current;
     if (playhead) playhead.style.left = `${(currentPosition() / duration) * 100}%`;
   });
@@ -105,6 +108,7 @@ export function Overview() {
         className="absolute inset-0 size-full"
         aria-label={t.waveform.overview}
       />
+      <LoopOverlay ref={loopRef} />
       <div
         ref={windowRef}
         className="absolute top-0 bottom-0 cursor-grab rounded-[6px] border border-accent bg-accent-soft active:cursor-grabbing"

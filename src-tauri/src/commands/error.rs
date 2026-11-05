@@ -28,7 +28,10 @@ pub struct AppError {
 
 impl AppError {
     pub fn new(kind: ErrorKind, detail: impl Display) -> Self {
-        Self { kind, detail: detail.to_string() }
+        Self {
+            kind,
+            detail: detail.to_string(),
+        }
     }
 
     pub fn internal(detail: impl Display) -> Self {
@@ -39,7 +42,9 @@ impl AppError {
 impl From<LoadError> for AppError {
     fn from(err: LoadError) -> Self {
         let kind = match &err {
-            LoadError::Io(io) if io.kind() == std::io::ErrorKind::NotFound => ErrorKind::FileNotFound,
+            LoadError::Io(io) if io.kind() == std::io::ErrorKind::NotFound => {
+                ErrorKind::FileNotFound
+            }
             LoadError::Io(_) => ErrorKind::FileUnreadable,
             LoadError::UnsupportedFormat => ErrorKind::UnsupportedFormat,
             LoadError::UnsupportedCodec => ErrorKind::UnsupportedCodec,

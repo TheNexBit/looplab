@@ -2,9 +2,11 @@ import { useEffect, useRef } from "react";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { useLoopStore } from "@/stores/loop";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useViewStore } from "@/stores/view";
 import { drawRuler, drawWaveform } from "./draw";
+import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
 import { useCanvas } from "./useCanvas";
 
 const RULER_CSS = 20;
@@ -12,12 +14,25 @@ const RULER_CSS = 20;
 const WHEEL_ZOOM = 0.0015;
 const PINCH_ZOOM = 0.01;
 const LINE_HEIGHT_PX = 16;
+/** Pointer travel that turns a click into a drag, and reach of a loop edge, in CSS pixels. */
+const DRAG_PX = 4;
+const EDGE_PX = 6;
 
-/** Zoomable waveform: wheel zooms around the pointer, Shift+wheel scrolls, click seeks. */
+/** What a pointer press on the waveform is doing. */
+type Gesture =
+  | { kind: "press"; x: number; time: number }
+  | { kind: "select"; anchor: number }
+  | { kind: "edge"; fixed: number };
+
+/**
+ * Zoomable waveform. Wheel zooms around the pointer, Shift+wheel scrolls,
+ * click seeks, drag selects a loop, dragging a loop edge resizes it.
+ */
 export function DetailView() {
   const peaks = usePlayerStore((s) => s.peaks);
   const containerRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
+  const loopRef = useRef<HTMLDivElement>(null);
   const dirty = useRef(true);
   const drawn = useRef({ start: -1, span: -1 });
   const { ref: canvasRef, size } = useCanvas(() => {
@@ -51,10 +66,11 @@ export function DetailView() {
       dirty.current = false;
     }
 
+    const toX = (time: number) => ((time - start) / span) * (width / dpr);
+    placeLoopOverlay(loopRef.current, toX, "px");
     const playhead = playheadRef.current;
     if (playhead) {
-      const x = ((position - start) / span) * (width / dpr);
-      playhead.style.transform = `translateX(${x}px)`;
+      playhead.style.transform = `translateX(${toX(position)}px)`;
       playhead.style.visibility =
         position >= start && position <= start + span ? "visible" : "hidden";
     }
@@ -69,6 +85,23 @@ export function DetailView() {
       const { start, span } = useViewStore.getState();
       return start + ((clientX - rect.left) / rect.width) * span;
     };
+    const xOf = (time: number) => {
+      const rect = element.getBoundingClientRect();
+      const { start, span } = useViewStore.getState();
+      return rect.left + ((time - start) / span) * rect.width;
+    };
+    const duration = () => usePlayerStore.getState().track?.duration ?? 0;
+
+    /** The loop end that is not under the pointer, when the pointer is on the other one. */
+    const edgeUnder = (clientX: number): number | null => {
+      const region = useLoopStore.getState().region();
+      if (!region) return null;
+      if (Math.abs(xOf(region.start) - clientX) <= EDGE_PX) return region.end;
+      if (Math.abs(xOf(region.end) - clientX) <= EDGE_PX) return region.start;
+      return null;
+    };
+
+    let gesture: Gesture | null = null;
 
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
@@ -86,14 +119,45 @@ export function DetailView() {
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0) return;
-      usePlayerStore.getState().seek(timeAt(event.clientX));
+      element.setPointerCapture(event.pointerId);
+      const fixed = edgeUnder(event.clientX);
+      gesture =
+        fixed !== null
+          ? { kind: "edge", fixed }
+          : { kind: "press", x: event.clientX, time: timeAt(event.clientX) };
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!gesture) {
+        element.style.cursor = edgeUnder(event.clientX) !== null ? "ew-resize" : "";
+        return;
+      }
+      if (gesture.kind === "press" && Math.abs(event.clientX - gesture.x) > DRAG_PX) {
+        gesture = { kind: "select", anchor: gesture.time };
+      }
+      const time = timeAt(event.clientX);
+      if (gesture.kind === "select")
+        useLoopStore.getState().setRegion(gesture.anchor, time, duration());
+      if (gesture.kind === "edge")
+        useLoopStore.getState().setRegion(gesture.fixed, time, duration());
+    };
+
+    const onPointerUp = () => {
+      if (gesture?.kind === "press") usePlayerStore.getState().seek(gesture.time);
+      gesture = null;
     };
 
     element.addEventListener("wheel", onWheel, { passive: false });
     element.addEventListener("pointerdown", onPointerDown);
+    element.addEventListener("pointermove", onPointerMove);
+    element.addEventListener("pointerup", onPointerUp);
+    element.addEventListener("pointercancel", onPointerUp);
     return () => {
       element.removeEventListener("wheel", onWheel);
       element.removeEventListener("pointerdown", onPointerDown);
+      element.removeEventListener("pointermove", onPointerMove);
+      element.removeEventListener("pointerup", onPointerUp);
+      element.removeEventListener("pointercancel", onPointerUp);
     };
   }, []);
 
@@ -107,6 +171,7 @@ export function DetailView() {
         className="absolute inset-0 size-full"
         aria-label={t.waveform.detail}
       />
+      <LoopOverlay ref={loopRef} />
       <div
         ref={playheadRef}
         className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-fg will-change-transform"

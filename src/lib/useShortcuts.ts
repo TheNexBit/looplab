@@ -3,11 +3,15 @@ import { matchShortcut, type ShortcutId } from "./shortcuts";
 
 export type ShortcutHandlers = Partial<Record<ShortcutId, () => void>>;
 
-function isTyping(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
-  );
+const SLIDER_KEYS = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"];
+
+/** Text fields keep every key; a focused slider keeps only the keys that move it. */
+function ownsKey(target: EventTarget | null, key: string): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
+    return true;
+  }
+  return target.getAttribute("role") === "slider" && SLIDER_KEYS.includes(key);
 }
 
 /** Runs the handler of every registered shortcut pressed while the window has focus. */
@@ -18,7 +22,7 @@ export function useShortcuts(handlers: ShortcutHandlers) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.repeat && event.key === " ") return;
-      if (isTyping(event.target)) return;
+      if (ownsKey(event.target, event.key)) return;
       const id = matchShortcut(event);
       const handler = id && current.current[id];
       if (!handler) return;

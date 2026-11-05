@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::time;
-use serde::Serialize;
+use audio_engine::{LoopSettings, time};
+use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
 
@@ -75,17 +75,67 @@ pub fn seek(state: State<'_, AppState>, seconds: f64) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Playback speed without changing pitch: 1 is the original speed.
+#[tauri::command]
+#[specta::specta]
+pub fn set_speed(state: State<'_, AppState>, speed: f32) -> Result<(), AppError> {
+    playing_engine(&state)?.set_speed(speed);
+    Ok(())
+}
+
+/// Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down).
+#[tauri::command]
+#[specta::specta]
+pub fn set_pitch(state: State<'_, AppState>, semitones: f32) -> Result<(), AppError> {
+    playing_engine(&state)?.set_pitch(semitones);
+    Ok(())
+}
+
+/// Loop region and options, in seconds.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct LoopRequest {
+    pub enabled: bool,
+    pub start: f64,
+    pub end: f64,
+    /// Played before `start` on every repetition
+    pub lead_in: f64,
+    /// Silence between repetitions
+    pub gap: f64,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_loop(state: State<'_, AppState>, settings: LoopRequest) -> Result<(), AppError> {
+    let engine = playing_engine(&state)?;
+    let frames = |seconds: f64| time::seconds_to_frames(seconds, engine.sample_rate());
+    engine.set_loop(LoopSettings {
+        enabled: settings.enabled,
+        start: frames(settings.start),
+        end: frames(settings.end),
+        lead_in: frames(settings.lead_in),
+        gap: frames(settings.gap),
+    });
+    Ok(())
+}
+
 /// Transport commands need a healthy engine; they never restart it (that would lose the track).
 fn playing_engine(state: &AppState) -> Result<std::sync::Arc<audio_engine::Engine>, AppError> {
     let engine = state
         .running_engine()
         .ok_or_else(|| AppError::new(ErrorKind::NoTrack, "no track loaded"))?;
     if engine.is_lost() {
-        return Err(AppError::new(ErrorKind::AudioDevice, "the output device stopped"));
+        return Err(AppError::new(
+            ErrorKind::AudioDevice,
+            "the output device stopped",
+        ));
     }
     Ok(engine)
 }
 
 fn file_name(path: &Path) -> String {
-    path.file_name().map_or_else(|| path.display().to_string(), |n| n.to_string_lossy().into_owned())
+    path.file_name().map_or_else(
+        || path.display().to_string(),
+        |n| n.to_string_lossy().into_owned(),
+    )
 }

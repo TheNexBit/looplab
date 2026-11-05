@@ -30,7 +30,9 @@ pub fn spawn_status_loop(app: AppHandle) {
         let mut last = None;
         loop {
             std::thread::sleep(INTERVAL);
-            let Some(engine) = app.state::<AppState>().running_engine() else { continue };
+            let Some(engine) = app.state::<AppState>().running_engine() else {
+                continue;
+            };
             let status = engine.status();
             let current = PlaybackStatus {
                 position: time::frames_to_seconds(status.position_frames, engine.sample_rate()),

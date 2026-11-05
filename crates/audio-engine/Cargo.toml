@@ -30,3 +30,6 @@ symphonia = { version = "0.6.1", default-features = false, features = [
 
 [lints]
 workspace = true
+
+[build-dependencies]
+cc = "1"

@@ -7,12 +7,17 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
                   ◀──eventi / binario───                         ◀──atomici────
 ```
 
-- **`crates/audio-engine`**: libreria Rust pura (nessuna dipendenza da Tauri). Conterrà decodifica,
-  thread audio real-time, DSP e dati della forma d'onda. Si testa da sola con `cargo test`.
+- **`crates/audio-engine`**: libreria senza dipendenze da Tauri: decodifica, thread audio real-time,
+  DSP e dati della forma d'onda. Si testa da sola con `cargo test`.
   - Caricamento (`load.rs`): `decode.rs` (file → stereo f32, pacchetto per pacchetto) →
     `resample.rs` (→ frequenza della scheda audio, a blocchi) → `pcm.rs` (16 bit in memoria) + `peaks.rs`.
-  - Riproduzione (`engine.rs`): `Engine` è la maniglia usata dall'app; `Renderer` vive nella callback cpal.
+  - Riproduzione: `engine.rs` è la maniglia usata dall'app (comandi, `LoopSettings`, limiti di velocità);
+    `render.rs` vive nella callback cpal: lettore con loop → stretch → dissolvenze → scheda audio.
     Comandi via ring buffer rtrb, posizione/stato via atomici, brani sostituiti liberati fuori dal thread audio.
+    La posizione pubblicata è quella _udita_: una piccola cronologia collega l'ingresso dello stretch
+    al punto del brano, così latenza e ritorni del loop sono compensati.
+  - `dsp/stretch.rs`: interfaccia sicura su Signalsmith Stretch (C++, in `vendor/`, MIT), compilato da
+    `build.rs` tramite `cpp/stretch.cpp`. Unico codice non Rust; nessuna allocazione dopo la creazione.
   - `time.rs`: conversioni tempo ↔ frame.
 - **`src-tauri`**: guscio desktop. Comandi sottili in `commands/` che delegano all'engine.
   - `paths.rs`: unica fonte dei percorsi in cui l'app scrive. In sviluppo tutto va in
@@ -32,15 +37,15 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 
 ## Frontend
 
-| Cartella           | Contenuto                                                                      |
-| ------------------ | ------------------------------------------------------------------------------ |
-| `app/`             | shell: layout, barra superiore, pannello laterale                              |
-| `features/<nome>/` | componenti, hook e logica di una funzione (player, library, …)                 |
-| `components/ui/`   | componenti base su Radix (Button, Tooltip, Slider, Kbd)                        |
-| `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility             |
-| `stores/`          | store Zustand: `ui` (layout), `player` (brano, play, posizione), `view` (zoom) |
-| `i18n/`            | tutti i testi della UI                                                         |
-| `styles/theme.css` | unica fonte dei token del tema (`@theme` Tailwind v4)                          |
+| Cartella           | Contenuto                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `app/`             | shell: layout, barra superiore, pannello laterale                                                                |
+| `features/<nome>/` | componenti, hook e logica di una funzione (player, library, …)                                                   |
+| `components/ui/`   | componenti base su Radix (Button, Tooltip, Slider, Kbd)                                                          |
+| `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                               |
+| `stores/`          | store Zustand: `ui` (layout), `player` (brano, play, posizione, velocità, tonalità), `loop` (A-B), `view` (zoom) |
+| `i18n/`            | tutti i testi della UI                                                                                           |
+| `styles/theme.css` | unica fonte dei token del tema (`@theme` Tailwind v4)                                                            |
 
 ## Regole
 

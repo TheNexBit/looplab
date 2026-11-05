@@ -19,6 +19,8 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static 
 
 #[tauri::command]
 pub fn get_peaks(state: State<'_, AppState>) -> Result<Response, AppError> {
-    let bytes = state.peaks().ok_or_else(|| AppError::new(ErrorKind::NoTrack, "no track loaded"))?;
+    let bytes = state
+        .peaks()
+        .ok_or_else(|| AppError::new(ErrorKind::NoTrack, "no track loaded"))?;
     Ok(Response::new(bytes.as_ref().clone()))
 }

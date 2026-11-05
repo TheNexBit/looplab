@@ -46,6 +46,20 @@ describe("matchShortcut", () => {
     expect(press("o")).toBeNull();
   });
 
+  it("accepts symbols typed with AltGr, which Windows reports as Ctrl+Alt", () => {
+    const altGr = (key: string) =>
+      matchShortcut({
+        key,
+        ctrlKey: true,
+        metaKey: false,
+        shiftKey: false,
+        altKey: true,
+        getModifierState: (state) => state === "AltGraph",
+      });
+    expect(altGr("[")).toBe("loopStart");
+    expect(altGr("]")).toBe("loopEnd");
+  });
+
   it("ignores Shift on symbols, whose position depends on the keyboard layout", () => {
     expect(press("+", { shift: true })).toBe("speedUp");
     expect(press("+")).toBe("speedUp");

@@ -82,5 +82,9 @@ pub fn load(
     let peaks = Peaks::from_pcm(&pcm);
     progress(1.0);
 
-    Ok(LoadedTrack { pcm: Arc::new(pcm), peaks, source_sample_rate })
+    Ok(LoadedTrack {
+        pcm: Arc::new(pcm),
+        peaks,
+        source_sample_rate,
+    })
 }

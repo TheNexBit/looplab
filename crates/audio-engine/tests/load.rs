@@ -72,8 +72,14 @@ fn loads_a_stereo_wav_at_the_same_rate() {
 
 #[test]
 fn rejects_files_that_are_not_audio() {
-    let path = temp_file("not-audio.mp3", b"this is just text, not an mp3 file at all");
-    assert!(matches!(load(&path, 48_000, |_| {}), Err(LoadError::UnsupportedFormat)));
+    let path = temp_file(
+        "not-audio.mp3",
+        b"this is just text, not an mp3 file at all",
+    );
+    assert!(matches!(
+        load(&path, 48_000, |_| {}),
+        Err(LoadError::UnsupportedFormat)
+    ));
 }
 
 #[test]

@@ -19,6 +19,9 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::play,
             player::pause,
             player::seek,
+            player::set_speed,
+            player::set_pitch,
+            player::set_loop,
         ])
         .events(collect_events![PlaybackStatus])
 }

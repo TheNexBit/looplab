@@ -4,22 +4,18 @@ import { DropOverlay } from "@/features/library/DropOverlay";
 import { EmptyState } from "@/features/library/EmptyState";
 import { ErrorBanner } from "@/features/library/ErrorBanner";
 import { LoadingState } from "@/features/library/LoadingState";
-import { openDroppedFiles, pickAndOpenFile } from "@/features/library/pickFile";
+import { openDroppedFiles } from "@/features/library/pickFile";
 import { useFileDrop } from "@/features/library/useFileDrop";
+import { syncLoopWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
 import { WaveformPanel } from "@/features/waveform/WaveformPanel";
 import { t } from "@/i18n";
 import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
-import { currentPosition, usePlayerStore } from "@/stores/player";
-import { useViewStore } from "@/stores/view";
+import { usePlayerStore } from "@/stores/player";
 import { SidePanel } from "./SidePanel";
+import { shortcutHandlers } from "./shortcutHandlers";
 import { TopBar } from "./TopBar";
-
-const KEYBOARD_ZOOM = 1.5;
-
-const zoomAroundPlayhead = (factor: number) =>
-  useViewStore.getState().zoom(factor, currentPosition());
 
 export function App() {
   const [info, setInfo] = useState<AppInfo>();
@@ -37,22 +33,15 @@ export function App() {
       if (event.ctrlKey) event.preventDefault();
     };
     window.addEventListener("wheel", blockPageZoom, { passive: false });
+    const stopLoopSync = syncLoopWithEngine();
     return () => {
       void unlisten.then((stop) => stop());
       window.removeEventListener("wheel", blockPageZoom);
+      stopLoopSync();
     };
   }, []);
 
-  useShortcuts({
-    playPause: () => usePlayerStore.getState().togglePlay(),
-    seekBack: () => usePlayerStore.getState().seekBy(-5),
-    seekForward: () => usePlayerStore.getState().seekBy(5),
-    seekBackFine: () => usePlayerStore.getState().seekBy(-1),
-    seekForwardFine: () => usePlayerStore.getState().seekBy(1),
-    zoomIn: () => zoomAroundPlayhead(1 / KEYBOARD_ZOOM),
-    zoomOut: () => zoomAroundPlayhead(KEYBOARD_ZOOM),
-    openFile: () => void pickAndOpenFile(),
-  });
+  useShortcuts(shortcutHandlers);
 
   return (
     <TooltipProvider>

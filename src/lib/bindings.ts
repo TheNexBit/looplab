@@ -16,6 +16,11 @@ export const commands = {
 	pause: () => typedError<null, AppError>(__TAURI_INVOKE("pause")),
 	/**  Moves the playhead to `seconds` (clamped to the track length by the engine). */
 	seek: (seconds: number | null) => typedError<null, AppError>(__TAURI_INVOKE("seek", { seconds })),
+	/**  Playback speed without changing pitch: 1 is the original speed. */
+	setSpeed: (speed: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_speed", { speed })),
+	/**  Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down). */
+	setPitch: (semitones: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pitch", { semitones })),
+	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
 };
 
 /** Events */
@@ -38,6 +43,17 @@ export type AppInfo = {
 
 /**  What went wrong, as a stable code: the UI turns it into a translated message. */
 export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "internal";
+
+/**  Loop region and options, in seconds. */
+export type LoopRequest = {
+	enabled: boolean,
+	start: number | null,
+	end: number | null,
+	/**  Played before `start` on every repetition */
+	leadIn: number | null,
+	/**  Silence between repetitions */
+	gap: number | null,
+};
 
 export type PlaybackStatus = {
 	/**  Seconds */

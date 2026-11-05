@@ -74,16 +74,22 @@ export function shortcutLabel(id: ShortcutId): string {
   return t.shortcuts[id];
 }
 
-type KeyEventLike = Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey">;
+type KeyEventLike = Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey"> &
+  Partial<Pick<KeyboardEvent, "getModifierState">>;
 
 const isSymbol = (key: string) => key.length === 1 && key.toLowerCase() === key.toUpperCase();
 
 /** The shortcut a key press triggers, if any. */
 export function matchShortcut(event: KeyEventLike): ShortcutId | null {
   const key = event.key === " " ? "Space" : event.key;
+  // AltGr types symbols on many layouts (Italian "[" is AltGr+è) and Windows reports it as
+  // Ctrl+Alt: for a symbol typed that way, those modifiers are part of the character
+  const altGraph = isSymbol(key) && (event.getModifierState?.("AltGraph") ?? false);
+  const ctrl = !altGraph && (event.ctrlKey || event.metaKey);
+  const alt = !altGraph && event.altKey;
   for (const [id, combo] of Object.entries(parsed) as [ShortcutId, Combo][]) {
     if (combo.key.toLowerCase() !== key.toLowerCase()) continue;
-    if (combo.ctrl !== (event.ctrlKey || event.metaKey) || combo.alt !== event.altKey) continue;
+    if (combo.ctrl !== ctrl || combo.alt !== alt) continue;
     // Symbols like "+" or "[" need Shift on some keyboard layouts and not on others
     if (!isSymbol(key) && combo.shift !== event.shiftKey) continue;
     return id;

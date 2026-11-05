@@ -35,13 +35,20 @@ impl Decoder {
         }
 
         let format = symphonia::default::get_probe()
-            .probe(&hint, stream, FormatOptions::default(), MetadataOptions::default())
+            .probe(
+                &hint,
+                stream,
+                FormatOptions::default(),
+                MetadataOptions::default(),
+            )
             .map_err(|err| match err {
                 SymphoniaError::IoError(io) => LoadError::Io(io),
                 _ => LoadError::UnsupportedFormat,
             })?;
 
-        let track = format.default_track(TrackType::Audio).ok_or(LoadError::NoAudioTrack)?;
+        let track = format
+            .default_track(TrackType::Audio)
+            .ok_or(LoadError::NoAudioTrack)?;
         let params = track
             .codec_params
             .as_ref()
@@ -89,7 +96,9 @@ impl Decoder {
                 Ok(Some(packet)) => packet,
                 // End of stream; chained streams (ResetRequired) are treated as the end too
                 Ok(None) | Err(SymphoniaError::ResetRequired) => break,
-                Err(SymphoniaError::IoError(io)) if io.kind() == std::io::ErrorKind::UnexpectedEof => {
+                Err(SymphoniaError::IoError(io))
+                    if io.kind() == std::io::ErrorKind::UnexpectedEof =>
+                {
                     break;
                 }
                 Err(err) => return Err(LoadError::Corrupt(err.to_string())),
@@ -134,7 +143,11 @@ fn to_stereo(source: &[f32], channels: usize, out: &mut Vec<f32>) {
     match channels {
         1 => out.extend(source.iter().flat_map(|&s| [s, s])),
         2 => out.extend_from_slice(source),
-        _ => out.extend(source.chunks_exact(channels).flat_map(|frame| [frame[0], frame[1]])),
+        _ => out.extend(
+            source
+                .chunks_exact(channels)
+                .flat_map(|frame| [frame[0], frame[1]]),
+        ),
     }
     debug_assert_eq!(out.len() % CHANNELS, 0);
 }

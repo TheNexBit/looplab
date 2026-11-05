@@ -53,11 +53,7 @@ impl StreamResampler {
         })
     }
 
-    pub fn push(
-        &mut self,
-        frames: &[f32],
-        sink: &mut impl FnMut(&[f32]),
-    ) -> Result<(), LoadError> {
+    pub fn push(&mut self, frames: &[f32], sink: &mut impl FnMut(&[f32])) -> Result<(), LoadError> {
         if self.inner.is_none() {
             sink(frames);
             return Ok(());
@@ -97,7 +93,9 @@ impl StreamResampler {
         partial_len: Option<usize>,
         sink: &mut impl FnMut(&[f32]),
     ) -> Result<(), LoadError> {
-        let Some(resampler) = self.inner.as_mut() else { return Ok(()) };
+        let Some(resampler) = self.inner.as_mut() else {
+            return Ok(());
+        };
         let to_error = |err: &dyn std::fmt::Display| LoadError::Corrupt(err.to_string());
 
         let in_frames = self.input.len() / CHANNELS;
@@ -124,7 +122,11 @@ impl StreamResampler {
         self.delay_left -= skip;
         // Never emit more than the exact converted length: the tail is padding
         let wanted = self.expected_output().saturating_sub(self.frames_out);
-        let emit = (produced - skip).min(if partial_len.is_some() { wanted as usize } else { usize::MAX });
+        let emit = (produced - skip).min(if partial_len.is_some() {
+            wanted as usize
+        } else {
+            usize::MAX
+        });
         if emit > 0 {
             sink(&self.output[skip * CHANNELS..(skip + emit) * CHANNELS]);
             self.frames_out += emit as u64;
@@ -151,7 +153,9 @@ mod tests {
         let mut resampler = StreamResampler::new(from, to).unwrap();
         // Feed in uneven packets, like a decoder does
         for packet in input.chunks(1152 * CHANNELS) {
-            resampler.push(packet, &mut |f| out.extend_from_slice(f)).unwrap();
+            resampler
+                .push(packet, &mut |f| out.extend_from_slice(f))
+                .unwrap();
         }
         resampler.finish(&mut |f| out.extend_from_slice(f)).unwrap();
         out
@@ -159,7 +163,9 @@ mod tests {
 
     fn zero_crossings(interleaved: &[f32]) -> usize {
         let left: Vec<f32> = interleaved.iter().step_by(CHANNELS).copied().collect();
-        left.windows(2).filter(|w| w[0] < 0.0 && w[1] >= 0.0).count()
+        left.windows(2)
+            .filter(|w| w[0] < 0.0 && w[1] >= 0.0)
+            .count()
     }
 
     #[test]
