@@ -16,6 +16,7 @@ pub enum ErrorKind {
     CorruptFile,
     AudioDevice,
     NoTrack,
+    ProjectFile,
     Internal,
 }
 

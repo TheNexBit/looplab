@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { type ShortcutId, shortcutLabel } from "@/lib/shortcuts";
 import { formatsLabel } from "./formats";
 import { pickAndOpenFile } from "./pickFile";
+import { RecentList } from "./RecentList";
 
 const highlighted: ShortcutId[] = [
   "playPause",
@@ -15,12 +16,11 @@ const highlighted: ShortcutId[] = [
   "loopToggle",
   "addMarker",
   "addSection",
-  "commandPalette",
 ];
 
 export function EmptyState({ hovering }: { hovering: boolean }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-10 p-8">
+    <div className="flex h-full flex-col items-center justify-center gap-8 overflow-y-auto p-8">
       <div
         className={cn(
           "flex w-full max-w-xl flex-col items-center gap-4 rounded-panel border-2 border-dashed px-10 py-14 text-center transition-colors",
@@ -45,6 +45,8 @@ export function EmptyState({ hovering }: { hovering: boolean }) {
           <Kbd shortcut="openFile" />
         </Button>
       </div>
+
+      <RecentList />
 
       <section className="w-full max-w-xl">
         <h2 className="mb-3 text-xs font-medium tracking-wide text-fg-subtle uppercase">

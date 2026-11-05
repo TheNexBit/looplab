@@ -21,6 +21,12 @@ export const commands = {
 	/**  Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down). */
 	setPitch: (semitones: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pitch", { semitones })),
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
+	/**  The saved project of a track, or `null` if it has none yet. */
+	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
+	/**  Saves the project of a track and says where it went. */
+	saveProject: (track: string, project: Project_Deserialize) => typedError<ProjectLocation, AppError>(__TAURI_INVOKE("save_project", { track, project })),
+	recentFiles: () => typedError<RecentFile[], AppError>(__TAURI_INVOKE("recent_files")),
+	forgetRecent: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_recent", { track })),
 };
 
 /** Events */
@@ -42,7 +48,19 @@ export type AppInfo = {
 };
 
 /**  What went wrong, as a stable code: the UI turns it into a translated message. */
-export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "internal";
+export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "projectFile" | "internal";
+
+export type LoadedProject = LoadedProject_Serialize | LoadedProject_Deserialize;
+
+export type LoadedProject_Deserialize = {
+	project: Project_Deserialize,
+	location: ProjectLocation,
+};
+
+export type LoadedProject_Serialize = {
+	project: Project_Serialize,
+	location: ProjectLocation,
+};
 
 /**  Loop region and options, in seconds. */
 export type LoopRequest = {
@@ -55,12 +73,112 @@ export type LoopRequest = {
 	gap: number | null,
 };
 
+export type Marker = Marker_Serialize | Marker_Deserialize;
+
+export type MarkerKind = 
+/**  A point of interest, optionally labelled */
+"free" | 
+/**  Start of a bar: numbered in order by the UI */
+"beat";
+
+export type Marker_Deserialize = {
+	id: string,
+	/**  Seconds */
+	time: number | null,
+	kind: MarkerKind,
+	label?: string,
+};
+
+export type Marker_Serialize = {
+	id: string,
+	/**  Seconds */
+	time: number | null,
+	kind: MarkerKind,
+	label: string,
+};
+
 export type PlaybackStatus = {
 	/**  Seconds */
 	position: number | null,
 	playing: boolean,
 	/**  The output device failed: the track must be reopened */
 	deviceLost: boolean,
+};
+
+/**
+ *  Everything remembered about one track. Missing fields take their defaults,
+ *  so files written by older versions still open.
+ */
+export type Project = Project_Serialize | Project_Deserialize;
+
+/**  Where a project file is kept. */
+export type ProjectLocation = 
+/**  Next to the track, so it travels with it */
+"besideTrack" | 
+/**  In the app data folder, because the track's folder is read-only */
+"appData";
+
+export type ProjectLoop = ProjectLoop_Serialize | ProjectLoop_Deserialize;
+
+export type ProjectLoop_Deserialize = {
+	enabled?: boolean,
+	start?: number | null,
+	end?: number | null,
+	leadIn?: number | null,
+	gap?: number | null,
+};
+
+export type ProjectLoop_Serialize = {
+	enabled: boolean,
+	start: number | null,
+	end: number | null,
+	leadIn: number | null,
+	gap: number | null,
+};
+
+/**
+ *  Everything remembered about one track. Missing fields take their defaults,
+ *  so files written by older versions still open.
+ */
+export type Project_Deserialize = {
+	version?: number,
+	markers?: Marker_Deserialize[],
+	sections?: Section[],
+	loop?: ProjectLoop_Deserialize,
+	speed?: number | null,
+	semitones?: number,
+	cents?: number,
+};
+
+/**
+ *  Everything remembered about one track. Missing fields take their defaults,
+ *  so files written by older versions still open.
+ */
+export type Project_Serialize = {
+	version: number,
+	markers: Marker_Serialize[],
+	sections: Section[],
+	loop: ProjectLoop_Serialize,
+	speed: number | null,
+	semitones: number,
+	cents: number,
+};
+
+export type RecentFile = {
+	path: string,
+	name: string,
+	/**  False when the file has been moved or deleted since */
+	exists: boolean,
+};
+
+/**  A section runs from its start to the start of the next one (or the end of the track). */
+export type Section = {
+	id: string,
+	/**  Seconds */
+	start: number | null,
+	name: string,
+	/**  Index into the section palette of `theme.css` */
+	color: number,
 };
 
 export type TrackInfo = {

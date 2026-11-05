@@ -4,6 +4,8 @@
 mod commands;
 mod paths;
 mod playback;
+mod project;
+mod recent;
 mod state;
 mod window;
 

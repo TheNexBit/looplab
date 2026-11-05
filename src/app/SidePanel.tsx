@@ -1,13 +1,19 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Tabs } from "radix-ui";
+import type { ReactNode } from "react";
+import { SectionList } from "@/features/markers/SectionList";
 import { t } from "@/i18n";
 import { type SidePanelTab, useUiStore } from "@/stores/ui";
 
 const WIDTH = 300;
 
-const tabs: { id: SidePanelTab; label: string; empty: string }[] = [
-  { id: "sections", label: t.sidePanel.sections, empty: t.sidePanel.sectionsEmpty },
-  { id: "eq", label: t.sidePanel.eq, empty: t.sidePanel.eqEmpty },
+const tabs: { id: SidePanelTab; label: string; content: ReactNode }[] = [
+  { id: "sections", label: t.sidePanel.sections, content: <SectionList /> },
+  {
+    id: "eq",
+    label: t.sidePanel.eq,
+    content: <p className="p-4 text-sm text-fg-subtle">{t.sidePanel.eqEmpty}</p>,
+  },
 ];
 
 export function SidePanel() {
@@ -43,9 +49,9 @@ export function SidePanel() {
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
-            {tabs.map(({ id, empty }) => (
-              <Tabs.Content key={id} value={id} className="flex-1 p-4 text-sm text-fg-subtle">
-                {empty}
+            {tabs.map(({ id, content }) => (
+              <Tabs.Content key={id} value={id} className="min-h-0 flex-1">
+                {content}
               </Tabs.Content>
             ))}
           </Tabs.Root>

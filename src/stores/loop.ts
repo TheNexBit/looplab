@@ -56,6 +56,8 @@ interface LoopState extends LoopOptions {
   setLeadIn: (seconds: number) => void;
   setGap: (seconds: number) => void;
   clear: () => void;
+  /** Puts back a loop saved in a project file. */
+  restore: (saved: LoopOptions & { start: number | null; end: number | null }) => void;
 }
 
 /** The A-B loop. Kept in sync with the engine by `features/player/syncEngine.ts`. */
@@ -94,4 +96,12 @@ export const useLoopStore = create<LoopState>((set, get) => ({
   setLeadIn: (seconds) => set({ leadIn: clamp(seconds, LEAD_IN.min, LEAD_IN.max) }),
   setGap: (seconds) => set({ gap: clamp(seconds, GAP.min, GAP.max) }),
   clear: () => set({ start: null, end: null, enabled: false }),
+  restore: (saved) =>
+    set({
+      start: saved.start,
+      end: saved.end,
+      enabled: saved.enabled,
+      leadIn: clamp(saved.leadIn, LEAD_IN.min, LEAD_IN.max),
+      gap: clamp(saved.gap, GAP.min, GAP.max),
+    }),
 }));

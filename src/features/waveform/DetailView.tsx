@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { MarkerFlags } from "@/features/markers/MarkerFlags";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
@@ -119,6 +120,8 @@ export function DetailView() {
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0) return;
+      // Marker flags handle their own presses
+      if (event.target instanceof Element && event.target.closest("[data-no-seek]")) return;
       element.setPointerCapture(event.pointerId);
       const fixed = edgeUnder(event.clientX);
       gesture =
@@ -172,6 +175,7 @@ export function DetailView() {
         aria-label={t.waveform.detail}
       />
       <LoopOverlay ref={loopRef} />
+      <MarkerFlags area={containerRef} top={RULER_CSS} />
       <div
         ref={playheadRef}
         className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-fg will-change-transform"

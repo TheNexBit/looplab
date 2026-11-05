@@ -19,6 +19,16 @@
 
   --color-border: rgb(51 65 85 / 0.5);
 
+  /* Section palette: index stored in the project file (Section.color) */
+  --color-section-0: #818cf8;
+  --color-section-1: #38bdf8;
+  --color-section-2: #34d399;
+  --color-section-3: #fbbf24;
+  --color-section-4: #fb7185;
+  --color-section-5: #a78bfa;
+  --color-section-6: #2dd4bf;
+  --color-section-7: #fb923c;
+
   --radius-control: 8px;
   --radius-panel: 12px;
 

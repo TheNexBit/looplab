@@ -1,14 +1,14 @@
 # Roadmap
 
-| #   | Fase                       | Stato                           |
-| --- | -------------------------- | ------------------------------- |
-| 1   | Fondamenta                 | ✅ completata                   |
-| 2   | Cuore audio                | ✅ completata                   |
-| 3   | Velocità, tonalità e loop  | ✅ completata — in attesa di ok |
-| 4   | Marker e sezioni           | ⏳ da fare                      |
-| 5   | EQ e isolamento base       | ⏳ da fare                      |
-| 6   | Video                      | ⏳ da fare                      |
-| 7   | Rifinitura e distribuzione | ⏳ da fare                      |
+| #   | Fase                       | Stato                      |
+| --- | -------------------------- | -------------------------- |
+| 1   | Fondamenta                 | ✅ completata              |
+| 2   | Cuore audio                | ✅ completata              |
+| 3   | Velocità, tonalità e loop  | ✅ completata              |
+| 4   | Marker e sezioni           | ✅ completata — da provare |
+| 5   | EQ e isolamento base       | ⏳ da fare                 |
+| 6   | Video                      | ⏳ da fare                 |
+| 7   | Rifinitura e distribuzione | ⏳ da fare                 |
 
 ## 1. Fondamenta ✅
 
@@ -47,9 +47,21 @@
 - Scorciatoie: `[` `]` inizio/fine loop, `L` loop, `+`/`−` velocità ±5%, Maiusc+↑↓ tonalità.
 - Rimandato: salvataggio di velocità, tonalità e loop per brano (fase 4, `.looplab.json`).
 
-## 4. Marker e sezioni
+## 4. Marker e sezioni ✅
 
-Creazione al volo, colori, lista laterale, loop di sezione, salvataggio automatico `.looplab.json`, file recenti.
+Scelte prese senza chiedere (come concordato): sezioni consecutive alla Transcribe (ognuna finisce dove inizia
+la successiva), nessun riordino manuale (l'ordine è quello del brano), velocità e tonalità salvate per brano.
+
+- `M` marker libero, `B` battuta (numerata da sola), `S` sezione (nome e colore automatici), `,` `.` marker
+  precedente/successivo.
+- Corsia delle sezioni sopra la forma d'onda: clic = loop della sezione, bordo sinistro trascinabile,
+  tasto destro = loop, colore (8 colori in `theme.css`), elimina.
+- Bandierine dei marker sotto il righello: clic = salta lì, trascina = sposta, tasto destro = elimina.
+- Pannello "Sezioni": nomi modificabili, loop, elimina; elenco dei marker.
+- Salvataggio automatico in `<file>.<ext>.looplab.json` accanto al brano (schema in `src-tauri/src/project.rs`,
+  tipi generati), 0,8 s dopo l'ultima modifica e alla chiusura; scrittura atomica; un file illeggibile non viene
+  mai sovrascritto; cartella protetta → copia nella cartella dati dell'app.
+- File recenti (10) nello stato vuoto e nel menu accanto ad "Apri" (`src-tauri/src/recent.rs`).
 
 ## 5. EQ e isolamento base
 

@@ -24,6 +24,7 @@ pub struct TrackInfo {
 #[tauri::command]
 #[specta::specta]
 pub async fn open_file(
+    app: tauri::AppHandle,
     state: State<'_, AppState>,
     path: String,
     on_progress: Channel<f32>,
@@ -49,6 +50,7 @@ pub async fn open_file(
     };
     state.set_peaks(loaded.peaks.to_bytes());
     engine.set_track(loaded.pcm);
+    super::library::remember(&app, &info.path);
     Ok(info)
 }
 

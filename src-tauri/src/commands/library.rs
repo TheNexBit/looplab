@@ -1,0 +1,65 @@
+//! Project files and recently opened tracks.
+
+use std::path::Path;
+
+use serde::Serialize;
+use tauri::AppHandle;
+
+use super::{AppError, ErrorKind};
+use crate::paths;
+use crate::project::{self, Project, ProjectError, ProjectLocation};
+use crate::recent::{self, RecentFile};
+
+impl From<ProjectError> for AppError {
+    fn from(err: ProjectError) -> Self {
+        Self::new(ErrorKind::ProjectFile, err)
+    }
+}
+
+#[derive(Serialize, specta::Type)]
+pub struct LoadedProject {
+    pub project: Project,
+    pub location: ProjectLocation,
+}
+
+/// The saved project of a track, or `null` if it has none yet.
+#[tauri::command]
+#[specta::specta]
+pub fn load_project(app: AppHandle, track: String) -> Result<Option<LoadedProject>, AppError> {
+    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let loaded = project::load(&data_dir, Path::new(&track))?;
+    Ok(loaded.map(|(project, location)| LoadedProject { project, location }))
+}
+
+/// Saves the project of a track and says where it went.
+#[tauri::command]
+#[specta::specta]
+pub fn save_project(
+    app: AppHandle,
+    track: String,
+    project: Project,
+) -> Result<ProjectLocation, AppError> {
+    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    Ok(project::save(&data_dir, Path::new(&track), &project)?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn recent_files(app: AppHandle) -> Result<Vec<RecentFile>, AppError> {
+    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    Ok(recent::list(&data_dir))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn forget_recent(app: AppHandle, track: String) -> Result<(), AppError> {
+    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    recent::remove(&data_dir, &track).map_err(AppError::internal)
+}
+
+/// Called after a track opens successfully; a failure here must not fail the opening.
+pub fn remember(app: &AppHandle, track: &str) {
+    if let Ok(data_dir) = paths::data_dir(app) {
+        let _ = recent::add(&data_dir, track);
+    }
+}

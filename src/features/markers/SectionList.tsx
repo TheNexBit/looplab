@@ -1,0 +1,142 @@
+import { Repeat, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { t } from "@/i18n";
+import { formatTime } from "@/lib/time";
+import {
+  beatNumbers,
+  type SectionRange,
+  sectionColor,
+  sectionRanges,
+  useMarkersStore,
+} from "@/stores/markers";
+import { usePlayerStore } from "@/stores/player";
+import { SectionMenu } from "./SectionMenu";
+import { loopSection } from "./sectionActions";
+
+function SectionRow({ range }: { range: SectionRange }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const { renameSection, removeSection } = useMarkersStore.getState();
+  const commit = () => {
+    if (draft?.trim()) renameSection(range.id, draft.trim());
+    setDraft(null);
+  };
+
+  return (
+    <SectionMenu range={range}>
+      <li className="group flex items-center gap-2 rounded-control px-2 py-1 hover:bg-surface-hover">
+        <span
+          aria-hidden
+          className="size-2.5 shrink-0 rounded-full"
+          style={{ background: sectionColor(range.color) }}
+        />
+        <input
+          aria-label={t.markers.rename}
+          value={draft ?? range.name}
+          onFocus={() => setDraft(range.name)}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={commit}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
+            if (event.key === "Escape") {
+              setDraft(null);
+              event.currentTarget.blur();
+            }
+          }}
+          className="min-w-0 flex-1 rounded-[4px] bg-transparent px-1 text-sm text-fg outline-none focus:bg-surface"
+        />
+        <span className="text-[11px] text-fg-subtle tabular">{formatTime(range.start)}</span>
+        <Button
+          size="icon"
+          className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          onClick={() => loopSection(range)}
+          aria-label={t.markers.loopSection}
+        >
+          <Repeat className="size-3.5" />
+        </Button>
+        <Button
+          size="icon"
+          className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+          onClick={() => removeSection(range.id)}
+          aria-label={t.markers.remove}
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
+      </li>
+    </SectionMenu>
+  );
+}
+
+/** Side panel tab: sections (renamable, loopable) and markers of the open track. */
+export function SectionList() {
+  const sections = useMarkersStore((s) => s.sections);
+  const markers = useMarkersStore((s) => s.markers);
+  const savedTo = useMarkersStore((s) => s.savedTo);
+  const duration = usePlayerStore((s) => s.track?.duration ?? 0);
+  const numbers = beatNumbers(markers);
+  const sortedMarkers = [...markers].sort((a, b) => a.time - b.time);
+
+  return (
+    <div className="flex h-full flex-col gap-4 overflow-y-auto p-2">
+      <section>
+        <h3 className="px-2 pb-1 text-xs font-medium tracking-wide text-fg-subtle uppercase">
+          {t.markers.sections}
+        </h3>
+        {sections.length === 0 ? (
+          <p className="px-2 text-sm text-fg-subtle">{t.markers.noSections}</p>
+        ) : (
+          <ul>
+            {sectionRanges(sections, duration).map((range) => (
+              <SectionRow key={range.id} range={range} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section>
+        <h3 className="px-2 pb-1 text-xs font-medium tracking-wide text-fg-subtle uppercase">
+          {t.markers.markers}
+        </h3>
+        {markers.length === 0 ? (
+          <p className="px-2 text-sm text-fg-subtle">{t.markers.noMarkers}</p>
+        ) : (
+          <ul>
+            {sortedMarkers.map((marker) => (
+              <li
+                key={marker.id}
+                className="group flex items-center gap-2 rounded-control px-2 py-0.5 hover:bg-surface-hover"
+              >
+                <button
+                  type="button"
+                  onClick={() => usePlayerStore.getState().seek(marker.time)}
+                  className="flex flex-1 items-center gap-2 text-left text-sm text-fg-muted"
+                >
+                  <span className="w-16 truncate">
+                    {marker.kind === "beat"
+                      ? `${t.markers.bar} ${numbers.get(marker.id)}`
+                      : marker.label || t.markers.marker}
+                  </span>
+                  <span className="text-[11px] text-fg-subtle tabular">
+                    {formatTime(marker.time)}
+                  </span>
+                </button>
+                <Button
+                  size="icon"
+                  className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                  onClick={() => useMarkersStore.getState().removeMarker(marker.id)}
+                  aria-label={t.markers.remove}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {savedTo === "appData" && (
+        <p className="mt-auto px-2 text-xs text-fg-subtle">{t.markers.savedInAppData}</p>
+      )}
+    </div>
+  );
+}

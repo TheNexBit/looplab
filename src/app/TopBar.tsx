@@ -1,11 +1,50 @@
-import { FolderOpen, PanelRight, Search } from "lucide-react";
+import { ChevronDown, FolderOpen, PanelRight, Search } from "lucide-react";
+import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
+import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
 import { usePlayerStore } from "@/stores/player";
+import { useRecentStore } from "@/stores/recent";
 import { useUiStore } from "@/stores/ui";
+
+function RecentMenu() {
+  const files = useRecentStore((s) => s.files);
+  return (
+    <DropdownMenu.Root onOpenChange={(open) => open && void useRecentStore.getState().refresh()}>
+      <Tooltip label={t.recent.title}>
+        <DropdownMenu.Trigger asChild>
+          <Button size="icon" className="-ml-2 w-6" aria-label={t.recent.title}>
+            <ChevronDown className="size-3.5" />
+          </Button>
+        </DropdownMenu.Trigger>
+      </Tooltip>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content align="start" sideOffset={6} className={`${menuContent} max-w-96`}>
+          <DropdownMenu.Label className={menuLabel}>{t.recent.title}</DropdownMenu.Label>
+          {files.length === 0 && (
+            <DropdownMenu.Item disabled className={menuItem}>
+              {t.recent.empty}
+            </DropdownMenu.Item>
+          )}
+          {files.map((file) => (
+            <DropdownMenu.Item
+              key={file.path}
+              disabled={!file.exists}
+              title={file.path}
+              className={menuItem}
+              onSelect={() => void usePlayerStore.getState().open(file.path)}
+            >
+              <span className="truncate">{file.name}</span>
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
 
 export function TopBar() {
   const sidePanelOpen = useUiStore((s) => s.sidePanelOpen);
@@ -20,6 +59,7 @@ export function TopBar() {
           {t.app.open}
         </Button>
       </Tooltip>
+      <RecentMenu />
 
       <span className={trackName ? "truncate text-sm text-fg" : "truncate text-sm text-fg-subtle"}>
         {trackName ?? t.app.noFile}

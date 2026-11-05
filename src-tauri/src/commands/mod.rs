@@ -3,6 +3,7 @@
 
 mod app;
 mod error;
+mod library;
 mod player;
 pub mod waveform;
 
@@ -22,6 +23,10 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::set_speed,
             player::set_pitch,
             player::set_loop,
+            library::load_project,
+            library::save_project,
+            library::recent_files,
+            library::forget_recent,
         ])
         .events(collect_events![PlaybackStatus])
 }

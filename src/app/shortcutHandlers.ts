@@ -2,6 +2,7 @@ import { pickAndOpenFile } from "@/features/library/pickFile";
 import { SEMITONES, SPEED_KEY_STEP } from "@/features/player/limits";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useLoopStore } from "@/stores/loop";
+import { neighbourPoint, useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useViewStore } from "@/stores/view";
 
@@ -11,6 +12,12 @@ const player = () => usePlayerStore.getState();
 const duration = () => player().track?.duration ?? 0;
 const zoomAroundPlayhead = (factor: number) =>
   useViewStore.getState().zoom(factor, currentPosition());
+const hasTrack = () => player().track !== null;
+const jumpToNeighbour = (direction: -1 | 1) => {
+  const { markers, sections } = useMarkersStore.getState();
+  const point = neighbourPoint(currentPosition(), direction, markers, sections);
+  if (point !== null) player().seek(point);
+};
 const shiftPitch = (by: number) => {
   const { semitones, cents, setPitch } = player();
   setPitch(Math.min(SEMITONES.max, Math.max(SEMITONES.min, semitones + by)), cents);
@@ -26,6 +33,11 @@ export const shortcutHandlers: ShortcutHandlers = {
   loopStart: () => useLoopStore.getState().setStart(currentPosition(), duration()),
   loopEnd: () => useLoopStore.getState().setEnd(currentPosition(), duration()),
   loopToggle: () => useLoopStore.getState().toggle(),
+  addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
+  addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),
+  addSection: () => hasTrack() && useMarkersStore.getState().addSection(currentPosition()),
+  previousMarker: () => jumpToNeighbour(-1),
+  nextMarker: () => jumpToNeighbour(1),
   speedUp: () => player().setSpeed(player().speed + SPEED_KEY_STEP),
   speedDown: () => player().setSpeed(player().speed - SPEED_KEY_STEP),
   pitchUp: () => shiftPitch(1),
