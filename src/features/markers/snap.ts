@@ -1,3 +1,4 @@
+import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
@@ -24,11 +25,16 @@ export function nearestWithin(time: number, points: number[], threshold: number)
 export interface SnapExclude {
   markerId?: string;
   sectionId?: string;
+  /** While the loop itself is being drawn, moved or resized */
+  loop?: boolean;
+  /** While the playhead itself is being placed */
+  playhead?: boolean;
 }
 
 /**
  * With the magnet on, moves `time` onto the nearest marker, bar, section start,
- * playhead or track edge, if one is within `SNAP_PX` on screen.
+ * loop edge, playhead or track edge, if one is within `SNAP_PX` on screen
+ * (like Reaper's snapping to the time selection).
  * `area` is the element whose width shows the visible time span.
  */
 export function snapTime(
@@ -40,10 +46,12 @@ export function snapTime(
   const { span } = useViewStore.getState();
   const secondsPerPixel = span / Math.max(1, area.getBoundingClientRect().width);
   const { markers, sections } = useMarkersStore.getState();
+  const region = exclude.loop ? null : useLoopStore.getState().region();
   const points = [
     0,
     usePlayerStore.getState().track?.duration ?? 0,
-    currentPosition(),
+    ...(exclude.playhead ? [] : [currentPosition()]),
+    ...(region ? [region.start, region.end] : []),
     ...markers.filter((m) => m.id !== exclude.markerId).map((m) => m.time),
     ...sections.filter((s) => s.id !== exclude.sectionId).map((s) => s.start),
   ];

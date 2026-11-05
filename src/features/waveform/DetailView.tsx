@@ -23,12 +23,14 @@ const LINE_HEIGHT_PX = 16;
 type Gesture =
   | { kind: "press"; x: number; time: number; onBrace: boolean }
   | { kind: "select"; anchor: number }
-  | { kind: "edge"; fixed: number }
+  | { kind: "edge"; fixed: number; edge: number; x: number; moved: boolean }
   | { kind: "move"; grab: number; length: number };
 
 /**
  * Zoomable waveform, with the gestures of a DAW:
- * - click anywhere: playhead there; Shift+click: stretch the loop to that point
+ * - click anywhere: playhead there (with the magnet, it sticks to loop edges and markers);
+ *   click on the loop bar: playhead at the loop start; click on a loop edge: playhead on it
+ * - Shift+click: stretch the loop to that point
  * - drag on the waveform or the ruler: a new loop (even over the current one)
  * - drag the loop bar in the ruler: move the loop; drag a loop edge: resize it
  * - wheel: zoom around the pointer; Shift+wheel: scroll
@@ -113,12 +115,20 @@ export function DetailView() {
       if (Math.abs(xOf(region.end) - clientX) <= reach) return region.start;
       return null;
     };
+    /** The loop edge under the pointer, given the opposite one returned by `edgeUnder`. */
+    const edgeTime = (fixed: number) => {
+      const region = useLoopStore.getState().region();
+      return region && fixed === region.end ? region.start : (region?.end ?? fixed);
+    };
     const insideLoop = (time: number) => {
       const region = useLoopStore.getState().region();
       return region !== null && time > region.start && time < region.end;
     };
     const inRuler = (clientY: number) => clientY - element.getBoundingClientRect().top < RULER_CSS;
-    const snap = (time: number) => snapTime(time, element);
+    /** For gestures that shape the loop: they must not stick to the loop itself */
+    const snap = (time: number) => snapTime(time, element, { loop: true });
+    /** For placing the playhead: sticks to loop edges, markers and sections (Reaper-style) */
+    const snapSeek = (time: number) => snapTime(time, element, { playhead: true });
 
     /** Shift+click: the nearer loop end jumps to `time` (or a loop from the playhead is made). */
     const stretchLoopTo = (time: number) => {
@@ -178,7 +188,7 @@ export function DetailView() {
       const fixed = edgeUnder(event.clientX);
       gesture =
         fixed !== null
-          ? { kind: "edge", fixed }
+          ? { kind: "edge", fixed, edge: edgeTime(fixed), x: event.clientX, moved: false }
           : {
               kind: "press",
               x: event.clientX,
@@ -208,12 +218,23 @@ export function DetailView() {
       }
       const loop = useLoopStore.getState();
       if (gesture.kind === "select") loop.setRegion(gesture.anchor, snap(time), duration());
-      if (gesture.kind === "edge") loop.setRegion(gesture.fixed, snap(time), duration());
+      if (
+        gesture.kind === "edge" &&
+        (gesture.moved || Math.abs(event.clientX - gesture.x) > DRAG_PX)
+      ) {
+        gesture.moved = true;
+        loop.setRegion(gesture.fixed, snap(time), duration());
+      }
       if (gesture.kind === "move") moveLoop(time - gesture.grab, gesture.length);
     };
 
     const onPointerUp = (event: PointerEvent) => {
-      if (gesture?.kind === "press") usePlayerStore.getState().seek(gesture.time);
+      const player = usePlayerStore.getState();
+      const region = useLoopStore.getState().region();
+      // A click on the loop bar goes to the loop start, a click on an edge to that edge
+      if (gesture?.kind === "press" && gesture.onBrace && region) player.seek(region.start);
+      else if (gesture?.kind === "press") player.seek(snapSeek(gesture.time));
+      else if (gesture?.kind === "edge" && !gesture.moved) player.seek(gesture.edge);
       gesture = null;
       element.style.cursor = cursorFor(event);
     };

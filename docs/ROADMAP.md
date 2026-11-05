@@ -123,6 +123,8 @@ la successiva), nessun riordino manuale (l'ordine √® quello del brano), velocit√
   (l'area dei bordi si stringe sui loop corti); Maiusc+clic = estende il loop; Esc = toglie il loop.
 - Calamita (tasto G, pulsante nel dock, impostazioni): loop, marker e sezioni trascinati si agganciano a marker,
   battute, inizi di sezione, playhead e bordi del brano entro 10 pixel.
+- Clic come in Reaper: sulla barra del loop = playhead all'inizio del loop; su un bordo = playhead su quel bordo;
+  con la calamita, un clic vicino ai bordi del loop si aggancia a loro.
 
 ## Dopo la prima versione
 
