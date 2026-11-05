@@ -17,6 +17,7 @@ export const shortcuts = {
   loopToggle: "L",
   clearLoop: "Escape",
   toggleSnap: "G",
+  toggleFollow: "F",
   addMarker: "M",
   addBeat: "B",
   addSection: "S",

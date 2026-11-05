@@ -127,6 +127,8 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   con la calamita, un clic vicino ai bordi del loop si aggancia a loro.
 - Punto di partenza come in Reaper (attivo di serie, pulsante ↩ nel dock e impostazioni): il punto cliccato o da cui
   parte la riproduzione è segnato da un triangolo nel righello; fermando con Spazio si torna lì.
+- "Segui il brano" sempre visibile (pulsante mirino nel dock, tasto F): lo scroll manuale lo sospende solo per 2 s
+  invece di spegnerlo di nascosto; seguire non interrompe più uno zoom in corso.
 
 ## Dopo la prima versione
 

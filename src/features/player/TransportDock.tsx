@@ -1,4 +1,4 @@
-import { Magnet, Pause, Play, Undo2 } from "lucide-react";
+import { LocateFixed, Magnet, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
@@ -7,6 +7,7 @@ import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
+import { useViewStore } from "@/stores/view";
 import { LoopMenu } from "./LoopMenu";
 import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
@@ -29,6 +30,7 @@ export function TransportDock() {
   const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
   const snap = useSettingsStore((s) => s.snap);
   const returnToStart = useSettingsStore((s) => s.returnToStart);
+  const follow = useSettingsStore((s) => s.followPlayhead);
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
@@ -64,6 +66,20 @@ export function TransportDock() {
       <TimeDisplay />
       <div className="flex items-center gap-1">
         <LoopMenu disabled={!hasTrack} />
+        <Tooltip label={t.transport.follow} shortcut="toggleFollow">
+          <Button
+            size="icon"
+            active={follow}
+            onClick={() => {
+              useSettingsStore.getState().update({ followPlayhead: !follow });
+              useViewStore.getState().resumeFollow();
+            }}
+            aria-label={t.shortcuts.toggleFollow}
+            aria-pressed={follow}
+          >
+            <LocateFixed className="size-4" />
+          </Button>
+        </Tooltip>
         <Tooltip label={t.transport.snap} shortcut="toggleSnap">
           <Button
             size="icon"

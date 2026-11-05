@@ -173,6 +173,7 @@ export const it = {
     cents: "ct",
     seconds: "s",
     cue: "Punto di partenza",
+    follow: "Segui il brano: la forma d'onda scorre con il playhead durante l'ascolto",
     returnToStart:
       "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
     snap: "Calamita: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead",
@@ -188,6 +189,7 @@ export const it = {
     loopToggle: "Loop on/off",
     clearLoop: "Togli il loop",
     toggleSnap: "Calamita on/off",
+    toggleFollow: "Segui il brano on/off",
     addMarker: "Aggiungi marker",
     addBeat: "Aggiungi battuta",
     addSection: "Aggiungi sezione",

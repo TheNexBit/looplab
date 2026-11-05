@@ -154,7 +154,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           : position;
       anchor(from, true);
       set({ cue: from });
-      useViewStore.getState().setFollow(true);
+      useViewStore.getState().resumeFollow();
       void commands.play().then(report);
     },
 
@@ -164,7 +164,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const position = clamp(seconds, 0, track.duration);
       anchor(position);
       set({ cue: position });
-      useViewStore.getState().setFollow(true);
+      useViewStore.getState().resumeFollow();
       void commands.seek(position).then((r) => {
         if (r.status === "error") fail(r.error);
       });

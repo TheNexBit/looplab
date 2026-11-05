@@ -39,6 +39,10 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   // Esc first closes an open dialog (Radix handles that); only then does it clear the loop
   clearLoop: () => useUiStore.getState().dialog === null && useLoopStore.getState().clear(),
   toggleSnap: () => settings().update({ snap: !settings().snap }),
+  toggleFollow: () => {
+    settings().update({ followPlayhead: !settings().followPlayhead });
+    useViewStore.getState().resumeFollow();
+  },
   addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
   addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),
   addSection: () => hasTrack() && useMarkersStore.getState().addSection(currentPosition()),

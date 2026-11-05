@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { clampView, MIN_SPAN, zoomWindow } from "./view";
+import { beforeEach, describe, expect, it } from "vitest";
+import { clampView, MIN_SPAN, useViewStore, zoomWindow } from "./view";
 
 describe("clampView", () => {
   it("keeps the window inside the track", () => {
@@ -19,5 +19,32 @@ describe("zoomWindow", () => {
     expect(zoomed).toEqual({ start: 12.5, span: 10 });
     // 15 s was at 25% of the window before and still is
     expect((15 - zoomed.start) / zoomed.span).toBeCloseTo(0.25);
+  });
+});
+
+describe("following the playhead", () => {
+  beforeEach(() => useViewStore.getState().reset(300));
+
+  it("keeps the playhead in the middle once it passes it", () => {
+    useViewStore.getState().followPlayhead(40);
+    expect(useViewStore.getState().start).toBe(25); // 30 s window centred on 40 s
+  });
+
+  it("pauses after a manual scroll instead of switching off", () => {
+    const view = useViewStore.getState();
+    view.scrollTo(100);
+    view.followPlayhead(40);
+    expect(useViewStore.getState().start).toBe(100); // the user's scroll is respected
+    useViewStore.setState({ manualUntil: 0 }); // the pause is over
+    useViewStore.getState().followPlayhead(40);
+    expect(useViewStore.getState().start).toBe(25); // following came back by itself
+  });
+
+  it("does not cancel a zoom in progress", () => {
+    const view = useViewStore.getState();
+    view.zoom(0.5, 0);
+    const targetSpan = useViewStore.getState().target.span;
+    useViewStore.getState().followPlayhead(40);
+    expect(useViewStore.getState().target.span).toBe(targetSpan);
   });
 });

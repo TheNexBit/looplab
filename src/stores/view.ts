@@ -6,6 +6,8 @@ export const MIN_SPAN = 0.25;
 const DEFAULT_SPAN = 30;
 /** Share of the remaining distance covered per frame by the zoom animation. */
 const EASE = 0.3;
+/** After a manual scroll, following waits this long before catching the playhead again. */
+const MANUAL_PAUSE_MS = 2_000;
 
 export interface ViewWindow {
   start: number;
@@ -34,14 +36,19 @@ interface ViewState extends ViewWindow {
   duration: number;
   /** Where the zoom animation is heading */
   target: ViewWindow;
-  /** While true the view scrolls with the playhead */
-  follow: boolean;
+  /**
+   * Until this time (performance.now) following is paused, because the user moved the view
+   * by hand. It resumes by itself: following is never switched off behind the user's back
+   * (the on/off switch is the `followPlayhead` setting).
+   */
+  manualUntil: number;
   reset: (duration: number) => void;
   zoom: (factor: number, anchor: number) => void;
   scrollBy: (seconds: number) => void;
   scrollTo: (start: number) => void;
   centerOn: (time: number) => void;
-  setFollow: (follow: boolean) => void;
+  /** Follow again right away (after a seek or when playback starts). */
+  resumeFollow: () => void;
   /** Keeps the playhead visible, scrolling smoothly once it passes the middle. */
   followPlayhead: (position: number) => void;
   /** Advances the zoom animation by one frame. */
@@ -60,30 +67,34 @@ export const useViewStore = create<ViewState>((set, get) => {
     start: 0,
     span: DEFAULT_SPAN,
     target: { start: 0, span: DEFAULT_SPAN },
-    follow: true,
+    manualUntil: 0,
     reset: (duration) => {
       const view = clampView({ start: 0, span: DEFAULT_SPAN }, duration);
-      set({ duration, ...view, target: view, follow: true });
+      set({ duration, ...view, target: view, manualUntil: 0 });
     },
     zoom: (factor, anchor) =>
       set({ target: zoomWindow(get().target, factor, anchor, get().duration) }),
     scrollBy: (seconds) => {
       const { start, span } = get();
-      set({ follow: false });
+      set({ manualUntil: performance.now() + MANUAL_PAUSE_MS });
       jump({ start: start + seconds, span });
     },
     scrollTo: (start) => {
-      set({ follow: false });
+      set({ manualUntil: performance.now() + MANUAL_PAUSE_MS });
       jump({ start, span: get().span });
     },
     centerOn: (time) => jump({ start: time - get().span / 2, span: get().span }),
-    setFollow: (follow) => set({ follow }),
+    resumeFollow: () => set({ manualUntil: 0 }),
     followPlayhead: (position) => {
-      const { follow, start, span } = get();
-      if (!follow) return;
-      if (position > start + span / 2 || position < start) {
-        jump({ start: position - span / 2, span });
-      }
+      const { manualUntil, start, span, target, duration } = get();
+      if (performance.now() < manualUntil) return;
+      if (position <= start + span / 2 && position >= start) return;
+      // Shift the view and the zoom target together, so following never cancels a zoom
+      const shift = position - span / 2 - start;
+      set({
+        ...clampView({ start: start + shift, span }, duration),
+        target: clampView({ start: target.start + shift, span: target.span }, duration),
+      });
     },
     step: () => {
       const { start, span, target } = get();
