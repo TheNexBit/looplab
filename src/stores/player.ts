@@ -5,6 +5,7 @@ import { fetchPeaks, type Peaks } from "@/features/waveform/peaks";
 import { type AppError, commands, type PlaybackStatus, type TrackInfo } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 import { advanceInLoop, restartAt, useLoopStore } from "./loop";
+import { useSettingsStore } from "./settings";
 import { useViewStore } from "./view";
 
 /** After a local action, ignore engine updates that may predate it. */
@@ -34,6 +35,11 @@ interface PlayerState {
   speed: number;
   semitones: number;
   cents: number;
+  /**
+   * Start point, like Reaper's edit cursor: the last place clicked or jumped to, or where
+   * playback last started. With "return to start" on, stopping goes back here.
+   */
+  cue: number;
   open: (path: string) => Promise<void>;
   reportError: (path: string, error: AppError) => void;
   dismissError: () => void;
@@ -83,6 +89,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     speed: SPEED.default,
     semitones: SEMITONES.default,
     cents: CENTS.default,
+    cue: 0,
 
     open: async (path) => {
       const token = ++loadToken;
@@ -103,7 +110,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const peaks = await fetchPeaks();
       if (token !== loadToken) return;
       const track: Track = { ...result.data, duration: result.data.duration ?? 0 };
-      set({ track, peaks, load: { kind: "idle" } });
+      set({ track, peaks, load: { kind: "idle" }, cue: 0 });
       anchor(0, false);
       // The engine forgets the loop on a new track; speed and pitch carry over
       useLoopStore.getState().clear();
@@ -115,22 +122,40 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     dismissError: () => set({ load: { kind: "idle" } }),
 
     togglePlay: () => {
-      const { track, playing } = get();
+      const { track, playing, cue } = get();
       if (!track) return;
-      const position = currentPosition();
-      // Same rule as the engine: play resumes where the playhead is; only at the very end of
-      // the track does it start over (from the loop, if one is active)
+      const report = (r: { status: string; error?: AppError }) => {
+        if (r.status === "error" && r.error) fail(r.error);
+      };
+
+      if (playing) {
+        // Like Reaper: stopping goes back to the start point, ready to play the same passage again
+        if (useSettingsStore.getState().returnToStart) {
+          anchor(cue, false);
+          void commands.pause().then(report);
+          void commands.seek(cue).then(report);
+        } else {
+          anchor(currentPosition(), false);
+          void commands.pause().then(report);
+        }
+        return;
+      }
+
+      // Play starts where the playhead is; only at the very end of the track does it start
+      // over (from the loop, if one is active), like the engine does
       const loop = useLoopStore.getState();
       const region = loop.enabled ? loop.region() : null;
-      let from = position;
-      if (!playing && position >= track.duration - 0.01) {
-        from = region ? restartAt(region, loop.leadIn) : 0;
-      }
-      anchor(from, !playing);
-      if (!playing) useViewStore.getState().setFollow(true);
-      void (playing ? commands.pause() : commands.play()).then((r) => {
-        if (r.status === "error") fail(r.error);
-      });
+      const position = currentPosition();
+      const from =
+        position >= track.duration - 0.01
+          ? region
+            ? restartAt(region, loop.leadIn)
+            : 0
+          : position;
+      anchor(from, true);
+      set({ cue: from });
+      useViewStore.getState().setFollow(true);
+      void commands.play().then(report);
     },
 
     seek: (seconds) => {
@@ -138,6 +163,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       if (!track) return;
       const position = clamp(seconds, 0, track.duration);
       anchor(position);
+      set({ cue: position });
       useViewStore.getState().setFollow(true);
       void commands.seek(position).then((r) => {
         if (r.status === "error") fail(r.error);

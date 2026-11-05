@@ -131,6 +131,9 @@ export const it = {
     speedStepHint: "Quanto cambia la velocità con + e −",
     follow: "Segui il playhead",
     followHint: "La forma d'onda scorre da sola durante l'ascolto",
+    returnToStart: "Torna al punto di partenza",
+    returnToStartHint:
+      "Fermando la riproduzione si torna all'ultimo punto cliccato, come in Reaper",
     snap: "Calamita",
     snapHint: "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G)",
     reset: "Valori predefiniti",
@@ -169,6 +172,9 @@ export const it = {
     semitones: "st",
     cents: "ct",
     seconds: "s",
+    cue: "Punto di partenza",
+    returnToStart:
+      "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
     snap: "Calamita: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead",
   },
   shortcuts: {

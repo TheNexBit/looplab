@@ -76,6 +76,15 @@ export function SettingsDialog() {
             className="size-4 accent-accent"
           />
         </Row>
+        <Row label={s.returnToStart} hint={s.returnToStartHint}>
+          <input
+            type="checkbox"
+            aria-label={s.returnToStart}
+            checked={settings.returnToStart}
+            onChange={(event) => settings.update({ returnToStart: event.target.checked })}
+            className="size-4 accent-accent"
+          />
+        </Row>
         <Row label={s.snap} hint={s.snapHint}>
           <input
             type="checkbox"

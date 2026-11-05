@@ -1,4 +1,4 @@
-import { Magnet, Pause, Play } from "lucide-react";
+import { Magnet, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
@@ -28,6 +28,7 @@ export function TransportDock() {
   const cents = usePlayerStore((s) => s.cents);
   const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
   const snap = useSettingsStore((s) => s.snap);
+  const returnToStart = useSettingsStore((s) => s.returnToStart);
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
@@ -45,6 +46,18 @@ export function TransportDock() {
           ) : (
             <Play className="size-5 fill-current" />
           )}
+        </Button>
+      </Tooltip>
+
+      <Tooltip label={t.transport.returnToStart}>
+        <Button
+          size="icon"
+          active={returnToStart}
+          onClick={() => useSettingsStore.getState().update({ returnToStart: !returnToStart })}
+          aria-label={t.settings.returnToStart}
+          aria-pressed={returnToStart}
+        >
+          <Undo2 className="size-4" />
         </Button>
       </Tooltip>
 

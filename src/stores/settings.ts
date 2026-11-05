@@ -12,6 +12,8 @@ export interface Settings {
   followPlayhead: boolean;
   /** Magnet: dragged loop edges, markers and sections stick to nearby points */
   snap: boolean;
+  /** Stopping returns to where playback started (the last clicked point), like Reaper */
+  returnToStart: boolean;
 }
 
 export const SETTING_LIMITS = {
@@ -26,6 +28,7 @@ const DEFAULTS: Settings = {
   speedStep: 0.05,
   followPlayhead: true,
   snap: true,
+  returnToStart: true,
 };
 const KEY = "looplab.settings";
 
@@ -74,6 +77,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
         ),
         followPlayhead: next.followPlayhead,
         snap: next.snap,
+        returnToStart: next.returnToStart,
       });
       persist();
     },

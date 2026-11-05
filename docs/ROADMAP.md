@@ -125,6 +125,8 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   battute, inizi di sezione, playhead e bordi del brano entro 10 pixel.
 - Clic come in Reaper: sulla barra del loop = playhead all'inizio del loop; su un bordo = playhead su quel bordo;
   con la calamita, un clic vicino ai bordi del loop si aggancia a loro.
+- Punto di partenza come in Reaper (attivo di serie, pulsante ↩ nel dock e impostazioni): il punto cliccato o da cui
+  parte la riproduzione è segnato da un triangolo nel righello; fermando con Spazio si torna lì.
 
 ## Dopo la prima versione
 
