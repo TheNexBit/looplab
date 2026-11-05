@@ -1,8 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
+import { DRAG_PX } from "@/features/waveform/pointer";
 import { useViewStore } from "@/stores/view";
-
-/** Pointer travel that turns a press into a drag, in CSS pixels. */
-const DRAG_PX = 3;
 
 /**
  * Pointer handler for things dragged along the time axis of the detailed view.

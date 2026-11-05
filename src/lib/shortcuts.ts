@@ -15,6 +15,7 @@ export const shortcuts = {
   loopStart: "[",
   loopEnd: "]",
   loopToggle: "L",
+  clearLoop: "Escape",
   toggleSnap: "G",
   addMarker: "M",
   addBeat: "B",
@@ -63,6 +64,7 @@ const keySymbols: Record<string, string> = {
   ArrowRight: "→",
   ArrowUp: "↑",
   ArrowDown: "↓",
+  Escape: "Esc",
   ...t.keys,
 };
 

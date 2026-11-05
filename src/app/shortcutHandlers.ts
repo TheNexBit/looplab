@@ -36,6 +36,8 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   loopStart: () => useLoopStore.getState().setStart(currentPosition(), duration()),
   loopEnd: () => useLoopStore.getState().setEnd(currentPosition(), duration()),
   loopToggle: () => useLoopStore.getState().toggle(),
+  // Esc first closes an open dialog (Radix handles that); only then does it clear the loop
+  clearLoop: () => useUiStore.getState().dialog === null && useLoopStore.getState().clear(),
   toggleSnap: () => settings().update({ snap: !settings().snap }),
   addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
   addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),

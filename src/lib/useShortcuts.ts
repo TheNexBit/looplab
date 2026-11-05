@@ -5,12 +5,16 @@ export type ShortcutHandlers = Partial<Record<ShortcutId, () => void>>;
 
 const SLIDER_KEYS = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"];
 
-/** Text fields keep every key; a focused slider keeps only the keys that move it. */
+/**
+ * Text fields and open dialogs keep every key (Esc in a dialog only closes it);
+ * a focused slider keeps only the keys that move it.
+ */
 function ownsKey(target: EventTarget | null, key: string): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
     return true;
   }
+  if (target.closest('[role="dialog"], [role="menu"]')) return true;
   return target.getAttribute("role") === "slider" && SLIDER_KEYS.includes(key);
 }
 

@@ -6,6 +6,7 @@ import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useViewStore } from "@/stores/view";
 import { drawWaveform } from "./draw";
 import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
+import { DRAG_PX } from "./pointer";
 import { useCanvas } from "./useCanvas";
 
 /**
@@ -58,7 +59,8 @@ export function Overview() {
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
-    let dragOffset: number | null = null;
+    /** Where the press started, and the view at that moment; `dragging` once it moved. */
+    let press: { x: number; time: number; viewStart: number; dragging: boolean } | null = null;
 
     const timeAt = (clientX: number) => {
       const rect = element.getBoundingClientRect();
@@ -67,23 +69,34 @@ export function Overview() {
       );
     };
 
+    // Like a DAW overview: a click anywhere moves the playhead there, a drag scrolls the view
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0) return;
-      const time = timeAt(event.clientX);
-      const { start, span, centerOn } = useViewStore.getState();
-      if (time >= start && time <= start + span) {
-        dragOffset = time - start;
-        element.setPointerCapture(event.pointerId);
-      } else {
-        usePlayerStore.getState().seek(time);
-        centerOn(time);
-      }
+      element.setPointerCapture(event.pointerId);
+      press = {
+        x: event.clientX,
+        time: timeAt(event.clientX),
+        viewStart: useViewStore.getState().start,
+        dragging: false,
+      };
     };
     const onPointerMove = (event: PointerEvent) => {
-      if (dragOffset !== null) useViewStore.getState().scrollTo(timeAt(event.clientX) - dragOffset);
+      if (!press) return;
+      if (!press.dragging && Math.abs(event.clientX - press.x) > DRAG_PX) {
+        press.dragging = true;
+        element.style.cursor = "grabbing";
+      }
+      if (press.dragging) {
+        useViewStore.getState().scrollTo(press.viewStart + timeAt(event.clientX) - press.time);
+      }
     };
     const onPointerUp = () => {
-      dragOffset = null;
+      if (press && !press.dragging) {
+        usePlayerStore.getState().seek(press.time);
+        useViewStore.getState().centerOn(press.time);
+      }
+      press = null;
+      element.style.cursor = "";
     };
 
     element.addEventListener("pointerdown", onPointerDown);
@@ -111,7 +124,7 @@ export function Overview() {
       <LoopOverlay ref={loopRef} />
       <div
         ref={windowRef}
-        className="absolute top-0 bottom-0 cursor-grab rounded-[6px] border border-accent bg-accent-soft active:cursor-grabbing"
+        className="pointer-events-none absolute top-0 bottom-0 rounded-[6px] border border-accent bg-accent-soft"
       />
       <div ref={playheadRef} className="pointer-events-none absolute top-0 bottom-0 w-px bg-fg" />
     </div>

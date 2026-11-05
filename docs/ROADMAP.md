@@ -117,8 +117,10 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Play riparte sempre dal punto del playhead, anche fuori dal loop (prima saltava all'inizio del loop).
 - Video nel loop senza scatti: i salti del video mirano avanti del tempo che impiegano e non si ripetono a raffica.
 - Il pannello video si restringe per lasciare spazio alle forme d'onda; niente più sovrapposizioni sul dock.
-- Loop: clic dentro = sposta il playhead, trascina dentro = sposta il loop, bordi = ridimensiona
-  (l'area dei bordi si stringe sui loop corti).
+- Interazione come nei DAW: panoramica = clic sposta il playhead ovunque, trascina scorre la vista;
+  righello = clic sposta il playhead, trascina crea il loop, la barra del loop nel righello si trascina per spostarlo;
+  forma d'onda = clic sposta il playhead, trascina crea sempre un nuovo loop; bordi del loop = ridimensiona
+  (l'area dei bordi si stringe sui loop corti); Maiusc+clic = estende il loop; Esc = toglie il loop.
 - Calamita (tasto G, pulsante nel dock, impostazioni): loop, marker e sezioni trascinati si agganciano a marker,
   battute, inizi di sezione, playhead e bordi del brano entro 10 pixel.
 

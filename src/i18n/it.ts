@@ -180,6 +180,7 @@ export const it = {
     loopStart: "Inizio loop",
     loopEnd: "Fine loop",
     loopToggle: "Loop on/off",
+    clearLoop: "Togli il loop",
     toggleSnap: "Calamita on/off",
     addMarker: "Aggiungi marker",
     addBeat: "Aggiungi battuta",
