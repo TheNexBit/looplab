@@ -131,6 +131,8 @@ export const it = {
     speedStepHint: "Quanto cambia la velocità con + e −",
     follow: "Segui il playhead",
     followHint: "La forma d'onda scorre da sola durante l'ascolto",
+    snap: "Calamita",
+    snapHint: "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G)",
     reset: "Valori predefiniti",
   },
   about: {
@@ -167,6 +169,7 @@ export const it = {
     semitones: "st",
     cents: "ct",
     seconds: "s",
+    snap: "Calamita: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead",
   },
   shortcuts: {
     playPause: "Play / pausa",
@@ -177,6 +180,7 @@ export const it = {
     loopStart: "Inizio loop",
     loopEnd: "Fine loop",
     loopToggle: "Loop on/off",
+    toggleSnap: "Calamita on/off",
     addMarker: "Aggiungi marker",
     addBeat: "Aggiungi battuta",
     addSection: "Aggiungi sezione",

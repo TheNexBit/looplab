@@ -36,6 +36,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   loopStart: () => useLoopStore.getState().setStart(currentPosition(), duration()),
   loopEnd: () => useLoopStore.getState().setEnd(currentPosition(), duration()),
   loopToggle: () => useLoopStore.getState().toggle(),
+  toggleSnap: () => settings().update({ snap: !settings().snap }),
   addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
   addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),
   addSection: () => hasTrack() && useMarkersStore.getState().addSection(currentPosition()),

@@ -1,4 +1,4 @@
-import { Pause, Play } from "lucide-react";
+import { Magnet, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
@@ -6,6 +6,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
+import { useSettingsStore } from "@/stores/settings";
 import { LoopMenu } from "./LoopMenu";
 import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
@@ -26,6 +27,7 @@ export function TransportDock() {
   const semitones = usePlayerStore((s) => s.semitones);
   const cents = usePlayerStore((s) => s.cents);
   const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
+  const snap = useSettingsStore((s) => s.snap);
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
@@ -47,7 +49,20 @@ export function TransportDock() {
       </Tooltip>
 
       <TimeDisplay />
-      <LoopMenu disabled={!hasTrack} />
+      <div className="flex items-center gap-1">
+        <LoopMenu disabled={!hasTrack} />
+        <Tooltip label={t.transport.snap} shortcut="toggleSnap">
+          <Button
+            size="icon"
+            active={snap}
+            onClick={() => useSettingsStore.getState().update({ snap: !snap })}
+            aria-label={t.shortcuts.toggleSnap}
+            aria-pressed={snap}
+          >
+            <Magnet className="size-4" />
+          </Button>
+        </Tooltip>
+      </div>
 
       <div className="ml-auto flex items-center gap-6">
         <div className="flex items-center gap-1">

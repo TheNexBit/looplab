@@ -6,6 +6,7 @@ import { useViewStore } from "@/stores/view";
 import { dragAlongTime } from "./dragAlongTime";
 import { SectionMenu } from "./SectionMenu";
 import { clampToTrack, loopSection } from "./sectionActions";
+import { snapTime } from "./snap";
 
 /**
  * Coloured strip of sections above the detailed waveform, aligned with its time axis.
@@ -55,7 +56,12 @@ export function SectionLane() {
                 className="absolute top-0 bottom-0 -left-0.5 w-2 cursor-ew-resize"
                 onPointerDown={(event) =>
                   dragAlongTime(event, laneRef.current, (time) =>
-                    useMarkersStore.getState().moveSection(range.id, clampToTrack(time)),
+                    useMarkersStore
+                      .getState()
+                      .moveSection(
+                        range.id,
+                        clampToTrack(snapTime(time, laneRef.current, { sectionId: range.id })),
+                      ),
                   )
                 }
               />

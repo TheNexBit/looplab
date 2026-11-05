@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { MarkerFlags } from "@/features/markers/MarkerFlags";
+import { snapTime } from "@/features/markers/snap";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
@@ -22,13 +23,15 @@ const EDGE_PX = 6;
 
 /** What a pointer press on the waveform is doing. */
 type Gesture =
-  | { kind: "press"; x: number; time: number }
+  | { kind: "press"; x: number; time: number; insideLoop: boolean }
   | { kind: "select"; anchor: number }
-  | { kind: "edge"; fixed: number };
+  | { kind: "edge"; fixed: number }
+  | { kind: "move"; grab: number; length: number };
 
 /**
- * Zoomable waveform. Wheel zooms around the pointer, Shift+wheel scrolls,
- * click seeks, drag selects a loop, dragging a loop edge resizes it.
+ * Zoomable waveform. Wheel zooms around the pointer, Shift+wheel scrolls.
+ * Click seeks (also inside the loop); drag outside the loop makes a new one, drag inside
+ * moves it, drag an edge resizes it. With the magnet on, ends stick to nearby points.
  */
 export function DetailView() {
   const peaks = usePlayerStore((s) => s.peaks);
@@ -95,13 +98,39 @@ export function DetailView() {
     };
     const duration = () => usePlayerStore.getState().track?.duration ?? 0;
 
-    /** The loop end that is not under the pointer, when the pointer is on the other one. */
+    /**
+     * The loop end that is not under the pointer, when the pointer is on the other one.
+     * On a narrow loop the edges' reach shrinks, so its middle stays clickable.
+     */
     const edgeUnder = (clientX: number): number | null => {
       const region = useLoopStore.getState().region();
       if (!region) return null;
-      if (Math.abs(xOf(region.start) - clientX) <= EDGE_PX) return region.end;
-      if (Math.abs(xOf(region.end) - clientX) <= EDGE_PX) return region.start;
+      const reach = Math.min(EDGE_PX, (xOf(region.end) - xOf(region.start)) / 4);
+      if (Math.abs(xOf(region.start) - clientX) <= reach) return region.end;
+      if (Math.abs(xOf(region.end) - clientX) <= reach) return region.start;
       return null;
+    };
+    const insideLoop = (time: number) => {
+      const region = useLoopStore.getState().region();
+      return region !== null && time > region.start && time < region.end;
+    };
+    const snap = (time: number) => snapTime(time, element);
+
+    /** Moves the whole loop, sticking whichever end is closer to a point. */
+    const moveLoop = (start: number, length: number) => {
+      const fromStart = snap(start) - start;
+      const fromEnd = snap(start + length) - (start + length);
+      const shift =
+        fromStart !== 0 && (fromEnd === 0 || Math.abs(fromStart) <= Math.abs(fromEnd))
+          ? fromStart
+          : fromEnd;
+      const clamped = Math.min(Math.max(start + shift, 0), Math.max(0, duration() - length));
+      useLoopStore.getState().setRegion(clamped, clamped + length, duration());
+    };
+
+    const cursorFor = (clientX: number) => {
+      if (edgeUnder(clientX) !== null) return "ew-resize";
+      return insideLoop(timeAt(clientX)) ? "grab" : "";
     };
 
     let gesture: Gesture | null = null;
@@ -126,30 +155,42 @@ export function DetailView() {
       if (event.target instanceof Element && event.target.closest("[data-no-seek]")) return;
       element.setPointerCapture(event.pointerId);
       const fixed = edgeUnder(event.clientX);
+      const time = timeAt(event.clientX);
       gesture =
         fixed !== null
           ? { kind: "edge", fixed }
-          : { kind: "press", x: event.clientX, time: timeAt(event.clientX) };
+          : { kind: "press", x: event.clientX, time, insideLoop: insideLoop(time) };
     };
 
     const onPointerMove = (event: PointerEvent) => {
       if (!gesture) {
-        element.style.cursor = edgeUnder(event.clientX) !== null ? "ew-resize" : "";
+        element.style.cursor = cursorFor(event.clientX);
         return;
       }
-      if (gesture.kind === "press" && Math.abs(event.clientX - gesture.x) > DRAG_PX) {
-        gesture = { kind: "select", anchor: gesture.time };
-      }
       const time = timeAt(event.clientX);
-      if (gesture.kind === "select")
-        useLoopStore.getState().setRegion(gesture.anchor, time, duration());
-      if (gesture.kind === "edge")
-        useLoopStore.getState().setRegion(gesture.fixed, time, duration());
+      if (gesture.kind === "press" && Math.abs(event.clientX - gesture.x) > DRAG_PX) {
+        const region = useLoopStore.getState().region();
+        if (gesture.insideLoop && region) {
+          gesture = {
+            kind: "move",
+            grab: gesture.time - region.start,
+            length: region.end - region.start,
+          };
+          element.style.cursor = "grabbing";
+        } else {
+          gesture = { kind: "select", anchor: snap(gesture.time) };
+        }
+      }
+      const loop = useLoopStore.getState();
+      if (gesture.kind === "select") loop.setRegion(gesture.anchor, snap(time), duration());
+      if (gesture.kind === "edge") loop.setRegion(gesture.fixed, snap(time), duration());
+      if (gesture.kind === "move") moveLoop(time - gesture.grab, gesture.length);
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (event: PointerEvent) => {
       if (gesture?.kind === "press") usePlayerStore.getState().seek(gesture.time);
       gesture = null;
+      element.style.cursor = cursorFor(event.clientX);
     };
 
     element.addEventListener("wheel", onWheel, { passive: false });

@@ -76,6 +76,15 @@ export function SettingsDialog() {
             className="size-4 accent-accent"
           />
         </Row>
+        <Row label={s.snap} hint={s.snapHint}>
+          <input
+            type="checkbox"
+            aria-label={s.snap}
+            checked={settings.snap}
+            onChange={(event) => settings.update({ snap: event.target.checked })}
+            className="size-4 accent-accent"
+          />
+        </Row>
         <div className="flex justify-end pt-3">
           <Button onClick={settings.reset}>{s.reset}</Button>
         </div>

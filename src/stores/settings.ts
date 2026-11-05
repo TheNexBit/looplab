@@ -10,6 +10,8 @@ export interface Settings {
   speedStep: number;
   /** Scroll the detailed view with the playhead while playing */
   followPlayhead: boolean;
+  /** Magnet: dragged loop edges, markers and sections stick to nearby points */
+  snap: boolean;
 }
 
 export const SETTING_LIMITS = {
@@ -18,7 +20,13 @@ export const SETTING_LIMITS = {
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
 } as const;
 
-const DEFAULTS: Settings = { seekStep: 5, fineSeekStep: 1, speedStep: 0.05, followPlayhead: true };
+const DEFAULTS: Settings = {
+  seekStep: 5,
+  fineSeekStep: 1,
+  speedStep: 0.05,
+  followPlayhead: true,
+  snap: true,
+};
 const KEY = "looplab.settings";
 
 /** Preferences of this PC: kept in the WebView's local storage, so they survive updates. */
@@ -37,12 +45,13 @@ interface SettingsState extends Settings {
 
 export const useSettingsStore = create<SettingsState>((set, get) => {
   const persist = () => {
-    const { seekStep, fineSeekStep, speedStep, followPlayhead } = get();
+    // Only the settings themselves, picked by the keys of DEFAULTS (not the store's functions)
+    const state = get();
+    const values = Object.fromEntries(
+      Object.keys(DEFAULTS).map((key) => [key, state[key as keyof Settings]]),
+    );
     try {
-      localStorage.setItem(
-        KEY,
-        JSON.stringify({ seekStep, fineSeekStep, speedStep, followPlayhead }),
-      );
+      localStorage.setItem(KEY, JSON.stringify(values));
     } catch {
       // Storage unavailable: the settings last until the app closes
     }
@@ -64,6 +73,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
           SETTING_LIMITS.speedStep.max,
         ),
         followPlayhead: next.followPlayhead,
+        snap: next.snap,
       });
       persist();
     },

@@ -9,6 +9,7 @@ import { usePlayerStore } from "@/stores/player";
 import { useViewStore } from "@/stores/view";
 import { dragAlongTime } from "./dragAlongTime";
 import { clampToTrack } from "./sectionActions";
+import { snapTime } from "./snap";
 
 /**
  * Marker lines over the detailed waveform, with a flag under the ruler:
@@ -51,7 +52,13 @@ export function MarkerFlags({
                 dragAlongTime(
                   event,
                   area.current,
-                  (time) => useMarkersStore.getState().moveMarker(marker.id, clampToTrack(time)),
+                  (time) =>
+                    useMarkersStore
+                      .getState()
+                      .moveMarker(
+                        marker.id,
+                        clampToTrack(snapTime(time, area.current, { markerId: marker.id })),
+                      ),
                   () => usePlayerStore.getState().seek(marker.time),
                 )
               }

@@ -15,6 +15,7 @@ export const shortcuts = {
   loopStart: "[",
   loopEnd: "]",
   loopToggle: "L",
+  toggleSnap: "G",
   addMarker: "M",
   addBeat: "B",
   addSection: "S",
