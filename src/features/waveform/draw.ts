@@ -1,3 +1,4 @@
+import { BEATS_PER_BAR, type BeatGrid, beatSeconds, beatsBetween } from "@/features/practice/tempo";
 import { formatTick } from "@/lib/time";
 import { type Peaks, pickLevel } from "./peaks";
 
@@ -91,5 +92,39 @@ export function drawRuler(
     ctx.fillRect(x, height - 8 * dpr, Math.max(1, dpr), 8 * dpr);
     ctx.fillStyle = colors.label;
     ctx.fillText(formatTick(time, step < 1), x + 4 * dpr, height / 2);
+  }
+}
+
+/** Beats closer than this on screen are not drawn (bars still are, while they fit). */
+const MIN_BEAT_GAP_CSS = 6;
+
+/**
+ * One layer of the beat grid: "beats" are faint lines drawn behind the waveform; "bars"
+ * are drawn over it, with an amber notch at the foot of the ruler, so they stay visible
+ * through a loud waveform.
+ */
+export function drawBeatGrid(
+  ctx: CanvasRenderingContext2D,
+  view: Viewport,
+  grid: BeatGrid,
+  dpr: number,
+  layer: "beats" | "bars",
+  colors: { line: string; notch?: string },
+) {
+  const pixelsPerSecond = view.width / view.span;
+  const beatGap = beatSeconds(grid.bpm) * pixelsPerSecond;
+  const minGap = MIN_BEAT_GAP_CSS * dpr;
+  if (layer === "beats" ? beatGap < minGap : beatGap * BEATS_PER_BAR < minGap) return;
+  const top = view.top ?? 0;
+  const width = Math.max(1, dpr);
+  for (const { time, bar } of beatsBetween(view.start, view.start + view.span, grid)) {
+    if ((layer === "bars") !== bar) continue;
+    const x = Math.round((time - view.start) * pixelsPerSecond);
+    ctx.fillStyle = colors.line;
+    ctx.fillRect(x, top, width, view.height - top);
+    if (colors.notch) {
+      ctx.fillStyle = colors.notch;
+      ctx.fillRect(x - dpr, top - 4 * dpr, 3 * dpr, 4 * dpr);
+    }
   }
 }

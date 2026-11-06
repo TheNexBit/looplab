@@ -33,6 +33,10 @@ export const commands = {
 	 *  The defaults live in Rust only, so the UI never keeps its own copy.
 	 */
 	defaultProject: () => __TAURI_INVOKE<Project_Serialize>("default_project"),
+	/**  Every day of practice of every track, oldest first. */
+	practiceDiary: () => typedError<DiaryEntry[], AppError>(__TAURI_INVOKE("practice_diary")),
+	/**  Adds practice time (and the speed reached) to a track's day. */
+	recordPractice: (practice: DiaryEntry) => typedError<null, AppError>(__TAURI_INVOKE("record_practice", { practice })),
 	setEq: (settings: EqSettings_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("set_eq", { settings })),
 	setChannelMode: (mode: ChannelMode) => typedError<null, AppError>(__TAURI_INVOKE("set_channel_mode", { mode })),
 	/**  Gain in dB of `settings` at each frequency, so the UI draws exactly what the engine does. */
@@ -46,10 +50,14 @@ export const commands = {
 	makeVideoProxy: (path: string, onProgress: Channel<number | null>) => typedError<string, AppError>(__TAURI_INVOKE("make_video_proxy", { path, onProgress })),
 	/**  Whether FFmpeg is installed (Opus audio and video proxies need it). */
 	ffmpegAvailable: () => __TAURI_INVOKE<boolean>("ffmpeg_available"),
+	/**  Takes the media keys for Looplab system-wide, or gives them back. */
+	setGlobalMediaKeys: (enabled: boolean) => typedError<null, AppError>(__TAURI_INVOKE("set_global_media_keys", { enabled })),
 };
 
 /** Events */
 export const events = {
+	mediaKey: makeEvent<MediaKey, MediaKey>("media-key"),
+	midiTrigger: makeEvent<MidiTrigger, MidiTrigger>("midi-trigger"),
 	playbackStatus: makeEvent<PlaybackStatus, PlaybackStatus>("playback-status"),
 	videoWindowHidden: makeEvent<VideoWindowHidden, VideoWindowHidden>("video-window-hidden"),
 };
@@ -101,6 +109,18 @@ export type ClickRequest = {
 	metronome: boolean,
 	/**  0..1 */
 	volume: number | null,
+};
+
+/**  Practice of one track on one day. */
+export type DiaryEntry = {
+	/**  Local date, "2026-11-06" */
+	day: string,
+	path: string,
+	name: string,
+	/**  Seconds of playback */
+	seconds: number | null,
+	/**  Highest speed played that day (1 = original) */
+	maxSpeed: number | null,
 };
 
 export type EqSettings = EqSettings_Serialize | EqSettings_Deserialize;
@@ -167,6 +187,24 @@ export type Marker_Serialize = {
 	label: string,
 };
 
+/**  A media key pressed while another program had the focus. */
+export type MediaKey = {
+	key: MediaKeyKind,
+};
+
+export type MediaKeyKind = "playPause" | "next" | "previous";
+
+export type MidiKind = "note" | "cc" | "program";
+
+/**  A MIDI message that can run an action. */
+export type MidiTrigger = {
+	kind: MidiKind,
+	/**  1..16, as written on devices */
+	channel: number,
+	/**  Note, controller or program number */
+	number: number,
+};
+
 export type PlaybackStatus = {
 	/**  Seconds */
 	position: number | null,
@@ -221,6 +259,8 @@ export type Project_Deserialize = {
 	loops?: SavedLoop[],
 	/**  Tempo of the track in beats per minute; `None` until the user sets it */
 	bpm?: number | null,
+	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
+	beatOffset?: number | null,
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
@@ -241,6 +281,8 @@ export type Project_Serialize = {
 	loops: SavedLoop[],
 	/**  Tempo of the track in beats per minute; `None` until the user sets it */
 	bpm: number | null,
+	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
+	beatOffset: number | null,
 	speed: number | null,
 	semitones: number,
 	cents: number,

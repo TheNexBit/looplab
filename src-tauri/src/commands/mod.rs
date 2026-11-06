@@ -13,6 +13,8 @@ pub use error::{AppError, ErrorKind};
 use tauri_specta::{Builder, collect_commands, collect_events};
 pub use video::VideoWindowHidden;
 
+use crate::media_keys::MediaKey;
+use crate::midi::MidiTrigger;
 use crate::playback::PlaybackStatus;
 
 pub fn builder() -> Builder<tauri::Wry> {
@@ -32,14 +34,22 @@ pub fn builder() -> Builder<tauri::Wry> {
             library::recent_files,
             library::forget_recent,
             library::default_project,
+            library::practice_diary,
+            library::record_practice,
             sound::set_eq,
             sound::set_channel_mode,
             sound::eq_response,
             video::prepare_video,
             video::make_video_proxy,
             video::ffmpeg_available,
+            crate::media_keys::set_global_media_keys,
         ])
-        .events(collect_events![PlaybackStatus, VideoWindowHidden])
+        .events(collect_events![
+            PlaybackStatus,
+            VideoWindowHidden,
+            MidiTrigger,
+            MediaKey
+        ])
 }
 
 /// Writes the TypeScript bindings used by the UI. Only called in debug builds and tests.

@@ -98,6 +98,8 @@ pub struct Project {
     pub loops: Vec<SavedLoop>,
     /// Tempo of the track in beats per minute; `None` until the user sets it
     pub bpm: Option<f64>,
+    /// Seconds: a moment on the first beat of a bar, where the beat grid lines up
+    pub beat_offset: Option<f64>,
     pub speed: f64,
     pub semitones: i32,
     pub cents: i32,
@@ -114,6 +116,7 @@ impl Default for Project {
             loop_: ProjectLoop::default(),
             loops: Vec::new(),
             bpm: None,
+            beat_offset: None,
             speed: 1.0,
             semitones: 0,
             cents: 0,
@@ -275,6 +278,7 @@ pub(crate) mod tests {
                 end: 9.0,
             }],
             bpm: Some(96.0),
+            beat_offset: Some(0.42),
             speed: 0.75,
             semitones: -2,
             cents: 15,

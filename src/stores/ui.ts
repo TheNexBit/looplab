@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 export type SidePanelTab = "sections" | "eq" | "practice";
-export type Dialog = "palette" | "settings" | "about";
+export type Dialog = "palette" | "settings" | "about" | "diary";
 
 interface UiState {
   sidePanelOpen: boolean;

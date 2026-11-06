@@ -12,6 +12,7 @@ export interface ProjectData {
   loop: LoopOptions & { start: number | null; end: number | null };
   loops: SavedLoopData[];
   bpm: number | null;
+  beatOffset: number | null;
   speed: number;
   semitones: number;
   cents: number;
@@ -38,6 +39,7 @@ export function fromFile(file: Project_Serialize): ProjectData {
       .map((l) => ({ ...l, start: num(l.start, 0), end: num(l.end, 0) }))
       .filter((l) => l.end > l.start),
     bpm: typeof file.bpm === "number" && file.bpm > 0 ? file.bpm : null,
+    beatOffset: typeof file.beatOffset === "number" ? file.beatOffset : null,
     speed: num(file.speed, SPEED.default),
     semitones: file.semitones,
     cents: file.cents,

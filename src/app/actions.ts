@@ -111,6 +111,7 @@ export function buildActions(): Action[] {
         group: t.recent.title,
         run: () => void player.open(file.path),
       })),
+    { id: "diary", label: t.diary.title, group: g.app, run: () => ui.openDialog("diary") },
     { id: "about", label: t.about.title, group: g.app, run: () => ui.openDialog("about") },
     { id: "updates", label: t.updates.check, group: g.app, run: () => ui.openDialog("about") },
   ];

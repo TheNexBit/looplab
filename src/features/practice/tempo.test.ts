@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { countInSeconds, repetitionsToNextStep, tapTempo, trainerSpeed } from "./tempo";
+import {
+  beatsBetween,
+  countInSeconds,
+  nearestBeat,
+  repetitionsToNextStep,
+  tapTempo,
+  trainerSpeed,
+} from "./tempo";
 
 describe("tapTempo", () => {
   it("needs two taps", () => {
@@ -54,5 +61,25 @@ describe("speed trainer", () => {
 
   it("never goes below the start when the target is lower", () => {
     expect(trainerSpeed({ ...plan, to: 0.5 }, 10)).toBe(0.6);
+  });
+});
+
+describe("beat grid", () => {
+  const grid = { bpm: 120, offset: 0.25 };
+
+  it("finds the nearest beat", () => {
+    expect(nearestBeat(0.95, grid)).toBe(0.75);
+    expect(nearestBeat(1.1, grid)).toBe(1.25);
+  });
+
+  it("lists the beats in a window, bars marked, before the offset too", () => {
+    expect(beatsBetween(-0.3, 2.3, grid)).toEqual([
+      { time: -0.25, bar: false },
+      { time: 0.25, bar: true },
+      { time: 0.75, bar: false },
+      { time: 1.25, bar: false },
+      { time: 1.75, bar: false },
+      { time: 2.25, bar: true },
+    ]);
   });
 });

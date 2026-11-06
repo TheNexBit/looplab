@@ -27,6 +27,10 @@ export interface Settings {
   trainerStep: number;
   /** …every `trainerEvery` repetitions */
   trainerEvery: number;
+  /** Media keys reach Looplab even while another program has the focus */
+  globalMediaKeys: boolean;
+  /** Beat and bar lines on the waveform (when the tempo is known); the magnet uses them */
+  showGrid: boolean;
 }
 
 type NumericSetting = {
@@ -60,6 +64,8 @@ const DEFAULTS: Settings = {
   trainerTo: 1,
   trainerStep: 0.05,
   trainerEvery: 2,
+  globalMediaKeys: false,
+  showGrid: true,
 };
 const KEY = "looplab.settings";
 

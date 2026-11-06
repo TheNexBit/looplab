@@ -1,6 +1,8 @@
+import { nearestBeat } from "@/features/practice/tempo";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, trackDuration } from "@/stores/player";
+import { currentGrid } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 
@@ -33,7 +35,7 @@ export interface SnapExclude {
 
 /**
  * With the magnet on, moves `time` onto the nearest marker, bar, section start,
- * loop edge, playhead or track edge, if one is within `SNAP_PX` on screen
+ * loop edge, playhead, beat of the grid or track edge, if one is within `SNAP_PX` on screen
  * (like Reaper's snapping to the time selection).
  * `area` is the element whose width shows the visible time span.
  */
@@ -47,6 +49,7 @@ export function snapTime(
   const secondsPerPixel = span / Math.max(1, area.getBoundingClientRect().width);
   const { markers, sections } = useMarkersStore.getState();
   const region = exclude.loop ? null : useLoopStore.getState().region();
+  const grid = useSettingsStore.getState().showGrid ? currentGrid() : null;
   const points = [
     0,
     trackDuration(),
@@ -54,6 +57,7 @@ export function snapTime(
     ...(region ? [region.start, region.end] : []),
     ...markers.filter((m) => m.id !== exclude.markerId).map((m) => m.time),
     ...sections.filter((s) => s.id !== exclude.sectionId).map((s) => s.start),
+    ...(grid ? [nearestBeat(time, grid)] : []),
   ];
   return nearestWithin(time, points, SNAP_PX * secondsPerPixel);
 }

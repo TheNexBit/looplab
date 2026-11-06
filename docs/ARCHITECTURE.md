@@ -61,6 +61,17 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   (un trascinamento) è un solo passo; si azzera all'apertura di ogni brano.
 - `stores/savedLoops.ts`: loop con nome, salvati nel progetto.
 
+## Tasti, pedali e diario
+
+- `lib/shortcuts.ts`: elenco delle azioni con i tasti predefiniti; `stores/keymap.ts` tiene i tasti cambiati e i
+  comandi MIDI (localStorage) e li rende attivi con `setActiveShortcuts`.
+- `src-tauri/src/midi.rs`: apre ogni ingresso MIDI (ricontrolla ogni 2 s) e manda `MidiTrigger` all'interfaccia;
+  `src-tauri/src/media_keys.rs`: tasti multimediali di sistema (opzione) → evento `MediaKey`.
+  `features/remote/remoteControl.ts` collega entrambi alle azioni di `shortcutHandlers`.
+- `src-tauri/src/diary.rs` + `features/practice/diaryRecorder.ts`: tempo di pratica per brano e giorno;
+  `diaryStats.ts` fa i conti per la scheda Pratica e la finestra del diario.
+- Griglia del tempo: `practice.ts` (`currentGrid`), `tempo.ts` (battiti), `draw.ts` (`drawBeatGrid`), `snap.ts`.
+
 ## Forma d'onda dettagliata
 
 - `features/waveform/DetailView.tsx` disegna (canvas a ogni fotogramma), `gestures.ts` gestisce mouse e rotella.

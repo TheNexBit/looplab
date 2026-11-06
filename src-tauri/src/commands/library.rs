@@ -1,4 +1,4 @@
-//! Project files and recently opened tracks.
+//! Project files, recently opened tracks and the practice diary.
 
 use std::path::Path;
 
@@ -6,6 +6,7 @@ use serde::Serialize;
 use tauri::AppHandle;
 
 use super::{AppError, ErrorKind};
+use crate::diary::{self, DiaryEntry};
 use crate::paths;
 use crate::project::{self, Project, ProjectError, ProjectLocation};
 use crate::recent::{self, RecentFile};
@@ -41,6 +42,22 @@ pub fn save_project(
 ) -> Result<ProjectLocation, AppError> {
     let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
     Ok(project::save(&data_dir, Path::new(&track), &project)?)
+}
+
+/// Every day of practice of every track, oldest first.
+#[tauri::command]
+#[specta::specta]
+pub fn practice_diary(app: AppHandle) -> Result<Vec<DiaryEntry>, AppError> {
+    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    Ok(diary::list(&data_dir))
+}
+
+/// Adds practice time (and the speed reached) to a track's day.
+#[tauri::command]
+#[specta::specta]
+pub fn record_practice(app: AppHandle, practice: DiaryEntry) -> Result<(), AppError> {
+    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    diary::record(&data_dir, practice).map_err(AppError::internal)
 }
 
 /// A project with every default, for tracks opened for the first time.

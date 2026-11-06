@@ -1,10 +1,11 @@
 import { t } from "@/i18n";
 
 /**
- * Single registry of keyboard shortcuts. Each combo is written as
+ * Single registry of keyboard shortcuts and their default keys. Each combo is written as
  * modifiers + key joined by "+", e.g. "Ctrl+K", "Shift+ArrowUp", "Ctrl++".
- * Keys are `KeyboardEvent.key` values ("Space" stands for " ").
- * Labels come from `t.shortcuts` under the same id.
+ * Keys are `KeyboardEvent.key` values ("Space" stands for " "); "" means no key.
+ * Labels come from `t.shortcuts` under the same id. The keys in use can be changed in the
+ * settings (`stores/keymap.ts`), which calls `setActiveShortcuts`.
  */
 export const shortcuts = {
   playPause: "Space",
@@ -36,10 +37,12 @@ export const shortcuts = {
   redo: "Ctrl+Y",
   saveLoop: "Shift+L",
   tapTempo: "T",
+  setDownbeat: "Shift+T",
   toggleMetronome: "K",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;
+export type Keymap = Record<ShortcutId, string>;
 
 interface Combo {
   ctrl: boolean;
@@ -61,9 +64,26 @@ function parse(combo: string): Combo {
   };
 }
 
-const parsed = Object.fromEntries(
-  Object.entries(shortcuts).map(([id, combo]) => [id, parse(combo)]),
-) as Record<ShortcutId, Combo>;
+let parsed = parseAll(shortcuts);
+
+function parseAll(keymap: Keymap): Record<ShortcutId, Combo | null> {
+  return Object.fromEntries(
+    Object.entries(keymap).map(([id, combo]) => [id, combo ? parse(combo) : null]),
+  ) as Record<ShortcutId, Combo | null>;
+}
+
+/** Makes `keymap` the keys that `matchShortcut` and `shortcutKeys` use. */
+export function setActiveShortcuts(keymap: Keymap) {
+  parsed = parseAll(keymap);
+}
+
+/** Keys that also work, fixed: the media keys of keyboards and of many pedals. */
+const MEDIA_KEYS: Record<string, ShortcutId> = {
+  MediaPlayPause: "playPause",
+  MediaStop: "playPause",
+  MediaTrackNext: "nextMarker",
+  MediaTrackPrevious: "previousMarker",
+};
 
 const keySymbols: Record<string, string> = {
   ArrowLeft: "←",
@@ -76,7 +96,17 @@ const keySymbols: Record<string, string> = {
 
 /** Splits a shortcut into display-ready key caps, e.g. "Shift+ArrowUp" → ["Maiusc", "↑"]. */
 export function shortcutKeys(id: ShortcutId): string[] {
-  const { ctrl, shift, alt, key } = parsed[id];
+  return comboKeys(parsed[id]);
+}
+
+/** Display-ready key caps of a combo string; empty when it has no key. */
+export function comboCaps(combo: string): string[] {
+  return comboKeys(combo ? parse(combo) : null);
+}
+
+function comboKeys(combo: Combo | null): string[] {
+  if (!combo) return [];
+  const { ctrl, shift, alt, key } = combo;
   const caps = [ctrl && "Ctrl", shift && "Shift", alt && "Alt", key].filter((cap): cap is string =>
     Boolean(cap),
   );
@@ -100,12 +130,41 @@ export function matchShortcut(event: KeyEventLike): ShortcutId | null {
   const altGraph = isSymbol(key) && (event.getModifierState?.("AltGraph") ?? false);
   const ctrl = !altGraph && (event.ctrlKey || event.metaKey);
   const alt = !altGraph && event.altKey;
-  for (const [id, combo] of Object.entries(parsed) as [ShortcutId, Combo][]) {
-    if (combo.key.toLowerCase() !== key.toLowerCase()) continue;
+  for (const [id, combo] of Object.entries(parsed) as [ShortcutId, Combo | null][]) {
+    if (!combo || combo.key.toLowerCase() !== key.toLowerCase()) continue;
     if (combo.ctrl !== ctrl || combo.alt !== alt) continue;
     // Symbols like "+" or "[" need Shift on some keyboard layouts and not on others
     if (!isSymbol(key) && combo.shift !== event.shiftKey) continue;
     return id;
   }
-  return null;
+  return MEDIA_KEYS[key] ?? null;
+}
+
+const MODIFIERS = [
+  "Control",
+  "Shift",
+  "Alt",
+  "Meta",
+  "AltGraph",
+  "CapsLock",
+  "Dead",
+  "Unidentified",
+];
+
+/**
+ * The combo string a key press would be saved as ("Ctrl+K", "Space", "PageDown"), or null
+ * while only modifiers are held. Symbols keep the modifiers they need to be typed (AltGr,
+ * Shift) out of the combo, as `matchShortcut` ignores those for symbols.
+ */
+export function comboFromEvent(event: KeyEventLike): string | null {
+  if (MODIFIERS.includes(event.key)) return null;
+  const key = event.key === " " ? "Space" : event.key;
+  const symbol = isSymbol(key);
+  const altGraph = symbol && (event.getModifierState?.("AltGraph") ?? false);
+  const parts: string[] = [];
+  if (!altGraph && (event.ctrlKey || event.metaKey)) parts.push("Ctrl");
+  if (!symbol && event.shiftKey) parts.push("Shift");
+  if (!altGraph && event.altKey) parts.push("Alt");
+  parts.push(key.length === 1 ? key.toUpperCase() : key);
+  return parts.join("+");
 }

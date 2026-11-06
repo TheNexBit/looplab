@@ -60,3 +60,39 @@ export function repetitionsToNextStep(plan: TrainerPlan, repetitions: number): n
   const every = Math.max(1, plan.every);
   return every - (repetitions % every);
 }
+
+/** Beats per bar: the grid draws a stronger line, and the metronome a higher click, on the first. */
+export const BEATS_PER_BAR = 4;
+
+export interface BeatGrid {
+  bpm: number;
+  /** Seconds: a moment on the first beat of a bar */
+  offset: number;
+}
+
+/** Seconds per beat. */
+export const beatSeconds = (bpm: number) => 60 / bpm;
+
+/** The beat of `grid` closest to `time`. */
+export function nearestBeat(time: number, grid: BeatGrid): number {
+  const length = beatSeconds(grid.bpm);
+  return grid.offset + Math.round((time - grid.offset) / length) * length;
+}
+
+/** Every beat between `start` and `end` (seconds), each with whether it starts a bar. */
+export function beatsBetween(
+  start: number,
+  end: number,
+  grid: BeatGrid,
+): { time: number; bar: boolean }[] {
+  const length = beatSeconds(grid.bpm);
+  const first = Math.ceil((start - grid.offset) / length);
+  const last = Math.floor((end - grid.offset) / length);
+  const beats = [];
+  for (let index = first; index <= last; index++) {
+    // Integer index: adding `length` repeatedly would drift
+    const bar = ((index % BEATS_PER_BAR) + BEATS_PER_BAR) % BEATS_PER_BAR === 0;
+    beats.push({ time: grid.offset + index * length, bar });
+  }
+  return beats;
+}

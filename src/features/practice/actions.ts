@@ -1,4 +1,4 @@
-import { usePlayerStore } from "@/stores/player";
+import { currentPosition, usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { tapTempo } from "./tempo";
@@ -8,7 +8,15 @@ export function tapBeat() {
   const practice = usePracticeStore.getState();
   practice.addTap(performance.now());
   const bpm = tapTempo(usePracticeStore.getState().taps, usePlayerStore.getState().speed);
-  if (bpm !== null) practice.setBpm(bpm);
+  if (bpm === null) return;
+  practice.setBpm(bpm);
+  // The tap was on a beat: the grid and the metronome line up with it
+  practice.setBeatOffset(currentPosition());
+}
+
+/** The first beat of a bar is where the playhead is: the grid and the clicks line up there. */
+export function setDownbeatHere() {
+  usePracticeStore.getState().setBeatOffset(currentPosition());
 }
 
 export function toggleMetronome() {

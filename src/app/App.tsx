@@ -9,7 +9,9 @@ import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
 import { syncWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
+import { startDiary } from "@/features/practice/diaryRecorder";
 import { startTrainer } from "@/features/practice/trainer";
+import { startRemoteControl } from "@/features/remote/remoteControl";
 import { feedDetachedVideo } from "@/features/video/detach";
 import { VideoLayout } from "@/features/video/VideoLayout";
 import { followTrackVideo } from "@/features/video/videoLoader";
@@ -20,6 +22,7 @@ import { useShortcuts } from "@/lib/useShortcuts";
 import { usePlayerStore } from "@/stores/player";
 import { AboutDialog } from "./AboutDialog";
 import { CommandPalette } from "./CommandPalette";
+import { DiaryDialog } from "./DiaryDialog";
 import { SettingsDialog } from "./SettingsDialog";
 import { SidePanel } from "./SidePanel";
 import { shortcutHandlers } from "./shortcutHandlers";
@@ -46,6 +49,8 @@ export function App() {
     const stopVideo = followTrackVideo();
     const stopDetached = feedDetachedVideo();
     const stopTrainer = startTrainer();
+    const stopRemote = startRemoteControl();
+    const stopDiary = startDiary();
     return () => {
       void unlisten.then((stop) => stop());
       window.removeEventListener("wheel", blockPageZoom);
@@ -54,6 +59,8 @@ export function App() {
       stopVideo();
       stopDetached();
       stopTrainer();
+      stopRemote();
+      stopDiary();
     };
   }, []);
 
@@ -88,6 +95,7 @@ export function App() {
         <CommandPalette />
         <SettingsDialog />
         <AboutDialog />
+        <DiaryDialog />
       </div>
     </TooltipProvider>
   );

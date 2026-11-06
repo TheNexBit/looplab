@@ -1,7 +1,10 @@
 import { type ShortcutId, shortcutKeys } from "@/lib/shortcuts";
+import { useKeymapStore } from "@/stores/keymap";
 
 /** Key caps of a registered shortcut. */
 export function Kbd({ shortcut }: { shortcut: ShortcutId }) {
+  // Re-render when the key is changed in the settings
+  useKeymapStore((s) => s.keys[shortcut]);
   return (
     <span className="inline-flex gap-1">
       {shortcutKeys(shortcut).map((key) => (

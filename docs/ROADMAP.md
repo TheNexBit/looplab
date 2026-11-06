@@ -164,6 +164,24 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   Ora la previsione sa quanto manca alla fine del conteggio e lo conserva. "Salva loop" è un pulsante con
   scritta (anche nel menu del Loop) e lo stesso loop non si salva due volte.
 
+## 9. Comodità mentre suoni ✅
+
+- **Tasti personalizzabili** (Impostazioni → Tasti e pedali): clic sul tasto, poi premi quello nuovo (Esc annulla);
+  un tasto già usato viene tolto all'altra azione con un avviso; × toglie il tasto; "Ripristina" torna ai
+  predefiniti. Salvati su questo PC. I tasti multimediali (Play/Pausa, Stop, Avanti, Indietro) funzionano sempre.
+- **Pedali MIDI** ("Impara MIDI" accanto a ogni azione): nota premuta, controller che supera la metà (pedale
+  sustain CC 64) o cambio programma. Tutti i dispositivi MIDI collegati vengono aperti, anche se collegati dopo;
+  funziona con Looplab in secondo piano. Crate `midir` (MIT).
+- **Tasti multimediali in secondo piano** (opzione, spenta di serie, perché li toglie agli altri lettori):
+  plugin `tauri-plugin-global-shortcut`.
+- **Griglia del tempo** (scheda Pratica): con i BPM impostati, battiti e battute (ambra) sulla forma d'onda; la
+  calamita si aggancia al battito più vicino. "Batti" fissa anche il primo battito (l'ultimo tocco), "Primo
+  battito qui" (Maiusc+T) lo sposta sul playhead. Metronomo e griglia usano lo stesso primo battito.
+- **Diario di studio**: secondi di riproduzione per brano e per giorno e velocità massima, in `diary.json` nella
+  cartella dati (scritto ogni 30 s, alla pausa, al cambio brano e alla chiusura). Scheda Pratica: oggi, totale,
+  ultimi 7 giorni; "Tutti i brani" (anche dalla palette) apre l'elenco e riapre un brano con un clic.
+- Crediti aggiornati: font Inter e JetBrains Mono (SIL OFL 1.1, testo incluso), Fontsource, midir.
+
 ## Dopo la prima versione
 
 Separazione AI degli strumenti, analisi dello spettro, esportazione WAV.

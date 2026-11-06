@@ -8,7 +8,9 @@ export type ThemeToken =
   | "wave"
   | "wave-dim"
   | "grid"
-  | "tick";
+  | "tick"
+  | "beat"
+  | "bar";
 
 /** Reads a theme token from `styles/theme.css` for code that cannot use classes (canvas). */
 export function themeColor(token: ThemeToken): string {

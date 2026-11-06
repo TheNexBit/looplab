@@ -2,9 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod diary;
 mod hash;
 mod json_file;
 mod media;
+mod media_keys;
+mod midi;
 mod paths;
 mod playback;
 mod project;
@@ -34,7 +37,8 @@ fn main() {
                 let _ = main.set_focus();
             }
         }))
-        .plugin(tauri_plugin_dialog::init());
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
     // Updates exist only in official builds: their config (public key, address) is added by
     // scripts/build.ps1. Without it the plugin is left out instead of failing at start-up
@@ -91,6 +95,7 @@ fn main() {
                 let _ = handle.state::<state::AppState>().engine();
             });
             playback::spawn_status_loop(app.handle().clone());
+            midi::spawn_midi_listener(app.handle().clone());
             Ok(())
         })
         .run(context)

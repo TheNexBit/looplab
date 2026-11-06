@@ -24,6 +24,7 @@ function snapshot(): ProjectData {
     loop: { start, end, enabled, leadIn, gap },
     loops: useSavedLoopsStore.getState().loops,
     bpm: usePracticeStore.getState().bpm,
+    beatOffset: usePracticeStore.getState().beatOffset,
     speed,
     semitones,
     cents,
@@ -37,6 +38,7 @@ function apply(data: ProjectData) {
   useLoopStore.getState().restore(data.loop);
   useSavedLoopsStore.getState().replace(data.loops);
   usePracticeStore.getState().setBpm(data.bpm);
+  usePracticeStore.getState().setBeatOffset(data.beatOffset);
   const player = usePlayerStore.getState();
   player.setSpeed(data.speed);
   player.setPitch(data.semitones, data.cents);
@@ -132,7 +134,7 @@ export function syncProject(): () => void {
     useLoopStore.subscribe(schedule),
     useSavedLoopsStore.subscribe(schedule),
     usePracticeStore.subscribe((state, previous) => {
-      if (state.bpm !== previous.bpm) schedule();
+      if (state.bpm !== previous.bpm || state.beatOffset !== previous.beatOffset) schedule();
     }),
     useEqStore.subscribe((state, previous) => {
       if (state.settings !== previous.settings || state.channels !== previous.channels) schedule();

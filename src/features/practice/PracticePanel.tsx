@@ -1,4 +1,4 @@
-import { Hand, X } from "lucide-react";
+import { Crosshair, Hand, NotebookPen, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -7,11 +7,14 @@ import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { formatSpeed } from "@/features/player/limits";
 import { t } from "@/i18n";
+import { useDiaryStore } from "@/stores/diary";
 import { useLoopStore } from "@/stores/loop";
 import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
-import { tapBeat } from "./actions";
+import { useUiStore } from "@/stores/ui";
+import { setDownbeatHere, tapBeat } from "./actions";
+import { formatDuration, trackSummary } from "./diaryStats";
 import { BPM, COUNT_IN_CHOICES, repetitionsToNextStep } from "./tempo";
 import { trainerPlan } from "./trainer";
 
@@ -36,6 +39,7 @@ function Group({ title, hint, children }: { title: string; hint?: string; childr
 function TempoGroup() {
   const bpm = usePracticeStore((s) => s.bpm);
   const hasTrack = usePlayerStore((s) => s.track !== null);
+  const showGrid = useSettingsStore((s) => s.showGrid);
   return (
     <Group title={p.tempo} hint={p.bpmHint}>
       <div className="flex items-center gap-1.5">
@@ -65,6 +69,23 @@ function TempoGroup() {
             <X className="size-3.5" />
           </Button>
         )}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Tooltip label={p.gridHint}>
+          <Chip
+            active={showGrid}
+            aria-pressed={showGrid}
+            onClick={() => useSettingsStore.getState().update({ showGrid: !showGrid })}
+          >
+            {p.grid}
+          </Chip>
+        </Tooltip>
+        <Tooltip label={p.downbeatHint} shortcut="setDownbeat">
+          <Button variant="hardware" disabled={!hasTrack || bpm === null} onClick={setDownbeatHere}>
+            <Crosshair className="size-3.5" />
+            {p.downbeat}
+          </Button>
+        </Tooltip>
       </div>
     </Group>
   );
@@ -193,13 +214,55 @@ function TrainerGroup() {
   );
 }
 
-/** Side panel tab: tempo, count-in, metronome and the speed trainer. */
+function DiaryGroup() {
+  const entries = useDiaryStore((s) => s.entries);
+  const path = usePlayerStore((s) => s.track?.path);
+  if (!path) return null;
+  const summary = trackSummary(entries, path, new Date());
+  const longest = Math.max(60, ...summary.week.map((day) => day.seconds));
+  return (
+    <Group title={t.diary.title} hint={t.diary.hint}>
+      <div className="well space-y-2 rounded-control px-2.5 py-2">
+        <div className="flex justify-between font-mono text-[11px] tabular">
+          <span className="text-lcd-fg">
+            {t.diary.today} {formatDuration(summary.today)}
+          </span>
+          <span className="text-lcd-dim">
+            {t.diary.total} {formatDuration(summary.total)}
+          </span>
+        </div>
+        {/* Last 7 days, like the level meters of a mixer */}
+        <div className="flex h-10 items-end gap-1" role="img" aria-label={t.diary.week}>
+          {summary.week.map(({ day, seconds }) => (
+            <div
+              key={day}
+              title={`${day}: ${formatDuration(seconds)}`}
+              className={
+                seconds > 0
+                  ? "flex-1 rounded-[1px] bg-accent/70"
+                  : "flex-1 rounded-[1px] bg-led-off/60"
+              }
+              style={{ height: `${Math.max(6, (seconds / longest) * 100)}%` }}
+            />
+          ))}
+        </div>
+      </div>
+      <Button variant="hardware" onClick={() => useUiStore.getState().openDialog("diary")}>
+        <NotebookPen className="size-3.5" />
+        {t.diary.open}
+      </Button>
+    </Group>
+  );
+}
+
+/** Side panel tab: tempo, count-in, metronome, the speed trainer and the diary. */
 export function PracticePanel() {
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-3">
       <TempoGroup />
       <ClickGroup />
       <TrainerGroup />
+      <DiaryGroup />
     </div>
   );
 }

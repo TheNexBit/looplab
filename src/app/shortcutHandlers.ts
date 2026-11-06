@@ -1,5 +1,5 @@
 import { pickAndOpenFile } from "@/features/library/pickFile";
-import { tapBeat, toggleMetronome } from "@/features/practice/actions";
+import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/actions";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
@@ -63,4 +63,5 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   saveLoop: () => useSavedLoopsStore.getState().saveCurrent(),
   tapTempo: () => hasTrack() && tapBeat(),
   toggleMetronome,
+  setDownbeat: () => hasTrack() && setDownbeatHere(),
 };

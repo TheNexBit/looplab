@@ -7,3 +7,6 @@ export const menuItem =
   "flex cursor-default items-center gap-2 rounded-control px-2.5 py-1.5 outline-none select-none data-[highlighted]:bg-accent data-[highlighted]:text-on-accent data-[disabled]:opacity-40";
 export const menuLabel = "panel-label px-2.5 py-1";
 export const menuSeparator = "my-1 h-px bg-border";
+/** A tab key (side panel, settings): raised, sunk and amber when selected. */
+export const tabTrigger =
+  "hw h-[26px] rounded-control text-[11px] font-semibold tracking-[0.08em] text-fg-muted uppercase transition-colors hover:text-fg data-[state=active]:border-black data-[state=active]:bg-well data-[state=active]:bg-none data-[state=active]:text-accent data-[state=active]:shadow-[inset_0_1px_3px_rgb(0_0_0/0.7)]";

@@ -47,6 +47,9 @@
   --color-wave-dim: #a8772f;
   --color-grid: #22242a;
   --color-tick: #6b6f77;
+  /* Beat grid: faint beats behind the waveform, bar lines over it */
+  --color-beat: rgb(255 255 255 / 0.07);
+  --color-bar: rgb(255 255 255 / 0.28);
   --color-playhead: #ffffff;
 
   /* Section palette: index stored in the project file (Section.color) */

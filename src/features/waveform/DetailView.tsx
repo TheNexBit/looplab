@@ -4,9 +4,10 @@ import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { currentPosition, usePlayerStore } from "@/stores/player";
+import { currentGrid, usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
-import { drawRuler, drawWaveform } from "./draw";
+import { drawBeatGrid, drawRuler, drawWaveform } from "./draw";
 import { attachWaveformGestures } from "./gestures";
 import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
 import { useCanvas } from "./useCanvas";
@@ -35,6 +36,17 @@ export function DetailView() {
     if (peaks) dirty.current = true;
   }, [peaks]);
 
+  // A new tempo, first beat or grid switch: redraw the grid
+  useEffect(() => {
+    const redraw = () => {
+      dirty.current = true;
+    };
+    const stops = [usePracticeStore.subscribe(redraw), useSettingsStore.subscribe(redraw)];
+    return () => {
+      for (const stop of stops) stop();
+    };
+  }, []);
+
   useAnimationFrame(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -57,7 +69,15 @@ export function DetailView() {
         label: themeColor("fg-muted"),
         grid: themeColor("grid"),
       });
+      const beats = useSettingsStore.getState().showGrid ? currentGrid() : null;
+      if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
       drawWaveform(ctx, peaks, view, themeColor("wave"));
+      if (beats) {
+        drawBeatGrid(ctx, view, beats, dpr, "bars", {
+          line: themeColor("bar"),
+          notch: themeColor("accent"),
+        });
+      }
       drawn.current = { start, span };
       dirty.current = false;
     }

@@ -41,10 +41,12 @@ export function syncWithEngine(): () => void {
       gap: loop.gap,
     };
   };
-  /** The beat grid starts at the loop, else at the first bar marker, else at 0. */
+  /** Clicks follow the beat grid; without a first beat set, it starts at the loop, else at
+   *  the first bar marker, else at 0. */
   const clickSettings = () => {
     const settings = useSettingsStore.getState();
     const region = useLoopStore.getState().region();
+    const { bpm, beatOffset } = usePracticeStore.getState();
     const firstBar = useMarkersStore
       .getState()
       .markers.filter((m) => m.kind === "beat")
@@ -53,8 +55,8 @@ export function syncWithEngine(): () => void {
         null,
       );
     return {
-      bpm: usePracticeStore.getState().bpm ?? 0,
-      anchor: region?.start ?? firstBar ?? 0,
+      bpm: bpm ?? 0,
+      anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
       countIn: settings.countIn,
       metronome: settings.metronome,
       volume: settings.clickVolume,

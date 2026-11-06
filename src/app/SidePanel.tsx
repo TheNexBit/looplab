@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Tabs } from "radix-ui";
 import type { ReactNode } from "react";
+import { tabTrigger } from "@/components/ui/menu";
 import { EqPanel } from "@/features/eq/EqPanel";
 import { SectionList } from "@/features/markers/SectionList";
 import { PracticePanel } from "@/features/practice/PracticePanel";
@@ -39,11 +40,7 @@ export function SidePanel() {
           >
             <Tabs.List className="flex gap-0.5 border-b border-edge p-2">
               {tabs.map(({ id, label }) => (
-                <Tabs.Trigger
-                  key={id}
-                  value={id}
-                  className="hw h-[26px] flex-1 rounded-control text-[11px] font-semibold tracking-[0.08em] text-fg-muted uppercase transition-colors hover:text-fg data-[state=active]:border-black data-[state=active]:bg-well data-[state=active]:bg-none data-[state=active]:text-accent data-[state=active]:shadow-[inset_0_1px_3px_rgb(0_0_0/0.7)]"
-                >
+                <Tabs.Trigger key={id} value={id} className={`${tabTrigger} flex-1`}>
                   {label}
                 </Tabs.Trigger>
               ))}
