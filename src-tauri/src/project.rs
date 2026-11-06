@@ -100,8 +100,10 @@ pub struct Project {
     pub bpm: Option<f64>,
     /// Seconds: a moment on the first beat of a bar, where the beat grid lines up
     pub beat_offset: Option<f64>,
-    /// Beats in a bar: 4 for most songs, 3 for a waltz, 5 or 7 for odd meters
+    /// Time signature: beats in a bar (top number) and the note value of a beat (bottom number),
+    /// e.g. 7 and 8 for 7/8
     pub beats_per_bar: u32,
+    pub beat_unit: u32,
     pub speed: f64,
     pub semitones: i32,
     pub cents: i32,
@@ -120,6 +122,7 @@ impl Default for Project {
             bpm: None,
             beat_offset: None,
             beats_per_bar: 4,
+            beat_unit: 4,
             speed: 1.0,
             semitones: 0,
             cents: 0,
@@ -283,6 +286,7 @@ pub(crate) mod tests {
             bpm: Some(96.0),
             beat_offset: Some(0.42),
             beats_per_bar: 7,
+            beat_unit: 8,
             speed: 0.75,
             semitones: -2,
             cents: 15,

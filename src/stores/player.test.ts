@@ -22,9 +22,10 @@ describe("playhead during a count-in between repetitions", () => {
       holdUntil: 0,
     });
     useLoopStore.setState({ start: 10, end: 14, enabled: true, leadIn: 0, gap: 0 });
-    // 4 beats at 120 BPM: a 2 s count-in before every repetition
+    // One bar of 4/4 at 120 BPM: a 2 s count-in before every repetition
     usePracticeStore.getState().setBpm(120);
-    useSettingsStore.getState().update({ countIn: 4, trainer: false });
+    usePracticeStore.getState().setTimeSignature(4, 4);
+    useSettingsStore.getState().update({ countInBars: 1, trainer: false });
   });
   afterEach(() => vi.useRealTimers());
 

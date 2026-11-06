@@ -139,8 +139,10 @@ pub fn set_loop(state: State<'_, AppState>, settings: LoopRequest) -> Result<(),
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ClickRequest {
-    /// Beats per minute of the track at its original speed; 0 when unknown
+    /// Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown
     pub bpm: f64,
+    /// Note value of one beat: 4 for x/4 meters, 8 for x/8…
+    pub beat_unit: u32,
     /// Seconds: a moment that falls on the first beat of a bar
     pub anchor: f64,
     /// Beats counted in before playback and before every loop repetition
@@ -159,7 +161,8 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
     let engine = playing_engine(&state)?;
     let rate = engine.sample_rate();
     let beat = if settings.bpm > 0.0 {
-        time::seconds_to_frames(60.0 / settings.bpm, rate)
+        let quarters_per_beat = 4.0 / f64::from(settings.beat_unit.max(1));
+        time::seconds_to_frames(60.0 / settings.bpm * quarters_per_beat, rate)
     } else {
         0
     };

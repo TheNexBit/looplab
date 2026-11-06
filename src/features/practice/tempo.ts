@@ -1,7 +1,23 @@
-/** Tempo limits, in beats per minute. */
+/** Tempo limits, in quarter notes per minute (as in DAWs, whatever the time signature). */
 export const BPM = { min: 30, max: 300, step: 1, default: 120 } as const;
-/** Beats offered for the count-in (0 = off). */
-export const COUNT_IN_CHOICES = [0, 1, 2, 4, 8] as const;
+/** Bars offered for the count-in (0 = off), as in DAWs. */
+export const COUNT_IN_CHOICES = [0, 1, 2, 4] as const;
+/** The time signatures offered first, like the menu of a DAW. */
+export const TIME_SIGNATURES = [
+  [2, 4],
+  [3, 4],
+  [4, 4],
+  [5, 4],
+  [7, 4],
+  [3, 8],
+  [5, 8],
+  [6, 8],
+  [7, 8],
+  [9, 8],
+  [12, 8],
+] as const;
+/** Note values a beat can have: the bottom number of a time signature. */
+export const BEAT_UNITS = [2, 4, 8, 16] as const;
 
 /** Taps further apart than this start a new measurement. */
 const TAP_RESET_MS = 2_000;
@@ -29,9 +45,9 @@ export function tapTempo(taps: number[], speed: number): number | null {
   return Math.round((60_000 / interval / speed) * 10) / 10;
 }
 
-/** Seconds of the count-in at the track's original speed (0 when off or without a tempo). */
-export function countInSeconds(beats: number, bpm: number | null): number {
-  return bpm && bpm > 0 ? (beats * 60) / bpm : 0;
+/** Seconds of a count-in of `bars` at the track's original speed (0 when off or without a tempo). */
+export function countInSeconds(bars: number, grid: BeatGrid | null): number {
+  return grid ? bars * grid.beatsPerBar * beatSeconds(grid) : 0;
 }
 
 export interface TrainerPlan {
@@ -65,18 +81,21 @@ export function repetitionsToNextStep(plan: TrainerPlan, repetitions: number): n
 export const BEATS_PER_BAR = { min: 1, max: 16, step: 1, default: 4 } as const;
 
 export interface BeatGrid {
+  /** Quarter notes per minute */
   bpm: number;
   /** Seconds: a moment on the first beat of a bar */
   offset: number;
+  /** Time signature: beats in a bar over the note value of a beat (7/8 → 7 and 8) */
   beatsPerBar: number;
+  beatUnit: number;
 }
 
-/** Seconds per beat. */
-export const beatSeconds = (bpm: number) => 60 / bpm;
+/** Seconds per beat: a quarter in x/4, an eighth in x/8. */
+export const beatSeconds = (grid: BeatGrid) => (60 / grid.bpm) * (4 / grid.beatUnit);
 
 /** The beat of `grid` closest to `time`. */
 export function nearestBeat(time: number, grid: BeatGrid): number {
-  const length = beatSeconds(grid.bpm);
+  const length = beatSeconds(grid);
   return grid.offset + Math.round((time - grid.offset) / length) * length;
 }
 
@@ -86,7 +105,7 @@ export function beatsBetween(
   end: number,
   grid: BeatGrid,
 ): { time: number; bar: boolean }[] {
-  const length = beatSeconds(grid.bpm);
+  const length = beatSeconds(grid);
   const first = Math.ceil((start - grid.offset) / length);
   const last = Math.floor((end - grid.offset) / length);
   const beats = [];

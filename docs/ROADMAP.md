@@ -186,8 +186,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   avanti e veniva riportato indietro). Ora il video segue `playbackClock`: fermo sul fotogramma giusto durante
   conteggio e pausa tra le ripetizioni, riparte con la musica; la finestra video staccata riceve quanto manca.
 
-- **Battiti per battuta** (scheda Pratica, campo "Battuta", da 1 a 16, salvato nel progetto): griglia e
-  metronomo accentano il primo battito di ogni battuta anche nei tempi dispari (3, 5, 7…). Prima era sempre 4.
+- **Metrica come nei DAW** (scheda Pratica, accanto a "Griglia"): un pulsante "7/8" apre le metriche più usate
+  (2/4… 7/4, 3/8… 12/8) più +/− per i battiti e 2/4/8/16 per il valore del battito; la rotella sopra il pulsante
+  cambia i battiti. Niente da scrivere. Il tempo (BPM) è in quarti al minuto come in Reaper e Ableton: in 7/8 i
+  battiti della griglia e del metronomo sono ottavi. "Batti" si preme sui battiti della metrica (gli ottavi in 7/8).
+  Il **conteggio** ora è in battute (No, 1, 2, 4), come nei DAW. Salvata nel progetto (`beatsPerBar`, `beatUnit`).
 
 - **Pannello laterale ridimensionabile**: trascina il bordo sinistro (da 260 a 560 px, mai tanto da schiacciare
   le forme d'onda), doppio clic per la larghezza normale; ricordata su questo PC. Le righe della scheda Pratica

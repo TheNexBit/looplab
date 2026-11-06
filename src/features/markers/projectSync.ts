@@ -26,6 +26,7 @@ function snapshot(): ProjectData {
     bpm: usePracticeStore.getState().bpm,
     beatOffset: usePracticeStore.getState().beatOffset,
     beatsPerBar: usePracticeStore.getState().beatsPerBar,
+    beatUnit: usePracticeStore.getState().beatUnit,
     speed,
     semitones,
     cents,
@@ -40,7 +41,7 @@ function apply(data: ProjectData) {
   useSavedLoopsStore.getState().replace(data.loops);
   usePracticeStore.getState().setBpm(data.bpm);
   usePracticeStore.getState().setBeatOffset(data.beatOffset);
-  usePracticeStore.getState().setBeatsPerBar(data.beatsPerBar);
+  usePracticeStore.getState().setTimeSignature(data.beatsPerBar, data.beatUnit);
   const player = usePlayerStore.getState();
   player.setSpeed(data.speed);
   player.setPitch(data.semitones, data.cents);
@@ -139,7 +140,8 @@ export function syncProject(): () => void {
       if (
         state.bpm !== previous.bpm ||
         state.beatOffset !== previous.beatOffset ||
-        state.beatsPerBar !== previous.beatsPerBar
+        state.beatsPerBar !== previous.beatsPerBar ||
+        state.beatUnit !== previous.beatUnit
       ) {
         schedule();
       }

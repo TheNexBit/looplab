@@ -96,22 +96,30 @@ export const it = {
   practice: {
     tempo: "Tempo",
     bpm: "BPM",
-    bpmHint: "Battiti al minuto del brano originale (non cambia con la velocità).",
+    bpmHint:
+      "Quarti al minuto del brano originale, come nei DAW (non cambia con la velocità). Accanto, la metrica: 4/4, 7/8…",
     noBpm: "—",
     tap: "Batti",
-    tapHint: "Premi a tempo almeno due volte (anche col tasto T)",
+    tapHint:
+      "Premi a tempo sui battiti della metrica, almeno due volte (in 7/8 sugli ottavi; anche col tasto T)",
     clearBpm: "Tempo sconosciuto",
     grid: "Griglia",
-    beatsPerBar: "Battuta",
-    beatsPerBarUnit: "battiti",
-    beatsPerBarHint:
-      "Battiti in una battuta: 4 per la maggior parte dei brani, 3 per un valzer, 5 o 7 per i tempi dispari.",
+    meter: "Metrica",
+    meterHint: "Metrica del brano: clic per sceglierla, rotella per cambiare i battiti",
+    meterBeats: "Battiti per battuta",
+    meterUnit: "Valore del battito",
+    meterTip: "In alto il numero di battiti, in basso la nota che vale un battito (8 = ottavi).",
+    fewerBeats: "Un battito in meno",
+    moreBeats: "Un battito in più",
     gridHint: "Battute sulla forma d'onda; la calamita si aggancia ai battiti.",
     downbeat: "Primo battito qui",
     downbeatHint:
       "Allinea griglia e metronomo: metti il playhead sul primo battito di una battuta.",
     countIn: "Conteggio",
-    countInHint: "Battiti contati prima del play e prima di ogni ripetizione del loop.",
+    countInHint:
+      "Battute contate prima del play e prima di ogni ripetizione del loop, come nei DAW.",
+    oneBar: "1 battuta",
+    bars: "battute",
     countInOff: "No",
     metronome: "Metronomo",
     metronomeHint: "Un click su ogni battito; il primo di ogni battuta è più acuto.",

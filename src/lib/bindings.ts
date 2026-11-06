@@ -99,8 +99,10 @@ export type ChannelMode = "stereo" |
 
 /**  Tempo, metronome and count-in, in the units of the UI. */
 export type ClickRequest = {
-	/**  Beats per minute of the track at its original speed; 0 when unknown */
+	/**  Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown */
 	bpm: number | null,
+	/**  Note value of one beat: 4 for x/4 meters, 8 for x/8… */
+	beatUnit: number,
 	/**  Seconds: a moment that falls on the first beat of a bar */
 	anchor: number | null,
 	/**  Beats counted in before playback and before every loop repetition */
@@ -263,8 +265,12 @@ export type Project_Deserialize = {
 	bpm?: number | null,
 	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
 	beatOffset?: number | null,
-	/**  Beats in a bar: 4 for most songs, 3 for a waltz, 5 or 7 for odd meters */
+	/**
+	 *  Time signature: beats in a bar (top number) and the note value of a beat (bottom number),
+	 *  e.g. 7 and 8 for 7/8
+	 */
 	beatsPerBar?: number,
+	beatUnit?: number,
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
@@ -287,8 +293,12 @@ export type Project_Serialize = {
 	bpm: number | null,
 	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
 	beatOffset: number | null,
-	/**  Beats in a bar: 4 for most songs, 3 for a waltz, 5 or 7 for odd meters */
+	/**
+	 *  Time signature: beats in a bar (top number) and the note value of a beat (bottom number),
+	 *  e.g. 7 and 8 for 7/8
+	 */
 	beatsPerBar: number,
+	beatUnit: number,
 	speed: number | null,
 	semitones: number,
 	cents: number,

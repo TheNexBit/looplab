@@ -112,7 +112,7 @@ export function drawBeatGrid(
   colors: { line: string; notch?: string },
 ) {
   const pixelsPerSecond = view.width / view.span;
-  const beatGap = beatSeconds(grid.bpm) * pixelsPerSecond;
+  const beatGap = beatSeconds(grid) * pixelsPerSecond;
   const minGap = MIN_BEAT_GAP_CSS * dpr;
   if (layer === "beats" ? beatGap < minGap : beatGap * grid.beatsPerBar < minGap) return;
   const top = view.top ?? 0;

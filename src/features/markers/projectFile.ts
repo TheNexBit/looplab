@@ -15,6 +15,7 @@ export interface ProjectData {
   bpm: number | null;
   beatOffset: number | null;
   beatsPerBar: number;
+  beatUnit: number;
   speed: number;
   semitones: number;
   cents: number;
@@ -43,6 +44,7 @@ export function fromFile(file: Project_Serialize): ProjectData {
     bpm: typeof file.bpm === "number" && file.bpm > 0 ? file.bpm : null,
     beatOffset: typeof file.beatOffset === "number" ? file.beatOffset : null,
     beatsPerBar: file.beatsPerBar > 0 ? file.beatsPerBar : BEATS_PER_BAR.default,
+    beatUnit: file.beatUnit > 0 ? file.beatUnit : 4,
     speed: num(file.speed, SPEED.default),
     semitones: file.semitones,
     cents: file.cents,

@@ -15,7 +15,8 @@ import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { setDownbeatHere, tapBeat } from "./actions";
 import { formatDuration, trackSummary } from "./diaryStats";
-import { BEATS_PER_BAR, BPM, COUNT_IN_CHOICES, repetitionsToNextStep } from "./tempo";
+import { TimeSignaturePicker } from "./TimeSignaturePicker";
+import { BPM, COUNT_IN_CHOICES, repetitionsToNextStep } from "./tempo";
 import { trainerPlan } from "./trainer";
 
 const p = t.practice;
@@ -40,7 +41,6 @@ function TempoGroup() {
   const bpm = usePracticeStore((s) => s.bpm);
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const showGrid = useSettingsStore((s) => s.showGrid);
-  const beatsPerBar = usePracticeStore((s) => s.beatsPerBar);
   return (
     <Group title={p.tempo} hint={p.bpmHint}>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -81,20 +81,7 @@ function TempoGroup() {
             {p.grid}
           </Chip>
         </Tooltip>
-        <Tooltip label={p.beatsPerBarHint}>
-          <span>
-            <NumberField
-              label={p.beatsPerBar}
-              value={beatsPerBar}
-              min={BEATS_PER_BAR.min}
-              max={BEATS_PER_BAR.max}
-              step={BEATS_PER_BAR.step}
-              onChange={(value) => usePracticeStore.getState().setBeatsPerBar(value)}
-              format={(value) => `${value} ${p.beatsPerBarUnit}`}
-              className={`${FIELD} w-24`}
-            />
-          </span>
-        </Tooltip>
+        <TimeSignaturePicker />
         <Tooltip label={p.downbeatHint} shortcut="setDownbeat">
           <Button variant="hardware" disabled={!hasTrack || bpm === null} onClick={setDownbeatHere}>
             <Crosshair className="size-3.5" />
@@ -113,15 +100,14 @@ function ClickGroup() {
     <>
       <Group title={p.countIn} hint={p.countInHint}>
         <div className="flex flex-wrap gap-1">
-          {COUNT_IN_CHOICES.map((beats) => (
+          {COUNT_IN_CHOICES.map((bars) => (
             <Chip
-              key={beats}
-              active={settings.countIn === beats}
-              aria-pressed={settings.countIn === beats}
-              onClick={() => settings.update({ countIn: beats })}
-              className="min-w-9 font-mono"
+              key={bars}
+              active={settings.countInBars === bars}
+              aria-pressed={settings.countInBars === bars}
+              onClick={() => settings.update({ countInBars: bars })}
             >
-              {beats === 0 ? p.countInOff : beats}
+              {bars === 0 ? p.countInOff : bars === 1 ? p.oneBar : `${bars} ${p.bars}`}
             </Chip>
           ))}
         </div>
@@ -149,7 +135,7 @@ function ClickGroup() {
           />
         </div>
       </Group>
-      {!hasBpm && (settings.countIn > 0 || settings.metronome) && (
+      {!hasBpm && (settings.countInBars > 0 || settings.metronome) && (
         <p className="well rounded-control px-2 py-1.5 text-[11px] text-lcd-fg">{p.needsTempo}</p>
       )}
     </>

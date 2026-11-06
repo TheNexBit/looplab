@@ -6,7 +6,7 @@ import { fetchPeaks, type Peaks } from "@/features/waveform/peaks";
 import { type AppError, commands, type PlaybackStatus, type TrackInfo } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 import { advanceInLoop, loopWait, restartAt, useLoopStore } from "./loop";
-import { usePracticeStore } from "./practice";
+import { currentGrid } from "./practice";
 import { useSettingsStore } from "./settings";
 import { useViewStore } from "./view";
 
@@ -97,7 +97,7 @@ export function playbackClock(state: PlayerState = usePlayerStore.getState()) {
 
 /** Seconds of count-in, at the track's original speed, with the current settings. */
 export function countInNow(): number {
-  return countInSeconds(useSettingsStore.getState().countIn, usePracticeStore.getState().bpm);
+  return countInSeconds(useSettingsStore.getState().countInBars, currentGrid());
 }
 
 /** Length of the open track in seconds, 0 when none is open. */

@@ -29,13 +29,21 @@ describe("tapTempo", () => {
 });
 
 describe("countInSeconds", () => {
-  it("is zero without a tempo or beats", () => {
-    expect(countInSeconds(4, null)).toBe(0);
-    expect(countInSeconds(0, 120)).toBe(0);
+  const fourFour = { bpm: 120, offset: 0, beatsPerBar: 4, beatUnit: 4 };
+
+  it("is zero without a tempo or bars", () => {
+    expect(countInSeconds(1, null)).toBe(0);
+    expect(countInSeconds(0, fourFour)).toBe(0);
   });
 
-  it("lasts the counted beats", () => {
-    expect(countInSeconds(4, 120)).toBe(2);
+  it("lasts the counted bars", () => {
+    expect(countInSeconds(1, fourFour)).toBe(2);
+    expect(countInSeconds(2, fourFour)).toBe(4);
+  });
+
+  it("counts eighths in x/8 meters", () => {
+    // 7/8 at 120 quarters per minute: 7 eighths of 0.25 s
+    expect(countInSeconds(1, { ...fourFour, beatsPerBar: 7, beatUnit: 8 })).toBe(1.75);
   });
 });
 
@@ -65,7 +73,7 @@ describe("speed trainer", () => {
 });
 
 describe("beat grid", () => {
-  const grid = { bpm: 120, offset: 0.25, beatsPerBar: 4 };
+  const grid = { bpm: 120, offset: 0.25, beatsPerBar: 4, beatUnit: 4 };
 
   it("finds the nearest beat", () => {
     expect(nearestBeat(0.95, grid)).toBe(0.75);
@@ -84,11 +92,21 @@ describe("beat grid", () => {
   });
 
   it("follows odd meters", () => {
-    const fiveFour = { bpm: 60, offset: 0, beatsPerBar: 5 };
+    const fiveFour = { bpm: 60, offset: 0, beatsPerBar: 5, beatUnit: 4 };
     expect(
       beatsBetween(0, 10, fiveFour)
         .filter((b) => b.bar)
         .map((b) => b.time),
     ).toEqual([0, 5, 10]);
+  });
+
+  it("puts x/8 beats on eighths", () => {
+    const sevenEight = { bpm: 60, offset: 0, beatsPerBar: 7, beatUnit: 8 };
+    // An eighth lasts 0.5 s at 60 quarters per minute: bars every 3.5 s
+    expect(
+      beatsBetween(0, 7, sevenEight)
+        .filter((b) => b.bar)
+        .map((b) => b.time),
+    ).toEqual([0, 3.5, 7]);
   });
 });

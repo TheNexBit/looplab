@@ -14,8 +14,8 @@ export interface Settings {
   snap: boolean;
   /** Stopping returns to where playback started (the last clicked point), like Reaper */
   returnToStart: boolean;
-  /** Beats counted in before playback and before every loop repetition (0 = off) */
-  countIn: number;
+  /** Bars counted in before playback and before every loop repetition (0 = off) */
+  countInBars: number;
   /** Click on every beat while playing */
   metronome: boolean;
   /** Volume of the clicks, 0..1 */
@@ -41,7 +41,7 @@ export const SETTING_LIMITS = {
   seekStep: { min: 1, max: 30, step: 1 },
   fineSeekStep: { min: 0.1, max: 5, step: 0.1 },
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
-  countIn: { min: 0, max: 8, step: 1 },
+  countInBars: { min: 0, max: 4, step: 1 },
   clickVolume: { min: 0, max: 1, step: 0.05 },
   trainerFrom: { min: 0.25, max: 2, step: 0.01 },
   trainerTo: { min: 0.25, max: 2, step: 0.01 },
@@ -56,7 +56,7 @@ const DEFAULTS: Settings = {
   followPlayhead: true,
   snap: true,
   returnToStart: true,
-  countIn: 0,
+  countInBars: 0,
   metronome: false,
   clickVolume: 0.6,
   trainer: false,
