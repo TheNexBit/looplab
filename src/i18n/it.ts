@@ -26,14 +26,14 @@ export const it = {
     fileUnreadable: "Impossibile leggere il file.",
     unsupportedFormat: "Questo formato non è supportato.",
     unsupportedCodec:
-      "Questo codec audio (per esempio Opus) richiede FFmpeg: esegui scripts\\fetch-ffmpeg.cmd e riapri il file.",
+      "Questo codec audio (per esempio Opus) richiede FFmpeg: esegui scripts\\05-fetch-ffmpeg.cmd e riapri il file.",
     noAudioTrack: "Il file non contiene una traccia audio.",
     emptyFile: "Il file non contiene audio.",
     corruptFile: "Il file sembra danneggiato.",
     audioDevice: "La scheda audio non risponde: controlla l'uscita audio e riprova.",
     noTrack: "Nessun brano aperto.",
     ffmpegMissing:
-      "Per questo file serve FFmpeg, che non è installato: esegui scripts\\fetch-ffmpeg.cmd.",
+      "Per questo file serve FFmpeg, che non è installato: esegui scripts\\05-fetch-ffmpeg.cmd.",
     ffmpegFailed: "FFmpeg non è riuscito a convertire il file.",
     projectFile:
       "Il file .looplab.json di questo brano non si legge o non si scrive: marker e sezioni non vengono salvati.",

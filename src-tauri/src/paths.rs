@@ -2,7 +2,7 @@
 //!
 //! Development builds keep everything on the Dev Drive (`LOOPLAB_DEV_DATA_DIR`,
 //! set in `.cargo/config.toml`); release builds use the standard Windows folder,
-//! unless `LOOPLAB_DATA_DIR` is set (scripts/prova-build.ps1 uses it to test a release build
+//! unless `LOOPLAB_DATA_DIR` is set (scripts/powershell/prova-build.ps1 uses it to test a release build
 //! without touching the real data).
 
 use std::path::PathBuf;

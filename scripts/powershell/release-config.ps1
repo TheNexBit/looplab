@@ -15,7 +15,7 @@ $UpdateFeed = 'https://github.com/TheNexBit/Looplab/releases/latest/download/lat
 
 function Assert-Ffmpeg {
     if (-not (Test-Path $Sidecar)) {
-        Write-Host '[ERRORE] FFmpeg manca: esegui prima scripts\fetch-ffmpeg.cmd' -ForegroundColor Red
+        Write-Host '[ERRORE] FFmpeg manca: esegui prima scripts\05-fetch-ffmpeg.cmd' -ForegroundColor Red
         exit 1
     }
 }

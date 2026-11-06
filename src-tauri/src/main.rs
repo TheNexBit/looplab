@@ -41,7 +41,7 @@ fn main() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
     // Updates exist only in official builds: their config (public key, address) is added by
-    // scripts/build.ps1. Without it the plugin is left out instead of failing at start-up
+    // scripts/powershell/build.ps1. Without it the plugin is left out instead of failing at start-up
     let context = tauri::generate_context!();
     let builder = if context.config().plugins.0.contains_key("updater") {
         builder.plugin(tauri_plugin_updater::Builder::new().build())

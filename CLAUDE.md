@@ -6,10 +6,10 @@ Valgono insieme a `D:\CLAUDE.md`. Specifica completa del progetto: `docs/SPEC.md
   Codice, nomi di file e commenti in **inglese**.
 - Lavora **per fasi** (`docs/ROADMAP.md`): piano breve prima, a fine fase fermati e spiega cosa provare.
 - Se ci sono due strade valide, chiedi.
-- **Niente su `C:\`**: dati di sviluppo in `LOOPLAB_DEV_DATA_DIR` (`.cargo/config.toml`), letto da `paths.rs` e `scripts/config.ps1`.
+- **Niente su `C:\`**: dati di sviluppo in `LOOPLAB_DEV_DATA_DIR` (`.cargo/config.toml`), letto da `paths.rs` e `scripts/powershell/config.ps1`.
 - Nessun `target/` locale e nessun `target-dir`: si usa `CARGO_TARGET_DIR`.
 - **Niente doppioni** e **niente file sparsi** (`test.ts`, `*_old`, `*_v2`): prove usa e getta in `D:\sandbox`.
 - `src/lib/bindings.ts` è generato: rigeneralo con `npm run bindings`, mai a mano.
-- Script in `scripts/`: logica in `.ps1` (PowerShell 7), lanciatore `.cmd` con lo stesso nome, stile FolderForge.
-- Prima di chiudere una fase: `scripts\test.cmd` senza errori né warning; aggiorna `docs/ROADMAP.md` e `docs/ARCHITECTURE.md`.
+- Script: in `scripts/` solo i lanciatori `.cmd` numerati per importanza (`01-dev.cmd`…), la logica in `scripts/powershell/<nome>.ps1` (PowerShell 7), stile FolderForge. Mai `.ps1` e `.cmd` mischiati.
+- Prima di chiudere una fase: `scripts\02-test.cmd` senza errori né warning; aggiorna `docs/ROADMAP.md` e `docs/ARCHITECTURE.md`.
 - Mai Rubber Band (GPL); FFmpeg solo build LGPL. tauri-specta/specta sono rc: versioni fissate con `=`.

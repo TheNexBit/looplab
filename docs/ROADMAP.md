@@ -15,7 +15,7 @@
 - Verifica ambiente su `D:\` e cache Rust condivisa (`CARGO_TARGET_DIR`).
 - Workspace Cargo (`src-tauri`, `crates/audio-engine`) con profili snelli.
 - Tauri 2 + React 19 + TypeScript strict + Vite + Tailwind v4 + Zustand + Radix + Motion.
-- Biome, Vitest, Clippy senza warning; `scripts/test.cmd` li esegue tutti.
+- Biome, Vitest, Clippy senza warning; `scripts/02-test.cmd` li esegue tutti.
 - tauri-specta: `src/lib/bindings.ts` generato dal Rust (`npm run bindings`).
 - Dati di sviluppo (incluso WebView2) in `D:\.cache\looplab\dev-data`.
 - Tema in `src/styles/theme.css`, testi in `src/i18n`, scorciatoie in `src/lib/shortcuts.ts`.
@@ -76,7 +76,7 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 
 ## 6. Video ✅
 
-- FFmpeg 9.0 LGPL statico (BtbN) scaricato da `scripts/fetch-ffmpeg.cmd` in `D:\tools\ffmpeg`, con verifica
+- FFmpeg 9.0 LGPL statico (BtbN) scaricato da `scripts/05-fetch-ffmpeg.cmd` in `D:\tools\ffmpeg`, con verifica
   SHA-256; copia per il pacchetto in `src-tauri/binaries/` (fuori da git). **Da lanciare a mano una volta.**
 - FFmpeg è facoltativo: senza, Opus e proxy mostrano un messaggio; tutto il resto funziona.
   Avviato da Rust (`media.rs`) senza finestra di console, con avanzamento letto da `-progress`.
@@ -97,11 +97,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Informazioni: versione, "Cerca aggiornamenti", licenze di terze parti (`docs/THIRD_PARTY_LICENSES.md`, unica fonte,
   inclusa anche nell'installer).
 - Finestre ricordate per monitor (fase 6); icona generata da `src-tauri/icons/icon.svg`.
-- Build di rilascio separata dallo sviluppo: `scripts/release-config.ps1` genera la configurazione aggiuntiva
+- Build di rilascio separata dallo sviluppo: `scripts/powershell/release-config.ps1` genera la configurazione aggiuntiva
   (FFmpeg come sidecar, licenze, installer NSIS per utente in italiano/inglese, updater) nella cache Rust.
-- Aggiornamenti firmati (plugin updater): chiave in `D:\.config\tauri\looplab.key` creata da `genera-chiave.cmd`;
+- Aggiornamenti firmati (plugin updater): chiave in `D:\.config\tauri\looplab.key` creata da `06-genera-chiave.cmd`;
   il plugin si attiva solo se la configurazione lo contiene (sviluppo e prova-build ne fanno a meno).
-- `prova-build.cmd`: build di rilascio senza installer, con dati in `D:\.cache\looplab\build-data`
+- `03-prova-build.cmd`: build di rilascio senza installer, con dati in `D:\.cache\looplab\build-data`
   (variabile `LOOPLAB_DATA_DIR`).
 
 ### Da decidere con l'utente
@@ -109,7 +109,7 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - **Licenza di Looplab** (nel README è "da definire").
 - **Repository GitHub**: il prompt lo vuole privato, ma l'aggiornamento automatico scarica da GitHub Releases, che
   per gli utenti deve essere pubblico (repository pubblico, oppure un secondo repository pubblico solo per le release).
-- **NSIS su C:\**: Tauri scarica sempre NSIS in `%LOCALAPPDATA%\tauri`; `build.cmd` propone un collegamento verso
+- **NSIS su C:\**: Tauri scarica sempre NSIS in `%LOCALAPPDATA%\tauri`; `04-build.cmd` propone un collegamento verso
   `D:\.cache\tauri`.
 
 ## Correzioni dopo le prove dell'utente

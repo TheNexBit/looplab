@@ -2,7 +2,7 @@
 #  Cancella le cartelle generate da Looplab:
 #  - dist                 interfaccia compilata (si rigenera da sola)
 #  - dati di sviluppo     impostazioni, cache e profilo WebView2 di prova
-#  - dati di prova build  quelli usati da prova-build.cmd
+#  - dati di prova build  quelli usati da 03-prova-build.cmd
 #  Sorgenti, node_modules e la cache Rust condivisa NON vengono toccati.
 # ===================================================================
 . "$PSScriptRoot\config.ps1"

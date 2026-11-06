@@ -2,7 +2,7 @@
 //! H.264 proxies of videos WebView2 cannot play (e.g. HEVC, MKV).
 //!
 //! FFmpeg is optional: without it these two features report a clear error and
-//! everything else keeps working. `scripts/fetch-ffmpeg.ps1` installs it.
+//! everything else keeps working. `scripts/05-fetch-ffmpeg.cmd` installs it.
 
 use std::collections::VecDeque;
 use std::fs;
@@ -22,7 +22,7 @@ const PROXY_FILTER: &str = "scale=-2:'min(720,ih)'";
 
 #[derive(Debug)]
 pub enum MediaError {
-    /// FFmpeg is not installed (run scripts/fetch-ffmpeg.ps1)
+    /// FFmpeg is not installed (run scripts/05-fetch-ffmpeg.cmd)
     Missing,
     /// FFmpeg ran but failed; the text is the end of its log
     Failed(String),

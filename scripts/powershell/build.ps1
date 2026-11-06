@@ -5,7 +5,7 @@
 #  3. scrive latest.json per l'aggiornamento automatico
 #  Il risultato resta nella cache Rust (D:\.cache\cargo-target), fuori dal
 #  progetto. La versione e' quella di package.json: aggiornala prima.
-#  Prima prova l'app con prova-build.cmd.
+#  Prima prova l'app con 03-prova-build.cmd.
 # ===================================================================
 . "$PSScriptRoot\config.ps1"
 . "$PSScriptRoot\release-config.ps1"
@@ -13,7 +13,7 @@ $Host.UI.RawUI.WindowTitle = 'Looplab - build'
 
 Assert-Ffmpeg
 if (-not (Test-Path $PrivateKey)) {
-    Write-Host '[ERRORE] Chiave di firma mancante: esegui prima scripts\genera-chiave.cmd' -ForegroundColor Red
+    Write-Host '[ERRORE] Chiave di firma mancante: esegui prima scripts\06-genera-chiave.cmd' -ForegroundColor Red
     exit 1
 }
 Confirm-NsisOnDevDrive

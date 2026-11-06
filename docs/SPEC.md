@@ -97,7 +97,7 @@ Ciò che serve a più feature va in `components/ui`, `lib` o `stores`, mai copia
 - Non impostare `target-dir` né creare `target/` locali. Profili snelli solo nel `Cargo.toml` root; `audio-engine` a `opt-level = 2` in dev.
   Ottimizzare il crate di stretching in dev solo dopo aver chiesto.
 - Tauri CLI come dipendenza di sviluppo. Script PowerShell 7 in `scripts/`.
-- FFmpeg: una sola copia LGPL in `D:\tools\ffmpeg` scaricata da `scripts/fetch-ffmpeg.ps1`; in `src-tauri/binaries/` solo la copia per il pacchetto (esclusa da git).
+- FFmpeg: una sola copia LGPL in `D:\tools\ffmpeg` scaricata da `scripts/05-fetch-ffmpeg.cmd`; in `src-tauri/binaries/` solo la copia per il pacchetto (esclusa da git).
 - Altri strumenti: chiedere prima, e vanno in `D:\tools`.
 - In sviluppo tutti i dati dell'app (store, stato finestre, cache proxy, WebView2) in `D:\.cache\looplab\dev-data`.
 - Git dal primo commit; remoto privato `TheNexBit/Looplab` creato con `gh` solo dopo ok.

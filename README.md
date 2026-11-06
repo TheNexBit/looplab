@@ -7,15 +7,17 @@ cambia tonalità, crea loop e sezioni, isola gli strumenti con l'EQ, segue il vi
 
 ## Script (doppio clic)
 
-| Script                      | Cosa fa                                                                       |
-| --------------------------- | ----------------------------------------------------------------------------- |
-| `scripts\dev.cmd`           | avvia l'app in sviluppo                                                       |
-| `scripts\test.cmd`          | tutti i controlli (Biome, TypeScript, Vitest, rustfmt, Clippy, cargo test)    |
-| `scripts\fetch-ffmpeg.cmd`  | scarica FFmpeg LGPL in `D:\tools\ffmpeg` (una volta; serve per Opus e proxy)  |
-| `scripts\genera-chiave.cmd` | crea la chiave di firma degli aggiornamenti in `D:\.config\tauri` (una volta) |
-| `scripts\prova-build.cmd`   | compila in modalità rilascio e apre l'app con dati di prova                   |
-| `scripts\build.cmd`         | build ufficiale: installer NSIS firmato + `latest.json`                       |
-| `scripts\pulisci.cmd`       | cancella `dist` e i dati di sviluppo e di prova                               |
+In `scripts\` ci sono solo i lanciatori, numerati per importanza; la logica sta in `scripts\powershell\`.
+
+| Script                         | Cosa fa                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `scripts\01-dev.cmd`           | avvia l'app in sviluppo                                                       |
+| `scripts\02-test.cmd`          | tutti i controlli (Biome, TypeScript, Vitest, rustfmt, Clippy, cargo test)    |
+| `scripts\03-prova-build.cmd`   | compila in modalità rilascio e apre l'app con dati di prova                   |
+| `scripts\04-build.cmd`         | build ufficiale: installer NSIS firmato + `latest.json`                       |
+| `scripts\05-fetch-ffmpeg.cmd`  | scarica FFmpeg LGPL in `D:\tools\ffmpeg` (una volta; serve per Opus e proxy)  |
+| `scripts\06-genera-chiave.cmd` | crea la chiave di firma degli aggiornamenti in `D:\.config\tauri` (una volta) |
+| `scripts\07-pulisci.cmd`       | cancella `dist` e i dati di sviluppo e di prova                               |
 
 Da terminale: `npm run app`, `npm run lint`, `npm test`, `npm run test:rust`, `npm run bindings`.
 

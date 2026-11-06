@@ -5,8 +5,8 @@
 # ===================================================================
 $ErrorActionPreference = 'Stop'
 
-# Repository root (the folder above "scripts")
-$Repo = Split-Path $PSScriptRoot -Parent
+# Repository root (two folders above: scriptspowershell)
+$Repo = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 
 # Dev data folder: read from .cargo/config.toml so the path exists in one place only
 $cargoConfig = Get-Content (Join-Path $Repo '.cargo\config.toml') -Raw
