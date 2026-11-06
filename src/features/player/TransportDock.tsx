@@ -1,18 +1,17 @@
 import { LocateFixed, Magnet, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
-import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 import { LoopMenu } from "./LoopMenu";
-import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
+import { CENTS, formatSpeed, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
 
-const formatSpeed = (value: number) => `${Math.round(value * 100)}%`;
 /** Speeds are typed as percentages: "75" → 0.75. */
 const parseSpeed = (text: string) => {
   const value = parseNumber(text);
@@ -127,20 +126,15 @@ export function TransportDock() {
             trackClassName={TRACK}
           />
           {SPEED_PRESETS.map((preset) => (
-            <button
+            <Chip
               key={preset}
-              type="button"
+              active={speed === preset}
               onClick={() => setSpeed(preset)}
               aria-label={`${t.transport.speedPreset} ${formatSpeed(preset)}`}
-              className={cn(
-                "h-[22px] rounded-[2px] px-1.5 font-mono text-[10px] tabular transition-[filter]",
-                speed === preset
-                  ? "border border-black bg-accent font-bold text-on-accent"
-                  : "hw text-fg-muted hover:text-fg hover:brightness-125",
-              )}
+              className="h-[22px] px-1.5 font-mono text-[10px] tabular"
             >
               {formatSpeed(preset)}
-            </button>
+            </Chip>
           ))}
         </div>
 

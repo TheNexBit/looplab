@@ -13,6 +13,7 @@ use audio_engine::{ChannelMode, EqSettings};
 use serde::{Deserialize, Serialize};
 
 use crate::hash::fnv1a;
+use crate::json_file::write_atomically;
 
 /// Bumped when the format changes in a way older readers cannot handle.
 pub const VERSION: u32 = 1;
@@ -211,17 +212,6 @@ pub fn save(
         }
         Err(err) => Err(err.into()),
     }
-}
-
-fn write_atomically(path: &Path, contents: &str) -> io::Result<()> {
-    let mut temporary = path.as_os_str().to_os_string();
-    temporary.push(".tmp");
-    let temporary = PathBuf::from(temporary);
-    fs::write(&temporary, contents)?;
-    // On Windows `rename` replaces the destination in one step
-    fs::rename(&temporary, path).inspect_err(|_| {
-        let _ = fs::remove_file(&temporary);
-    })
 }
 
 #[cfg(test)]

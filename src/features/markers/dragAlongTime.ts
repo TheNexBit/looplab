@@ -1,6 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { DRAG_PX } from "@/features/waveform/pointer";
-import { useViewStore } from "@/stores/view";
+import { DRAG_PX, timeAtX } from "@/features/waveform/pointer";
 
 /**
  * Pointer handler for things dragged along the time axis of the detailed view.
@@ -20,14 +19,9 @@ export function dragAlongTime(
   const startX = event.clientX;
   let dragging = false;
 
-  const timeAt = (clientX: number) => {
-    const rect = area.getBoundingClientRect();
-    const { start, span } = useViewStore.getState();
-    return start + ((clientX - rect.left) / rect.width) * span;
-  };
   const move = (e: PointerEvent) => {
     if (!dragging && Math.abs(e.clientX - startX) > DRAG_PX) dragging = true;
-    if (dragging) onMove(timeAt(e.clientX));
+    if (dragging) onMove(timeAtX(area, e.clientX));
   };
   const up = () => {
     target.removeEventListener("pointermove", move);

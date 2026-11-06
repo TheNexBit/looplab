@@ -136,6 +136,12 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   Velocità e tonalità sono due fader uno sopra l'altro, così il dock entra anche nella finestra minima (900 px).
   Font Inter e JetBrains Mono inclusi nell'app (`@fontsource-variable`), niente rete. Logica e comandi invariati.
 
+- Pulizia del codice (dopo analisi approvata): marker e sezioni non vengono più ridisegnati a ogni fotogramma
+  mentre la vista scorre; recenti e posizione delle finestre si salvano in modo sicuro come i progetti
+  (`json_file.rs`); doppioni unificati (modi dei canali, durata del brano, posizione → tempo, tastini `Chip`,
+  formato velocità, limiti di lead-in e pausa); gesti della forma d'onda in `gestures.ts`; il log di FFmpeg
+  tiene solo le ultime righe. Comportamento invariato.
+
 ## Dopo la prima versione
 
 Separazione AI degli strumenti, analisi dello spettro, speed trainer, esportazione WAV.

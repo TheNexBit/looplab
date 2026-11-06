@@ -3,6 +3,7 @@
 
 mod commands;
 mod hash;
+mod json_file;
 mod media;
 mod paths;
 mod playback;

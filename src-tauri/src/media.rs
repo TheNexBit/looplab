@@ -4,6 +4,7 @@
 //! FFmpeg is optional: without it these two features report a clear error and
 //! everything else keeps working. `scripts/fetch-ffmpeg.ps1` installs it.
 
+use std::collections::VecDeque;
 use std::fs;
 use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
@@ -99,6 +100,9 @@ fn parse_progress(line: &str) -> Option<f64> {
     Some(micros / 1_000_000.0)
 }
 
+/// Lines of FFmpeg's log quoted in an error message.
+const LOG_TAIL: usize = 4;
+
 /// Runs FFmpeg with `args`, writing to a temporary file renamed to `output` on success.
 /// `progress` receives 0..1 while it works.
 fn run(
@@ -130,7 +134,8 @@ fn run(
     // The log (stderr) is read on its own thread: it carries the duration, and an unread
     // pipe would block FFmpeg once full
     let duration = Arc::new(Mutex::new(None::<f64>));
-    let log = Arc::new(Mutex::new(String::new()));
+    // Only the end of the log is quoted on failure, so only the end is kept
+    let log = Arc::new(Mutex::new(VecDeque::<String>::with_capacity(LOG_TAIL)));
     let stderr = child.stderr.take().map(|pipe| {
         let (duration, log) = (Arc::clone(&duration), Arc::clone(&log));
         std::thread::spawn(move || {
@@ -139,8 +144,10 @@ fn run(
                     *duration.lock().unwrap_or_else(|p| p.into_inner()) = Some(seconds);
                 }
                 let mut log = log.lock().unwrap_or_else(|p| p.into_inner());
-                log.push_str(&line);
-                log.push('\n');
+                if log.len() == LOG_TAIL {
+                    log.pop_front();
+                }
+                log.push_back(line);
             }
         })
     });
@@ -161,7 +168,12 @@ fn run(
     if !status.success() {
         let _ = fs::remove_file(&partial);
         let log = log.lock().unwrap_or_else(|p| p.into_inner());
-        let tail: String = log.lines().rev().take(4).collect::<Vec<_>>().join(" | ");
+        let tail: String = log
+            .iter()
+            .rev()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .join(" | ");
         return Err(MediaError::Failed(tail));
     }
     fs::rename(&partial, output)?;

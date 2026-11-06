@@ -1,10 +1,9 @@
 import { PRESETS } from "@/features/eq/presets";
-import { SPEED_PRESETS } from "@/features/player/limits";
+import { formatSpeed, SPEED_PRESETS } from "@/features/player/limits";
 import { detachVideo, dockVideo } from "@/features/video/detach";
 import { t } from "@/i18n";
-import type { ChannelMode } from "@/lib/bindings";
 import { type ShortcutId, shortcutLabel, shortcuts } from "@/lib/shortcuts";
-import { useEqStore } from "@/stores/eq";
+import { CHANNEL_MODES, useEqStore } from "@/stores/eq";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
 import { useUiStore } from "@/stores/ui";
@@ -18,15 +17,6 @@ export interface Action {
   shortcut?: ShortcutId;
   run: () => void;
 }
-
-const CHANNEL_MODES: ChannelMode[] = [
-  "stereo",
-  "left",
-  "right",
-  "mono",
-  "removeCenter",
-  "isolateCenter",
-];
 
 /** Lower case without accents, so "velocita" finds "Velocità". */
 export const normalize = (text: string) =>
@@ -66,7 +56,7 @@ export function buildActions(): Action[] {
     ...fromShortcuts,
     ...SPEED_PRESETS.map((speed) => ({
       id: `speed-${speed}`,
-      label: `${t.transport.speed} ${Math.round(speed * 100)}%`,
+      label: `${t.transport.speed} ${formatSpeed(speed)}`,
       group: g.playback,
       run: () => player.setSpeed(speed),
     })),

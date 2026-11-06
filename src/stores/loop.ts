@@ -15,6 +15,9 @@ export interface LoopOptions {
   gap: number;
 }
 
+const clampLeadIn = (seconds: number) => clamp(seconds, LEAD_IN.min, LEAD_IN.max);
+const clampGap = (seconds: number) => clamp(seconds, GAP.min, GAP.max);
+
 /** Ordered, inside the track and long enough; `null` if it cannot be. */
 export function normalizeRegion(a: number, b: number, duration: number): LoopRegion | null {
   const start = clamp(Math.min(a, b), 0, duration);
@@ -93,15 +96,15 @@ export const useLoopStore = create<LoopState>((set, get) => ({
     if (get().region()) set({ enabled: !get().enabled });
   },
 
-  setLeadIn: (seconds) => set({ leadIn: clamp(seconds, LEAD_IN.min, LEAD_IN.max) }),
-  setGap: (seconds) => set({ gap: clamp(seconds, GAP.min, GAP.max) }),
+  setLeadIn: (seconds) => set({ leadIn: clampLeadIn(seconds) }),
+  setGap: (seconds) => set({ gap: clampGap(seconds) }),
   clear: () => set({ start: null, end: null, enabled: false }),
   restore: (saved) =>
     set({
       start: saved.start,
       end: saved.end,
       enabled: saved.enabled,
-      leadIn: clamp(saved.leadIn, LEAD_IN.min, LEAD_IN.max),
-      gap: clamp(saved.gap, GAP.min, GAP.max),
+      leadIn: clampLeadIn(saved.leadIn),
+      gap: clampGap(saved.gap),
     }),
 }));

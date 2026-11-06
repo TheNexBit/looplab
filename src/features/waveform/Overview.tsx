@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
-import { currentPosition, usePlayerStore } from "@/stores/player";
+import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { useViewStore } from "@/stores/view";
 import { drawWaveform } from "./draw";
 import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
@@ -59,9 +59,7 @@ export function Overview() {
 
     const timeAt = (clientX: number) => {
       const rect = element.getBoundingClientRect();
-      return (
-        ((clientX - rect.left) / rect.width) * (usePlayerStore.getState().track?.duration ?? 0)
-      );
+      return ((clientX - rect.left) / rect.width) * trackDuration();
     };
 
     // Like a DAW overview: a click anywhere moves the playhead there, a drag scrolls the view

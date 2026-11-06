@@ -1,31 +1,16 @@
 import { Power } from "lucide-react";
+import { Chip } from "@/components/ui/Chip";
 import { NumberField } from "@/components/ui/NumberField";
 import { t } from "@/i18n";
-import type { BandKind, ChannelMode } from "@/lib/bindings";
+import type { BandKind } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
-import { FREQUENCY, GAIN, hasGain, Q, useEqStore } from "@/stores/eq";
+import { CHANNEL_MODES, FREQUENCY, GAIN, hasGain, Q, useEqStore } from "@/stores/eq";
 import { sectionColor } from "@/stores/markers";
 import { EqCurve } from "./EqCurve";
 import { PRESETS } from "./presets";
 import { formatFrequency, parseFrequency } from "./scale";
 
 const KINDS: BandKind[] = ["lowShelf", "peak", "highShelf", "highPass", "lowPass"];
-const CHANNEL_MODES: ChannelMode[] = [
-  "stereo",
-  "left",
-  "right",
-  "mono",
-  "removeCenter",
-  "isolateCenter",
-];
-
-const chip = (active: boolean) =>
-  cn(
-    "h-6 rounded-control px-2 text-[11px] whitespace-nowrap transition-[color,filter]",
-    active
-      ? "border border-black bg-accent font-semibold text-on-accent"
-      : "hw text-fg-muted hover:text-fg hover:brightness-125",
-  );
 
 /** Side panel tab: presets, A/B bypass, response curve, band settings and channel mode. */
 export function EqPanel() {
@@ -39,31 +24,28 @@ export function EqPanel() {
       <div className="flex flex-wrap items-center gap-1">
         <span className="panel-label mr-1">{t.eq.presets.title}</span>
         {PRESETS.map((preset) => (
-          <button
+          <Chip
             key={preset.id}
-            type="button"
-            className={chip(false)}
             onClick={() => {
               const next = preset.settings ?? flat;
               if (next) setSettings({ ...next, bypass: false });
             }}
           >
             {preset.label}
-          </button>
+          </Chip>
         ))}
       </div>
 
       <div className="flex items-center justify-between">
         <h3 className="panel-label">{t.eq.title}</h3>
-        <button
-          type="button"
+        <Chip
           title={t.eq.bypassHint}
+          active={settings.bypass}
           aria-pressed={settings.bypass}
           onClick={() => setBypass(!settings.bypass)}
-          className={chip(settings.bypass)}
         >
           {t.eq.bypass}
-        </button>
+        </Chip>
       </div>
 
       <EqCurve />
@@ -140,15 +122,14 @@ export function EqPanel() {
         <h3 className="panel-label">{t.eq.channels.title}</h3>
         <div className="grid grid-cols-3 gap-1">
           {CHANNEL_MODES.map((mode) => (
-            <button
+            <Chip
               key={mode}
-              type="button"
+              active={channels === mode}
               aria-pressed={channels === mode}
               onClick={() => setChannels(mode)}
-              className={chip(channels === mode)}
             >
               {t.eq.channels[mode]}
-            </button>
+            </Chip>
           ))}
         </div>
         <p className="text-[11px] text-fg-subtle">{t.eq.channels.hint}</p>

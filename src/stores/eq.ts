@@ -19,6 +19,16 @@ export interface EqData {
   bands: BandData[];
 }
 
+/** Every channel mode, in the order the EQ panel and the command palette show them. */
+export const CHANNEL_MODES: ChannelMode[] = [
+  "stereo",
+  "left",
+  "right",
+  "mono",
+  "removeCenter",
+  "isolateCenter",
+];
+
 /** Limits of the band controls. */
 export const FREQUENCY = { min: 20, max: 20_000 } as const;
 export const GAIN = { min: -18, max: 18, step: 0.5 } as const;

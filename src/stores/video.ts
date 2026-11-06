@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import type { AppError } from "@/lib/bindings";
+import { clamp } from "@/lib/time";
 
 export type VideoStatus = "none" | "loading" | "proxying" | "ready" | "error";
 export type VideoDock = "top" | "side";
 
 /** Panel size limits, in CSS pixels (height when on top, width when at the side). */
-export const VIDEO_SIZE = { min: 120, max: 900, default: 280 } as const;
+const VIDEO_SIZE = { min: 120, max: 900, default: 280 } as const;
 
 const PREFS_KEY = "looplab.video";
 
@@ -66,8 +67,7 @@ export const useVideoStore = create<VideoState>((set, get) => {
     detached: false,
     setStatus: (status, extra) => set({ status, ...extra }),
     setDock: (dock) => prefs({ dock }),
-    setSize: (size) =>
-      prefs({ size: Math.round(Math.min(VIDEO_SIZE.max, Math.max(VIDEO_SIZE.min, size))) }),
+    setSize: (size) => prefs({ size: Math.round(clamp(size, VIDEO_SIZE.min, VIDEO_SIZE.max)) }),
     toggleCollapsed: () => prefs({ collapsed: !get().collapsed }),
     setDetached: (detached) => set({ detached }),
   };

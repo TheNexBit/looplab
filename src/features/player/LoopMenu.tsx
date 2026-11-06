@@ -1,6 +1,7 @@
 import { ChevronDown, Repeat, Trash2 } from "lucide-react";
 import { Popover } from "radix-ui";
 import { Button } from "@/components/ui/Button";
+import { floatingPanel } from "@/components/ui/menu";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
@@ -56,7 +57,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           <Popover.Content
             side="top"
             sideOffset={8}
-            className="z-50 w-80 space-y-4 rounded-panel border border-edge bg-bg-from p-4 text-sm shadow-[0_8px_24px_rgb(0_0_0/0.6),inset_0_1px_0_rgb(255_255_255/0.05)]"
+            className={`${floatingPanel} w-80 space-y-4 p-4`}
           >
             <p className="font-mono text-xs text-lcd-fg tabular">
               {region

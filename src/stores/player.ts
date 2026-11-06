@@ -59,6 +59,9 @@ export function currentPosition(state: PlayerState = usePlayerStore.getState()):
   return clamp(advanceInLoop(state.anchorPosition, elapsed, loop.region(), loop), 0, duration);
 }
 
+/** Length of the open track in seconds, 0 when none is open. */
+export const trackDuration = () => usePlayerStore.getState().track?.duration ?? 0;
+
 /** Pushes speed and pitch to the engine (also after a track change, in case it was restarted). */
 function sendTempoAndPitch({ speed, semitones, cents }: PlayerState) {
   void commands.setSpeed(speed);

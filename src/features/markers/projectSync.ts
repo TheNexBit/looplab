@@ -40,7 +40,7 @@ function apply(data: ProjectData) {
 let defaults: Promise<ProjectData> | null = null;
 
 /** Settings of a track with no project yet, asked once to Rust (the only copy of the defaults). */
-export function projectDefaults(): Promise<ProjectData> {
+function projectDefaults(): Promise<ProjectData> {
   defaults ??= commands.defaultProject().then((file) => {
     const data = fromFile(file);
     useEqStore.getState().setFlat(data.eq);

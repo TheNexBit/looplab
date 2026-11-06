@@ -29,7 +29,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   - `commands/waveform.rs`: `get_peaks` restituisce byte grezzi; tauri-specta non sa descriverli, quindi è
     registrato a parte in `main.rs` e avvolto a mano in `src/features/waveform/peaks.ts`.
   - `project.rs`: schema del `.looplab.json` (unica definizione; i tipi TS sono generati), lettura/scrittura
-    atomica, ripiego nella cartella dati. `recent.rs`: file recenti. I valori predefiniti vivono solo qui
+    atomica, ripiego nella cartella dati. `recent.rs`: file recenti. `json_file.rs`: lettura e scrittura
+    atomica (file temporaneo + rinomina) dei file JSON dell'app, usata da progetti, recenti e finestre. I valori predefiniti vivono solo qui
     (`default_project`). EQ e canali usano direttamente i tipi di `audio-engine` (feature `typed`).
   - `media.rs`: FFmpeg facoltativo (estrazione audio, proxy H.264), cache in `paths::cache_dir`.
   - `window.rs` + `window_state.rs`: finestra principale e finestra video nascosta; posizioni per monitor.
@@ -43,6 +44,13 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   alla chiusura; non sovrascrive mai un file illeggibile.
 - `features/video/videoLoader.ts`, `detach.ts`: video del brano, proxy, finestra staccata.
 
+## Forma d'onda dettagliata
+
+- `features/waveform/DetailView.tsx` disegna (canvas a ogni fotogramma), `gestures.ts` gestisce mouse e rotella.
+- Bandierine dei marker e corsia delle sezioni stanno su una striscia lunga quanto il brano
+  (`useTimeStrip.ts`) che a ogni fotogramma viene solo spostata e allungata: scorrere e zoomare non le
+  ridisegna. `pointer.ts`: soglie dei gesti e `timeAtX` (posizione del mouse → tempo).
+
 ## Tipi condivisi Rust ↔ TypeScript
 
 I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
@@ -50,14 +58,14 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 
 ## Frontend
 
-| Cartella           | Contenuto                                                                                       |
-| ------------------ | ----------------------------------------------------------------------------------------------- |
-| `app/`             | shell: layout, barre, pannello laterale, palette, impostazioni, informazioni, azioni            |
-| `features/<nome>/` | componenti, hook e logica di una funzione: player, library, waveform, markers, eq, video        |
-| `components/ui/`   | componenti base su Radix (Button, Tooltip, Slider, NumberField, Kbd, Dialog, stili dei menu)    |
-| `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                              |
-| `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings` |
-| `i18n/`            | tutti i testi della UI                                                                          |
+| Cartella           | Contenuto                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `app/`             | shell: layout, barre, pannello laterale, palette, impostazioni, informazioni, azioni                   |
+| `features/<nome>/` | componenti, hook e logica di una funzione: player, library, waveform, markers, eq, video               |
+| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Kbd, Dialog, stili dei menu)     |
+| `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                     |
+| `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`        |
+| `i18n/`            | tutti i testi della UI                                                                                 |
 | `styles/theme.css` | unica fonte dei token del tema "Rack" (`@theme` Tailwind v4), font e utility `hw`/`well`/`panel-label` |
 
 ## Regole

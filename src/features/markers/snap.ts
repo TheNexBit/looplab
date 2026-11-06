@@ -1,11 +1,11 @@
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
-import { currentPosition, usePlayerStore } from "@/stores/player";
+import { currentPosition, trackDuration } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 
 /** How close, in CSS pixels, the pointer must come to a point for the magnet to catch it. */
-export const SNAP_PX = 10;
+const SNAP_PX = 10;
 
 /** The point closest to `time` within `threshold` seconds, or `time` itself if none is. */
 export function nearestWithin(time: number, points: number[], threshold: number): number {
@@ -49,7 +49,7 @@ export function snapTime(
   const region = exclude.loop ? null : useLoopStore.getState().region();
   const points = [
     0,
-    usePlayerStore.getState().track?.duration ?? 0,
+    trackDuration(),
     ...(exclude.playhead ? [] : [currentPosition()]),
     ...(region ? [region.start, region.end] : []),
     ...markers.filter((m) => m.id !== exclude.markerId).map((m) => m.time),

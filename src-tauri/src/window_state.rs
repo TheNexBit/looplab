@@ -4,12 +4,11 @@
 //! last seen on an unplugged screen comes back on the main one.
 
 use std::collections::HashMap;
-use std::fs;
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewWindow};
 
-use crate::paths;
+use crate::{json_file, paths};
 
 /// Physical pixels: they map exactly to one monitor whatever its scaling.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -23,9 +22,7 @@ struct Geometry {
 
 fn read(app: &AppHandle) -> HashMap<String, Geometry> {
     paths::window_state_file(app)
-        .ok()
-        .and_then(|file| fs::read_to_string(file).ok())
-        .and_then(|text| serde_json::from_str(&text).ok())
+        .map(|file| json_file::read_or_default(&file))
         .unwrap_or_default()
 }
 
@@ -80,13 +77,7 @@ pub fn save(window: &WebviewWindow) {
         },
     };
     all.insert(window.label().to_owned(), geometry);
-    if let (Ok(file), Ok(json)) = (
-        paths::window_state_file(app),
-        serde_json::to_string_pretty(&all),
-    ) {
-        if let Some(dir) = file.parent() {
-            let _ = fs::create_dir_all(dir);
-        }
-        let _ = fs::write(file, json);
+    if let Ok(file) = paths::window_state_file(app) {
+        let _ = json_file::write(&file, &all);
     }
 }

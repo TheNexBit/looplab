@@ -1,5 +1,5 @@
 /** File types offered by the open dialog and accepted by drag & drop. */
-export const AUDIO_EXTENSIONS = ["mp3", "wav", "flac", "m4a", "aac", "ogg", "aiff"] as const;
+const AUDIO_EXTENSIONS = ["mp3", "wav", "flac", "m4a", "aac", "ogg", "aiff"] as const;
 /** Only the audio track of videos plays for now; the picture arrives in phase 6. */
 export const VIDEO_EXTENSIONS = ["mp4", "mov", "mkv", "webm"] as const;
 

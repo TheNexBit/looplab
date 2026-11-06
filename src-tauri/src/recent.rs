@@ -1,9 +1,10 @@
 //! The list of recently opened tracks, kept in the app data folder.
 
-use std::fs;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
+
+use crate::json_file;
 
 const FILE: &str = "recent.json";
 pub const LIMIT: usize = 10;
@@ -23,17 +24,11 @@ struct Stored {
 }
 
 fn read(data_dir: &Path) -> Vec<String> {
-    fs::read_to_string(data_dir.join(FILE))
-        .ok()
-        .and_then(|text| serde_json::from_str::<Stored>(&text).ok())
-        .map(|stored| stored.paths)
-        .unwrap_or_default()
+    json_file::read_or_default::<Stored>(&data_dir.join(FILE)).paths
 }
 
 fn write(data_dir: &Path, paths: Vec<String>) -> std::io::Result<()> {
-    fs::create_dir_all(data_dir)?;
-    let json = serde_json::to_string_pretty(&Stored { paths }).map_err(std::io::Error::other)?;
-    fs::write(data_dir.join(FILE), json)
+    json_file::write(&data_dir.join(FILE), &Stored { paths })
 }
 
 /// Most recent first, at most `LIMIT`.
@@ -70,6 +65,8 @@ pub fn remove(data_dir: &Path, path: &str) -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::*;
     use crate::project::tests::temp_dir;
 
