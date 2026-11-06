@@ -72,6 +72,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 ## Pratica
 
 - `stores/practice.ts`: tempo del brano (salvato nel progetto) e contatore delle ripetizioni.
+- `features/practice/TempoModule.tsx`: tempo, metrica, batti, metronomo e conteggio nella barra di trasporto;
+  `PracticePanel.tsx` (scheda Pratica): speed trainer e diario.
 - `features/practice/tempo.ts`: calcoli puri (battuta tap, durata del conteggio, velocità dello speed trainer).
 - `features/practice/trainer.ts`: conta le ripetizioni dal contatore del motore e imposta la velocità.
 - `features/player/syncEngine.ts` manda al motore tempo, conteggio e metronomo; la griglia dei battiti

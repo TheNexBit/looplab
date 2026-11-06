@@ -16,6 +16,8 @@ export interface NumberFieldProps {
   parse?: (text: string) => number | null;
   disabled?: boolean;
   className?: string;
+  /** "display": big amber digits for an LCD (the dock's tempo); "field" is the usual small field */
+  variant?: "field" | "display";
 }
 
 /** Plain number, accepting a comma as decimal separator and ignoring units like "%". */
@@ -36,6 +38,7 @@ export function NumberField({
   parse = parseNumber,
   disabled = false,
   className,
+  variant = "field",
 }: NumberFieldProps) {
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -75,7 +78,10 @@ export function NumberField({
       onBlur={commit}
       onKeyDown={onKeyDown}
       className={cn(
-        "h-6 w-16 rounded-control border border-transparent bg-transparent px-1.5 text-right font-mono text-xs text-lcd-fg tabular transition-colors",
+        "h-6 rounded-control border border-transparent bg-transparent font-mono text-lcd-fg tabular transition-colors",
+        variant === "field"
+          ? "w-16 px-1.5 text-right text-xs"
+          : "w-12 px-0 text-left text-[18px] leading-none font-medium xl:w-14 xl:text-[20px] [text-shadow:0_0_8px_rgb(255_170_60/0.45)]",
         "hover:border-border focus:border-accent focus:bg-well focus:outline-none disabled:pointer-events-none",
         className,
       )}

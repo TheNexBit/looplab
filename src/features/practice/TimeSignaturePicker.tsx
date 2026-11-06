@@ -15,7 +15,14 @@ const p = t.practice;
  * The time signature as DAWs show it ("7/8"): click for the usual ones and +/− for the
  * rest, or turn the mouse wheel over it to change the beats in a bar. Nothing to type.
  */
-export function TimeSignaturePicker() {
+export function TimeSignaturePicker({
+  side = "bottom",
+  variant = "panel",
+}: {
+  side?: "top" | "bottom";
+  /** "display": digits inside an LCD (the dock); "panel": its own small display */
+  variant?: "panel" | "display";
+}) {
   const beats = usePracticeStore((s) => s.beatsPerBar);
   const unit = usePracticeStore((s) => s.beatUnit);
   const set = (nextBeats: number, nextUnit = unit) =>
@@ -46,7 +53,11 @@ export function TimeSignaturePicker() {
             type="button"
             ref={ref}
             aria-label={`${p.meter}: ${beats}/${unit}`}
-            className="well flex h-7 min-w-14 items-center justify-center rounded-control px-2 font-mono text-sm font-medium text-lcd-fg tabular hover:brightness-125"
+            className={
+              variant === "panel"
+                ? "well flex h-7 min-w-14 items-center justify-center rounded-control px-2 font-mono text-sm font-medium text-lcd-fg tabular hover:brightness-125"
+                : "flex h-6 min-w-10 items-center justify-center rounded-control px-1 font-mono text-[15px] font-medium text-lcd-fg tabular hover:brightness-125"
+            }
           >
             {beats}/{unit}
           </button>
@@ -54,7 +65,7 @@ export function TimeSignaturePicker() {
       </Tooltip>
       <Popover.Portal>
         <Popover.Content
-          side="bottom"
+          side={side}
           align="start"
           sideOffset={6}
           className={`${floatingPanel} w-64 space-y-3 p-3`}

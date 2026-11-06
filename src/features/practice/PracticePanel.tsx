@@ -1,9 +1,8 @@
-import { Crosshair, Hand, NotebookPen, X } from "lucide-react";
+import { NotebookPen } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { NumberField, parseNumber } from "@/components/ui/NumberField";
-import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { formatSpeed } from "@/features/player/limits";
 import { t } from "@/i18n";
@@ -13,10 +12,8 @@ import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
-import { setDownbeatHere, tapBeat } from "./actions";
 import { formatDuration, trackSummary } from "./diaryStats";
-import { TimeSignaturePicker } from "./TimeSignaturePicker";
-import { BPM, COUNT_IN_CHOICES, repetitionsToNextStep } from "./tempo";
+import { repetitionsToNextStep } from "./tempo";
 import { trainerPlan } from "./trainer";
 
 const p = t.practice;
@@ -27,118 +24,29 @@ const parsePercent = (text: string) => {
 };
 const FIELD = "well h-6 w-16 rounded-control";
 
-function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+/** A section of the tab; its explanation shows on hover over the title, so the panel stays clean. */
+function Group({
+  title,
+  hint,
+  action,
+  children,
+}: {
+  title: string;
+  hint: string;
+  /** Key or link on the right of the title */
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="space-y-2">
-      <h3 className="panel-label">{title}</h3>
+      <div className="flex min-h-6 items-center justify-between gap-2">
+        <Tooltip label={hint}>
+          <h3 className="panel-label cursor-help">{title}</h3>
+        </Tooltip>
+        {action}
+      </div>
       {children}
-      {hint && <p className="text-[11px] text-fg-subtle">{hint}</p>}
     </section>
-  );
-}
-
-function TempoGroup() {
-  const bpm = usePracticeStore((s) => s.bpm);
-  const hasTrack = usePlayerStore((s) => s.track !== null);
-  const showGrid = useSettingsStore((s) => s.showGrid);
-  return (
-    <Group title={p.tempo} hint={p.bpmHint}>
-      <div className="flex flex-wrap items-center gap-1.5">
-        <NumberField
-          label={p.bpm}
-          value={bpm ?? BPM.default}
-          min={BPM.min}
-          max={BPM.max}
-          step={BPM.step}
-          onChange={(value) => usePracticeStore.getState().setBpm(value)}
-          format={(value) => (bpm === null ? p.noBpm : `${value} ${p.bpm}`)}
-          className={`${FIELD} w-24`}
-        />
-        <Tooltip label={p.tapHint} shortcut="tapTempo">
-          <Button variant="hardware" disabled={!hasTrack} onClick={tapBeat}>
-            <Hand className="size-3.5" />
-            {p.tap}
-          </Button>
-        </Tooltip>
-        {bpm !== null && (
-          <Button
-            size="icon"
-            className="size-6"
-            onClick={() => usePracticeStore.getState().setBpm(null)}
-            aria-label={p.clearBpm}
-          >
-            <X className="size-3.5" />
-          </Button>
-        )}
-      </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Tooltip label={p.gridHint}>
-          <Chip
-            active={showGrid}
-            aria-pressed={showGrid}
-            onClick={() => useSettingsStore.getState().update({ showGrid: !showGrid })}
-          >
-            {p.grid}
-          </Chip>
-        </Tooltip>
-        <TimeSignaturePicker />
-        <Tooltip label={p.downbeatHint} shortcut="setDownbeat">
-          <Button variant="hardware" disabled={!hasTrack || bpm === null} onClick={setDownbeatHere}>
-            <Crosshair className="size-3.5" />
-            {p.downbeat}
-          </Button>
-        </Tooltip>
-      </div>
-    </Group>
-  );
-}
-
-function ClickGroup() {
-  const settings = useSettingsStore();
-  const hasBpm = usePracticeStore((s) => s.bpm !== null);
-  return (
-    <>
-      <Group title={p.countIn} hint={p.countInHint}>
-        <div className="flex flex-wrap gap-1">
-          {COUNT_IN_CHOICES.map((bars) => (
-            <Chip
-              key={bars}
-              active={settings.countInBars === bars}
-              aria-pressed={settings.countInBars === bars}
-              onClick={() => settings.update({ countInBars: bars })}
-            >
-              {bars === 0 ? p.countInOff : bars === 1 ? p.oneBar : `${bars} ${p.bars}`}
-            </Chip>
-          ))}
-        </div>
-      </Group>
-      <Group title={p.metronome} hint={p.metronomeHint}>
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip
-            active={settings.metronome}
-            aria-pressed={settings.metronome}
-            onClick={() => settings.update({ metronome: !settings.metronome })}
-          >
-            {p.metronome}
-          </Chip>
-          <Slider
-            label={p.volume}
-            value={settings.clickVolume}
-            defaultValue={0.6}
-            min={SETTING_LIMITS.clickVolume.min}
-            max={SETTING_LIMITS.clickVolume.max}
-            step={SETTING_LIMITS.clickVolume.step}
-            onChange={(clickVolume) => settings.update({ clickVolume })}
-            format={(value) => `${Math.round(value * 100)}%`}
-            parse={parsePercent}
-            trackClassName="w-16"
-          />
-        </div>
-      </Group>
-      {!hasBpm && (settings.countInBars > 0 || settings.metronome) && (
-        <p className="well rounded-control px-2 py-1.5 text-[11px] text-lcd-fg">{p.needsTempo}</p>
-      )}
-    </>
   );
 }
 
@@ -168,14 +76,19 @@ function TrainerGroup() {
   );
 
   return (
-    <Group title={p.trainer} hint={p.trainerHint}>
-      <Chip
-        active={settings.trainer}
-        aria-pressed={settings.trainer}
-        onClick={() => settings.update({ trainer: !settings.trainer })}
-      >
-        {p.trainerOn}
-      </Chip>
+    <Group
+      title={p.trainer}
+      hint={p.trainerHint}
+      action={
+        <Chip
+          active={settings.trainer}
+          aria-pressed={settings.trainer}
+          onClick={() => settings.update({ trainer: !settings.trainer })}
+        >
+          {p.trainerOn}
+        </Chip>
+      }
+    >
       <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
         {percentField("trainerFrom", p.from)}
         {percentField("trainerTo", p.to)}
@@ -222,7 +135,16 @@ function DiaryGroup() {
   const summary = trackSummary(entries, path, new Date());
   const longest = Math.max(60, ...summary.week.map((day) => day.seconds));
   return (
-    <Group title={t.diary.title} hint={t.diary.hint}>
+    <Group
+      title={t.diary.title}
+      hint={t.diary.hint}
+      action={
+        <Button variant="ghost" onClick={() => useUiStore.getState().openDialog("diary")}>
+          <NotebookPen className="size-3.5" />
+          {t.diary.open}
+        </Button>
+      }
+    >
       <div className="well space-y-2 rounded-control px-2.5 py-2">
         <div className="flex justify-between font-mono text-[11px] tabular">
           <span className="text-lcd-fg">
@@ -248,20 +170,17 @@ function DiaryGroup() {
           ))}
         </div>
       </div>
-      <Button variant="hardware" onClick={() => useUiStore.getState().openDialog("diary")}>
-        <NotebookPen className="size-3.5" />
-        {t.diary.open}
-      </Button>
     </Group>
   );
 }
 
-/** Side panel tab: tempo, count-in, metronome, the speed trainer and the diary. */
+/**
+ * Side panel tab: the speed trainer and the diary. Tempo, metronome and count-in live in the
+ * transport dock (`TempoModule`), where every DAW keeps them.
+ */
 export function PracticePanel() {
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto p-3">
-      <TempoGroup />
-      <ClickGroup />
+    <div className="flex h-full flex-col gap-5 overflow-y-auto p-3">
       <TrainerGroup />
       <DiaryGroup />
     </div>

@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "ghost" | "hardware";
-type Size = "md" | "icon" | "lg-icon" | "key" | "lg-key";
+type Size = "md" | "icon" | "lg-icon" | "key" | "lg-key" | "play";
 type Led = "amber" | "green";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -26,6 +26,8 @@ const sizes: Record<Size, string> = {
   /** Dock key: tall enough for an icon over its lamp */
   key: "h-12 w-11 flex-col gap-1",
   "lg-key": "h-12 w-14 flex-col gap-1",
+  /** Play key of the dock: as wide as the other keys in narrow windows */
+  play: "h-12 w-11 flex-col gap-1 xl:w-14",
 };
 
 const lamps: Record<Led, string> = {

@@ -221,6 +221,13 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Tempo e click nella barra di trasporto, come nei DAW** (scelto dall'utente tra tre mockup:
+  https://claude.ai/artifact/5rDvvAWCwgy2egxjZTjGTW): display ambra "Tempo" con BPM e metrica (clic per scrivere,
+  rotella o ↑↓ per cambiare), ▾ per Batti, Primo battito qui, Griglia e Tempo sconosciuto; tasti Batti, Metronomo
+  (spia) e Conteggio (mostra "No", "1 bt"…, apre conteggio e volume). Sotto i 1280 px Batti e Conteggio si
+  nascondono e restano nel pannello ▾; display e Play si stringono: la barra entra anche a 900 px (misurato a
+  900, 1024 e 1280). La scheda Pratica tiene solo speed trainer e diario; le spiegazioni sono suggerimenti
+  sui titoli.
 - **Scorrimento fluido** con Maiusc+rotella (e scorrimento orizzontale del touchpad): la vista scivola come lo zoom
   invece di saltare a ogni scatto; più scatti veloci si sommano.
 - **Inizio e fine del brano**: tasti Home e Fine (come in Reaper e Ableton), anche nella palette e assegnabili.

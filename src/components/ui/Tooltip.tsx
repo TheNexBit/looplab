@@ -23,7 +23,7 @@ export function Tooltip({ label, shortcut, children }: TooltipProps) {
       <RadixTooltip.Portal>
         <RadixTooltip.Content
           sideOffset={6}
-          className="z-50 flex items-center gap-2 rounded-control border border-edge bg-bg-from px-2.5 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.6)]"
+          className="z-50 flex max-w-80 items-center gap-2 rounded-control border border-edge bg-bg-from px-2.5 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.6)]"
         >
           {label}
           {shortcut && <Kbd shortcut={shortcut} />}

@@ -4,6 +4,7 @@ import { Chip } from "@/components/ui/Chip";
 import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
@@ -22,11 +23,11 @@ const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
 
 /** Speed and pitch faders line up one under the other */
 const LABEL = "w-16";
-const TRACK = "w-20 lg:w-24";
+const TRACK = "w-16 lg:w-24";
 
 const signed = (value: number, unit: string) => `${value > 0 ? "+" : ""}${value} ${unit}`;
 
-/** Bottom dock: transport, loop, speed and pitch. */
+/** Bottom dock: transport, loop, tempo and click (like every DAW), speed and pitch. */
 export function TransportDock() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const playing = usePlayerStore((s) => s.playing);
@@ -40,12 +41,12 @@ export function TransportDock() {
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
-    <footer className="flex h-[88px] shrink-0 items-center gap-2 border-t border-black bg-[linear-gradient(#26282c,#1b1c1f)] px-3 lg:gap-3.5 lg:px-4 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]">
+    <footer className="flex h-[88px] shrink-0 items-center gap-1 border-t border-black bg-[linear-gradient(#26282c,#1b1c1f)] px-2 lg:gap-2 xl:gap-2.5 xl:px-4 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]">
       <div className={GROUP}>
         <Tooltip label={playLabel} shortcut="playPause">
           <Button
             variant="hardware"
-            size="lg-key"
+            size="play"
             led="green"
             active={playing}
             disabled={!hasTrack}
@@ -109,6 +110,8 @@ export function TransportDock() {
         </Tooltip>
       </div>
 
+      <TempoModule />
+
       {/* Speed over pitch, like two strips of a mixer: the dock fits the narrowest window */}
       <div className="well ml-auto grid shrink-0 gap-1 rounded-panel px-3 py-1.5">
         <div className="flex items-center gap-1">
@@ -131,7 +134,7 @@ export function TransportDock() {
               active={speed === preset}
               onClick={() => setSpeed(preset)}
               aria-label={`${t.transport.speedPreset} ${formatSpeed(preset)}`}
-              className="h-[22px] px-1.5 font-mono text-[10px] tabular"
+              className="hidden h-[22px] px-1.5 font-mono text-[10px] tabular xl:inline-block"
             >
               {formatSpeed(preset)}
             </Chip>
