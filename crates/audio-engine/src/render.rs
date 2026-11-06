@@ -101,11 +101,13 @@ impl Reader {
             }
 
             if self.gap_left > 0 {
-                // The count-in is the end of the gap: one click per beat, the first accented
+                // The count-in is the end of the gap: one click per beat, the first of every
+                // bar accented (two bars of 4/4: beats 1 and 5), like the metronome
                 if self.gap_left <= self.count_in_span && click.beat > 0 {
                     let into = self.count_in_span - self.gap_left;
                     if into.is_multiple_of(click.beat) {
-                        clicks.push(at, into == 0);
+                        let beat = into / click.beat;
+                        clicks.push(at, beat.is_multiple_of(click.bar_length()));
                     }
                 }
                 self.gap_left -= 1;
@@ -852,6 +854,32 @@ mod tests {
             (0.4..=0.6).contains(&waited),
             "waited {waited} s for 2 beats of 0.25 s"
         );
+    }
+
+    #[test]
+    fn count_in_accents_the_first_beat_of_every_bar() {
+        // Two bars of 3/4: accents on beats 1 and 4
+        let click = ClickSettings {
+            beat: 100,
+            count_in: 6,
+            beats_per_bar: 3,
+            volume: 1.0,
+            ..ClickSettings::default()
+        };
+        let mut reader = Reader::new(48_000);
+        let mut clicks = ClickQueue::new();
+        reader.start_count_in(&click);
+        let mut silence = vec![0.0; 600 * CHANNELS];
+        reader.read(
+            None,
+            &LoopSettings::default(),
+            &click,
+            0,
+            &mut clicks,
+            &mut silence,
+        );
+        let accents: Vec<bool> = std::iter::from_fn(|| clicks.pop_due(f64::MAX)).collect();
+        assert_eq!(accents, [true, false, false, true, false, false]);
     }
 
     #[test]

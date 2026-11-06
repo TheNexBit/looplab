@@ -30,7 +30,8 @@ impl ClickSettings {
         self.beat * u64::from(self.count_in)
     }
 
-    fn bar_length(&self) -> u64 {
+    /// Beats in a bar (the default when none is set).
+    pub(crate) fn bar_length(&self) -> u64 {
         if self.beats_per_bar == 0 {
             DEFAULT_BEATS_PER_BAR
         } else {
