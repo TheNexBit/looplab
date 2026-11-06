@@ -12,20 +12,25 @@ pub mod click;
 pub mod decode;
 pub mod dsp;
 pub mod engine;
+pub mod export;
 pub mod load;
 pub mod pcm;
 pub mod peaks;
 mod render;
 pub mod resample;
+pub mod spectrum;
 pub mod time;
+pub mod wav;
 
 pub use click::ClickSettings;
 pub use dsp::channels::ChannelMode;
 pub use dsp::eq::{BANDS, Band, BandKind, EqSettings};
 pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status};
+pub use export::{ExportError, ExportSettings};
 pub use load::{LoadError, LoadedTrack, load};
 pub use pcm::Pcm;
 pub use peaks::Peaks;
+pub use wav::BitDepth;
 
 /// Engine version, shown in the UI to prove the Rust ↔ UI link works.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

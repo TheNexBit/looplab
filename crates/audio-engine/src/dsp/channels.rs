@@ -29,7 +29,7 @@ pub enum ChannelMode {
 }
 
 #[inline]
-fn apply(mode: ChannelMode, [l, r]: [f32; CHANNELS]) -> [f32; CHANNELS] {
+pub(crate) fn apply(mode: ChannelMode, [l, r]: [f32; CHANNELS]) -> [f32; CHANNELS] {
     match mode {
         ChannelMode::Stereo => [l, r],
         ChannelMode::Left => [l, l],
@@ -61,6 +61,15 @@ impl Channels {
             previous: ChannelMode::Stereo,
             fade: 1.0,
             step: 1.0 / (FADE_SECONDS * sample_rate as f32).max(1.0),
+        }
+    }
+
+    /// Already in `mode`, with no crossfade (offline rendering).
+    pub fn with_mode(sample_rate: u32, mode: ChannelMode) -> Self {
+        Self {
+            current: mode,
+            previous: mode,
+            ..Self::new(sample_rate)
         }
     }
 

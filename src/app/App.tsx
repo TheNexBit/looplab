@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TooltipProvider } from "@/components/ui/Tooltip";
+import { ExportDialog } from "@/features/export/ExportDialog";
 import { DropOverlay } from "@/features/library/DropOverlay";
 import { EmptyState } from "@/features/library/EmptyState";
 import { ErrorBanner } from "@/features/library/ErrorBanner";
@@ -96,6 +97,7 @@ export function App() {
         <SettingsDialog />
         <AboutDialog />
         <DiaryDialog />
+        <ExportDialog />
       </div>
     </TooltipProvider>
   );

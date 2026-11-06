@@ -4,6 +4,7 @@ import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { neighbourPoint, useMarkersStore } from "@/stores/markers";
+import { useNotesStore } from "@/stores/notes";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useSettingsStore } from "@/stores/settings";
@@ -64,4 +65,6 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   tapTempo: () => hasTrack() && tapBeat(),
   toggleMetronome,
   setDownbeat: () => hasTrack() && setDownbeatHere(),
+  toggleNotes: () => useNotesStore.getState().toggle(),
+  exportAudio: () => hasTrack() && useUiStore.getState().openExport(),
 };

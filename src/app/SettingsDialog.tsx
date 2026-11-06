@@ -7,6 +7,7 @@ import { NumberField, parseNumber } from "@/components/ui/NumberField";
 import { t } from "@/i18n";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
+import { DataSettings } from "./DataSettings";
 import { KeysSettings } from "./KeysSettings";
 
 const seconds = (value: number) => `${value} ${t.transport.seconds}`;
@@ -43,6 +44,7 @@ export function SettingsDialog() {
             [
               ["general", s.general],
               ["keys", s.keys],
+              ["data", s.data.title],
             ] as const
           ).map(([value, label]) => (
             <Tabs.Trigger key={value} value={value} className={`${tabTrigger} px-3`}>
@@ -50,6 +52,9 @@ export function SettingsDialog() {
             </Tabs.Trigger>
           ))}
         </Tabs.List>
+        <Tabs.Content value="data">
+          <DataSettings />
+        </Tabs.Content>
         <Tabs.Content value="keys">
           <KeysSettings />
         </Tabs.Content>

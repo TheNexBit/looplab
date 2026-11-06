@@ -138,6 +138,19 @@ impl Eq {
         }
     }
 
+    /// Already at `settings`, with no glide: for offline rendering, where the start must be exact.
+    pub fn with_settings(sample_rate: u32, settings: EqSettings) -> Self {
+        let mut eq = Self::new(sample_rate);
+        eq.target = settings;
+        eq.current = settings.bands;
+        eq.band_mix = settings
+            .bands
+            .map(|band| if band.enabled { 1.0 } else { 0.0 });
+        eq.wet = if settings.bypass { 0.0 } else { 1.0 };
+        eq.coefficients = settings.bands.map(|band| band.coefficients(sample_rate));
+        eq
+    }
+
     pub fn set(&mut self, settings: EqSettings) {
         for (index, band) in settings.bands.iter().enumerate() {
             // A new filter type cannot glide from the old one: restart it cleanly

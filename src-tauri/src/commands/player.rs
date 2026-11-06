@@ -63,6 +63,7 @@ pub async fn open_file(
         source_sample_rate: loaded.source_sample_rate,
     };
     state.set_peaks(loaded.peaks.to_bytes());
+    state.set_track(std::sync::Arc::clone(&loaded.pcm));
     engine.set_track(loaded.pcm);
     super::library::remember(&app, &info.path);
     Ok(info)

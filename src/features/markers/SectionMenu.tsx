@@ -1,9 +1,10 @@
-import { Repeat, Trash2 } from "lucide-react";
+import { Download, Repeat, Trash2 } from "lucide-react";
 import { ContextMenu } from "radix-ui";
 import type { ReactNode } from "react";
 import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { t } from "@/i18n";
 import { SECTION_COLORS, type SectionRange, sectionColor, useMarkersStore } from "@/stores/markers";
+import { useUiStore } from "@/stores/ui";
 import { loopSection } from "./sectionActions";
 
 /** Right-click menu of a section: loop it, pick a colour, delete it. */
@@ -17,6 +18,13 @@ export function SectionMenu({ range, children }: { range: SectionRange; children
           <ContextMenu.Item className={menuItem} onSelect={() => loopSection(range)}>
             <Repeat className="size-4" />
             {t.markers.loopSection}
+          </ContextMenu.Item>
+          <ContextMenu.Item
+            className={menuItem}
+            onSelect={() => useUiStore.getState().openExport({ kind: "section", id: range.id })}
+          >
+            <Download className="size-4" />
+            {t.export.exportSection}
           </ContextMenu.Item>
           <ContextMenu.Separator className={menuSeparator} />
           <ContextMenu.Label className={menuLabel}>{t.markers.color}</ContextMenu.Label>

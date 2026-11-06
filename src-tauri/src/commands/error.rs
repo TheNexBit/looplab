@@ -19,6 +19,9 @@ pub enum ErrorKind {
     ProjectFile,
     FfmpegMissing,
     FfmpegFailed,
+    /// The user stopped it: not a problem, never shown as one
+    Cancelled,
+    ExportFailed,
     Internal,
 }
 
@@ -30,11 +33,13 @@ pub struct AppError {
 }
 
 impl AppError {
+    /// Every error is written to the log, except "no track" (a key pressed early) and "cancelled".
     pub fn new(kind: ErrorKind, detail: impl Display) -> Self {
-        Self {
-            kind,
-            detail: detail.to_string(),
+        let detail = detail.to_string();
+        if !matches!(kind, ErrorKind::NoTrack | ErrorKind::Cancelled) {
+            crate::log::error("command", &format!("{kind:?}: {detail}"));
         }
+        Self { kind, detail }
     }
 
     pub fn internal(detail: impl Display) -> Self {

@@ -24,6 +24,11 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   - `dsp/stretch.rs`: interfaccia sicura su Signalsmith Stretch (C++, in `vendor/`, MIT), compilato da
     `build.rs` tramite `cpp/stretch.cpp`. Unico codice non Rust; nessuna allocazione dopo la creazione.
   - `time.rs`: conversioni tempo ↔ frame.
+  - `export.rs`: rendering fuori tempo reale (stesso `Reader` del player, quindi stesse giunture del loop) →
+    stretch → EQ e canali già al valore giusto (`Eq::with_settings`, `Channels::with_mode`), dissolvenze di 5 ms
+    ai bordi; `wav.rs` scrive WAV 16/24 bit. A velocità e tonalità originali l'audio è copiato senza stretch.
+  - `spectrum.rs`: FFT di ~0,35 s (realfft) letta su scala musicale, 5 punti per semitono da A0 a C8; su un loop
+    media fino a 48 finestre. La tonalità sposta la scala, i canali si applicano prima dell'analisi.
 - **`src-tauri`**: guscio desktop. Comandi sottili in `commands/` che delegano all'engine.
   - `paths.rs`: unica fonte dei percorsi in cui l'app scrive. In sviluppo tutto va in
     `LOOPLAB_DEV_DATA_DIR` (definito in `.cargo/config.toml`), in rilascio nella cartella standard di Windows.
@@ -37,7 +42,12 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     atomica, ripiego nella cartella dati. `recent.rs`: file recenti. `json_file.rs`: lettura e scrittura
     atomica (file temporaneo + rinomina) dei file JSON dell'app, usata da progetti, recenti e finestre. I valori predefiniti vivono solo qui
     (`default_project`). EQ e canali usano direttamente i tipi di `audio-engine` (feature `typed`).
-  - `media.rs`: FFmpeg facoltativo (estrazione audio, proxy H.264), cache in `paths::cache_dir`.
+  - `media.rs`: FFmpeg facoltativo (estrazione audio, proxy H.264, codifica FLAC/MP3 degli export), cache in
+    `paths::cache_dir`. `cache.rs`: spazio occupato e "Svuota" (salta i file in uso).
+  - `log.rs`: registro degli errori in `logs/looplab.log` (avvio, errori dei comandi tramite `AppError::new`,
+    panic, errori dell'interfaccia via `log_ui_error`).
+  - `commands/export.rs`, `commands/spectrum.rs`, `commands/data.rs`: export, vista note, cache e registro.
+    `AppState` tiene anche l'audio del brano aperto (lo stesso `Arc<Pcm>` del motore) e l'analizzatore FFT.
   - `window.rs` + `window_state.rs`: finestra principale e finestra video nascosta; posizioni per monitor.
 - **`src/`**: interfaccia React. Le due finestre caricano la stessa pagina: `main.tsx` mostra l'app o solo
   il video (finestra staccata, che riceve sorgente e orologio dalla principale con l'evento `video-sync`).
@@ -71,6 +81,14 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 - `src-tauri/src/diary.rs` + `features/practice/diaryRecorder.ts`: tempo di pratica per brano e giorno;
   `diaryStats.ts` fa i conti per la scheda Pratica e la finestra del diario.
 - Griglia del tempo: `practice.ts` (`currentGrid`), `tempo.ts` (battiti), `draw.ts` (`drawBeatGrid`), `snap.ts`.
+
+## Export e vista note
+
+- `features/export/exportPlan.ts`: regione (loop, sezione, brano) e nome del file, funzioni pure con test;
+  `ExportDialog.tsx`: la finestra; `ui.openExport(source)` la apre già sulla sezione o sul loop.
+- `features/notes/noteMath.ts`: nomi, tasti, note più forti; `NoteView.tsx` chiede lo spettro in un
+  `requestAnimationFrame` (solo quando cambia qualcosa, al massimo ogni 80 ms mentre suona) e lo disegna su canvas.
+  `stores/notes.ts`: aperta/chiusa e modo (localStorage).
 
 ## Forma d'onda dettagliata
 

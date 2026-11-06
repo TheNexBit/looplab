@@ -1,8 +1,9 @@
 import { create } from "zustand";
+import type { ExportSource } from "@/features/export/exportPlan";
 import { clamp } from "@/lib/time";
 
 export type SidePanelTab = "sections" | "eq" | "practice";
-export type Dialog = "palette" | "settings" | "about" | "diary";
+export type Dialog = "palette" | "settings" | "about" | "diary" | "export";
 
 /** Width of the side panel, in CSS pixels. */
 export const SIDE_PANEL_WIDTH = { min: 260, max: 560, default: 300 } as const;
@@ -27,11 +28,14 @@ interface UiState {
   sidePanelTab: SidePanelTab;
   /** The modal window on screen, if any */
   dialog: Dialog | null;
+  /** What the export window starts with; null = the loop if there is one, else the track */
+  exportSource: ExportSource | null;
   toggleSidePanel: () => void;
   setSidePanelTab: (tab: SidePanelTab) => void;
   setSidePanelWidth: (width: number) => void;
   openDialog: (dialog: Dialog) => void;
   closeDialog: () => void;
+  openExport: (source?: ExportSource) => void;
 }
 
 /** Layout state of the shell: which panels and dialogs are open, which tab is active. */
@@ -40,6 +44,7 @@ export const useUiStore = create<UiState>((set) => ({
   sidePanelWidth: loadWidth(),
   sidePanelTab: "sections",
   dialog: null,
+  exportSource: null,
   toggleSidePanel: () => set((state) => ({ sidePanelOpen: !state.sidePanelOpen })),
   setSidePanelTab: (tab) => set({ sidePanelTab: tab, sidePanelOpen: true }),
   setSidePanelWidth: (width) => {
@@ -56,4 +61,5 @@ export const useUiStore = create<UiState>((set) => ({
   },
   openDialog: (dialog) => set({ dialog }),
   closeDialog: () => set({ dialog: null }),
+  openExport: (source) => set({ dialog: "export", exportSource: source ?? null }),
 }));

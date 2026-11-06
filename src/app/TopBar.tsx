@@ -1,8 +1,10 @@
 import {
   AudioLines,
   ChevronDown,
+  Download,
   FolderOpen,
   PanelRight,
+  Piano,
   Redo,
   Search,
   Settings,
@@ -16,6 +18,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
+import { useNotesStore } from "@/stores/notes";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
 import { useUiStore } from "@/stores/ui";
@@ -101,6 +104,7 @@ export function TopBar() {
   const toggleSidePanel = useUiStore((s) => s.toggleSidePanel);
   const openDialog = useUiStore((s) => s.openDialog);
   const trackName = usePlayerStore((s) => s.track?.name);
+  const notesOpen = useNotesStore((s) => s.open);
 
   return (
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(#202125,#1a1b1e)] px-3 shadow-[inset_0_-1px_0_rgb(255_255_255/0.03)]">
@@ -141,6 +145,17 @@ export function TopBar() {
         </span>
       </div>
       <HistoryKeys />
+      <Tooltip label={t.export.title} shortcut="exportAudio">
+        <Button
+          variant="hardware"
+          size="icon"
+          disabled={!trackName}
+          onClick={() => useUiStore.getState().openExport()}
+          aria-label={t.export.title}
+        >
+          <Download className="size-4" />
+        </Button>
+      </Tooltip>
 
       <button
         type="button"
@@ -162,6 +177,18 @@ export function TopBar() {
           aria-label={t.shortcuts.openSettings}
         >
           <Settings className="size-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip label={t.notes.show} shortcut="toggleNotes">
+        <Button
+          variant="hardware"
+          size="icon"
+          active={notesOpen}
+          onClick={useNotesStore.getState().toggle}
+          aria-label={t.notes.show}
+          aria-pressed={notesOpen}
+        >
+          <Piano className="size-4" />
         </Button>
       </Tooltip>
       <Tooltip label={t.app.toggleSidePanel}>

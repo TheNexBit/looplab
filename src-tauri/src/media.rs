@@ -181,6 +181,17 @@ fn run(
     Ok(())
 }
 
+/// Converts the audio file `input` into `output` with the encoder options `args`
+/// (e.g. `["-c:a", "flac"]`), for exports in formats Looplab does not write itself.
+pub fn encode(
+    input: &Path,
+    output: &Path,
+    args: &[&str],
+    progress: impl FnMut(f32),
+) -> Result<(), MediaError> {
+    run(input, output, args, progress)
+}
+
 /// The audio of `source` as a FLAC file in the cache, extracted by FFmpeg (reused if present).
 pub fn extract_audio(
     cache_dir: &Path,

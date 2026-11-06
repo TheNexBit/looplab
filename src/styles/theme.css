@@ -51,6 +51,9 @@
   --color-beat: rgb(255 255 255 / 0.07);
   --color-bar: rgb(255 255 255 / 0.28);
   --color-playhead: #ffffff;
+  /* Note view keyboard: dimmed ivory and ebony, so the amber notes stand out */
+  --color-key-white: #b9b4ab;
+  --color-key-black: #1a1b1e;
 
   /* Section palette: index stored in the project file (Section.color) */
   --color-section-0: #7f8cff;

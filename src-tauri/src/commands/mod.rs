@@ -2,10 +2,13 @@
 //! Their TypeScript types are generated into `src/lib/bindings.ts` by tauri-specta.
 
 mod app;
+mod data;
 mod error;
+mod export;
 mod library;
 mod player;
 mod sound;
+mod spectrum;
 mod video;
 pub mod waveform;
 
@@ -43,6 +46,14 @@ pub fn builder() -> Builder<tauri::Wry> {
             video::make_video_proxy,
             video::ffmpeg_available,
             crate::media_keys::set_global_media_keys,
+            data::cache_usage,
+            data::clear_cache,
+            data::log_ui_error,
+            data::show_log,
+            data::reveal_file,
+            export::export_audio,
+            export::cancel_export,
+            spectrum::spectrum,
         ])
         .events(collect_events![
             PlaybackStatus,

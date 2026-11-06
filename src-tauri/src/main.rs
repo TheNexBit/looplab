@@ -1,10 +1,12 @@
 // Release builds have no console window on Windows
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod cache;
 mod commands;
 mod diary;
 mod hash;
 mod json_file;
+mod log;
 mod media;
 mod media_keys;
 mod midi;
@@ -86,6 +88,9 @@ fn main() {
             }
         })
         .setup(move |app| {
+            if let Ok(data_dir) = paths::data_dir(app.handle()) {
+                log::init(&data_dir, &app.package_info().version.to_string());
+            }
             specta.mount_events(app);
             window::create_main(app.handle())?;
             window::create_video(app.handle())?;

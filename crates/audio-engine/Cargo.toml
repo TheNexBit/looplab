@@ -17,6 +17,8 @@ specta = { version = "=2.0.0-rc.26", features = ["derive"], optional = true }
 cpal = "0.18.2"
 rtrb = "0.4.1"
 rubato = "5.0.1"
+# Already used by rubato: the note view reuses it
+realfft = "3.5.1"
 symphonia = { version = "0.6.1", default-features = false, features = [
   "aac",
   "alac",

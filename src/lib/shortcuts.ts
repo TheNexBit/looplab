@@ -39,6 +39,9 @@ export const shortcuts = {
   tapTempo: "T",
   setDownbeat: "Shift+T",
   toggleMetronome: "K",
+  // Render, as in Reaper
+  exportAudio: "Ctrl+Alt+R",
+  toggleNotes: "N",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

@@ -3,7 +3,7 @@
 App desktop per Windows per trascrivere musica a orecchio: rallenta senza cambiare tonalità,
 cambia tonalità, crea loop e sezioni, isola gli strumenti con l'EQ, segue il video.
 
-> Stato: prima versione completa (fasi 1–7), da provare. Vedi [docs/ROADMAP.md](docs/ROADMAP.md).
+> Stato: fasi 1–10 completate; la 10 (export, vista note, dati) è da provare. Vedi [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Script (doppio clic)
 

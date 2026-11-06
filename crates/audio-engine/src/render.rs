@@ -21,14 +21,14 @@ const CHUNK: usize = 256;
 /// Fade of the output on play, pause and seek, so they never click.
 const FADE_SECONDS: f32 = 0.005;
 /// Crossfade of the source where a loop wraps around.
-const SPLICE_SECONDS: f32 = 0.005;
+pub(crate) const SPLICE_SECONDS: f32 = 0.005;
 /// Share of the remaining speed change applied per chunk (~25 ms to settle at 48 kHz).
 const SPEED_SMOOTHING: f32 = 0.2;
 /// Chunks remembered to map what is heard back to a track position (covers the stretch latency).
 const HISTORY: usize = 128;
 
 /// Reads the track frame by frame, wrapping around the loop with a short crossfade.
-struct Reader {
+pub(crate) struct Reader {
     /// Next frame of the track to read
     position: u64,
     /// Tail of the audio before a loop wrap, fading out
@@ -44,7 +44,7 @@ struct Reader {
 }
 
 impl Reader {
-    fn new(sample_rate: u32) -> Self {
+    pub(crate) fn new(sample_rate: u32) -> Self {
         Self {
             position: 0,
             fade_out_from: 0,
@@ -57,7 +57,7 @@ impl Reader {
         }
     }
 
-    fn jump(&mut self, position: u64) {
+    pub(crate) fn jump(&mut self, position: u64) {
         self.position = position;
         self.fade_out_left = 0;
         self.fade_in_left = 0;
@@ -72,7 +72,7 @@ impl Reader {
     }
 
     /// Fills `out`; beats met on the way are queued with their input frame (`fed` + index).
-    fn read(
+    pub(crate) fn read(
         &mut self,
         track: Option<&Pcm>,
         settings: &LoopSettings,

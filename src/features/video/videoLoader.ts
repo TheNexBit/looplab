@@ -10,11 +10,17 @@ const isVideoFile = (path: string) =>
 let current: string | null = null;
 /** Set once a proxy was made for the current file: if even that fails, give up */
 let proxied = false;
+/** Cache file the video panel is showing, if it plays a proxy */
+let proxyPath: string | null = null;
+
+/** Cache files on screen right now: emptying the cache must leave them alone. */
+export const cacheFilesInUse = (): string[] => (proxyPath ? [proxyPath] : []);
 
 /** Shows the picture of a newly opened video file; audio files hide the panel. */
 async function load(path: string) {
   current = path;
   proxied = false;
+  proxyPath = null;
   const video = useVideoStore.getState();
   if (!isVideoFile(path)) {
     video.setStatus("none", { src: null, error: null });
@@ -51,8 +57,10 @@ export async function fallBackToProxy() {
   };
   const result = await commands.makeVideoProxy(path, progress);
   if (current !== path) return;
-  if (result.status === "ok") video.setStatus("loading", { src: convertFileSrc(result.data) });
-  else video.setStatus("error", { error: result.error });
+  if (result.status === "ok") {
+    proxyPath = result.data;
+    video.setStatus("loading", { src: convertFileSrc(result.data) });
+  } else video.setStatus("error", { error: result.error });
 }
 
 /** Follows the open track. Started once by the app shell; returns the function that stops it. */

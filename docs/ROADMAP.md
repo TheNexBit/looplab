@@ -9,6 +9,9 @@
 | 5   | EQ e isolamento base       | ✅ completata — da provare |
 | 6   | Video                      | ✅ completata — da provare |
 | 7   | Rifinitura e distribuzione | ✅ completata — da provare |
+| 8   | Strumenti di pratica       | ✅ completata              |
+| 9   | Comodità mentre suoni      | ✅ completata              |
+| 10  | Esportare e vedere le note | ✅ completata — da provare |
 
 ## 1. Fondamenta ✅
 
@@ -196,6 +199,29 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   le forme d'onda), doppio clic per la larghezza normale; ricordata su questo PC. Le righe della scheda Pratica
   vanno a capo quando il pannello è stretto. Maniglia unica `ResizeHandle`, usata anche dal pannello video.
 
+- **Script in ordine**: in `scripts\` solo i lanciatori numerati per importanza (`01-dev.cmd` … `07-pulisci.cmd`),
+  la logica PowerShell in `scripts\powershell\`. Riferimenti aggiornati in README, messaggi dell'app e documenti.
+
+## 10. Esportare, vedere le note, manutenzione ✅
+
+- **Esporta audio** (Ctrl+Alt+R come il Render di Reaper, pulsante ⤓ in alto, menu del Loop, tasto destro su una
+  sezione): loop, sezione o brano intero; ripetizioni ×1/2/4/8 unite come nel loop; con o senza velocità e
+  tonalità attuali, con o senza EQ e canali; formati WAV 16/24 bit (scritti da Looplab) e FLAC / MP3 320k
+  (con FFmpeg). Nome proposto: "Brano - Ritornello 75% +2st.wav", nella cartella del brano. Avanzamento,
+  Annulla (nessun file a metà), "Mostra nella cartella". Le scelte di formato e suono restano per il PC.
+  Il motore rende fuori tempo reale con la stessa catena della riproduzione (`export.rs`).
+- **Vista note** (tasto N, icona pianoforte): tastiera di 88 tasti sotto la forma d'onda, con la curva del livello
+  di ogni nota (5 punti per semitono) e i tasti più forti accesi in ambra e scritti in alto (C4 = Do centrale,
+  come in Reaper). "Al playhead" segue la musica dal vivo (~12 volte al secondo); "Media del loop" fa la media
+  su tutto il loop, più stabile per capire gli accordi. Segue la tonalità e i canali (es. "Senza centro").
+- **Impostazioni → Dati**: spazio occupato dalle conversioni di FFmpeg (audio estratto, video compatibili) e
+  "Svuota" (il video sullo schermo resta); "Registro degli errori" apre `looplab.log` in Esplora risorse.
+- **Registro degli errori** (`logs\looplab.log` nella cartella dati, max 1 MB + `looplab.old.log`): avvio,
+  errori dei comandi, crash del Rust e errori dell'interfaccia, con data e ora (UTC).
+- Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
+  normalizzazione del volume nell'export (si sente come in Looplab).
+
 ## Dopo la prima versione
 
-Separazione AI degli strumenti, analisi dello spettro, esportazione WAV.
+- **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un
+  modello (~300 MB) e una libreria di calcolo. Andrà prima dello stretch nella catena.

@@ -1,4 +1,4 @@
-import type { ErrorKind } from "@/lib/bindings";
+import type { CacheKind, ErrorKind } from "@/lib/bindings";
 
 // Every UI string lives here. Other languages must match this shape (see index.ts).
 export const it = {
@@ -37,6 +37,9 @@ export const it = {
     ffmpegFailed: "FFmpeg non è riuscito a convertire il file.",
     projectFile:
       "Il file .looplab.json di questo brano non si legge o non si scrive: marker e sezioni non vengono salvati.",
+    cancelled: "Operazione annullata.",
+    exportFailed:
+      "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",
   } satisfies Record<ErrorKind, string>,
   sidePanel: {
@@ -44,6 +47,38 @@ export const it = {
     eq: "EQ",
     practice: "Pratica",
     resize: "Trascina per allargare o stringere il pannello (doppio clic: larghezza normale)",
+  },
+  notes: {
+    title: "Note",
+    show: "Vista note: tastiera con le note che suonano (tasto N)",
+    playhead: "Al playhead",
+    loop: "Media del loop",
+    needsLoop: "Crea un loop per vedere le note medie della parte.",
+    silent: "—",
+  },
+  export: {
+    title: "Esporta audio",
+    open: "Esporta audio…",
+    source: "Cosa",
+    loop: "Loop",
+    section: "Sezione",
+    track: "Brano intero",
+    exportSection: "Esporta questa sezione…",
+    exportLoop: "Esporta il loop…",
+    repeats: "Ripetizioni",
+    repeatsHint: "di fila, unite come nel loop",
+    sound: "Suono",
+    withSound: "Velocità e tonalità attuali",
+    withEq: "EQ e canali attuali",
+    format: "Formato",
+    formats: { wav16: "WAV 16 bit", wav24: "WAV 24 bit", flac: "FLAC", mp3: "MP3 320k" },
+    needsFfmpeg: "Serve FFmpeg (scripts\\05-fetch-ffmpeg.cmd)",
+    length: "Durata",
+    sourceGone: "Non c'è più: scegli un'altra parte.",
+    start: "Esporta…",
+    cancel: "Annulla",
+    done: "Salvato:",
+    reveal: "Mostra nella cartella",
   },
   savedLoops: {
     title: "Loop salvati",
@@ -237,6 +272,22 @@ export const it = {
     snap: "Calamita",
     snapHint: "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G)",
     reset: "Valori predefiniti",
+    data: {
+      title: "Dati",
+      cache: "Conversioni di FFmpeg",
+      cacheHint:
+        "Audio estratto e video resi compatibili: se servono di nuovo, Looplab li rifà da solo. Il video sullo schermo resta.",
+      kinds: { audio: "Audio estratto", video: "Video compatibili" } satisfies Record<
+        CacheKind,
+        string
+      >,
+      files: "file",
+      clear: "Svuota",
+      freed: "Spazio liberato:",
+      log: "Registro degli errori",
+      logHint: "Cosa è andato storto e quando. Se segnali un problema, allega il file looplab.log.",
+      showLog: "Mostra il file",
+    },
   },
   about: {
     title: "Informazioni e licenze",
@@ -311,6 +362,8 @@ export const it = {
     tapTempo: "Batti il tempo",
     setDownbeat: "Primo battito qui",
     toggleMetronome: "Metronomo on/off",
+    exportAudio: "Esporta audio",
+    toggleNotes: "Vista note on/off",
   },
   keys: {
     Space: "Spazio",

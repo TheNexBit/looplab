@@ -7,12 +7,13 @@ Questo file è mostrato in "Informazioni" e incluso nell'installer.
 
 | Componente                      | Uso                            | Licenza               | Sito                                                     |
 | ------------------------------- | ------------------------------ | --------------------- | -------------------------------------------------------- |
-| FFmpeg 9.0 (build LGPL di BtbN) | audio dei video, proxy video   | LGPL 2.1 o successiva | https://ffmpeg.org                                       |
+| FFmpeg 9.0 (build LGPL di BtbN) | audio dei video, proxy, export | LGPL 2.1 o successiva | https://ffmpeg.org                                       |
 | Signalsmith Stretch 1.4.0       | velocità e tonalità            | MIT                   | https://github.com/Signalsmith-Audio/signalsmith-stretch |
 | Signalsmith Linear 0.6.4        | FFT per Signalsmith Stretch    | MIT                   | https://github.com/Signalsmith-Audio/linear              |
 | Symphonia                       | decodifica audio               | MPL 2.0               | https://github.com/pdeljanov/Symphonia                   |
 | cpal                            | uscita audio                   | Apache 2.0            | https://github.com/RustAudio/cpal                        |
 | rubato                          | conversione di frequenza       | MIT o Apache 2.0      | https://github.com/HEnquist/rubato                       |
+| realfft, rustfft                | vista note (spettro)           | MIT o Apache 2.0      | https://github.com/HEnquist/realfft                      |
 | rtrb                            | comunicazione col thread audio | MIT o Apache 2.0      | https://github.com/mgeier/rtrb                           |
 | midir                           | pedali e controller MIDI       | MIT                   | https://github.com/Boddlnagg/midir                       |
 | Tauri e i suoi plugin           | finestra dell'app              | MIT o Apache 2.0      | https://tauri.app                                        |

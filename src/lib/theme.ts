@@ -10,7 +10,10 @@ export type ThemeToken =
   | "grid"
   | "tick"
   | "beat"
-  | "bar";
+  | "bar"
+  | "key-white"
+  | "key-black"
+  | "on-accent";
 
 /** Reads a theme token from `styles/theme.css` for code that cannot use classes (canvas). */
 export function themeColor(token: ThemeToken): string {

@@ -52,6 +52,22 @@ export const commands = {
 	ffmpegAvailable: () => __TAURI_INVOKE<boolean>("ffmpeg_available"),
 	/**  Takes the media keys for Looplab system-wide, or gives them back. */
 	setGlobalMediaKeys: (enabled: boolean) => typedError<null, AppError>(__TAURI_INVOKE("set_global_media_keys", { enabled })),
+	/**  Space taken by each kind of conversion in the cache. */
+	cacheUsage: () => typedError<CacheUsage[], AppError>(__TAURI_INVOKE("cache_usage")),
+	/**  Empties the cache except the files in `keep` (the video on screen); returns the bytes freed. */
+	clearCache: (keep: string[]) => typedError<number | null, AppError>(__TAURI_INVOKE("clear_cache", { keep })),
+	/**  Writes an error of the UI (uncaught exceptions, failed promises) into the log. */
+	logUiError: (source: string, message: string) => __TAURI_INVOKE<void>("log_ui_error", { source, message }),
+	/**  Opens the log folder in Explorer, with the log file selected. */
+	showLog: () => typedError<null, AppError>(__TAURI_INVOKE("show_log")),
+	/**  Shows a file (e.g. one just exported) selected in its Explorer folder. */
+	revealFile: (path: string) => typedError<null, AppError>(__TAURI_INVOKE("reveal_file", { path })),
+	/**  Renders the request and writes the file. `on_progress` receives values from 0 to 1. */
+	exportAudio: (request: ExportRequest_Deserialize, onProgress: Channel<number | null>) => typedError<null, AppError>(__TAURI_INVOKE("export_audio", { request, onProgress })),
+	/**  Stops the export in progress (its file is not written). */
+	cancelExport: () => __TAURI_INVOKE<void>("cancel_export"),
+	/**  Levels in dB at five points per semitone from A0 (MIDI 21) to C8 (MIDI 108). */
+	spectrum: (request: SpectrumRequest) => typedError<(number | null)[], AppError>(__TAURI_INVOKE("spectrum", { request })),
 };
 
 /** Events */
@@ -86,6 +102,20 @@ export type Band = {
 };
 
 export type BandKind = "lowShelf" | "peak" | "highShelf" | "highPass" | "lowPass";
+
+/**  One kind of file in the cache, named after its subfolder. */
+export type CacheKind = 
+/**  Audio FFmpeg extracted from files symphonia cannot read */
+"audio" | 
+/**  H.264 copies of videos WebView2 cannot play */
+"video";
+
+export type CacheUsage = {
+	kind: CacheKind,
+	/**  Bytes on disk (a number, not a bigint: never close to 2^53) */
+	bytes: number | null,
+	files: number,
+};
 
 export type ChannelMode = "stereo" | 
 /**  Left channel on both speakers */
@@ -142,7 +172,44 @@ export type EqSettings_Serialize = {
 };
 
 /**  What went wrong, as a stable code: the UI turns it into a translated message. */
-export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "projectFile" | "ffmpegMissing" | "ffmpegFailed" | "internal";
+export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "projectFile" | "ffmpegMissing" | "ffmpegFailed" | 
+/**  The user stopped it: not a problem, never shown as one */
+"cancelled" | "exportFailed" | "internal";
+
+/**  File formats, like the render formats of a DAW. FLAC and MP3 need FFmpeg. */
+export type ExportFormat = "wav16" | "wav24" | "flac" | "mp3";
+
+export type ExportRequest = ExportRequest_Serialize | ExportRequest_Deserialize;
+
+export type ExportRequest_Deserialize = {
+	/**  File to write (chosen by the user) */
+	path: string,
+	/**  Seconds of the track */
+	start: number | null,
+	end: number | null,
+	repeats: number,
+	speed: number | null,
+	/**  Semitones; fractions are cents */
+	semitones: number | null,
+	eq: EqSettings_Deserialize,
+	channels: ChannelMode,
+	format: ExportFormat,
+};
+
+export type ExportRequest_Serialize = {
+	/**  File to write (chosen by the user) */
+	path: string,
+	/**  Seconds of the track */
+	start: number | null,
+	end: number | null,
+	repeats: number,
+	speed: number | null,
+	/**  Semitones; fractions are cents */
+	semitones: number | null,
+	eq: EqSettings_Serialize,
+	channels: ChannelMode,
+	format: ExportFormat,
+};
 
 export type LoadedProject = LoadedProject_Serialize | LoadedProject_Deserialize;
 
@@ -330,6 +397,15 @@ export type Section = {
 	name: string,
 	/**  Index into the section palette of `theme.css` */
 	color: number,
+};
+
+export type SpectrumRequest = {
+	/**  Seconds; when `end` is not after `start`, one window centred on `start` */
+	start: number | null,
+	end: number | null,
+	channels: ChannelMode,
+	/**  Pitch shift in semitones (fractions are cents), so the keys match what is heard */
+	semitones: number | null,
 };
 
 export type TrackInfo = {
