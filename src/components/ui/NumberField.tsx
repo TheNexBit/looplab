@@ -20,6 +20,12 @@ export interface NumberFieldProps {
   variant?: "field" | "display";
 }
 
+/** Percentages are typed as numbers: "75" → 0.75 (speeds, volumes, the trainer). */
+export function parsePercent(text: string): number | null {
+  const value = parseNumber(text);
+  return value === null ? null : value / 100;
+}
+
 /** Plain number, accepting a comma as decimal separator and ignoring units like "%". */
 export function parseNumber(text: string): number | null {
   const value = Number.parseFloat(text.replace(",", ".").replace(/[^\d.+-]/g, ""));

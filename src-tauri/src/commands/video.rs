@@ -7,7 +7,7 @@ use tauri::ipc::Channel;
 use tauri::{AppHandle, Manager};
 
 use super::AppError;
-use crate::{media, paths};
+use crate::media;
 
 /// The detached video window was closed by the user (it is only hidden): dock the video again.
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type, tauri_specta::Event)]
@@ -36,7 +36,7 @@ pub async fn make_video_proxy(
     path: String,
     on_progress: Channel<f32>,
 ) -> Result<String, AppError> {
-    let cache = paths::cache_dir(&app).map_err(AppError::internal)?;
+    let cache = super::cache_dir(&app)?;
     let source = PathBuf::from(path);
     let proxy = tauri::async_runtime::spawn_blocking(move || {
         media::make_proxy(&cache, &source, |fraction| {

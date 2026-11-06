@@ -1,11 +1,12 @@
 import { Minus, Plus } from "lucide-react";
 import { Popover } from "radix-ui";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { floatingPanel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
+import { useWheelSteps } from "@/lib/useWheelSteps";
 import { usePracticeStore } from "@/stores/practice";
 import { BEAT_UNITS, BEATS_PER_BAR, TIME_SIGNATURES } from "./tempo";
 
@@ -28,22 +29,12 @@ export function TimeSignaturePicker({
   const set = (nextBeats: number, nextUnit = unit) =>
     usePracticeStore.getState().setTimeSignature(nextBeats, nextUnit);
 
-  // The wheel changes the beats and must not scroll the panel too: a non-passive listener
+  // The wheel changes the beats in a bar
   const ref = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    const button = ref.current;
-    if (!button) return;
-    const onWheel = (event: WheelEvent) => {
-      if (event.deltaY === 0) return;
-      event.preventDefault();
-      const { beatsPerBar, beatUnit } = usePracticeStore.getState();
-      usePracticeStore
-        .getState()
-        .setTimeSignature(beatsPerBar + (event.deltaY < 0 ? 1 : -1), beatUnit);
-    };
-    button.addEventListener("wheel", onWheel, { passive: false });
-    return () => button.removeEventListener("wheel", onWheel);
-  }, []);
+  useWheelSteps(ref, (step) => {
+    const { beatsPerBar, beatUnit } = usePracticeStore.getState();
+    usePracticeStore.getState().setTimeSignature(beatsPerBar + step, beatUnit);
+  });
 
   return (
     <Popover.Root>

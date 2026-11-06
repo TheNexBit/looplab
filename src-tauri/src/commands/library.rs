@@ -27,7 +27,7 @@ pub struct LoadedProject {
 #[tauri::command]
 #[specta::specta]
 pub fn load_project(app: AppHandle, track: String) -> Result<Option<LoadedProject>, AppError> {
-    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data_dir = super::data_dir(&app)?;
     let loaded = project::load(&data_dir, Path::new(&track))?;
     Ok(loaded.map(|(project, location)| LoadedProject { project, location }))
 }
@@ -40,7 +40,7 @@ pub fn save_project(
     track: String,
     project: Project,
 ) -> Result<ProjectLocation, AppError> {
-    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data_dir = super::data_dir(&app)?;
     Ok(project::save(&data_dir, Path::new(&track), &project)?)
 }
 
@@ -48,7 +48,7 @@ pub fn save_project(
 #[tauri::command]
 #[specta::specta]
 pub fn practice_diary(app: AppHandle) -> Result<Vec<DiaryEntry>, AppError> {
-    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data_dir = super::data_dir(&app)?;
     Ok(diary::list(&data_dir))
 }
 
@@ -56,7 +56,7 @@ pub fn practice_diary(app: AppHandle) -> Result<Vec<DiaryEntry>, AppError> {
 #[tauri::command]
 #[specta::specta]
 pub fn record_practice(app: AppHandle, practice: DiaryEntry) -> Result<(), AppError> {
-    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data_dir = super::data_dir(&app)?;
     diary::record(&data_dir, practice).map_err(AppError::internal)
 }
 
@@ -71,14 +71,14 @@ pub fn default_project() -> Project {
 #[tauri::command]
 #[specta::specta]
 pub fn recent_files(app: AppHandle) -> Result<Vec<RecentFile>, AppError> {
-    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data_dir = super::data_dir(&app)?;
     Ok(recent::list(&data_dir))
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn forget_recent(app: AppHandle, track: String) -> Result<(), AppError> {
-    let data_dir = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data_dir = super::data_dir(&app)?;
     recent::remove(&data_dir, &track).map_err(AppError::internal)
 }
 

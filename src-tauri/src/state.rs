@@ -13,6 +13,8 @@ pub struct AppState {
     engine: Mutex<Option<Arc<Engine>>>,
     /// Waveform data of the open track, growing while it loads
     peaks: Mutex<Option<SharedPeaks>>,
+    /// The finished waveform already in the binary layout: built once, not at every request
+    peaks_bytes: Mutex<Option<Arc<Vec<u8>>>>,
     /// Stops the background loading of the open track when another one is opened
     load_cancel: Mutex<Option<Arc<AtomicBool>>>,
     /// Audio of the open track (shared with the engine), for exports and the spectrum
@@ -48,12 +50,23 @@ impl AppState {
 
     pub fn set_peaks(&self, peaks: SharedPeaks) {
         *lock(&self.peaks) = Some(peaks);
+        *lock(&self.peaks_bytes) = None;
     }
 
-    /// The waveform as loaded so far, in the binary layout sent to the UI.
+    /// The waveform as loaded so far, in the binary layout sent to the UI. Once the track has
+    /// loaded the bytes are kept, so later requests copy them instead of rebuilding them.
     pub fn peaks_bytes(&self) -> Option<Vec<u8>> {
+        if let Some(ready) = lock(&self.peaks_bytes).as_ref() {
+            return Some(ready.as_ref().clone());
+        }
         let peaks = lock(&self.peaks).clone()?;
-        let bytes = lock(&peaks).peaks().to_bytes();
+        let (bytes, finished) = {
+            let builder = lock(&peaks);
+            (builder.peaks().to_bytes(), builder.is_finished())
+        };
+        if finished {
+            *lock(&self.peaks_bytes) = Some(Arc::new(bytes.clone()));
+        }
         Some(bytes)
     }
 

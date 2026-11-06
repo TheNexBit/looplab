@@ -221,6 +221,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Seconda pulizia del codice** (dopo analisi approvata): tolto codice mai usato; un solo punto per le
+  percentuali scritte a mano, i valori con segno, le preferenze del PC (`lib/storage.ts`), la rotella sui valori
+  (`useWheelSteps`), l'aspetto dei display ambra (`lcd` nel tema), le cartelle dati e cache dei comandi, l'avvio di
+  FFmpeg e i nomi nella cache. I colori del tema si leggono una volta sola invece che a ogni disegno, e la forma
+  d'onda di un brano caricato non si ricostruisce più a ogni richiesta. Comportamento invariato.
 - **Conteggio**: il primo battito di ogni battuta è accentato (prima solo il primo in assoluto), come il metronomo.
 - **Tempo e click nella barra di trasporto, come nei DAW** (scelto dall'utente tra tre mockup:
   https://claude.ai/artifact/5rDvvAWCwgy2egxjZTjGTW): display ambra "Tempo" con BPM e metrica (clic per scrivere,

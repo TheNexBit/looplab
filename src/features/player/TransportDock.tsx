@@ -1,11 +1,12 @@
 import { LocateFixed, Magnet, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { NumberField, parseNumber } from "@/components/ui/NumberField";
+import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
+import { signed } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
@@ -13,19 +14,12 @@ import { LoopMenu } from "./LoopMenu";
 import { CENTS, formatSpeed, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
 
-/** Speeds are typed as percentages: "75" → 0.75. */
-const parseSpeed = (text: string) => {
-  const value = parseNumber(text);
-  return value === null ? null : value / 100;
-};
 /** Recessed panel holding a group of keys or a fader. */
 const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
 
 /** Speed and pitch faders line up one under the other */
 const LABEL = "w-16";
 const TRACK = "w-16 lg:w-24";
-
-const signed = (value: number, unit: string) => `${value > 0 ? "+" : ""}${value} ${unit}`;
 
 /** Bottom dock: transport, loop, tempo and click (like every DAW), speed and pitch. */
 export function TransportDock() {
@@ -124,7 +118,7 @@ export function TransportDock() {
             step={SPEED.step}
             onChange={setSpeed}
             format={formatSpeed}
-            parse={parseSpeed}
+            parse={parsePercent}
             labelClassName={LABEL}
             trackClassName={TRACK}
           />

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
 export interface Settings {
@@ -89,20 +90,11 @@ function sanitize(values: Partial<Settings>): Settings {
 
 /** Preferences of this PC: kept in the WebView's local storage, so they survive updates. */
 function load(): Settings {
-  try {
-    return sanitize(JSON.parse(localStorage.getItem(KEY) ?? "{}"));
-  } catch {
-    return DEFAULTS;
-  }
+  const stored = readStored(KEY);
+  return stored && typeof stored === "object" ? sanitize(stored as Partial<Settings>) : DEFAULTS;
 }
 
-function persist(settings: Settings) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(settings));
-  } catch {
-    // Storage unavailable: the settings last until the app closes
-  }
-}
+const persist = (settings: Settings) => writeStored(KEY, settings);
 
 interface SettingsState extends Settings {
   update: (patch: Partial<Settings>) => void;

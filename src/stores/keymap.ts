@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { type Keymap, type ShortcutId, setActiveShortcuts, shortcuts } from "@/lib/shortcuts";
+import { readStored, writeStored } from "@/lib/storage";
 
 /** A MIDI trigger, as `features/midi` writes it: "note:1:60", "cc:1:64", "pc:1:3". */
 export type MidiSignature = string;
@@ -12,19 +13,15 @@ interface Stored {
 const KEY = "looplab.keymap";
 
 function load(): Stored {
-  try {
-    const stored = JSON.parse(localStorage.getItem(KEY) ?? "{}") as Partial<Stored>;
-    const keep = <T>(values: Record<string, T> | undefined, valid: (v: unknown) => boolean) =>
-      Object.fromEntries(
-        Object.entries(values ?? {}).filter(([id, value]) => id in shortcuts && valid(value)),
-      );
-    return {
-      keys: keep(stored.keys, (v) => typeof v === "string"),
-      midi: keep(stored.midi, (v) => typeof v === "string" && v !== ""),
-    };
-  } catch {
-    return { keys: {}, midi: {} };
-  }
+  const stored = (readStored(KEY) ?? {}) as Partial<Stored>;
+  const keep = <T>(values: Record<string, T> | undefined, valid: (v: unknown) => boolean) =>
+    Object.fromEntries(
+      Object.entries(values ?? {}).filter(([id, value]) => id in shortcuts && valid(value)),
+    );
+  return {
+    keys: keep(stored.keys, (v) => typeof v === "string"),
+    midi: keep(stored.midi, (v) => typeof v === "string" && v !== ""),
+  };
 }
 
 /** Defaults with the user's changes on top. */
@@ -54,11 +51,7 @@ export const useKeymapStore = create<KeymapState>((set, get) => {
     const keys = effective(overrides);
     setActiveShortcuts(keys);
     set({ keys, overrides, midi });
-    try {
-      localStorage.setItem(KEY, JSON.stringify({ keys: overrides, midi }));
-    } catch {
-      // Storage unavailable: the changes last until the app closes
-    }
+    writeStored(KEY, { keys: overrides, midi });
   };
 
   return {

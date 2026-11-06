@@ -1,4 +1,5 @@
 import type { ExportFormat } from "@/lib/bindings";
+import { signed } from "@/lib/format";
 import { formatTick } from "@/lib/time";
 import type { LoopRegion } from "@/stores/loop";
 import type { SectionRange } from "@/stores/markers";
@@ -67,15 +68,9 @@ export function fileName(
   if (region.label) parts.push("-", safe(region.label));
   if (sound) {
     if (Math.round(sound.speed * 100) !== 100) parts.push(`${Math.round(sound.speed * 100)}%`);
-    const pitch = sound.semitones + sound.cents / 100;
-    if (pitch !== 0) {
-      const sign = pitch > 0 ? "+" : "−";
-      const st = Math.abs(sound.semitones) ? `${sign}${Math.abs(sound.semitones)}st` : "";
-      const ct = Math.abs(sound.cents)
-        ? `${sound.cents > 0 ? "+" : "−"}${Math.abs(sound.cents)}ct`
-        : "";
-      parts.push(`${st}${ct}`);
-    }
+    const st = sound.semitones ? `${signed(sound.semitones)}st` : "";
+    const ct = sound.cents ? `${signed(sound.cents)}ct` : "";
+    if (st || ct) parts.push(`${st}${ct}`);
   }
   return `${parts.join(" ")}.${extensionOf(format)}`;
 }

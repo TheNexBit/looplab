@@ -4,6 +4,7 @@ import { NumberField } from "@/components/ui/NumberField";
 import { t } from "@/i18n";
 import type { BandKind } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
+import { signed } from "@/lib/format";
 import { CHANNEL_MODES, FREQUENCY, GAIN, hasGain, Q, useEqStore } from "@/stores/eq";
 import { sectionColor } from "@/stores/markers";
 import { EqCurve } from "./EqCurve";
@@ -101,7 +102,7 @@ export function EqPanel() {
               step={GAIN.step}
               disabled={!hasGain(band.kind)}
               onChange={(gain) => setBand(index, { gain })}
-              format={(gain) => (hasGain(band.kind) ? `${gain > 0 ? "+" : ""}${gain} dB` : "—")}
+              format={(gain) => (hasGain(band.kind) ? signed(gain, "dB") : "—")}
               className="w-14"
             />
             <NumberField

@@ -13,6 +13,9 @@ mod video;
 pub mod waveform;
 
 pub use error::{AppError, ErrorKind};
+use std::path::PathBuf;
+
+use tauri::AppHandle;
 use tauri_specta::{Builder, collect_commands, collect_events};
 pub use video::VideoWindowHidden;
 
@@ -62,6 +65,16 @@ pub fn builder() -> Builder<tauri::Wry> {
             MidiTrigger,
             MediaKey
         ])
+}
+
+/// The app's data folder, as a command error if it cannot be found.
+fn data_dir(app: &AppHandle) -> Result<PathBuf, AppError> {
+    crate::paths::data_dir(app).map_err(AppError::internal)
+}
+
+/// The cache folder, as a command error if it cannot be found.
+fn cache_dir(app: &AppHandle) -> Result<PathBuf, AppError> {
+    crate::paths::cache_dir(app).map_err(AppError::internal)
 }
 
 /// Writes the TypeScript bindings used by the UI. Only called in debug builds and tests.

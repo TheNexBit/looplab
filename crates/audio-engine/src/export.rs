@@ -295,11 +295,7 @@ mod tests {
 
     #[test]
     fn a_cancelled_export_leaves_no_file() {
-        let target = std::env::var_os("CARGO_TARGET_DIR").expect("CARGO_TARGET_DIR must be set");
-        let dir = std::path::PathBuf::from(target).join("tmp/looplab-tests/export");
-        std::fs::create_dir_all(&dir).unwrap();
-        let path = dir.join("cancelled.wav");
-        let _ = std::fs::remove_file(&path);
+        let path = crate::pcm::tests::test_dir("export").join("cancelled.wav");
         let result = export_wav(
             &track(2.0, 1.0),
             &settings(0.0, 2.0),

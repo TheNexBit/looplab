@@ -240,7 +240,7 @@ impl Pcm {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
 
     #[test]
@@ -268,8 +268,9 @@ mod tests {
         assert!((pcm.duration_seconds() - 1.0).abs() < 1e-9);
     }
 
+    /// An empty folder for a test's files: never in the system temp folder (C:\), always next
+    /// to the shared build output on the Dev Drive.
     pub(crate) fn test_dir(name: &str) -> std::path::PathBuf {
-        // Never in the system temp folder (C:\): next to the shared build output
         let target = std::env::var_os("CARGO_TARGET_DIR").expect("CARGO_TARGET_DIR must be set");
         let dir = std::path::PathBuf::from(target)
             .join("tmp/looplab-tests")

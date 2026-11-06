@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { tabTrigger } from "@/components/ui/menu";
-import { NumberField, parseNumber } from "@/components/ui/NumberField";
+import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { t } from "@/i18n";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
@@ -12,10 +12,6 @@ import { KeysSettings } from "./KeysSettings";
 
 const seconds = (value: number) => `${value} ${t.transport.seconds}`;
 const percent = (value: number) => `${Math.round(value * 100)}%`;
-const parsePercent = (text: string) => {
-  const value = parseNumber(text);
-  return value === null ? null : value / 100;
-};
 
 function Row({ label, hint, children }: { label: string; hint: string; children: ReactNode }) {
   return (

@@ -100,11 +100,7 @@ mod tests {
 
     #[test]
     fn writes_a_valid_header_and_samples() {
-        // Never in the system temp folder (C:\): next to the shared build output
-        let target = std::env::var_os("CARGO_TARGET_DIR").expect("CARGO_TARGET_DIR must be set");
-        let dir = std::path::PathBuf::from(target).join("tmp/looplab-tests/wav");
-        std::fs::create_dir_all(&dir).unwrap();
-        let path = dir.join("out.wav");
+        let path = crate::pcm::tests::test_dir("wav").join("out.wav");
         let mut wav = WavWriter::create(&path, 48_000, BitDepth::Pcm24).unwrap();
         wav.write(&[0.5, -0.5, 1.0, -1.0]).unwrap();
         wav.finish().unwrap();

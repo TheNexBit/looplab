@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { readPrefs, writeStored } from "@/lib/storage";
 
 /** Where the note view listens: around the playhead, or the average over the whole loop. */
 export type NotesMode = "playhead" | "loop";
@@ -8,15 +9,6 @@ const PREFS_KEY = "looplab.notes";
 interface Prefs {
   open: boolean;
   mode: NotesMode;
-}
-
-function loadPrefs(): Prefs {
-  const fallback: Prefs = { open: false, mode: "playhead" };
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") };
-  } catch {
-    return fallback;
-  }
 }
 
 interface NotesState extends Prefs {
@@ -29,14 +21,10 @@ export const useNotesStore = create<NotesState>((set, get) => {
   const save = (patch: Partial<Prefs>) => {
     set(patch);
     const { open, mode } = get();
-    try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ open, mode }));
-    } catch {
-      // Storage unavailable: the view starts closed next time
-    }
+    writeStored(PREFS_KEY, { open, mode });
   };
   return {
-    ...loadPrefs(),
+    ...readPrefs<Prefs>(PREFS_KEY, { open: false, mode: "playhead" }),
     toggle: () => save({ open: !get().open }),
     setMode: (mode) => save({ mode }),
   };

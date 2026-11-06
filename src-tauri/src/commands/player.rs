@@ -6,8 +6,8 @@ use tauri::State;
 use tauri::ipc::Channel;
 
 use super::{AppError, ErrorKind};
+use crate::media;
 use crate::state::AppState;
-use crate::{media, paths};
 
 #[derive(Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -54,7 +54,7 @@ pub async fn open_file(
     let output_rate = engine.sample_rate();
     let file = PathBuf::from(&path);
     let name = file_name(&file);
-    let cache = paths::cache_dir(&app).map_err(AppError::internal)?;
+    let cache = super::cache_dir(&app)?;
     let cancel = state.new_load();
 
     let events_app = app.clone();
@@ -82,14 +82,10 @@ pub async fn open_file(
 
     let opened = tauri::async_runtime::spawn_blocking(move || -> Result<_, AppError> {
         let stem = |source: &Path| -> Result<PathBuf, AppError> {
-            let stem = media::cache_stem(&cache, crate::cache::CacheKind::Decoded.folder(), source)
+            // One cache entry per track and output rate: "<hash>-48000.pcm", "<hash>-48000.peaks"
+            let folder = crate::cache::CacheKind::Decoded.folder();
+            let stem = media::cache_path(&cache, folder, source, &format!("-{output_rate}"))
                 .map_err(AppError::internal)?;
-            let stem = stem.with_file_name(format!(
-                "{}-{output_rate}",
-                stem.file_name()
-                    .map(|n| n.to_string_lossy())
-                    .unwrap_or_default()
-            ));
             // Room for this track (estimated from the file size: decoded audio is never
             // smaller than ten times an mp3), then mark its files as just used
             let size = std::fs::metadata(source).map_or(0, |m| m.len());

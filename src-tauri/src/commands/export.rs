@@ -10,8 +10,8 @@ use tauri::ipc::Channel;
 use tauri::{AppHandle, State};
 
 use super::{AppError, ErrorKind};
+use crate::media;
 use crate::state::AppState;
-use crate::{media, paths};
 
 /// File formats, like the render formats of a DAW. FLAC and MP3 need FFmpeg.
 #[derive(Debug, Clone, Copy, Deserialize, specta::Type)]
@@ -98,7 +98,7 @@ pub async fn export_audio(
         ExportFormat::Wav16 | ExportFormat::Mp3 => BitDepth::Pcm16,
         ExportFormat::Wav24 | ExportFormat::Flac => BitDepth::Pcm24,
     };
-    let cache = paths::cache_dir(&app).map_err(AppError::internal)?;
+    let cache = super::cache_dir(&app)?;
     state.export_cancel.store(false, Ordering::Relaxed);
 
     let app = app.clone();

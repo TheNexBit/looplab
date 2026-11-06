@@ -14,14 +14,6 @@ pub struct Coefficients {
 }
 
 impl Coefficients {
-    pub const IDENTITY: Self = Self {
-        b0: 1.0,
-        b1: 0.0,
-        b2: 0.0,
-        a1: 0.0,
-        a2: 0.0,
-    };
-
     /// `gain_db` only matters for shelves and peaks; `q` sets width (peaks) or slope (others).
     pub fn new(kind: BandKind, frequency: f32, gain_db: f32, q: f32, sample_rate: u32) -> Self {
         let rate = sample_rate as f32;

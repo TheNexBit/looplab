@@ -129,7 +129,8 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 ## Regole
 
 - Niente doppioni: un valore, un posto (colori in `theme.css`, testi in `i18n`, scorciatoie in `shortcuts.ts`,
-  limiti dei controlli in `features/player/limits.ts`, percorsi dati in `paths.rs`).
+  limiti dei controlli in `features/player/limits.ts`, percorsi dati in `paths.rs`, preferenze del PC in
+  `lib/storage.ts`, valori con segno in `lib/format.ts`, percentuali scritte in `parsePercent`).
 - Il thread audio è real-time safe: niente allocazioni, lock o I/O nella callback.
 - L'audio è il clock principale: playhead e video lo seguono.
 - Animazioni a 60 fps (playhead, forme d'onda, tempo) girano in `requestAnimationFrame` leggendo gli store

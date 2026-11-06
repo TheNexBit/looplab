@@ -7,13 +7,13 @@ use tauri::AppHandle;
 
 use super::AppError;
 use crate::cache::{self, CacheUsage};
-use crate::{log, paths};
+use crate::log;
 
 /// Space taken by each kind of conversion in the cache.
 #[tauri::command]
 #[specta::specta]
 pub fn cache_usage(app: AppHandle) -> Result<Vec<CacheUsage>, AppError> {
-    let dir = paths::cache_dir(&app).map_err(AppError::internal)?;
+    let dir = super::cache_dir(&app)?;
     Ok(cache::usage(&dir))
 }
 
@@ -21,7 +21,7 @@ pub fn cache_usage(app: AppHandle) -> Result<Vec<CacheUsage>, AppError> {
 #[tauri::command]
 #[specta::specta]
 pub async fn clear_cache(app: AppHandle, keep: Vec<String>) -> Result<f64, AppError> {
-    let dir = paths::cache_dir(&app).map_err(AppError::internal)?;
+    let dir = super::cache_dir(&app)?;
     let keep: Vec<PathBuf> = keep.into_iter().map(PathBuf::from).collect();
     let freed = tauri::async_runtime::spawn_blocking(move || cache::clear(&dir, &keep))
         .await
@@ -63,7 +63,7 @@ pub fn show_log(app: AppHandle) -> Result<(), AppError> {
     if let Some(file) = log::file().filter(|file| file.is_file()) {
         return explore(file, true);
     }
-    let data = paths::data_dir(&app).map_err(AppError::internal)?;
+    let data = super::data_dir(&app)?;
     let dir = log::dir(&data);
     std::fs::create_dir_all(&dir).map_err(AppError::internal)?;
     explore(&dir, false)

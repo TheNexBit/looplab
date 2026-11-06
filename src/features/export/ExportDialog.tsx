@@ -10,6 +10,8 @@ import { menuContent, menuItem } from "@/components/ui/menu";
 import { formatSpeed } from "@/features/player/limits";
 import { t } from "@/i18n";
 import { type AppError, commands, type ExportFormat } from "@/lib/bindings";
+import { signed } from "@/lib/format";
+import { readPrefs, writeStored } from "@/lib/storage";
 import { formatTime } from "@/lib/time";
 import { eqToRust, useEqStore } from "@/stores/eq";
 import { normalizeRegion, useLoopStore } from "@/stores/loop";
@@ -36,22 +38,8 @@ interface Prefs {
 }
 
 /** The last choices are a per-machine convenience, like the render settings of a DAW. */
-function loadPrefs(): Prefs {
-  const fallback: Prefs = { format: "wav16", withSound: true, withEq: true };
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") };
-  } catch {
-    return fallback;
-  }
-}
-
-function savePrefs(prefs: Prefs) {
-  try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-  } catch {
-    // Storage unavailable: the defaults come back next time
-  }
-}
+const loadPrefs = (): Prefs =>
+  readPrefs<Prefs>(PREFS_KEY, { format: "wav16", withSound: true, withEq: true });
 
 type Phase =
   | { kind: "idle" }
@@ -128,7 +116,7 @@ export function ExportDialog() {
   const updatePrefs = (patch: Partial<Prefs>) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
-    savePrefs(next);
+    writeStored(PREFS_KEY, next);
   };
 
   const region = regionOf({ source, loop, sections, duration });
@@ -250,7 +238,7 @@ export function ExportDialog() {
             <Check
               checked={prefs.withSound}
               onChange={(withSound) => updatePrefs({ withSound })}
-              label={`${x.withSound} (${formatSpeed(speed)}, ${semitones >= 0 ? "+" : ""}${semitones} ${t.transport.semitones}${cents ? ` ${cents > 0 ? "+" : ""}${cents} ${t.transport.cents}` : ""})`}
+              label={`${x.withSound} (${formatSpeed(speed)}, ${signed(semitones, t.transport.semitones)}${cents ? ` ${signed(cents, t.transport.cents)}` : ""})`}
             />
             <Check
               checked={prefs.withEq}

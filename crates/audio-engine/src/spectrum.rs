@@ -65,11 +65,6 @@ impl Analyzer {
         }
     }
 
-    /// Seconds one window covers.
-    pub fn window_seconds(&self) -> f64 {
-        self.size as f64 / f64::from(self.sample_rate)
-    }
-
     /// Levels in dB (0 = a full-scale sine) at `NOTES * POINTS_PER_NOTE` points from A0 up,
     /// averaged over the frames `start..end` (one window centred on `start` if the span is
     /// shorter than a window). `mode` is the channel choice of the EQ panel; `semitones`

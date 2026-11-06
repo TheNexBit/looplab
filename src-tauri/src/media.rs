@@ -62,17 +62,21 @@ pub fn ffmpeg() -> Option<PathBuf> {
     None
 }
 
-/// Cache path of `source` in the `kind` folder, without extension (the caller adds what it needs).
-pub fn cache_stem(cache_dir: &Path, kind: &str, source: &Path) -> std::io::Result<PathBuf> {
-    Ok(cache_file(cache_dir, kind, source, "x")?.with_extension(""))
+/// FFmpeg as a command that never flashes a console window.
+fn ffmpeg_command(ffmpeg: &Path) -> Command {
+    let mut command = Command::new(ffmpeg);
+    #[cfg(windows)]
+    std::os::windows::process::CommandExt::creation_flags(&mut command, CREATE_NO_WINDOW);
+    command
 }
 
-/// Cache file for `source`, named after its path, size and date: a changed file gets a new one.
-fn cache_file(
+/// Cache path for `source` in the `kind` folder, named after its path, size and date (a changed
+/// file gets a new name), followed by `suffix`: an extension (".mp4") or more ("-48000").
+pub fn cache_path(
     cache_dir: &Path,
     kind: &str,
     source: &Path,
-    extension: &str,
+    suffix: &str,
 ) -> std::io::Result<PathBuf> {
     let meta = fs::metadata(source)?;
     let modified = meta
@@ -87,7 +91,7 @@ fn cache_file(
     );
     let dir = cache_dir.join(kind);
     fs::create_dir_all(&dir)?;
-    Ok(dir.join(format!("{:016x}.{extension}", fnv1a(key.as_bytes()))))
+    Ok(dir.join(format!("{:016x}{suffix}", fnv1a(key.as_bytes()))))
 }
 
 /// Reads "Duration: 00:03:21.45" from FFmpeg's log, in seconds.
@@ -122,7 +126,7 @@ fn run(
         output.extension().and_then(|e| e.to_str()).unwrap_or("tmp")
     ));
 
-    let mut command = Command::new(ffmpeg);
+    let mut command = ffmpeg_command(&ffmpeg);
     command
         .args(["-hide_banner", "-nostdin", "-y", "-i"])
         .arg(input)
@@ -132,8 +136,6 @@ fn run(
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    #[cfg(windows)]
-    std::os::windows::process::CommandExt::creation_flags(&mut command, CREATE_NO_WINDOW);
     let mut child = command.spawn()?;
 
     // The log (stderr) is read on its own thread: it carries the duration, and an unread
@@ -203,7 +205,7 @@ pub fn extract_audio(
     source: &Path,
     progress: impl FnMut(f32),
 ) -> Result<PathBuf, MediaError> {
-    let output = cache_file(cache_dir, "audio", source, "flac")?;
+    let output = cache_path(cache_dir, "audio", source, ".flac")?;
     if !output.is_file() {
         run(
             source,
@@ -223,13 +225,11 @@ fn h264_encoder() -> Result<&'static str, MediaError> {
     static FOUND: OnceLock<Option<&'static str>> = OnceLock::new();
     let found = FOUND.get_or_init(|| {
         let ffmpeg = ffmpeg()?;
-        let mut command = Command::new(ffmpeg);
+        let mut command = ffmpeg_command(&ffmpeg);
         command
             .args(["-hide_banner", "-encoders"])
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
-        #[cfg(windows)]
-        std::os::windows::process::CommandExt::creation_flags(&mut command, CREATE_NO_WINDOW);
         let mut list = String::new();
         command
             .spawn()
@@ -256,7 +256,7 @@ pub fn make_proxy(
     source: &Path,
     progress: impl FnMut(f32),
 ) -> Result<PathBuf, MediaError> {
-    let output = cache_file(cache_dir, "video", source, "mp4")?;
+    let output = cache_path(cache_dir, "video", source, ".mp4")?;
     if !output.is_file() {
         let encoder = h264_encoder()?;
         run(
@@ -311,9 +311,9 @@ mod tests {
         let dir = temp_dir("media-cache");
         let source = dir.join("clip.webm");
         fs::write(&source, b"one").unwrap();
-        let first = cache_file(&dir, "video", &source, "mp4").unwrap();
-        assert_eq!(first, cache_file(&dir, "video", &source, "mp4").unwrap());
+        let first = cache_path(&dir, "video", &source, ".mp4").unwrap();
+        assert_eq!(first, cache_path(&dir, "video", &source, ".mp4").unwrap());
         fs::write(&source, b"longer content").unwrap();
-        assert_ne!(first, cache_file(&dir, "video", &source, "mp4").unwrap());
+        assert_ne!(first, cache_path(&dir, "video", &source, ".mp4").unwrap());
     }
 }

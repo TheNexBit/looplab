@@ -5,7 +5,7 @@ import type { ShortcutId } from "@/lib/shortcuts";
 import { type MidiSignature, useKeymapStore } from "@/stores/keymap";
 import { useSettingsStore } from "@/stores/settings";
 
-export const midiSignature = ({ kind, channel, number }: MidiTrigger): MidiSignature =>
+const midiSignature = ({ kind, channel, number }: MidiTrigger): MidiSignature =>
   `${kind}:${channel}:${number}`;
 
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];

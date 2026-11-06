@@ -36,7 +36,7 @@ describe("fileName", () => {
       "Song - Verse-1 75% +2st.wav",
     );
     expect(fileName("Song.mp3", region, { speed: 1, semitones: 0, cents: -20 }, "mp3")).toBe(
-      "Song - Verse-1 −20ct.mp3",
+      "Song - Verse-1 -20ct.mp3",
     );
   });
 

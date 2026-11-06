@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
  */
 export interface PeakLevel {
   binFrames: number;
-  /** Interleaved (min, max) per bin, ±127 = loudest peak of the song */
+  /** Interleaved (min, max) per bin, ±127 = full scale (`Peaks.gain` enlarges quiet songs) */
   data: Int8Array;
 }
 

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ExportSource } from "@/features/export/exportPlan";
+import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
 export type SidePanelTab = "sections" | "eq" | "practice";
@@ -12,14 +13,10 @@ const WIDTH_KEY = "looplab.sidePanelWidth";
 const WAVEFORMS_MIN_WIDTH = 480;
 
 function loadWidth(): number {
-  try {
-    const stored = Number(localStorage.getItem(WIDTH_KEY));
-    return stored
-      ? clamp(stored, SIDE_PANEL_WIDTH.min, SIDE_PANEL_WIDTH.max)
-      : SIDE_PANEL_WIDTH.default;
-  } catch {
-    return SIDE_PANEL_WIDTH.default;
-  }
+  const stored = readStored(WIDTH_KEY);
+  return typeof stored === "number"
+    ? clamp(stored, SIDE_PANEL_WIDTH.min, SIDE_PANEL_WIDTH.max)
+    : SIDE_PANEL_WIDTH.default;
 }
 
 interface UiState {
@@ -53,11 +50,7 @@ export const useUiStore = create<UiState>((set) => ({
     const max = Math.min(SIDE_PANEL_WIDTH.max, room);
     const sidePanelWidth = Math.round(clamp(width, SIDE_PANEL_WIDTH.min, max));
     set({ sidePanelWidth });
-    try {
-      localStorage.setItem(WIDTH_KEY, String(sidePanelWidth));
-    } catch {
-      // Storage unavailable: the width resets next time
-    }
+    writeStored(WIDTH_KEY, sidePanelWidth);
   },
   openDialog: (dialog) => set({ dialog }),
   closeDialog: () => set({ dialog: null }),

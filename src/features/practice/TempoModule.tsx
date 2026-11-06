@@ -1,14 +1,16 @@
 import { Bell, ChevronDown, Crosshair, Grid3x3, Hand, X } from "lucide-react";
 import { Popover } from "radix-ui";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { floatingPanel } from "@/components/ui/menu";
-import { NumberField, parseNumber } from "@/components/ui/NumberField";
+import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
+import { clamp } from "@/lib/time";
+import { useWheelSteps } from "@/lib/useWheelSteps";
 import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
@@ -17,10 +19,6 @@ import { TimeSignaturePicker } from "./TimeSignaturePicker";
 import { BPM, COUNT_IN_CHOICES } from "./tempo";
 
 const p = t.practice;
-const parsePercent = (text: string) => {
-  const value = parseNumber(text);
-  return value === null ? null : value / 100;
-};
 
 /** Small caption over a display, like the labels printed on a hardware panel. */
 function Caption({ children }: { children: string }) {
@@ -41,24 +39,15 @@ function BpmDisplay() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const showGrid = useSettingsStore((s) => s.showGrid);
 
-  // The wheel changes the tempo and must not scroll anything: a non-passive listener
+  // The wheel changes the tempo by one
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    const onWheel = (event: WheelEvent) => {
-      if (event.deltaY === 0) return;
-      event.preventDefault();
-      const current = usePracticeStore.getState().bpm ?? BPM.default;
-      const next = Math.min(BPM.max, Math.max(BPM.min, current + (event.deltaY < 0 ? 1 : -1)));
-      usePracticeStore.getState().setBpm(next);
-    };
-    element.addEventListener("wheel", onWheel, { passive: false });
-    return () => element.removeEventListener("wheel", onWheel);
-  }, []);
+  useWheelSteps(ref, (step) => {
+    const current = usePracticeStore.getState().bpm ?? BPM.default;
+    usePracticeStore.getState().setBpm(clamp(current + step, BPM.min, BPM.max));
+  });
 
   return (
-    <div className="flex h-[58px] flex-col justify-center gap-1 rounded-panel border border-black bg-lcd px-2 shadow-[inset_0_2px_6px_rgb(0_0_0/0.9),0_1px_0_rgb(255_255_255/0.05)]">
+    <div className="flex h-[58px] flex-col justify-center gap-1 lcd rounded-panel px-2">
       <div className="flex items-center justify-between gap-2">
         <Caption>{p.tempo}</Caption>
         <Popover.Root>

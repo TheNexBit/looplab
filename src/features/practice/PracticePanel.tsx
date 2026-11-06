@@ -2,7 +2,7 @@ import { NotebookPen } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { NumberField, parseNumber } from "@/components/ui/NumberField";
+import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { formatSpeed } from "@/features/player/limits";
 import { t } from "@/i18n";
@@ -17,11 +17,6 @@ import { repetitionsToNextStep } from "./tempo";
 import { trainerPlan } from "./trainer";
 
 const p = t.practice;
-/** Percentages are typed as numbers: "75" → 0.75. */
-const parsePercent = (text: string) => {
-  const value = parseNumber(text);
-  return value === null ? null : value / 100;
-};
 const FIELD = "well h-6 w-16 rounded-control";
 
 /** A section of the tab; its explanation shows on hover over the title, so the panel stays clean. */

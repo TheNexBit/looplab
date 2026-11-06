@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { AppError } from "@/lib/bindings";
+import { readPrefs, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
 export type VideoStatus = "none" | "loading" | "proxying" | "ready" | "error";
@@ -17,22 +18,8 @@ interface Prefs {
 }
 
 /** Layout preferences are a per-machine convenience: kept in the WebView's local storage. */
-function loadPrefs(): Prefs {
-  const fallback: Prefs = { dock: "top", size: VIDEO_SIZE.default, collapsed: false };
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") };
-  } catch {
-    return fallback;
-  }
-}
-
-function savePrefs(prefs: Prefs) {
-  try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-  } catch {
-    // Storage unavailable: the layout simply resets next time
-  }
-}
+const loadPrefs = (): Prefs =>
+  readPrefs<Prefs>(PREFS_KEY, { dock: "top", size: VIDEO_SIZE.default, collapsed: false });
 
 interface VideoState extends Prefs {
   status: VideoStatus;
@@ -56,7 +43,7 @@ export const useVideoStore = create<VideoState>((set, get) => {
   const prefs = (patch: Partial<Prefs>) => {
     set(patch);
     const { dock, size, collapsed } = get();
-    savePrefs({ dock, size, collapsed });
+    writeStored(PREFS_KEY, { dock, size, collapsed });
   };
   return {
     ...loadPrefs(),

@@ -148,6 +148,11 @@ impl PeaksBuilder {
         }
     }
 
+    /// True once the track has fully loaded: the peaks will not change any more.
+    pub fn is_finished(&self) -> bool {
+        self.finished
+    }
+
     /// Replaces the content with finished peaks (read from the cache).
     pub fn restore(&mut self, peaks: Peaks) {
         self.peaks = peaks;
