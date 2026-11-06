@@ -42,7 +42,8 @@ interface ViewState extends ViewWindow {
    * (the on/off switch is the `followPlayhead` setting).
    */
   manualUntil: number;
-  reset: (duration: number) => void;
+  /** A new track: the first 30 seconds, or the whole track with `whole` */
+  reset: (duration: number, whole?: boolean) => void;
   /** The track length changed (it finished loading): keeps the zoom and position */
   setDuration: (duration: number) => void;
   zoom: (factor: number, anchor: number) => void;
@@ -51,8 +52,11 @@ interface ViewState extends ViewWindow {
   centerOn: (time: number) => void;
   /** Follow again right away (after a seek or when playback starts). */
   resumeFollow: () => void;
-  /** Keeps the playhead visible, scrolling smoothly once it passes the middle. */
-  followPlayhead: (position: number) => void;
+  /**
+   * Keeps the playhead visible: "center" scrolls smoothly once it passes the middle;
+   * "page" turns the page when it reaches the right edge, like Reaper.
+   */
+  followPlayhead: (position: number, mode?: "center" | "page") => void;
   /** Advances the zoom and scroll animation by one frame. */
   step: () => void;
 }
@@ -70,13 +74,24 @@ export const useViewStore = create<ViewState>((set, get) => {
     span: DEFAULT_SPAN,
     target: { start: 0, span: DEFAULT_SPAN },
     manualUntil: 0,
-    reset: (duration) => {
-      const view = clampView({ start: 0, span: DEFAULT_SPAN }, duration);
+    reset: (duration, whole = false) => {
+      const view = clampView({ start: 0, span: whole ? duration : DEFAULT_SPAN }, duration);
       set({ duration, ...view, target: view, manualUntil: 0 });
     },
     setDuration: (duration) => {
-      const view = clampView(get(), duration);
-      set({ duration, ...view, target: clampView(get().target, duration) });
+      const before = get();
+      // Still showing the whole track (a track opened whole, loading): keep showing all of it
+      if (
+        before.start === 0 &&
+        before.span === before.duration &&
+        before.target.span === before.span
+      ) {
+        const whole = clampView({ start: 0, span: duration }, duration);
+        set({ duration, ...whole, target: whole });
+        return;
+      }
+      const view = clampView(before, duration);
+      set({ duration, ...view, target: clampView(before.target, duration) });
     },
     zoom: (factor, anchor) =>
       set({ target: zoomWindow(get().target, factor, anchor, get().duration) }),
@@ -94,12 +109,14 @@ export const useViewStore = create<ViewState>((set, get) => {
     },
     centerOn: (time) => jump({ start: time - get().span / 2, span: get().span }),
     resumeFollow: () => set({ manualUntil: 0 }),
-    followPlayhead: (position) => {
+    followPlayhead: (position, mode = "center") => {
       const { manualUntil, start, span, target, duration } = get();
       if (performance.now() < manualUntil) return;
-      if (position <= start + span / 2 && position >= start) return;
-      // Shift the view and the zoom target together, so following never cancels a zoom
-      const shift = position - span / 2 - start;
+      const page = mode === "page";
+      if (position >= start && position <= start + (page ? span * 0.98 : span / 2)) return;
+      // Shift the view and the zoom target together, so following never cancels a zoom.
+      // A new page starts just before the playhead, so the passage it leaves stays in sight.
+      const shift = position - (page ? span * 0.02 : span / 2) - start;
       set({
         ...clampView({ start: start + shift, span }, duration),
         target: clampView({ start: target.start + shift, span: target.span }, duration),

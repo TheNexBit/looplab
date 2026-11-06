@@ -188,7 +188,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       // The engine forgets the loop on a new track; speed and pitch carry over
       useLoopStore.getState().clear();
       sendTempoAndPitch(get());
-      useViewStore.getState().reset(track.duration);
+      useViewStore
+        .getState()
+        .reset(track.duration, useSettingsStore.getState().openView === "whole");
     },
 
     reportError: (path, error) => set({ load: { kind: "error", path, error } }),

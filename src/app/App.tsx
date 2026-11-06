@@ -5,7 +5,7 @@ import { DropOverlay } from "@/features/library/DropOverlay";
 import { EmptyState } from "@/features/library/EmptyState";
 import { ErrorBanner } from "@/features/library/ErrorBanner";
 import { LoadingState } from "@/features/library/LoadingState";
-import { openDroppedFiles } from "@/features/library/pickFile";
+import { openDroppedFiles, openLastTrack } from "@/features/library/pickFile";
 import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
 import { syncWithEngine } from "@/features/player/syncEngine";
@@ -21,6 +21,7 @@ import { t } from "@/i18n";
 import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
 import { usePlayerStore } from "@/stores/player";
+import { useSettingsStore } from "@/stores/settings";
 import { AboutDialog } from "./AboutDialog";
 import { CommandPalette } from "./CommandPalette";
 import { DiaryDialog } from "./DiaryDialog";
@@ -37,6 +38,7 @@ export function App() {
 
   useEffect(() => {
     void commands.appInfo().then(setInfo);
+    if (useSettingsStore.getState().startup === "last") void openLastTrack();
     const unlisten = events.playbackStatus.listen((event) =>
       usePlayerStore.getState().applyStatus(event.payload),
     );

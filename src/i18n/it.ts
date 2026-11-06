@@ -1,8 +1,14 @@
+import type { CornersId, CustomColor, FontId, OverviewHeight } from "@/lib/appearance";
 import type { CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
+import type { SETTING_CHOICES } from "@/stores/settings";
 
 // Every UI string lives here. Other languages must match this shape (see index.ts).
 export const it = {
+  common: {
+    on: "On",
+    off: "Off",
+  },
   app: {
     noFile: "Nessun file aperto",
     stillLoading: "Caricamento",
@@ -287,14 +293,55 @@ export const it = {
     fineSeekStepHint: "Con Maiusc + ← e →",
     speedStep: "Passo della velocità",
     speedStepHint: "Quanto cambia la velocità con + e −",
-    follow: "Segui il playhead",
-    followHint: "La forma d'onda scorre da sola durante l'ascolto",
+    followPlayhead: "Segui il playhead",
+    followPlayheadHint: "La forma d'onda scorre da sola durante l'ascolto",
     returnToStart: "Torna al punto di partenza",
     returnToStartHint:
       "Fermando la riproduzione si torna all'ultimo punto cliccato, come in Reaper",
     snap: "Calamita",
     snapHint: "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G)",
     reset: "Valori predefiniti",
+    waveform: "Forma d'onda",
+    behaviour: "Comportamento",
+    mouse: "Mouse",
+    steps: "Passi",
+    startup: "All'avvio",
+    startupHint: "Cosa mostra Looplab quando lo apri",
+    openView: "Vista all'apertura",
+    openViewHint: "Quanto brano si vede nella forma d'onda grande appena lo apri",
+    followMode: "Modo di scorrimento",
+    followModeHint:
+      "Continuo: il playhead resta al centro. A pagine: la vista salta quando arriva al bordo, come in Reaper",
+    wheel: "Rotella sulla forma d'onda",
+    wheelHint: "Cosa fa la rotella da sola; con Maiusc fa l'altra cosa",
+    wheelSpeed: "Velocità della rotella",
+    wheelSpeedHint: "Quanto zooma o scorre ogni scatto",
+    doubleClick: "Doppio clic sulla forma d'onda",
+    doubleClickHint:
+      "Il clic sposta sempre il playhead; il doppio clic può anche far partire l'ascolto",
+    waveStyle: "Stile",
+    waveStyleHint:
+      "Piena: picchi sopra e sotto. Contorno: solo il bordo. Metà: un solo lato, più alta",
+    waveZoom: "Zoom verticale",
+    waveZoomHint: "Ingrandisce in altezza le parti piano; i picchi si fermano al bordo",
+    playheadWidth: "Spessore del playhead",
+    playheadWidthHint: "La linea che segna il punto di ascolto",
+    showGrid: "Griglia di battute",
+    showGridHint: "Linee di battiti e battute quando il tempo è noto (la calamita le usa)",
+    rulerLines: "Linee del righello",
+    rulerLinesHint: "Linee leggere sotto ogni tempo del righello",
+    centerLine: "Linea centrale",
+    centerLineHint: "La riga a metà della forma d'onda grande",
+    choices: {
+      startup: { empty: "Schermata vuota", last: "Ultimo brano" },
+      openView: { start: "Primi 30 s", whole: "Tutto il brano" },
+      followMode: { center: "Continuo", page: "A pagine" },
+      wheel: { zoom: "Zoom", scroll: "Scorre" },
+      doubleClick: { none: "Niente", play: "Suona da lì" },
+      waveStyle: { filled: "Piena", outline: "Contorno", half: "Metà" },
+    } satisfies {
+      [K in keyof typeof SETTING_CHOICES]: Record<(typeof SETTING_CHOICES)[K][number], string>;
+    },
     appearance: {
       title: "Aspetto",
       theme: "Tema",
@@ -322,6 +369,45 @@ export const it = {
           description: "Nero, bianco e giallo: si legge anche da lontano.",
         },
       } satisfies Record<ThemeId, { name: string; description: string }>,
+      colorsTitle: "Colori su misura",
+      colorsHint:
+        "Cambia i colori del tema scelto, come nel theme tweaker di Reaper. Ogni tema ricorda i suoi; ↺ rimette quello del tema.",
+      colors: {
+        accent: { name: "Accento", hint: "Tasti accesi, cursori, selezioni" },
+        wave: { name: "Forma d'onda", hint: "Grande e panoramica" },
+        loop: { name: "Loop", hint: "Zona del loop e sua spia" },
+        playhead: { name: "Playhead", hint: "Linea del punto di ascolto" },
+        lcd: { name: "Display", hint: "Cifre di tempo e BPM" },
+        bar: { name: "Griglia", hint: "Linee di battute e battiti" },
+      } satisfies Record<CustomColor, { name: string; hint: string }>,
+      otherColor: "Altro colore…",
+      themeColor: "Colore del tema",
+      resetColors: "Colori del tema",
+      layoutTitle: "Interfaccia",
+      layoutHint: "Grandezza, carattere e forme di tutta l'app.",
+      uiScale: "Grandezza",
+      uiScaleHint: "Ingrandisce o rimpicciolisce tutto, come lo zoom di un browser",
+      font: "Carattere",
+      fontHint: "Le cifre dei display restano sempre a larghezza fissa",
+      fonts: { inter: "Inter", system: "Segoe UI", mono: "Monospazio" } satisfies Record<
+        FontId,
+        string
+      >,
+      corners: "Angoli",
+      cornersHint: "Di tasti, pannelli e finestre",
+      cornerNames: { square: "Squadrati", normal: "Normali", round: "Morbidi" } satisfies Record<
+        CornersId,
+        string
+      >,
+      overview: "Panoramica",
+      overviewHint: "Altezza della striscia con tutto il brano",
+      overviewHeights: { low: "Bassa", normal: "Normale", tall: "Alta" } satisfies Record<
+        OverviewHeight,
+        string
+      >,
+      resetLayout: "Valori predefiniti",
+      bigger: "Interfaccia più grande",
+      smaller: "Interfaccia più piccola",
     },
     data: {
       title: "Dati",

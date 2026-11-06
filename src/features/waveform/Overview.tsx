@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
 import { t } from "@/i18n";
+import { OVERVIEW_HEIGHTS } from "@/lib/appearance";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { useAppearanceStore } from "@/stores/appearance";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
+import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 import { drawWaveform } from "./draw";
 import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
@@ -16,6 +19,7 @@ import { useCanvas } from "./useCanvas";
 export function Overview() {
   const peaks = usePlayerStore((s) => s.peaks);
   const duration = usePlayerStore((s) => s.track?.duration ?? 0);
+  const stripHeight = useAppearanceStore((s) => OVERVIEW_HEIGHTS[s.overviewHeight]);
   const containerRef = useRef<HTMLDivElement>(null);
   const windowRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
@@ -29,6 +33,15 @@ export function Overview() {
     if (peaks) dirty.current = true;
   }, [peaks]);
 
+  // A new waveform style: redraw
+  useEffect(
+    () =>
+      useSettingsStore.subscribe((now, before) => {
+        if (now.waveStyle !== before.waveStyle) dirty.current = true;
+      }),
+    [],
+  );
+
   useAnimationFrame(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !peaks || duration <= 0) return;
@@ -36,7 +49,16 @@ export function Overview() {
     if (dirty.current) {
       const { width, height } = size.current;
       ctx.clearRect(0, 0, width, height);
-      drawWaveform(ctx, peaks, { start: 0, span: duration, width, height }, themeColor("wave-dim"));
+      drawWaveform(
+        ctx,
+        peaks,
+        { start: 0, span: duration, width, height },
+        themeColor("wave-dim"),
+        {
+          style: useSettingsStore.getState().waveStyle,
+          zoom: 1,
+        },
+      );
       dirty.current = false;
     }
 
@@ -107,7 +129,8 @@ export function Overview() {
   return (
     <div
       ref={containerRef}
-      className="well relative h-14 shrink-0 cursor-pointer overflow-hidden rounded-panel"
+      className="well relative shrink-0 cursor-pointer overflow-hidden rounded-panel"
+      style={{ height: stripHeight }}
     >
       <canvas
         ref={canvasRef}

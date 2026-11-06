@@ -122,9 +122,9 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `app/`             | shell: layout, barre, pannello laterale, palette, impostazioni, informazioni, azioni                                                       |
 | `features/<nome>/` | componenti, hook e logica di una funzione: player, library, waveform, markers, eq, video                                                   |
-| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Kbd, Dialog, stili dei menu)                                         |
+| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Stepper, OnOffKey, ChoiceKeys, Kbd, Dialog, stili dei menu)          |
 | `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                                                         |
-| `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`                                            |
+| `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`, `appearance`                              |
 | `i18n/`            | tutti i testi della UI                                                                                                                     |
 | `styles/theme.css` | unica fonte dei token: `@theme` Tailwind v4 dà i nomi, un blocco `[data-theme]` per tema i valori; utility `hw`/`well`/`lcd`/`panel-label` |
 
@@ -139,6 +139,14 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
   con `getState()`: non fanno ridisegnare React.
 - Canvas sempre alla risoluzione reale del monitor (`useCanvas`), anche cambiando monitor, e ridisegnati
   quando cambia il tema.
-- Temi: `lib/theme.ts` (elenco `THEMES`, `applyTheme`, colori letti una volta per tema), `stores/theme.ts`
-  (scelta di questo PC), `app/AppearanceSettings.tsx`. Un tema nuovo = un blocco in `theme.css` con tutti i
-  colori (lo verifica `theme.test.ts`), il suo id in `THEMES` e nome e descrizione in `i18n`.
+- Temi: `lib/theme.ts` (elenco `THEMES`, `applyTheme`, colori letti una volta per tema), `stores/appearance.ts`
+  (scelte di questo PC: tema, colori su misura per tema, carattere, angoli, panoramica, grandezza),
+  `app/AppearanceSettings.tsx`. Un tema nuovo = un blocco in `theme.css` con tutti i colori (lo verifica
+  `theme.test.ts`), il suo id in `THEMES` e nome e descrizione in `i18n`.
+- Colori su misura, carattere e angoli: `lib/appearance.ts` li scrive come variabili CSS in linea su `<html>`
+  (vincono sui blocchi dei temi; ogni colore genera le sue sfumature con `lib/color.ts`) e poi chiama
+  `refreshThemeColors()` perché i canvas rileggano i colori. La grandezza è lo zoom della webview
+  (`setZoom`, permesso `core:webview:allow-set-webview-zoom`); i canvas seguono il nuovo `devicePixelRatio`.
+- Impostazioni a scelta (stile della forma d'onda, rotella, avvio…): elenco unico `SETTING_CHOICES` in
+  `stores/settings.ts`, nomi in `i18n` (`settings.choices`, controllati da TypeScript). Controlli delle
+  impostazioni: `OnOffKey`, `Stepper` (− / + / rotella), `ChoiceKeys` in `components/ui/`.

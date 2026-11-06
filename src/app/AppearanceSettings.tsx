@@ -1,23 +1,99 @@
-import { Check } from "lucide-react";
+import { Check, Pipette, RotateCcw } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
+import { Button } from "@/components/ui/Button";
+import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
+import { Stepper } from "@/components/ui/Stepper";
 import { t } from "@/i18n";
+import {
+  CORNERS,
+  CUSTOM_COLORS,
+  type CustomColor,
+  colorVariables,
+  FONTS,
+  OVERVIEW_HEIGHTS,
+  UI_SCALE,
+} from "@/lib/appearance";
 import { cn } from "@/lib/cn";
+import { isHex } from "@/lib/color";
 import { THEMES, type ThemeId } from "@/lib/theme";
-import { useThemeStore } from "@/stores/theme";
+import { useAppearanceStore } from "@/stores/appearance";
 
 const a = t.settings.appearance;
 
+/** Ready colours for a quick pick, like the colour palettes of track colours in a DAW. */
+const SWATCHES = [
+  "#ffa726",
+  "#ff7043",
+  "#ef5350",
+  "#ec407a",
+  "#ab47bc",
+  "#7e8cff",
+  "#42a5f5",
+  "#26c6da",
+  "#26a69a",
+  "#66bb6a",
+  "#c0ca33",
+  "#ffee58",
+  "#f5f5f5",
+  "#9e9e9e",
+] as const;
+
+/** The theme variable each custom colour shows when it is not changed. */
+const THEME_VARIABLE: Record<CustomColor, string> = {
+  accent: "--color-accent",
+  wave: "--color-wave",
+  loop: "--color-loop",
+  playhead: "--color-playhead",
+  lcd: "--color-lcd-fg",
+  bar: "--color-bar",
+};
+
+/** The colour now on screen for `color`, as hex for the system colour picker. */
+function shownColor(color: CustomColor): string {
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(THEME_VARIABLE[color])
+    .trim();
+  return isHex(value) ? value : "#ffffff";
+}
+
+function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+  return (
+    <section className="space-y-2.5">
+      <div>
+        <p className="panel-label text-fg-muted">{title}</p>
+        <p className="text-xs text-fg-subtle">{hint}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center gap-4 py-1">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-fg">{label}</p>
+        {hint && <p className="text-xs text-fg-subtle">{hint}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 /**
  * A small picture of the app in `theme`: the card carries `data-theme`, so everything
- * inside it takes that theme's colours whatever theme the window is in.
+ * inside it takes that theme's colours (with its custom ones) whatever theme the window is in.
  */
 function ThemeCard({ theme, selected }: { theme: ThemeId; selected: boolean }) {
   const { name, description } = a.themes[theme];
+  const custom = useAppearanceStore((s) => s.colors[theme]);
   return (
     <button
       type="button"
       data-theme={theme}
       aria-pressed={selected}
-      onClick={() => useThemeStore.getState().setTheme(theme)}
+      style={colorVariables(custom ?? {}) as CSSProperties}
+      onClick={() => useAppearanceStore.getState().setTheme(theme)}
       className={cn(
         "flex flex-col overflow-hidden rounded-panel border bg-bg-to text-left text-fg transition-[border-color,box-shadow]",
         selected
@@ -59,20 +135,139 @@ function ThemeCard({ theme, selected }: { theme: ThemeId; selected: boolean }) {
   );
 }
 
-/** Settings → Appearance: the colour theme of this PC, applied at once. */
-export function AppearanceSettings() {
-  const current = useThemeStore((s) => s.theme);
+/** One custom colour: ready swatches, the system picker for any other, back to the theme's. */
+function ColorRow({ color }: { color: CustomColor }) {
+  const picked = useAppearanceStore((s) => s.colors[s.theme]?.[color]);
+  const setColor = useAppearanceStore((s) => s.setColor);
+  const { name, hint } = a.colors[color];
   return (
-    <div className="space-y-3 px-4 pt-3 pb-4">
-      <div>
-        <p className="text-sm text-fg">{a.theme}</p>
-        <p className="text-xs text-fg-subtle">{a.themeHint}</p>
+    <div className="flex items-center gap-3 py-1">
+      <div className="w-36 shrink-0">
+        <p className="text-sm text-fg">{name}</p>
+        <p className="text-[11px] leading-snug text-fg-subtle">{hint}</p>
       </div>
-      <div className="grid grid-cols-3 gap-2.5">
-        {THEMES.map((theme) => (
-          <ThemeCard key={theme} theme={theme} selected={theme === current} />
+      <div className="flex flex-1 flex-wrap items-center gap-1">
+        {SWATCHES.map((hex) => (
+          <button
+            key={hex}
+            type="button"
+            aria-label={`${name} ${hex}`}
+            aria-pressed={picked === hex}
+            onClick={() => setColor(color, hex)}
+            className={cn(
+              "size-[18px] rounded-control border transition-transform hover:scale-110",
+              picked === hex ? "border-fg ring-1 ring-fg" : "border-edge",
+            )}
+            style={{ background: hex }}
+          />
         ))}
+        {/* Any other colour: the system picker (a click, no codes to type) */}
+        <label
+          title={a.otherColor}
+          className={cn(
+            "hw relative inline-flex size-[22px] cursor-pointer items-center justify-center rounded-control text-fg-muted hover:text-fg",
+            picked && !SWATCHES.includes(picked as (typeof SWATCHES)[number]) && "text-accent",
+          )}
+        >
+          <Pipette className="size-3" aria-hidden />
+          <input
+            type="color"
+            aria-label={`${name}: ${a.otherColor}`}
+            value={picked ?? shownColor(color)}
+            onChange={(event) => setColor(color, event.target.value)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          />
+        </label>
       </div>
+      <Button
+        size="icon"
+        aria-label={`${name}: ${a.themeColor}`}
+        title={a.themeColor}
+        disabled={!picked}
+        onClick={() => setColor(color, null)}
+      >
+        <RotateCcw className="size-3.5" />
+      </Button>
+    </div>
+  );
+}
+
+const percent = (value: number) => `${Math.round(value * 100)}%`;
+
+/** Settings → Appearance: theme, colours and sizes of this PC, applied at once. */
+export function AppearanceSettings() {
+  const appearance = useAppearanceStore();
+  const changed = Object.keys(appearance.colors[appearance.theme] ?? {}).length > 0;
+  return (
+    <div className="space-y-5 px-4 pt-3 pb-4">
+      <Section title={a.theme} hint={a.themeHint}>
+        <div className="grid grid-cols-3 gap-2.5">
+          {THEMES.map((theme) => (
+            <ThemeCard key={theme} theme={theme} selected={theme === appearance.theme} />
+          ))}
+        </div>
+      </Section>
+
+      <Section title={`${a.colorsTitle} · ${a.themes[appearance.theme].name}`} hint={a.colorsHint}>
+        <div className="divide-y divide-border">
+          {CUSTOM_COLORS.map((color) => (
+            <ColorRow key={color} color={color} />
+          ))}
+        </div>
+        <div className="flex justify-end">
+          <Button disabled={!changed} onClick={appearance.resetColors}>
+            {a.resetColors}
+          </Button>
+        </div>
+      </Section>
+
+      <Section title={a.layoutTitle} hint={a.layoutHint}>
+        <div className="divide-y divide-border">
+          <Row label={a.uiScale} hint={a.uiScaleHint}>
+            <Stepper
+              label={a.uiScale}
+              value={appearance.uiScale}
+              {...UI_SCALE}
+              defaultValue={UI_SCALE.default}
+              onChange={(uiScale) => appearance.update({ uiScale })}
+              format={percent}
+            />
+          </Row>
+          <Row label={a.font} hint={a.fontHint}>
+            <ChoiceKeys
+              label={a.font}
+              value={appearance.font}
+              choices={(Object.keys(FONTS) as (keyof typeof FONTS)[]).map(
+                (font) => [font, a.fonts[font]] as const,
+              )}
+              onChange={(font) => appearance.update({ font })}
+            />
+          </Row>
+          <Row label={a.corners} hint={a.cornersHint}>
+            <ChoiceKeys
+              label={a.corners}
+              value={appearance.corners}
+              choices={(Object.keys(CORNERS) as (keyof typeof CORNERS)[]).map(
+                (corners) => [corners, a.cornerNames[corners]] as const,
+              )}
+              onChange={(corners) => appearance.update({ corners })}
+            />
+          </Row>
+          <Row label={a.overview} hint={a.overviewHint}>
+            <ChoiceKeys
+              label={a.overview}
+              value={appearance.overviewHeight}
+              choices={(Object.keys(OVERVIEW_HEIGHTS) as (keyof typeof OVERVIEW_HEIGHTS)[]).map(
+                (height) => [height, a.overviewHeights[height]] as const,
+              )}
+              onChange={(overviewHeight) => appearance.update({ overviewHeight })}
+            />
+          </Row>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={appearance.resetLayout}>{a.resetLayout}</Button>
+        </div>
+      </Section>
     </div>
   );
 }

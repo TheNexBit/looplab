@@ -45,6 +45,11 @@ export function themeColor(token: ThemeToken): string {
 export function applyTheme(theme: ThemeId) {
   if (document.documentElement.dataset.theme === theme) return;
   document.documentElement.dataset.theme = theme;
+  refreshThemeColors();
+}
+
+/** Colours changed on the page (a theme or a custom colour): canvases read them again. */
+export function refreshThemeColors() {
   cache.clear();
   for (const listener of listeners) listener();
 }

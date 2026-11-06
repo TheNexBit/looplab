@@ -41,7 +41,46 @@ export interface Settings {
   globalMediaKeys: boolean;
   /** Beat and bar lines on the waveform (when the tempo is known); the magnet uses them */
   showGrid: boolean;
+  /** Look of the waveform: min/max bars, only their outline, or the upper half (like Reaper's rectified view) */
+  waveStyle: WaveStyle;
+  /** Vertical zoom of the waveforms: quiet passages grow, peaks are cut at the edge */
+  waveZoom: number;
+  /** Thickness of the playhead line, in pixels */
+  playheadWidth: number;
+  /** Faint lines down the detailed view at every ruler label */
+  rulerLines: boolean;
+  /** The line through the middle of the detailed view */
+  centerLine: boolean;
+  /** At start-up: the empty screen, or the last track opened (if it still exists) */
+  startup: Startup;
+  /** Plain wheel over the waveform: zoom (Shift scrolls), like Reaper, or the other way round */
+  wheel: WheelAction;
+  /** How fast the wheel zooms or scrolls, 1 = normal */
+  wheelSpeed: number;
+  /** Double-click on the waveform: nothing more than a click, or play from there */
+  doubleClick: DoubleClick;
+  /** Following the playhead: keep it in the middle, or turn the page at the edge like Reaper */
+  followMode: FollowMode;
+  /** What the detailed view shows when a track opens */
+  openView: OpenView;
 }
+
+/** The values of the settings that are a choice among a few, in menu order. */
+export const SETTING_CHOICES = {
+  waveStyle: ["filled", "outline", "half"],
+  startup: ["empty", "last"],
+  wheel: ["zoom", "scroll"],
+  doubleClick: ["none", "play"],
+  followMode: ["center", "page"],
+  openView: ["start", "whole"],
+} as const;
+export type WaveStyle = (typeof SETTING_CHOICES.waveStyle)[number];
+export type Startup = (typeof SETTING_CHOICES.startup)[number];
+export type WheelAction = (typeof SETTING_CHOICES.wheel)[number];
+export type DoubleClick = (typeof SETTING_CHOICES.doubleClick)[number];
+export type FollowMode = (typeof SETTING_CHOICES.followMode)[number];
+export type OpenView = (typeof SETTING_CHOICES.openView)[number];
+type ChoiceSetting = keyof typeof SETTING_CHOICES;
 
 type NumericSetting = {
   [K in keyof Settings]: Settings[K] extends number ? K : never;
@@ -59,6 +98,9 @@ export const SETTING_LIMITS = {
   trainerTo: { min: 0.25, max: 2, step: 0.01 },
   trainerStep: { min: 0.01, max: 0.25, step: 0.01 },
   trainerEvery: { min: 1, max: 20, step: 1 },
+  waveZoom: { min: 1, max: 4, step: 0.5 },
+  playheadWidth: { min: 1, max: 3, step: 1 },
+  wheelSpeed: { min: 0.5, max: 2, step: 0.25 },
 } as const satisfies Record<NumericSetting, { min: number; max: number; step: number }>;
 
 const DEFAULTS: Settings = {
@@ -84,6 +126,17 @@ const DEFAULTS: Settings = {
   trainerEvery: 2,
   globalMediaKeys: false,
   showGrid: true,
+  waveStyle: "filled",
+  waveZoom: 1,
+  playheadWidth: 1,
+  rulerLines: true,
+  centerLine: true,
+  startup: "empty",
+  wheel: "zoom",
+  wheelSpeed: 1,
+  doubleClick: "none",
+  followMode: "center",
+  openView: "start",
 };
 const KEY = "looplab.settings";
 
@@ -117,6 +170,10 @@ export function sanitize(values: Partial<Settings>): Settings {
   // A sound removed in a later version falls back to the classic click
   if (!isClickSound(result.accentSound)) result.accentSound = DEFAULTS.accentSound;
   if (!isClickSound(result.beatSound)) result.beatSound = DEFAULTS.beatSound;
+  for (const key of Object.keys(SETTING_CHOICES) as ChoiceSetting[]) {
+    const allowed: readonly string[] = SETTING_CHOICES[key];
+    if (!allowed.includes(result[key])) (result as Record<string, unknown>)[key] = DEFAULTS[key];
+  }
   return result;
 }
 
@@ -131,6 +188,8 @@ const persist = (settings: Settings) => writeStored(KEY, settings);
 interface SettingsState extends Settings {
   update: (patch: Partial<Settings>) => void;
   reset: () => void;
+  /** Only `keys` back to their default (the "Default values" key of one settings tab) */
+  resetSome: (keys: readonly (keyof Settings)[]) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -143,5 +202,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   reset: () => {
     set(DEFAULTS);
     persist(DEFAULTS);
+  },
+  resetSome: (keys) => {
+    const patch: Partial<Settings> = {};
+    for (const key of keys) (patch as Record<string, unknown>)[key] = DEFAULTS[key];
+    get().update(patch);
   },
 }));

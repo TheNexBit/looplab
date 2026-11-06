@@ -1,0 +1,138 @@
+import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { create } from "zustand";
+import {
+  type Appearance,
+  applyAppearance,
+  CORNERS,
+  CUSTOM_COLORS,
+  type CustomColor,
+  type CustomColors,
+  FONTS,
+  OVERVIEW_HEIGHTS,
+  UI_SCALE,
+} from "@/lib/appearance";
+import { isHex } from "@/lib/color";
+import { readStored, writeStored } from "@/lib/storage";
+import { DEFAULT_THEME, isTheme, THEMES, type ThemeId } from "@/lib/theme";
+import { clamp } from "@/lib/time";
+
+const KEY = "looplab.appearance";
+/** Where versions before the custom colours kept the theme alone */
+const OLD_THEME_KEY = "looplab.theme";
+
+export const DEFAULT_APPEARANCE: Appearance = {
+  theme: DEFAULT_THEME,
+  colors: {},
+  font: "inter",
+  corners: "normal",
+  overviewHeight: "normal",
+  uiScale: UI_SCALE.default,
+};
+
+const oneOf = <T extends string>(choices: Record<T, unknown>, value: unknown, fallback: T): T =>
+  typeof value === "string" && value in choices ? (value as T) : fallback;
+
+/** Keeps only valid values of a stored appearance (an older or damaged one gets defaults). */
+export function sanitizeAppearance(value: unknown): Appearance {
+  const stored = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  const colors: Appearance["colors"] = {};
+  const storedColors = (stored.colors ?? {}) as Record<string, Record<string, unknown>>;
+  for (const theme of THEMES) {
+    const picked: CustomColors = {};
+    for (const color of CUSTOM_COLORS) {
+      const hex = storedColors[theme]?.[color];
+      if (isHex(hex)) picked[color] = hex;
+    }
+    if (Object.keys(picked).length > 0) colors[theme] = picked;
+  }
+  const scale = typeof stored.uiScale === "number" ? stored.uiScale : UI_SCALE.default;
+  return {
+    theme: isTheme(stored.theme) ? stored.theme : DEFAULT_THEME,
+    colors,
+    font: oneOf(FONTS, stored.font, DEFAULT_APPEARANCE.font),
+    corners: oneOf(CORNERS, stored.corners, DEFAULT_APPEARANCE.corners),
+    overviewHeight: oneOf(OVERVIEW_HEIGHTS, stored.overviewHeight, "normal"),
+    uiScale: Math.round(clamp(scale, UI_SCALE.min, UI_SCALE.max) * 10) / 10,
+  };
+}
+
+/** The appearance chosen on this PC (with the theme of older versions, if that is all there is). */
+export function storedAppearance(): Appearance {
+  const stored = readStored(KEY);
+  if (stored !== undefined) return sanitizeAppearance(stored);
+  return sanitizeAppearance({ theme: readStored(OLD_THEME_KEY) });
+}
+
+/** Size of the whole window's content, like Ctrl + / Ctrl − in a browser. */
+export function applyUiScale(scale: number) {
+  getCurrentWebview()
+    .setZoom(scale)
+    .catch(() => {
+      // Outside the app (tests) there is no webview to zoom
+    });
+}
+
+interface AppearanceState extends Appearance {
+  setTheme: (theme: ThemeId) => void;
+  /** A custom colour for the current theme; `null` gives back the theme's own */
+  setColor: (color: CustomColor, hex: string | null) => void;
+  /** Every custom colour of the current theme back to the theme's own */
+  resetColors: () => void;
+  update: (
+    patch: Partial<Pick<Appearance, "font" | "corners" | "overviewHeight" | "uiScale">>,
+  ) => void;
+  /** Font, corners, sizes back to default (theme and colours stay) */
+  resetLayout: () => void;
+}
+
+const pick = ({
+  theme,
+  colors,
+  font,
+  corners,
+  overviewHeight,
+  uiScale,
+}: Appearance): Appearance => ({
+  theme,
+  colors,
+  font,
+  corners,
+  overviewHeight,
+  uiScale,
+});
+
+/**
+ * Look of this PC, like the Theme menu of Ableton or the theme tweaker of Reaper: applied
+ * at once and remembered. Kept apart from the other settings, so "Default values" leaves it alone.
+ */
+export const useAppearanceStore = create<AppearanceState>((set, get) => {
+  const save = (patch: Partial<Appearance>) => {
+    const next = sanitizeAppearance({ ...pick(get()), ...patch });
+    if (next.uiScale !== get().uiScale) applyUiScale(next.uiScale);
+    applyAppearance(next);
+    writeStored(KEY, next);
+    set(next);
+  };
+  return {
+    ...storedAppearance(),
+    setTheme: (theme) => save({ theme }),
+    setColor: (color, hex) => {
+      const { theme, colors } = get();
+      const mine: CustomColors = { ...colors[theme] };
+      if (hex) mine[color] = hex;
+      else delete mine[color];
+      save({ colors: { ...colors, [theme]: mine } });
+    },
+    resetColors: () => {
+      const { theme, colors } = get();
+      const rest = { ...colors };
+      delete rest[theme];
+      save({ colors: rest });
+    },
+    update: (patch) => save(patch),
+    resetLayout: () => {
+      const { font, corners, overviewHeight, uiScale } = DEFAULT_APPEARANCE;
+      save({ font, corners, overviewHeight, uiScale });
+    },
+  };
+});

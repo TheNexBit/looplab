@@ -20,6 +20,8 @@ const RULER_CSS = 20;
  */
 export function DetailView() {
   const peaks = usePlayerStore((s) => s.peaks);
+  const playheadWidth = useSettingsStore((s) => s.playheadWidth);
+  const centerLine = useSettingsStore((s) => s.centerLine && s.waveStyle !== "half");
   const containerRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<HTMLDivElement>(null);
@@ -55,8 +57,8 @@ export function DetailView() {
     const player = usePlayerStore.getState();
     const position = currentPosition(player);
     const viewStore = useViewStore.getState();
-    if (player.playing && useSettingsStore.getState().followPlayhead)
-      viewStore.followPlayhead(position);
+    const { followPlayhead, followMode } = useSettingsStore.getState();
+    if (player.playing && followPlayhead) viewStore.followPlayhead(position, followMode);
     viewStore.step();
     const { start, span } = useViewStore.getState();
     const { width, height, dpr } = size.current;
@@ -64,14 +66,18 @@ export function DetailView() {
     if (dirty.current || drawn.current.start !== start || drawn.current.span !== span) {
       ctx.clearRect(0, 0, width, height);
       const view = { start, span, width, height, top: RULER_CSS * dpr };
+      const settings = useSettingsStore.getState();
       drawRuler(ctx, view, dpr, {
         tick: themeColor("tick"),
         label: themeColor("fg-muted"),
-        grid: themeColor("grid"),
+        grid: settings.rulerLines ? themeColor("grid") : undefined,
       });
-      const beats = useSettingsStore.getState().showGrid ? currentGrid() : null;
+      const beats = settings.showGrid ? currentGrid() : null;
       if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
-      drawWaveform(ctx, peaks, view, themeColor("wave"));
+      drawWaveform(ctx, peaks, view, themeColor("wave"), {
+        style: settings.waveStyle,
+        zoom: settings.waveZoom,
+      });
       if (beats) {
         drawBeatGrid(ctx, view, beats, dpr, "bars", {
           line: themeColor("bar"),
@@ -97,7 +103,7 @@ export function DetailView() {
     }
     const playhead = playheadRef.current;
     if (playhead) {
-      playhead.style.transform = `translateX(${toX(position)}px)`;
+      playhead.style.transform = `translateX(${toX(position) - playheadWidth / 2}px)`;
       playhead.style.visibility =
         position >= start && position <= start + span ? "visible" : "hidden";
     }
@@ -119,13 +125,15 @@ export function DetailView() {
         className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
         style={{ height: RULER_CSS }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
-        style={{ top: RULER_CSS }}
-      >
-        <div className="h-px w-full bg-grid" />
-      </div>
+      {centerLine && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
+          style={{ top: RULER_CSS }}
+        >
+          <div className="h-px w-full bg-grid" />
+        </div>
+      )}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 size-full"
@@ -145,9 +153,10 @@ export function DetailView() {
       </div>
       <div
         ref={playheadRef}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
+        className="pointer-events-none absolute top-0 bottom-0 left-0 bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
+        style={{ width: playheadWidth }}
       >
-        <div className="-translate-x-[5.5px] border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
       </div>
     </div>
   );

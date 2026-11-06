@@ -40,6 +40,13 @@ describe("following the playhead", () => {
     expect(useViewStore.getState().start).toBe(25); // following came back by itself
   });
 
+  it("turns the page at the right edge in page mode, like Reaper", () => {
+    useViewStore.getState().followPlayhead(20, "page");
+    expect(useViewStore.getState().start).toBe(0); // still inside the page
+    useViewStore.getState().followPlayhead(29.9, "page");
+    expect(useViewStore.getState().start).toBeCloseTo(29.3); // new page just before it
+  });
+
   it("does not cancel a zoom in progress", () => {
     const view = useViewStore.getState();
     view.zoom(0.5, 0);
@@ -70,5 +77,21 @@ describe("scrolling with Shift+wheel", () => {
     useViewStore.getState().scrollBy(-10);
     for (let frame = 0; frame < 60; frame++) useViewStore.getState().step();
     expect(useViewStore.getState().start).toBe(0);
+  });
+});
+
+describe("opening a track", () => {
+  it("shows the whole track when asked, and keeps doing so while it loads", () => {
+    const view = useViewStore.getState();
+    view.reset(60, true);
+    expect(useViewStore.getState()).toMatchObject({ start: 0, span: 60 });
+    useViewStore.getState().setDuration(200);
+    expect(useViewStore.getState()).toMatchObject({ start: 0, span: 200 });
+  });
+
+  it("keeps a zoom chosen by hand when the track finishes loading", () => {
+    useViewStore.getState().reset(300);
+    useViewStore.getState().setDuration(400);
+    expect(useViewStore.getState().span).toBe(30);
   });
 });

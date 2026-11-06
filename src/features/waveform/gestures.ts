@@ -2,6 +2,7 @@ import { snapTime } from "@/features/markers/snap";
 import { clamp } from "@/lib/time";
 import { useLoopStore } from "@/stores/loop";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
+import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 import { DRAG_PX, EDGE_PX, timeAtX } from "./pointer";
 
@@ -30,7 +31,9 @@ const WHEEL_BUTTON = 1;
  * - Shift+click: stretch the loop to that point
  * - drag on the waveform or the ruler: a new loop (even over the current one)
  * - drag the loop bar in the ruler: move the loop; drag a loop edge: resize it
- * - wheel: zoom around the pointer; Shift+wheel: scroll
+ * - wheel: zoom around the pointer; Shift+wheel: scroll (the other way round when the
+ *   "wheel" setting says so; "wheelSpeed" makes both faster or slower)
+ * - double-click: play from there, when the "doubleClick" setting says so
  * - press the wheel and drag: move the view by hand, as in Reaper (playhead and loop stay)
  * With the magnet on, loop ends stick to nearby points. Returns a function that removes them.
  */
@@ -107,9 +110,12 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   const onWheel = (event: WheelEvent) => {
     event.preventDefault();
     const view = useViewStore.getState();
-    const unit = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? LINE_HEIGHT_PX : 1;
-    const dx = (event.shiftKey ? event.deltaY : event.deltaX) * unit;
-    const dy = event.shiftKey ? 0 : event.deltaY * unit;
+    const { wheel, wheelSpeed } = useSettingsStore.getState();
+    const unit = (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? LINE_HEIGHT_PX : 1) * wheelSpeed;
+    // Pinch (Ctrl) always zooms; otherwise Shift swaps zoom and scroll
+    const scrolls = !event.ctrlKey && event.shiftKey === (wheel === "zoom");
+    const dx = (scrolls ? event.deltaY || event.deltaX : event.deltaX) * unit;
+    const dy = scrolls ? 0 : event.deltaY * unit;
     if (Math.abs(dx) > Math.abs(dy)) {
       view.scrollBy((dx / element.clientWidth) * view.span);
     } else {
@@ -197,12 +203,21 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
     element.style.cursor = cursorFor(event);
   };
 
+  // Double-click: the first click already moved the playhead there, so only play is left
+  const onDoubleClick = (event: MouseEvent) => {
+    if (useSettingsStore.getState().doubleClick !== "play" || event.shiftKey) return;
+    if (event.target instanceof Element && event.target.closest("[data-no-seek]")) return;
+    const player = usePlayerStore.getState();
+    if (!player.playing) player.togglePlay();
+  };
+
   // The browser's own wheel-button actions (auto-scroll, middle-click paste) never start here
   const blockWheelButton = (event: MouseEvent) => {
     if (event.button === WHEEL_BUTTON) event.preventDefault();
   };
 
   element.addEventListener("wheel", onWheel, { passive: false });
+  element.addEventListener("dblclick", onDoubleClick);
   element.addEventListener("mousedown", blockWheelButton);
   element.addEventListener("auxclick", blockWheelButton);
   element.addEventListener("pointerdown", onPointerDown);
@@ -211,6 +226,7 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   element.addEventListener("pointercancel", onPointerUp);
   return () => {
     element.removeEventListener("wheel", onWheel);
+    element.removeEventListener("dblclick", onDoubleClick);
     element.removeEventListener("mousedown", blockWheelButton);
     element.removeEventListener("auxclick", blockWheelButton);
     element.removeEventListener("pointerdown", onPointerDown);

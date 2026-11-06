@@ -265,6 +265,25 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   seconda apertura immediata. Cache dei brani pronti al massimo 10 GB, i più vecchi si tolgono da soli
   (Impostazioni → Dati la mostra e la svuota). L'export aspetta che il brano sia caricato tutto.
 
+- **Personalizzazioni** (l'utente le trovava scarne; scelte tutte e quattro le aree):
+  - _Colori su misura_ (Impostazioni → Aspetto), come il theme tweaker di Reaper: accento, forma d'onda, loop,
+    playhead, display e griglia, da 14 colori pronti o dal selettore di Windows; ogni colore crea da solo le sue
+    sfumature (passaggio del mouse, sfondo tenue, alone). Ogni tema ricorda i suoi; ↺ rimette il colore del tema.
+    Le anteprime dei temi mostrano i colori cambiati.
+  - _Interfaccia_: grandezza di tutta l'app 80–150% (zoom della finestra, anche dalla palette "Interfaccia più
+    grande / più piccola"), carattere (Inter, Segoe UI, Monospazio), angoli (squadrati, normali, morbidi),
+    altezza della panoramica (bassa, normale, alta). La densità compatta/ampia non c'è: la fa già la grandezza.
+  - _Forma d'onda_ (nuova scheda): stile piena / contorno / metà (un solo lato, come la vista "rettificata" di
+    Reaper), zoom verticale ×1–×4 (i picchi si fermano al bordo), spessore del playhead 1–3 px, griglia di battute,
+    linee del righello, linea centrale.
+  - _Comportamento_ (scheda Generale): all'avvio schermata vuota o ultimo brano; vista all'apertura primi 30 s o
+    tutto il brano; scorrimento continuo o a pagine (come Reaper); rotella = zoom o scorrimento (Maiusc fa
+    l'altra cosa; il pizzico del touchpad zooma sempre); velocità della rotella ×0,5–×2; doppio clic = niente o
+    suona da lì.
+  - Comandi delle impostazioni come nei DAW: tasti ON/OFF con spia al posto delle caselle, − / + e rotella al
+    posto dei numeri da scrivere (doppio clic sul valore = predefinito), tasti di scelta. "Valori predefiniti"
+    di ogni scheda rimette solo le sue voci.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

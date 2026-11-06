@@ -12,22 +12,41 @@ export interface Viewport {
   top?: number;
 }
 
-/** Draws min/max bars, one per device pixel. Cost depends on the width, not on the track. */
+/** How a waveform is drawn: its look and its vertical zoom (1 = peaks touch the edges). */
+export interface WaveLook {
+  style: "filled" | "outline" | "half";
+  zoom: number;
+}
+
+const PLAIN: WaveLook = { style: "filled", zoom: 1 };
+
+/**
+ * Draws the waveform, one column per device pixel. Cost depends on the width, not on the track.
+ * "filled": min/max bars; "outline": only the top and bottom edges of those bars;
+ * "half": the louder of the two, standing on the bottom edge (Reaper's rectified view).
+ */
 export function drawWaveform(
   ctx: CanvasRenderingContext2D,
   peaks: Peaks,
   view: Viewport,
   color: string,
+  look: WaveLook = PLAIN,
 ) {
   const top = view.top ?? 0;
   const bandHeight = view.height - top;
-  const middle = top + bandHeight / 2;
-  const scale = (((bandHeight / 2) * 0.92) / 127) * peaks.gain;
+  const half = look.style === "half";
+  const middle = half ? view.height : top + bandHeight / 2;
+  const reach = half ? bandHeight * 0.96 : (bandHeight / 2) * 0.92;
+  const scale = (reach / 127) * peaks.gain * look.zoom;
+  // Zoomed peaks stop at the edges of the band instead of spilling onto the ruler
+  const limit = (y: number) => Math.min(view.height, Math.max(top, y));
 
   const framesPerPixel = (view.span * peaks.sampleRate) / view.width;
   const level = pickLevel(peaks, framesPerPixel);
   const bins = level.data.length / 2;
   const startFrame = view.start * peaks.sampleRate;
+  const outline = look.style === "outline";
+  const thickness = Math.max(1, Math.round(bandHeight / 160));
 
   ctx.fillStyle = color;
   ctx.beginPath();
@@ -46,8 +65,19 @@ export function drawWaveform(
       lo = Math.min(lo, level.data[bin * 2] ?? 0);
       hi = Math.max(hi, level.data[bin * 2 + 1] ?? 0);
     }
-    const y = middle - hi * scale;
-    ctx.rect(x, y, 1, Math.max(1, (hi - lo) * scale));
+    if (half) {
+      const y = limit(middle - Math.max(Math.abs(lo), Math.abs(hi)) * scale);
+      ctx.rect(x, y, 1, Math.max(1, middle - y));
+      continue;
+    }
+    const y = limit(middle - hi * scale);
+    const bottom = limit(middle - lo * scale);
+    if (outline) {
+      ctx.rect(x, y, 1, thickness);
+      ctx.rect(x, bottom - thickness, 1, thickness);
+    } else {
+      ctx.rect(x, y, 1, Math.max(1, bottom - y));
+    }
   }
   ctx.fill();
 }

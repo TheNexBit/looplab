@@ -22,3 +22,12 @@ describe("settings saved by an older version", () => {
     expect(sanitize({ accentSound: "gong" } as never).accentSound).toBe("beepHigh");
   });
 });
+
+describe("choice settings", () => {
+  it("fall back to the default for an unknown choice", () => {
+    expect(sanitize({ waveStyle: "spiky", wheel: "scroll" } as never)).toMatchObject({
+      waveStyle: "filled",
+      wheel: "scroll",
+    });
+  });
+});
