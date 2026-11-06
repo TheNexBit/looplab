@@ -21,8 +21,10 @@ const CHANNEL_MODES: ChannelMode[] = [
 
 const chip = (active: boolean) =>
   cn(
-    "h-7 rounded-control px-2 text-xs transition-colors",
-    active ? "bg-accent-soft text-accent" : "text-fg-muted hover:bg-surface-hover hover:text-fg",
+    "h-6 rounded-control px-2 text-[11px] whitespace-nowrap transition-[color,filter]",
+    active
+      ? "border border-black bg-accent font-semibold text-on-accent"
+      : "hw text-fg-muted hover:text-fg hover:brightness-125",
   );
 
 /** Side panel tab: presets, A/B bypass, response curve, band settings and channel mode. */
@@ -34,8 +36,8 @@ export function EqPanel() {
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-3">
-      <div className="flex items-center gap-1">
-        <span className="mr-1 text-xs text-fg-subtle">{t.eq.presets.title}</span>
+      <div className="flex flex-wrap items-center gap-1">
+        <span className="panel-label mr-1">{t.eq.presets.title}</span>
         {PRESETS.map((preset) => (
           <button
             key={preset.id}
@@ -52,7 +54,7 @@ export function EqPanel() {
       </div>
 
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-medium tracking-wide text-fg-subtle uppercase">{t.eq.title}</h3>
+        <h3 className="panel-label">{t.eq.title}</h3>
         <button
           type="button"
           title={t.eq.bypassHint}
@@ -79,7 +81,7 @@ export function EqPanel() {
               aria-label={`${t.eq.enabled} ${t.eq.band} ${index + 1}`}
               aria-pressed={band.enabled}
               onClick={() => setBand(index, { enabled: !band.enabled })}
-              className="flex size-6 shrink-0 items-center justify-center rounded-full text-bg-to"
+              className="flex size-6 shrink-0 items-center justify-center rounded-control border border-black text-bg-to"
               style={{
                 background: band.enabled ? sectionColor(index) : "var(--color-surface-hover)",
               }}
@@ -90,7 +92,7 @@ export function EqPanel() {
               aria-label={`${t.eq.kind} ${t.eq.band} ${index + 1}`}
               value={band.kind}
               onChange={(event) => setBand(index, { kind: event.target.value as BandKind })}
-              className="h-7 w-24 rounded-control border border-border bg-surface px-1 text-xs text-fg"
+              className="well h-6 w-24 rounded-control px-1 text-xs text-fg"
             >
               {KINDS.map((kind) => (
                 <option key={kind} value={kind}>
@@ -135,9 +137,7 @@ export function EqPanel() {
       </ul>
 
       <section className="space-y-2">
-        <h3 className="text-xs font-medium tracking-wide text-fg-subtle uppercase">
-          {t.eq.channels.title}
-        </h3>
+        <h3 className="panel-label">{t.eq.channels.title}</h3>
         <div className="grid grid-cols-3 gap-1">
           {CHANNEL_MODES.map((mode) => (
             <button
@@ -145,7 +145,7 @@ export function EqPanel() {
               type="button"
               aria-pressed={channels === mode}
               onClick={() => setChannels(mode)}
-              className={cn(chip(channels === mode), "border border-border")}
+              className={chip(channels === mode)}
             >
               {t.eq.channels[mode]}
             </button>

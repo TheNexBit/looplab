@@ -35,7 +35,7 @@ export function AboutDialog() {
       title={t.about.title}
       className="w-[min(44rem,calc(100vw-2rem))]"
     >
-      <div className="space-y-3 px-4 pb-4">
+      <div className="space-y-3 px-4 pt-3 pb-4">
         <div className="flex items-center gap-3">
           {info && (
             <p className="flex-1 text-sm text-fg-muted tabular">
@@ -48,7 +48,7 @@ export function AboutDialog() {
           </Button>
         </div>
         {update && <p className="text-sm text-fg-muted">{update}</p>}
-        <pre className="max-h-[60vh] overflow-auto rounded-control border border-border bg-surface p-3 font-sans text-xs leading-relaxed whitespace-pre-wrap text-fg-muted select-text">
+        <pre className="max-h-[60vh] overflow-auto well rounded-control p-3 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-fg-muted select-text">
           {licenses}
         </pre>
       </div>

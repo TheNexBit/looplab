@@ -5,10 +5,10 @@ import { useLoopStore } from "@/stores/loop";
 const VARIANTS = {
   /** Shading over the whole height of a waveform */
   region:
-    "top-0 bottom-0 border-x-2 border-accent bg-accent-soft data-[enabled=false]:border-fg-subtle data-[enabled=false]:bg-fg/5",
+    "top-0 bottom-0 border-x border-loop/70 bg-loop-soft data-[enabled=false]:border-fg-subtle/60 data-[enabled=false]:bg-fg/5",
   /** Bar in the time ruler, like a DAW loop brace: grab its middle to move the loop */
   brace:
-    "top-0.5 rounded-[3px] border-x-[3px] border-accent bg-accent/45 data-[enabled=false]:border-fg-subtle data-[enabled=false]:bg-fg-subtle/30",
+    "top-0.5 rounded-[2px] border-x-[3px] border-loop bg-loop/30 shadow-[inset_0_1px_0_rgb(255_255_255/0.3)] data-[enabled=false]:border-fg-subtle data-[enabled=false]:bg-fg-subtle/30",
 } as const;
 
 /** The loop drawn over a waveform. Position it each frame with `placeLoopOverlay`. */

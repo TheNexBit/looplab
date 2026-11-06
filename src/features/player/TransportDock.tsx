@@ -18,6 +18,13 @@ const parseSpeed = (text: string) => {
   const value = parseNumber(text);
   return value === null ? null : value / 100;
 };
+/** Recessed panel holding a group of keys or a fader. */
+const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
+
+/** Speed and pitch faders line up one under the other */
+const LABEL = "w-16";
+const TRACK = "w-20 lg:w-24";
+
 const signed = (value: number, unit: string) => `${value > 0 ? "+" : ""}${value} ${unit}`;
 
 /** Bottom dock: transport, loop, speed and pitch. */
@@ -34,41 +41,49 @@ export function TransportDock() {
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
-    <footer className="flex h-20 shrink-0 items-center gap-5 border-t border-border px-6">
-      <Tooltip label={playLabel} shortcut="playPause">
-        <Button
-          variant="primary"
-          size="lg-icon"
-          disabled={!hasTrack}
-          onClick={togglePlay}
-          aria-label={playLabel}
-        >
-          {playing ? (
-            <Pause className="size-5 fill-current" />
-          ) : (
-            <Play className="size-5 fill-current" />
-          )}
-        </Button>
-      </Tooltip>
+    <footer className="flex h-[88px] shrink-0 items-center gap-2 border-t border-black bg-[linear-gradient(#26282c,#1b1c1f)] px-3 lg:gap-3.5 lg:px-4 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]">
+      <div className={GROUP}>
+        <Tooltip label={playLabel} shortcut="playPause">
+          <Button
+            variant="hardware"
+            size="lg-key"
+            led="green"
+            active={playing}
+            disabled={!hasTrack}
+            onClick={togglePlay}
+            aria-label={playLabel}
+          >
+            {playing ? (
+              <Pause className="size-[18px] fill-loop text-loop" />
+            ) : (
+              <Play className="size-[18px] fill-current" />
+            )}
+          </Button>
+        </Tooltip>
 
-      <Tooltip label={t.transport.returnToStart}>
-        <Button
-          size="icon"
-          active={returnToStart}
-          onClick={() => useSettingsStore.getState().update({ returnToStart: !returnToStart })}
-          aria-label={t.settings.returnToStart}
-          aria-pressed={returnToStart}
-        >
-          <Undo2 className="size-4" />
-        </Button>
-      </Tooltip>
+        <Tooltip label={t.transport.returnToStart}>
+          <Button
+            variant="hardware"
+            size="key"
+            led="amber"
+            active={returnToStart}
+            onClick={() => useSettingsStore.getState().update({ returnToStart: !returnToStart })}
+            aria-label={t.settings.returnToStart}
+            aria-pressed={returnToStart}
+          >
+            <Undo2 className="size-4" />
+          </Button>
+        </Tooltip>
+      </div>
 
       <TimeDisplay />
-      <div className="flex items-center gap-1">
+      <div className={GROUP}>
         <LoopMenu disabled={!hasTrack} />
         <Tooltip label={t.transport.follow} shortcut="toggleFollow">
           <Button
-            size="icon"
+            variant="hardware"
+            size="key"
+            led="amber"
             active={follow}
             onClick={() => {
               useSettingsStore.getState().update({ followPlayhead: !follow });
@@ -82,7 +97,9 @@ export function TransportDock() {
         </Tooltip>
         <Tooltip label={t.transport.snap} shortcut="toggleSnap">
           <Button
-            size="icon"
+            variant="hardware"
+            size="key"
+            led="amber"
             active={snap}
             onClick={() => useSettingsStore.getState().update({ snap: !snap })}
             aria-label={t.shortcuts.toggleSnap}
@@ -93,7 +110,8 @@ export function TransportDock() {
         </Tooltip>
       </div>
 
-      <div className="ml-auto flex items-center gap-6">
+      {/* Speed over pitch, like two strips of a mixer: the dock fits the narrowest window */}
+      <div className="well ml-auto grid shrink-0 gap-1 rounded-panel px-3 py-1.5">
         <div className="flex items-center gap-1">
           <Slider
             label={t.transport.speed}
@@ -105,6 +123,8 @@ export function TransportDock() {
             onChange={setSpeed}
             format={formatSpeed}
             parse={parseSpeed}
+            labelClassName={LABEL}
+            trackClassName={TRACK}
           />
           {SPEED_PRESETS.map((preset) => (
             <button
@@ -113,10 +133,10 @@ export function TransportDock() {
               onClick={() => setSpeed(preset)}
               aria-label={`${t.transport.speedPreset} ${formatSpeed(preset)}`}
               className={cn(
-                "h-6 rounded-control px-1.5 text-[11px] tabular transition-colors",
+                "h-[22px] rounded-[2px] px-1.5 font-mono text-[10px] tabular transition-[filter]",
                 speed === preset
-                  ? "bg-accent-soft text-accent"
-                  : "text-fg-subtle hover:bg-surface-hover hover:text-fg",
+                  ? "border border-black bg-accent font-bold text-on-accent"
+                  : "hw text-fg-muted hover:text-fg hover:brightness-125",
               )}
             >
               {formatSpeed(preset)}
@@ -134,6 +154,8 @@ export function TransportDock() {
             step={SEMITONES.step}
             onChange={(value) => setPitch(value, cents)}
             format={(value) => signed(value, t.transport.semitones)}
+            labelClassName={LABEL}
+            trackClassName={TRACK}
           />
           <Tooltip label={t.transport.fineTune}>
             <span>

@@ -23,7 +23,7 @@ export function SectionLane() {
   return (
     <section
       ref={laneRef}
-      className="relative h-7 shrink-0 overflow-hidden rounded-control border border-border bg-surface"
+      className="relative h-6 shrink-0 overflow-hidden rounded-control bg-well"
       aria-label={t.markers.sections}
     >
       {sections.length === 0 && (
@@ -41,12 +41,12 @@ export function SectionLane() {
               type="button"
               title={`${range.name} — ${t.markers.loopSection}`}
               onClick={() => loopSection(range)}
-              className="absolute top-0 bottom-0 flex items-center overflow-hidden border-l-2 px-2 text-left text-xs font-medium text-fg transition-[filter] hover:brightness-125"
+              className="absolute top-0 bottom-0 flex items-center overflow-hidden rounded-[2px] border-t-2 border-r border-r-black px-1.5 text-left text-[10px] font-semibold tracking-[0.04em] text-fg uppercase transition-[filter] hover:brightness-125"
               style={{
                 left: `${left}%`,
                 width: `${width}%`,
                 borderColor: sectionColor(range.color),
-                background: `color-mix(in srgb, ${sectionColor(range.color)} 22%, transparent)`,
+                background: `color-mix(in srgb, ${sectionColor(range.color)} 20%, var(--color-well))`,
               }}
             >
               <span className="truncate">{range.name}</span>

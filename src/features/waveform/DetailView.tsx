@@ -71,8 +71,12 @@ export function DetailView() {
     if (dirty.current || drawn.current.start !== start || drawn.current.span !== span) {
       ctx.clearRect(0, 0, width, height);
       const view = { start, span, width, height, top: RULER_CSS * dpr };
-      drawRuler(ctx, view, dpr, { tick: themeColor("border"), label: themeColor("fg-subtle") });
-      drawWaveform(ctx, peaks, view, themeColor("accent"));
+      drawRuler(ctx, view, dpr, {
+        tick: themeColor("tick"),
+        label: themeColor("fg-muted"),
+        grid: themeColor("grid"),
+      });
+      drawWaveform(ctx, peaks, view, themeColor("wave"));
       drawn.current = { start, span };
       dirty.current = false;
     }
@@ -267,8 +271,21 @@ export function DetailView() {
   return (
     <div
       ref={containerRef}
-      className="relative min-h-0 flex-1 cursor-pointer overflow-hidden rounded-panel border border-border bg-surface"
+      className="well relative min-h-0 flex-1 cursor-pointer overflow-hidden rounded-panel"
     >
+      {/* Ruler strip and centre line, drawn behind the transparent canvas */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 border-b border-black bg-[linear-gradient(#25272b,#1d1e21)]"
+        style={{ height: RULER_CSS }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
+        style={{ top: RULER_CSS }}
+      >
+        <div className="h-px w-full bg-grid" />
+      </div>
       <canvas
         ref={canvasRef}
         className="absolute inset-0 size-full"
@@ -281,14 +298,17 @@ export function DetailView() {
         ref={cueRef}
         aria-hidden
         title={t.transport.cue}
-        className="pointer-events-none absolute top-0 left-0 will-change-transform"
+        className="pointer-events-none absolute left-0 will-change-transform"
+        style={{ top: RULER_CSS - 7 }}
       >
-        <div className="-translate-x-1/2 border-x-[6px] border-t-[9px] border-x-transparent border-t-fg" />
+        <div className="-translate-x-1/2 border-x-[5px] border-b-[7px] border-x-transparent border-b-accent" />
       </div>
       <div
         ref={playheadRef}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-fg will-change-transform"
-      />
+        className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-playhead shadow-[0_0_6px_rgb(255_255_255/0.5)] will-change-transform"
+      >
+        <div className="-translate-x-[5.5px] border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
+      </div>
     </div>
   );
 }

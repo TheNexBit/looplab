@@ -1,40 +1,71 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
 
 /* Single source of every design token. Components use the generated utilities
    (bg-accent, text-fg-muted, rounded-control, …), never raw colors.
-   "static" emits every token as a CSS variable, so canvas drawing can read them too. */
+   "static" emits every token as a CSS variable, so canvas drawing can read them too.
+   Look: "Rack" — studio hardware. Graphite panels, raised buttons, LED lamps,
+   an amber display for time, an amber waveform and a green loop. */
 @theme static {
-  --color-accent: #6366f1;
-  --color-accent-hover: #4f46e5;
-  --color-accent-soft: rgb(99 102 241 / 0.15);
+  /* Amber: the colour of the display, the waveform and every active switch */
+  --color-accent: #ffa726;
+  --color-accent-hover: #ffb547;
+  --color-accent-soft: rgb(255 167 38 / 0.14);
+  /* Text on an amber background */
+  --color-on-accent: #1a1205;
 
-  --color-bg-from: #0f172a;
-  --color-bg-to: #020617;
-  --color-surface: rgb(30 41 59 / 0.45);
-  --color-surface-hover: rgb(51 65 85 / 0.45);
+  /* Green: loop and playback lamps */
+  --color-loop: #3ddc97;
+  --color-loop-soft: rgb(61 220 151 / 0.08);
+  --color-led-off: #3a3c41;
 
-  --color-fg: #f1f5f9;
-  --color-fg-muted: #94a3b8;
-  --color-fg-subtle: #64748b;
+  /* Display (time, track name) */
+  --color-lcd: #0e120d;
+  --color-lcd-fg: #ffb347;
+  --color-lcd-dim: #b5874a;
 
-  --color-border: rgb(51 65 85 / 0.5);
+  /* Graphite, from the window frame to the darkest wells */
+  --color-bg-from: #1d1e21;
+  --color-bg-to: #141517;
+  --color-well: #0d0e10;
+  --color-surface: #1c1d20;
+  --color-surface-hover: #2a2c31;
+  --color-raised-from: #2c2e33;
+  --color-raised-to: #232428;
+
+  --color-fg: #e8e6e3;
+  --color-fg-muted: #b5b8be;
+  --color-fg-subtle: #9a9ea6;
+
+  --color-border: #2e3035;
+  /* Near-black hairline between panels, like the gaps in a rack */
+  --color-edge: #0b0b0c;
+
+  /* Waveform canvases */
+  --color-wave: #d9952f;
+  --color-wave-dim: #a8772f;
+  --color-grid: #22242a;
+  --color-tick: #6b6f77;
+  --color-playhead: #ffffff;
 
   /* Section palette: index stored in the project file (Section.color) */
-  --color-section-0: #818cf8;
-  --color-section-1: #38bdf8;
-  --color-section-2: #34d399;
-  --color-section-3: #fbbf24;
-  --color-section-4: #fb7185;
-  --color-section-5: #a78bfa;
-  --color-section-6: #2dd4bf;
-  --color-section-7: #fb923c;
+  --color-section-0: #7f8cff;
+  --color-section-1: #4fb3e8;
+  --color-section-2: #41c08b;
+  --color-section-3: #e2b33c;
+  --color-section-4: #ec6a7e;
+  --color-section-5: #a98bf0;
+  --color-section-6: #33bfae;
+  --color-section-7: #f08a3e;
 
-  --radius-control: 8px;
-  --radius-panel: 12px;
+  --radius-control: 3px;
+  --radius-panel: 4px;
 
-  --font-sans: system-ui, "Segoe UI", sans-serif;
+  --font-sans: "Inter Variable", system-ui, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, Consolas, monospace;
 
-  --default-transition-duration: 180ms;
+  --default-transition-duration: 140ms;
   --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -48,12 +79,19 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: linear-gradient(to bottom, var(--color-bg-from), var(--color-bg-to));
+    background: var(--color-bg-to);
     color: var(--color-fg);
     font-family: var(--font-sans);
+    font-size: 13px;
     -webkit-font-smoothing: antialiased;
     user-select: none;
     cursor: default;
+  }
+
+  /* Thin dark scrollbars, so lists do not show a light system bar */
+  * {
+    scrollbar-color: var(--color-led-off) transparent;
+    scrollbar-width: thin;
   }
 
   :focus-visible {
@@ -65,4 +103,31 @@
 /* Times and numeric values never shift width while they change */
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Raised hardware key: light top edge, dark outline */
+@utility hw {
+  background: linear-gradient(var(--color-raised-from), var(--color-raised-to));
+  border: 1px solid var(--color-edge);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 1px 1px rgb(0 0 0 / 0.4);
+}
+
+/* Recessed well: displays, waveforms, groups of keys */
+@utility well {
+  background: var(--color-well);
+  border: 1px solid #000;
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 0.75),
+    0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+/* Small caps label printed on the panel */
+@utility panel-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fg-subtle);
 }

@@ -42,7 +42,7 @@ export function Dialog({
             <RadixDialog.Content asChild forceMount aria-describedby={undefined}>
               <motion.div
                 className={cn(
-                  "fixed top-24 left-1/2 z-50 w-[min(36rem,calc(100vw-2rem))] -translate-x-1/2 rounded-panel border border-border bg-bg-from shadow-2xl",
+                  "fixed top-24 left-1/2 z-50 w-[min(36rem,calc(100vw-2rem))] -translate-x-1/2 rounded-panel border border-edge bg-bg-from shadow-[0_20px_50px_rgb(0_0_0/0.7),inset_0_1px_0_rgb(255_255_255/0.06)]",
                   className,
                 )}
                 initial={{ opacity: 0, y: -6 }}
@@ -50,8 +50,13 @@ export function Dialog({
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
               >
-                <div className={cn("flex items-center px-4 pt-3", hideTitle && "sr-only")}>
-                  <RadixDialog.Title className="flex-1 text-sm font-semibold">
+                <div
+                  className={cn(
+                    "flex items-center border-b border-edge bg-[linear-gradient(var(--color-raised-from),var(--color-raised-to))] px-4 py-1.5",
+                    hideTitle && "sr-only",
+                  )}
+                >
+                  <RadixDialog.Title className="panel-label flex-1 text-fg-muted">
                     {title}
                   </RadixDialog.Title>
                   <RadixDialog.Close asChild>

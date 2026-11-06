@@ -173,6 +173,7 @@ export const it = {
     cents: "ct",
     seconds: "s",
     cue: "Punto di partenza",
+    position: "Posizione",
     follow: "Segui il brano: la forma d'onda scorre con il playhead durante l'ascolto",
     returnToStart:
       "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",

@@ -130,6 +130,12 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - "Segui il brano" sempre visibile (pulsante mirino nel dock, tasto F): lo scroll manuale lo sospende solo per 2 s
   invece di spegnerlo di nascosto; seguire non interrompe più uno zoom in corso.
 
+- Nuovo aspetto "Rack" (stile hardware da studio), scelto dall'utente tra tre mockup: grafite con tasti in rilievo
+  e spie LED (verde = play e loop, ambra = punto di partenza, segui, calamita), display ambra per il tempo,
+  forma d'onda ambra con griglia, loop verde, marker ambra e battute grigie, sezioni con bordo colorato.
+  Velocità e tonalità sono due fader uno sopra l'altro, così il dock entra anche nella finestra minima (900 px).
+  Font Inter e JetBrains Mono inclusi nell'app (`@fontsource-variable`), niente rete. Logica e comandi invariati.
+
 ## Dopo la prima versione
 
 Separazione AI degli strumenti, analisi dello spettro, speed trainer, esportazione WAV.

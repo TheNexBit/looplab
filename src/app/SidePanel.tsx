@@ -27,7 +27,7 @@ export function SidePanel() {
           animate={{ width: WIDTH, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-          className="shrink-0 overflow-hidden border-l border-border"
+          className="shrink-0 overflow-hidden border-l border-edge bg-bg-from shadow-[inset_1px_0_0_rgb(255_255_255/0.03)]"
         >
           <Tabs.Root
             value={tab}
@@ -35,12 +35,12 @@ export function SidePanel() {
             className="flex h-full flex-col"
             style={{ width: WIDTH }}
           >
-            <Tabs.List className="flex gap-1 border-b border-border p-2">
+            <Tabs.List className="flex gap-0.5 border-b border-edge p-2">
               {tabs.map(({ id, label }) => (
                 <Tabs.Trigger
                   key={id}
                   value={id}
-                  className="h-7 rounded-control px-3 text-sm text-fg-muted transition-colors hover:text-fg data-[state=active]:bg-surface-hover data-[state=active]:text-fg"
+                  className="hw h-[26px] flex-1 rounded-control text-[11px] font-semibold tracking-[0.08em] text-fg-muted uppercase transition-colors hover:text-fg data-[state=active]:border-black data-[state=active]:bg-well data-[state=active]:bg-none data-[state=active]:text-accent data-[state=active]:shadow-[inset_0_1px_3px_rgb(0_0_0/0.7)]"
                 >
                   {label}
                 </Tabs.Trigger>

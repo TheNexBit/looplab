@@ -34,7 +34,7 @@ export function EqCurve() {
     const { width, height, dpr } = size.current;
     ctx.clearRect(0, 0, width, height);
 
-    ctx.fillStyle = themeColor("border");
+    ctx.fillStyle = themeColor("grid");
     for (const hz of GRID_FREQUENCIES)
       ctx.fillRect(Math.round(frequencyToX(hz) * width), 0, dpr, height);
     for (const db of GRID_GAINS)
@@ -105,10 +105,7 @@ export function EqCurve() {
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative h-40 overflow-hidden rounded-panel border border-border bg-surface"
-    >
+    <div ref={containerRef} className="well relative h-40 overflow-hidden rounded-panel">
       <canvas ref={canvasRef} className="absolute inset-0 size-full" aria-label={t.eq.title} />
       {settings.bands.map((band, index) => (
         <button

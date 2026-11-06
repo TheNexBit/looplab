@@ -36,12 +36,7 @@ export function Overview() {
     if (dirty.current) {
       const { width, height } = size.current;
       ctx.clearRect(0, 0, width, height);
-      drawWaveform(
-        ctx,
-        peaks,
-        { start: 0, span: duration, width, height },
-        themeColor("fg-subtle"),
-      );
+      drawWaveform(ctx, peaks, { start: 0, span: duration, width, height }, themeColor("wave-dim"));
       dirty.current = false;
     }
 
@@ -114,7 +109,7 @@ export function Overview() {
   return (
     <div
       ref={containerRef}
-      className="relative h-14 shrink-0 cursor-pointer overflow-hidden rounded-panel border border-border bg-surface"
+      className="well relative h-14 shrink-0 cursor-pointer overflow-hidden rounded-panel"
     >
       <canvas
         ref={canvasRef}
@@ -124,9 +119,12 @@ export function Overview() {
       <LoopOverlay ref={loopRef} />
       <div
         ref={windowRef}
-        className="pointer-events-none absolute top-0 bottom-0 rounded-[6px] border border-accent bg-accent-soft"
+        className="pointer-events-none absolute top-0 bottom-0 border border-white/55 bg-white/5"
       />
-      <div ref={playheadRef} className="pointer-events-none absolute top-0 bottom-0 w-px bg-fg" />
+      <div
+        ref={playheadRef}
+        className="pointer-events-none absolute top-0 bottom-0 w-px bg-playhead"
+      />
     </div>
   );
 }

@@ -24,10 +24,10 @@ function SectionRow({ range }: { range: SectionRange }) {
 
   return (
     <SectionMenu range={range}>
-      <li className="group flex items-center gap-2 rounded-control px-2 py-1 hover:bg-surface-hover">
+      <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-black hover:bg-well">
         <span
           aria-hidden
-          className="size-2.5 shrink-0 rounded-full"
+          className="h-4 w-1 shrink-0 rounded-[1px]"
           style={{ background: sectionColor(range.color) }}
         />
         <input
@@ -45,7 +45,9 @@ function SectionRow({ range }: { range: SectionRange }) {
           }}
           className="min-w-0 flex-1 rounded-[4px] bg-transparent px-1 text-sm text-fg outline-none focus:bg-surface"
         />
-        <span className="text-[11px] text-fg-subtle tabular">{formatTime(range.start)}</span>
+        <span className="font-mono text-[11px] text-fg-subtle tabular">
+          {formatTime(range.start)}
+        </span>
         <Button
           size="icon"
           className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
@@ -79,9 +81,7 @@ export function SectionList() {
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-2">
       <section>
-        <h3 className="px-2 pb-1 text-xs font-medium tracking-wide text-fg-subtle uppercase">
-          {t.markers.sections}
-        </h3>
+        <h3 className="panel-label px-2 pb-1.5">{t.markers.sections}</h3>
         {sections.length === 0 ? (
           <p className="px-2 text-sm text-fg-subtle">{t.markers.noSections}</p>
         ) : (
@@ -94,9 +94,7 @@ export function SectionList() {
       </section>
 
       <section>
-        <h3 className="px-2 pb-1 text-xs font-medium tracking-wide text-fg-subtle uppercase">
-          {t.markers.markers}
-        </h3>
+        <h3 className="panel-label px-2 pb-1.5">{t.markers.markers}</h3>
         {markers.length === 0 ? (
           <p className="px-2 text-sm text-fg-subtle">{t.markers.noMarkers}</p>
         ) : (
@@ -104,7 +102,7 @@ export function SectionList() {
             {sortedMarkers.map((marker) => (
               <li
                 key={marker.id}
-                className="group flex items-center gap-2 rounded-control px-2 py-0.5 hover:bg-surface-hover"
+                className="group flex items-center gap-2 rounded-control border border-transparent px-2 py-0.5 hover:border-black hover:bg-well"
               >
                 <button
                   type="button"
@@ -116,7 +114,7 @@ export function SectionList() {
                       ? `${t.markers.bar} ${numbers.get(marker.id)}`
                       : marker.label || t.markers.marker}
                   </span>
-                  <span className="text-[11px] text-fg-subtle tabular">
+                  <span className="font-mono text-[11px] text-fg-subtle tabular">
                     {formatTime(marker.time)}
                   </span>
                 </button>

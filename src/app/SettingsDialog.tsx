@@ -34,7 +34,7 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onClose={close} title={s.title}>
-      <div className="divide-y divide-border px-4 pb-4">
+      <div className="divide-y divide-border px-4 pt-1 pb-4">
         <Row label={s.seekStep} hint={s.seekStepHint}>
           <NumberField
             label={s.seekStep}

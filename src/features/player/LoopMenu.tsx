@@ -19,7 +19,9 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
     <div className="flex items-center">
       <Tooltip label={t.transport.loop} shortcut="loopToggle">
         <Button
-          size="icon"
+          variant="hardware"
+          size="key"
+          led="green"
           disabled={disabled || !region}
           active={loop.enabled && region !== null}
           onClick={loop.toggle}
@@ -34,11 +36,18 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
         <Tooltip label={t.transport.loopOptions}>
           <Popover.Trigger asChild>
             <Button
-              size="icon"
+              variant="hardware"
               disabled={disabled}
               aria-label={t.transport.loopOptions}
-              className="w-5 rounded-l-none"
+              className="h-12 gap-2 rounded-l-none border-l-0 px-2.5"
             >
+              {/* Loop range readout; the key opens the loop options */}
+              <span className="flex flex-col items-start gap-px max-lg:hidden">
+                <span className="panel-label">{t.transport.loop}</span>
+                <span className="font-mono text-xs whitespace-nowrap text-fg tabular">
+                  {region ? `${formatTime(region.start)} → ${formatTime(region.end)}` : "—"}
+                </span>
+              </span>
               <ChevronDown className="size-3.5" />
             </Button>
           </Popover.Trigger>
@@ -47,9 +56,9 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           <Popover.Content
             side="top"
             sideOffset={8}
-            className="z-50 w-80 space-y-4 rounded-panel border border-border bg-bg-from p-4 text-sm shadow-lg"
+            className="z-50 w-80 space-y-4 rounded-panel border border-edge bg-bg-from p-4 text-sm shadow-[0_8px_24px_rgb(0_0_0/0.6),inset_0_1px_0_rgb(255_255_255/0.05)]"
           >
-            <p className="text-fg-muted tabular">
+            <p className="font-mono text-xs text-lcd-fg tabular">
               {region
                 ? `${formatTime(region.start)} – ${formatTime(region.end)}`
                 : t.transport.noLoop}
@@ -84,7 +93,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
               />
               <p className="text-xs text-fg-subtle">{t.transport.gapHint}</p>
             </div>
-            <Button onClick={loop.clear} disabled={!region} className="w-full">
+            <Button variant="hardware" onClick={loop.clear} disabled={!region} className="w-full">
               <Trash2 className="size-4" />
               {t.transport.clearLoop}
             </Button>

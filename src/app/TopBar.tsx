@@ -1,4 +1,4 @@
-import { ChevronDown, FolderOpen, PanelRight, Search, Settings } from "lucide-react";
+import { AudioLines, ChevronDown, FolderOpen, PanelRight, Search, Settings } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
@@ -16,7 +16,12 @@ function RecentMenu() {
     <DropdownMenu.Root onOpenChange={(open) => open && void useRecentStore.getState().refresh()}>
       <Tooltip label={t.recent.title}>
         <DropdownMenu.Trigger asChild>
-          <Button size="icon" className="-ml-2 w-6" aria-label={t.recent.title}>
+          <Button
+            variant="hardware"
+            size="icon"
+            className="-ml-[13px] w-6 rounded-l-none"
+            aria-label={t.recent.title}
+          >
             <ChevronDown className="size-3.5" />
           </Button>
         </DropdownMenu.Trigger>
@@ -53,25 +58,50 @@ export function TopBar() {
   const trackName = usePlayerStore((s) => s.track?.name);
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-3 border-b border-border px-3">
+    <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(#202125,#1a1b1e)] px-3 shadow-[inset_0_-1px_0_rgb(255_255_255/0.03)]">
+      <div className="flex h-6 items-center gap-2 border-r border-border pr-3">
+        <AudioLines className="size-4 text-accent" aria-hidden />
+        <span className="text-[11px] font-bold tracking-[0.18em] text-fg">LOOPLAB</span>
+      </div>
       <Tooltip label={t.shortcuts.openFile} shortcut="openFile">
-        <Button onClick={() => void pickAndOpenFile()}>
+        <Button
+          variant="hardware"
+          className="rounded-r-none"
+          onClick={() => void pickAndOpenFile()}
+        >
           <FolderOpen className="size-4" />
           {t.app.open}
         </Button>
       </Tooltip>
       <RecentMenu />
 
-      <span className={trackName ? "truncate text-sm text-fg" : "truncate text-sm text-fg-subtle"}>
-        {trackName ?? t.app.noFile}
-      </span>
+      {/* Small display with the open track; the lamp is lit while a track is loaded */}
+      <div className="well flex h-7 min-w-64 items-center gap-2 rounded-control px-3">
+        <span
+          aria-hidden
+          className={
+            trackName
+              ? "size-1.5 shrink-0 rounded-full bg-loop shadow-[0_0_6px_var(--color-loop)]"
+              : "size-1.5 shrink-0 rounded-full bg-led-off"
+          }
+        />
+        <span
+          className={
+            trackName
+              ? "truncate font-mono text-xs text-fg"
+              : "truncate font-mono text-xs text-fg-subtle"
+          }
+        >
+          {trackName ?? t.app.noFile}
+        </span>
+      </div>
 
       <button
         type="button"
         onClick={() => openDialog("palette")}
-        className="mx-auto flex h-8 w-80 shrink-0 items-center gap-2 rounded-control border border-border bg-surface px-3 text-sm text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
+        className="mx-auto flex h-7 w-80 shrink-0 items-center gap-2 rounded-control border border-border bg-[#18191c] px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
       >
-        <Search className="size-4" />
+        <Search className="size-3.5" />
         {t.app.searchActions}
         <span className="ml-auto">
           <Kbd shortcut="commandPalette" />
@@ -80,6 +110,7 @@ export function TopBar() {
 
       <Tooltip label={t.shortcuts.openSettings} shortcut="openSettings">
         <Button
+          variant="hardware"
           size="icon"
           onClick={() => openDialog("settings")}
           aria-label={t.shortcuts.openSettings}
@@ -89,6 +120,7 @@ export function TopBar() {
       </Tooltip>
       <Tooltip label={t.app.toggleSidePanel}>
         <Button
+          variant="hardware"
           size="icon"
           active={sidePanelOpen}
           onClick={toggleSidePanel}

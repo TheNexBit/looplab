@@ -38,7 +38,7 @@ export function MarkerFlags({
           aria-hidden
           className={cn(
             "pointer-events-none absolute bottom-0 w-px",
-            beat ? "bg-accent/60" : "bg-fg-muted/60",
+            beat ? "bg-fg/10" : "bg-accent/60",
           )}
           style={{ left: `${left}%`, top }}
         />
@@ -63,8 +63,8 @@ export function MarkerFlags({
                 )
               }
               className={cn(
-                "absolute h-4 min-w-4 -translate-x-1/2 cursor-grab rounded-[4px] px-1 text-[10px] leading-4 font-medium tabular active:cursor-grabbing",
-                beat ? "bg-accent text-white" : "bg-fg-muted text-bg-to",
+                "absolute h-4 min-w-4 -translate-x-1/2 cursor-grab rounded-[2px] px-1 font-mono text-[9px] leading-4 font-bold tabular active:cursor-grabbing",
+                beat ? "bg-led-off text-fg" : "bg-accent text-on-accent",
               )}
               style={{ left: `${left}%`, top }}
             >

@@ -58,7 +58,7 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 | `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                              |
 | `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings` |
 | `i18n/`            | tutti i testi della UI                                                                          |
-| `styles/theme.css` | unica fonte dei token del tema (`@theme` Tailwind v4)                                           |
+| `styles/theme.css` | unica fonte dei token del tema "Rack" (`@theme` Tailwind v4), font e utility `hw`/`well`/`panel-label` |
 
 ## Regole
 

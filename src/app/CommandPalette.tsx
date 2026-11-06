@@ -64,7 +64,9 @@ function PaletteBody() {
               onMouseMove={() => setSelected(index)}
               className={cn(
                 "flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-sm",
-                index === selected ? "bg-surface-hover text-fg" : "text-fg-muted",
+                index === selected
+                  ? "bg-surface-hover text-fg shadow-[inset_2px_0_0_var(--color-accent)]"
+                  : "text-fg-muted",
               )}
             >
               <span className="flex-1 truncate">{action.label}</span>

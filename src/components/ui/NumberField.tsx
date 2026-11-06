@@ -75,8 +75,8 @@ export function NumberField({
       onBlur={commit}
       onKeyDown={onKeyDown}
       className={cn(
-        "h-7 w-16 rounded-control border border-transparent bg-transparent px-1.5 text-right text-xs text-fg tabular transition-colors",
-        "hover:border-border focus:border-accent focus:bg-surface focus:outline-none disabled:pointer-events-none",
+        "h-6 w-16 rounded-control border border-transparent bg-transparent px-1.5 text-right font-mono text-xs text-lcd-fg tabular transition-colors",
+        "hover:border-border focus:border-accent focus:bg-well focus:outline-none disabled:pointer-events-none",
         className,
       )}
     />
