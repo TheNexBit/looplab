@@ -17,6 +17,37 @@ function sender<T>(send: (value: T) => unknown) {
   };
 }
 
+/** Clicks follow the beat grid; without a first beat set, it starts at the loop, else at
+ *  the first bar marker, else at 0. */
+function clickSettings() {
+  const settings = useSettingsStore.getState();
+  const region = useLoopStore.getState().region();
+  const { bpm, beatOffset, beatsPerBar, beatUnit } = usePracticeStore.getState();
+  const firstBar = useMarkersStore
+    .getState()
+    .markers.filter((m) => m.kind === "beat")
+    .reduce<number | null>((first, m) => (first === null ? m.time : Math.min(first, m.time)), null);
+  return {
+    bpm: bpm ?? 0,
+    beatUnit,
+    anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
+    countIn: settings.countInBars * beatsPerBar,
+    metronome: settings.metronome,
+    beatsPerBar,
+    volume: settings.clickVolume,
+    accentSound: settings.accentSound,
+    accentLevel: settings.accentLevel,
+    beatSound: settings.beatSound,
+    beatLevel: settings.beatLevel,
+  };
+}
+
+/** Plays one click with the current sound settings, to try them (also while paused). */
+export async function tryClick(accent: boolean) {
+  await commands.setClick(clickSettings());
+  await commands.previewClick(accent);
+}
+
 /**
  * Keeps the engine in step with the loop, EQ, channel and click (tempo, metronome,
  * count-in) settings. Started once by the
@@ -39,29 +70,6 @@ export function syncWithEngine(): () => void {
       end: region?.end ?? 0,
       leadIn: loop.leadIn,
       gap: loop.gap,
-    };
-  };
-  /** Clicks follow the beat grid; without a first beat set, it starts at the loop, else at
-   *  the first bar marker, else at 0. */
-  const clickSettings = () => {
-    const settings = useSettingsStore.getState();
-    const region = useLoopStore.getState().region();
-    const { bpm, beatOffset, beatsPerBar, beatUnit } = usePracticeStore.getState();
-    const firstBar = useMarkersStore
-      .getState()
-      .markers.filter((m) => m.kind === "beat")
-      .reduce<number | null>(
-        (first, m) => (first === null ? m.time : Math.min(first, m.time)),
-        null,
-      );
-    return {
-      bpm: bpm ?? 0,
-      beatUnit,
-      anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
-      countIn: settings.countInBars * beatsPerBar,
-      metronome: settings.metronome,
-      beatsPerBar,
-      volume: settings.clickVolume,
     };
   };
   const pushClick = () => sendClick(clickSettings());

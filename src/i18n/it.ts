@@ -1,4 +1,4 @@
-import type { CacheKind, ErrorKind } from "@/lib/bindings";
+import type { CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
 
 // Every UI string lives here. Other languages must match this shape (see index.ts).
@@ -164,6 +164,23 @@ export const it = {
     metronome: "Metronomo",
     metronomeHint: "Un click su ogni battito; il primo di ogni battuta è più acuto.",
     volume: "Volume",
+    sound: "Suono del metronomo",
+    soundHint:
+      "Come nelle impostazioni del metronomo di Reaper: un suono e un livello per il primo battito di ogni battuta e uno per gli altri. ▶ per sentirlo.",
+    accent: "Accento (1° battito)",
+    otherBeats: "Altri battiti",
+    level: "Livello",
+    tryClick: "Ascolta",
+    sounds: {
+      beepHigh: "Beep alto",
+      beepLow: "Beep basso",
+      woodHigh: "Legno alto",
+      woodLow: "Legno basso",
+      cowbell: "Campanaccio",
+      stick: "Bacchetta",
+      hiHat: "Charleston",
+      clave: "Clave",
+    } satisfies Record<ClickSound, string>,
     needsTempo: "Imposta il tempo (BPM) per usare conteggio e metronomo.",
     trainer: "Speed trainer",
     trainerHint:

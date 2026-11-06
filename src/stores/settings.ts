@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { t } from "@/i18n";
+import type { ClickSound } from "@/lib/bindings";
 import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
@@ -21,6 +23,11 @@ export interface Settings {
   metronome: boolean;
   /** Volume of the clicks, 0..1 */
   clickVolume: number;
+  /** Sound and level (0..1) of the first beat of a bar, and of the other beats, like Reaper */
+  accentSound: ClickSound;
+  accentLevel: number;
+  beatSound: ClickSound;
+  beatLevel: number;
   /** Speed trainer: the loop starts at `trainerFrom` and speeds up by `trainerStep`… */
   trainer: boolean;
   trainerFrom: number;
@@ -44,6 +51,8 @@ export const SETTING_LIMITS = {
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
   countInBars: { min: 0, max: 4, step: 1 },
   clickVolume: { min: 0, max: 1, step: 0.05 },
+  accentLevel: { min: 0, max: 1, step: 0.05 },
+  beatLevel: { min: 0, max: 1, step: 0.05 },
   trainerFrom: { min: 0.25, max: 2, step: 0.01 },
   trainerTo: { min: 0.25, max: 2, step: 0.01 },
   trainerStep: { min: 0.01, max: 0.25, step: 0.01 },
@@ -60,6 +69,11 @@ const DEFAULTS: Settings = {
   countInBars: 0,
   metronome: false,
   clickVolume: 0.6,
+  // The classic click: a high beep on the first beat, a lower one on the others
+  accentSound: "beepHigh",
+  accentLevel: 1,
+  beatSound: "beepLow",
+  beatLevel: 1,
   trainer: false,
   trainerFrom: 0.6,
   trainerTo: 1,
@@ -69,6 +83,14 @@ const DEFAULTS: Settings = {
   showGrid: true,
 };
 const KEY = "looplab.settings";
+
+/**
+ * Every metronome sound, in menu order. The names in `i18n` must cover the engine's
+ * `ClickSound` exactly (checked by TypeScript), so this list can never miss one.
+ */
+export const CLICK_SOUNDS = Object.keys(t.practice.sounds) as ClickSound[];
+const isClickSound = (value: unknown): value is ClickSound =>
+  CLICK_SOUNDS.includes(value as ClickSound);
 
 /** Keeps numbers inside their limits and drops values of the wrong type (e.g. an old file). */
 function sanitize(values: Partial<Settings>): Settings {
@@ -85,6 +107,9 @@ function sanitize(values: Partial<Settings>): Settings {
       (result as Record<string, unknown>)[key] = value;
     }
   }
+  // A sound removed in a later version falls back to the classic click
+  if (!isClickSound(result.accentSound)) result.accentSound = DEFAULTS.accentSound;
+  if (!isClickSound(result.beatSound)) result.beatSound = DEFAULTS.beatSound;
   return result;
 }
 

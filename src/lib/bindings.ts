@@ -24,6 +24,11 @@ export const commands = {
 	setPitch: (semitones: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pitch", { semitones })),
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
 	setClick: (settings: ClickRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_click", { settings })),
+	/**
+	 *  Plays one accented or ordinary click now, so the chosen sound can be heard (also paused).
+	 *  Starts the audio device if needed: trying a sound must work before any track is open.
+	 */
+	previewClick: (accent: boolean) => typedError<null, AppError>(__TAURI_INVOKE("preview_click", { accent })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
@@ -148,7 +153,24 @@ export type ClickRequest = {
 	beatsPerBar: number,
 	/**  0..1 */
 	volume: number | null,
+	/**  Sound and level (0..1) of the first beat of a bar, and of the other beats */
+	accentSound: ClickSound,
+	accentLevel: number | null,
+	beatSound: ClickSound,
+	beatLevel: number | null,
 };
+
+/**
+ *  Metronome sounds, synthesised (no samples to ship). Each beat kind — the accented first
+ *  beat of a bar and the others — picks its own, like the metronome settings of Reaper.
+ */
+export type ClickSound = 
+/**  Short sine beep, high: the classic accent */
+"beepHigh" | 
+/**  Short sine beep, lower: the classic beat */
+"beepLow" | "woodHigh" | "woodLow" | "cowbell" | 
+/**  Side stick on a snare rim */
+"stick" | "hiHat" | "clave";
 
 /**  Practice of one track on one day. */
 export type DiaryEntry = {

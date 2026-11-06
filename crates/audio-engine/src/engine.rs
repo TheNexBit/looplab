@@ -59,6 +59,8 @@ pub(crate) enum Command {
     SetEq(EqSettings),
     SetChannelMode(ChannelMode),
     SetClick(ClickSettings),
+    /// Plays one click now, to hear the chosen sound (also while paused)
+    PreviewClick(bool),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -201,6 +203,11 @@ impl Engine {
     /// Tempo, metronome and count-in.
     pub fn set_click(&self, settings: ClickSettings) {
         self.send(Command::SetClick(settings));
+    }
+
+    /// Plays one accented (`true`) or ordinary click at once, with the current click settings.
+    pub fn preview_click(&self, accent: bool) {
+        self.send(Command::PreviewClick(accent));
     }
 
     fn send(&self, command: Command) {

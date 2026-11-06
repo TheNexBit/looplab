@@ -309,6 +309,7 @@ impl Renderer {
                 Command::SetEq(settings) => self.eq.set(settings),
                 Command::SetChannelMode(mode) => self.channels.set(mode),
                 Command::SetClick(settings) => self.click = settings,
+                Command::PreviewClick(accent) => self.voice.start(self.click.sound(accent)),
             }
         }
     }
@@ -352,9 +353,11 @@ impl Renderer {
             if let Some(frame) = self.pending_seek.take() {
                 self.jump(frame);
             }
-            // Paused: the reader and the stretcher stay frozen until play
+            // Paused: the reader and the stretcher stay frozen until play; only a click being
+            // tried out in the settings is heard
             if !self.playing {
-                return [0.0; 2];
+                let click = self.voice.next(self.click.volume);
+                return [click; 2];
             }
         }
 
@@ -365,7 +368,7 @@ impl Renderer {
         self.output_index += 1;
         let heard = self.heard_fed();
         while let Some(accent) = self.clicks.pop_due(heard) {
-            self.voice.start(accent);
+            self.voice.start(self.click.sound(accent));
         }
         let click = self.voice.next(self.click.volume);
         [
@@ -880,6 +883,19 @@ mod tests {
         );
         let accents: Vec<bool> = std::iter::from_fn(|| clicks.pop_due(f64::MAX)).collect();
         assert_eq!(accents, [true, false, false, true, false, false]);
+    }
+
+    #[test]
+    fn a_click_can_be_tried_while_paused() {
+        let mut h = Harness::new(1.0);
+        h.send(Command::SetClick(ClickSettings {
+            volume: 1.0,
+            ..ClickSettings::default()
+        }));
+        assert_eq!(loudness(&h.render(0.05)), 0.0, "paused: silence");
+        h.send(Command::PreviewClick(true));
+        assert!(loudness(&h.render(0.05)) > 0.01, "the tried click is heard");
+        assert!(!h.playing(), "and playback does not start");
     }
 
     #[test]

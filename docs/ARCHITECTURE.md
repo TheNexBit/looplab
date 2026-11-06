@@ -24,7 +24,9 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     La posizione pubblicata è quella _udita_: una piccola cronologia collega l'ingresso dello stretch
     al punto del brano, così latenza e ritorni del loop sono compensati; durante pause e conteggi
     la posizione resta ferma. Il lettore conta le ripetizioni del loop (`Status::loops`).
-  - `click.rs`: metronomo e conteggio. I battiti si trovano leggendo il brano (tempo del brano, prima
+  - `click.rs`: metronomo e conteggio. I suoni (`ClickSound`) sono ricette sintetizzate (due toni che si
+    spengono e un colpo di rumore filtrato), con inviluppi a fattore costante: niente `exp()` né allocazioni
+    nel thread audio. `PreviewClick` fa sentire un click anche a brano fermo. I battiti si trovano leggendo il brano (tempo del brano, prima
     dello stretch) e si mettono in coda con il frame d'ingresso; il click è sintetizzato in uscita
     quando quel frame si sente, quindi non cambia suono con velocità e tonalità. Il conteggio è la
     parte finale della pausa tra le ripetizioni, e precede anche il play.

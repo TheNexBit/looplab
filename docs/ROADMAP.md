@@ -221,6 +221,12 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Suoni del metronomo** (tasto Conteggio della barra di trasporto, o ▾ del Tempo nelle finestre strette), come
+  nelle impostazioni del metronomo di Reaper: per l'accento (1° battito) e per gli altri battiti si scelgono
+  separatamente suono e livello; ▶ fa sentire il suono anche a brano fermo, e sceglierlo dal menu lo fa sentire
+  subito. Otto suoni sintetizzati nel motore (niente campioni da distribuire): beep alto e basso, legno alto e
+  basso, campanaccio, bacchetta, charleston, clave. Predefinito invariato (beep alto / beep basso). Valgono anche
+  per il conteggio.
 - **Trascinare con la rotella premuta**, come in Reaper: sulla forma d'onda (e sul righello) la vista segue la
   mano; playhead, loop e zoom restano, "segui il brano" si sospende 2 s. Lo scorrimento automatico di Windows
   (icona a frecce) non parte più.

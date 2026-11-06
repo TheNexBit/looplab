@@ -15,6 +15,7 @@ import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { setDownbeatHere, tapBeat } from "./actions";
+import { ClickSoundPicker } from "./ClickSoundPicker";
 import { TimeSignaturePicker } from "./TimeSignaturePicker";
 import { BPM, COUNT_IN_CHOICES } from "./tempo";
 
@@ -67,7 +68,7 @@ function BpmDisplay() {
               side="top"
               align="start"
               sideOffset={8}
-              className={`${floatingPanel} w-64 space-y-3 p-3`}
+              className={`${floatingPanel} w-72 space-y-3 p-3`}
             >
               <div className="grid gap-1">
                 <Popover.Close asChild>
@@ -176,6 +177,9 @@ function ClickOptions() {
         trackClassName="flex-1"
         className="justify-between"
       />
+      <div className="border-t border-border pt-3">
+        <ClickSoundPicker />
+      </div>
       {!hasBpm && (bars > 0 || metronome) && (
         <p className="well rounded-control px-2 py-1.5 text-[11px] text-readout">{p.needsTempo}</p>
       )}
@@ -207,7 +211,7 @@ function CountInKey() {
         <Popover.Content
           side="top"
           sideOffset={8}
-          className={`${floatingPanel} w-64 space-y-3 p-3`}
+          className={`${floatingPanel} w-72 space-y-3 p-3`}
         >
           <ClickOptions />
         </Popover.Content>

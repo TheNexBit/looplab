@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::{ClickSettings, LoadError, LoopSettings, time};
+use audio_engine::{ClickSettings, ClickSound, LoadError, LoopSettings, time};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
@@ -224,6 +224,11 @@ pub struct ClickRequest {
     pub beats_per_bar: u32,
     /// 0..1
     pub volume: f32,
+    /// Sound and level (0..1) of the first beat of a bar, and of the other beats
+    pub accent_sound: ClickSound,
+    pub accent_level: f32,
+    pub beat_sound: ClickSound,
+    pub beat_level: f32,
 }
 
 #[tauri::command]
@@ -244,7 +249,20 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
         metronome: settings.metronome,
         beats_per_bar: settings.beats_per_bar,
         volume: settings.volume.clamp(0.0, 1.0),
+        accent_sound: settings.accent_sound,
+        accent_level: settings.accent_level.clamp(0.0, 1.0),
+        beat_sound: settings.beat_sound,
+        beat_level: settings.beat_level.clamp(0.0, 1.0),
     });
+    Ok(())
+}
+
+/// Plays one accented or ordinary click now, so the chosen sound can be heard (also paused).
+/// Starts the audio device if needed: trying a sound must work before any track is open.
+#[tauri::command]
+#[specta::specta]
+pub fn preview_click(state: State<'_, AppState>, accent: bool) -> Result<(), AppError> {
+    state.engine()?.preview_click(accent);
     Ok(())
 }
 

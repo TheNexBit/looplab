@@ -22,7 +22,7 @@ pub mod spectrum;
 pub mod time;
 pub mod wav;
 
-pub use click::ClickSettings;
+pub use click::{ClickSettings, ClickSound};
 pub use dsp::channels::ChannelMode;
 pub use dsp::eq::{BANDS, Band, BandKind, EqSettings};
 pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status};
