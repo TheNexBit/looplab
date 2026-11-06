@@ -48,7 +48,9 @@ export const it = {
     title: "Loop salvati",
     defaultName: "Loop",
     saveCurrent: "Salva il loop attuale",
-    empty: "Crea un loop e salvalo qui per ritrovarlo quando vuoi.",
+    save: "Salva loop",
+    empty:
+      "Trascina sulla forma d'onda per creare un loop, poi premi Salva loop (o Maiusc+L). Ripeti per salvarne altri.",
     recall: "Riprendi questo loop",
     rename: "Rinomina il loop",
     remove: "Elimina il loop",

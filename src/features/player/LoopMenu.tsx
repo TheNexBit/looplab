@@ -1,4 +1,4 @@
-import { ChevronDown, Repeat, Trash2 } from "lucide-react";
+import { BookmarkPlus, ChevronDown, Repeat, Trash2 } from "lucide-react";
 import { Popover } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { floatingPanel } from "@/components/ui/menu";
@@ -8,6 +8,7 @@ import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
 import { useLoopStore } from "@/stores/loop";
 import { usePracticeStore } from "@/stores/practice";
+import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { GAP, LEAD_IN } from "./limits";
 
 const formatSeconds = (value: number) => `${value.toFixed(1)} ${t.transport.seconds}`;
@@ -100,10 +101,20 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
               />
               <p className="text-xs text-fg-subtle">{t.transport.gapHint}</p>
             </div>
-            <Button variant="hardware" onClick={loop.clear} disabled={!region} className="w-full">
-              <Trash2 className="size-4" />
-              {t.transport.clearLoop}
-            </Button>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Button
+                variant="hardware"
+                onClick={() => useSavedLoopsStore.getState().saveCurrent()}
+                disabled={!region}
+              >
+                <BookmarkPlus className="size-4" />
+                {t.savedLoops.save}
+              </Button>
+              <Button variant="hardware" onClick={loop.clear} disabled={!region}>
+                <Trash2 className="size-4" />
+                {t.transport.clearLoop}
+              </Button>
+            </div>
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>

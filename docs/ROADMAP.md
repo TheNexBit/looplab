@@ -159,6 +159,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: la battuta è sempre di 4 battiti; la griglia dei click parte dall'inizio del loop (o dalla
   prima battuta B); il contatore ×N compare sul tasto Loop dalla seconda ripetizione.
 
+- Correzione dopo le prove: durante il conteggio tra una ripetizione e l'altra il playhead scattava avanti e
+  indietro (gli aggiornamenti del motore e i cambi di velocità del trainer facevano ripartire la previsione).
+  Ora la previsione sa quanto manca alla fine del conteggio e lo conserva. "Salva loop" è un pulsante con
+  scritta (anche nel menu del Loop) e lo stesso loop non si salva due volte.
+
 ## Dopo la prima versione
 
 Separazione AI degli strumenti, analisi dello spettro, esportazione WAV.

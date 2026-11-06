@@ -46,6 +46,24 @@ export function advanceInLoop(
   return over < options.gap ? restart : restart + (over - options.gap);
 }
 
+/**
+ * Track-time seconds still to wait in the gap (silence and count-in) before the next
+ * repetition, at the moment `advanceInLoop` describes; 0 while the track is playing.
+ */
+export function loopWait(
+  from: number,
+  elapsed: number,
+  region: LoopRegion | null,
+  options: LoopOptions,
+): number {
+  const position = from + elapsed;
+  if (!region || !options.enabled || from >= region.end || position < region.end) return 0;
+  const restart = restartAt(region, options.leadIn);
+  const cycle = region.end - restart + options.gap;
+  const over = (position - region.end) % cycle;
+  return over < options.gap ? options.gap - over : 0;
+}
+
 interface LoopState extends LoopOptions {
   /** Set by "[" before "]" exists, or by a drag on the waveform */
   start: number | null;

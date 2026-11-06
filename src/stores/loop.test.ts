@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { advanceInLoop, normalizeRegion, restartAt, useLoopStore } from "./loop";
+import { advanceInLoop, loopWait, normalizeRegion, restartAt, useLoopStore } from "./loop";
 
 const options = { enabled: true, leadIn: 0, gap: 0 };
 
@@ -34,6 +34,14 @@ describe("advanceInLoop", () => {
     const withGap = { ...options, gap: 2 };
     expect(advanceInLoop(13, 2, region, withGap)).toBe(10); // 1 s into the 2 s gap
     expect(advanceInLoop(13, 4, region, withGap)).toBe(11);
+  });
+
+  it("says how long is left to wait in the gap", () => {
+    const withGap = { ...options, gap: 2 };
+    expect(loopWait(13, 0.5, region, withGap)).toBe(0); // still playing
+    expect(loopWait(13, 1.5, region, withGap)).toBe(1.5); // 0.5 s into the 2 s gap
+    expect(loopWait(13, 4, region, withGap)).toBe(0); // the next lap is playing
+    expect(loopWait(13, 2, region, options)).toBe(0); // no gap at all
   });
 
   it("ignores the loop when disabled or already past it", () => {

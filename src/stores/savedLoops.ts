@@ -15,7 +15,7 @@ const newId = () => crypto.randomUUID();
 
 interface SavedLoopsState {
   loops: SavedLoopData[];
-  /** Keeps the current loop under a new name; does nothing without a loop. */
+  /** Keeps the current loop under a new name; does nothing without a loop or if already saved. */
   saveCurrent: () => void;
   rename: (id: string, name: string) => void;
   remove: (id: string) => void;
@@ -32,6 +32,8 @@ export const useSavedLoopsStore = create<SavedLoopsState>((set, get) => ({
     const region = useLoopStore.getState().region();
     if (!region) return;
     const { loops } = get();
+    // The same loop saved twice would only be a duplicate
+    if (loops.some((loop) => loop.start === region.start && loop.end === region.end)) return;
     const name = `${t.savedLoops.defaultName} ${loops.length + 1}`;
     set({ loops: [...loops, { id: newId(), name, ...region }] });
   },

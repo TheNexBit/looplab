@@ -61,13 +61,12 @@ export function SavedLoopList() {
         <Tooltip label={t.savedLoops.saveCurrent} shortcut="saveLoop">
           <Button
             variant="hardware"
-            size="icon"
-            className="size-6"
+            className="h-6 px-2"
             disabled={!hasLoop}
             onClick={() => useSavedLoopsStore.getState().saveCurrent()}
-            aria-label={t.savedLoops.saveCurrent}
           >
             <BookmarkPlus className="size-3.5" />
+            {t.savedLoops.save}
           </Button>
         </Tooltip>
       </div>

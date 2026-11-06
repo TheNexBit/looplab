@@ -5,7 +5,7 @@ import { countInSeconds } from "@/features/practice/tempo";
 import { fetchPeaks, type Peaks } from "@/features/waveform/peaks";
 import { type AppError, commands, type PlaybackStatus, type TrackInfo } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
-import { advanceInLoop, restartAt, useLoopStore } from "./loop";
+import { advanceInLoop, loopWait, restartAt, useLoopStore } from "./loop";
 import { usePracticeStore } from "./practice";
 import { useSettingsStore } from "./settings";
 import { useViewStore } from "./view";
@@ -55,17 +55,29 @@ interface PlayerState {
   setPitch: (semitones: number, cents: number) => void;
 }
 
-/** Playhead position in seconds, interpolated between engine updates (speed and loop included). */
-export function currentPosition(state: PlayerState = usePlayerStore.getState()): number {
+/**
+ * Where the playhead is, interpolated between engine updates (speed and loop included),
+ * and how long it still has to wait (track-time seconds) for a count-in or a loop gap.
+ */
+function predict(state: PlayerState): { position: number; wait: number } {
   const duration = state.track?.duration ?? 0;
+  const played = state.playing ? ((performance.now() - state.anchorTime) / 1000) * state.speed : 0;
   // The anchor lies in the future while a count-in plays before playback
-  const elapsed = state.playing
-    ? Math.max(0, ((performance.now() - state.anchorTime) / 1000) * state.speed)
-    : 0;
+  const before = Math.max(0, -played);
+  const elapsed = Math.max(0, played);
   const loop = useLoopStore.getState();
   // The count-in before each repetition is heard as part of the gap
   const options = { ...loop, gap: loop.gap + countInNow() };
-  return clamp(advanceInLoop(state.anchorPosition, elapsed, loop.region(), options), 0, duration);
+  const region = loop.region();
+  return {
+    position: clamp(advanceInLoop(state.anchorPosition, elapsed, region, options), 0, duration),
+    wait: before > 0 ? before : loopWait(state.anchorPosition, elapsed, region, options),
+  };
+}
+
+/** Playhead position in seconds, interpolated between engine updates (speed and loop included). */
+export function currentPosition(state: PlayerState = usePlayerStore.getState()): number {
+  return predict(state).position;
 }
 
 /** Seconds of count-in, at the track's original speed, with the current settings. */
@@ -85,9 +97,14 @@ function sendTempoAndPitch({ speed, semitones, cents }: PlayerState) {
 let loadToken = 0;
 
 export const usePlayerStore = create<PlayerState>((set, get) => {
-  const anchor = (position: number, playing = get().playing) => {
+  /**
+   * Restarts the prediction at `position`. `wait` (track-time seconds) delays it: the
+   * playhead stays there that long, as during a count-in or the gap between repetitions.
+   */
+  const anchor = (position: number, playing = get().playing, wait = 0) => {
     const now = performance.now();
-    set({ playing, anchorPosition: position, anchorTime: now, holdUntil: now + HOLD_MS });
+    const start = now + (wait / get().speed) * 1000;
+    set({ playing, anchorPosition: position, anchorTime: start, holdUntil: now + HOLD_MS });
   };
 
   const fail = (error: AppError) => {
@@ -170,14 +187,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
             ? restartAt(region, loop.leadIn)
             : 0
           : position;
-      anchor(from, true);
+      // The engine counts in first: the playhead waits that long
+      anchor(from, true, countInNow());
       set({ cue: from });
-      // The engine counts in first: the playhead waits, and engine reports are ignored meanwhile
-      const delayMs = (countInNow() / get().speed) * 1000;
-      if (delayMs > 0) {
-        const start = performance.now() + delayMs;
-        set({ anchorTime: start, holdUntil: start + HOLD_MS });
-      }
       useViewStore.getState().resumeFollow();
       void commands.play().then(report);
     },
@@ -212,8 +224,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         }
         return;
       }
-      const predicted = currentPosition(state);
+      const { position: predicted, wait } = predict(state);
       const error = reported - predicted;
+      // Waiting for a count-in or a gap: the engine reports the same still point. Keep
+      // the wait instead of re-anchoring, which would let the playhead run ahead and jump back
+      if (wait > 0 && Math.abs(error) <= SNAP_SECONDS) {
+        if (!state.playing) set({ playing: true });
+        return;
+      }
       const position = Math.abs(error) > SNAP_SECONDS ? reported : predicted + error * BLEND;
       set({ playing: true, anchorPosition: position, anchorTime: performance.now() });
     },
@@ -221,9 +239,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     setSpeed: (value) => {
       const speed = Math.round(clamp(value, SPEED.min, SPEED.max) * 100) / 100;
       if (speed === get().speed) return;
-      // Re-anchor first, so the time already played keeps its old speed
-      anchor(currentPosition());
+      // Re-anchor first, so the time already played keeps its old speed; a wait under way
+      // (count-in, gap) is kept in track time and then lasts as the new speed says
+      const { position, wait } = predict(get());
       set({ speed });
+      anchor(position, get().playing, wait);
       sendTempoAndPitch(get());
     },
 
