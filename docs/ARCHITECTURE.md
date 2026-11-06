@@ -116,14 +116,14 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 
 ## Frontend
 
-| Cartella           | Contenuto                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------ |
-| `app/`             | shell: layout, barre, pannello laterale, palette, impostazioni, informazioni, azioni                   |
-| `features/<nome>/` | componenti, hook e logica di una funzione: player, library, waveform, markers, eq, video               |
-| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Kbd, Dialog, stili dei menu)     |
-| `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                     |
-| `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`        |
-| `i18n/`            | tutti i testi della UI                                                                                 |
+| Cartella           | Contenuto                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/`             | shell: layout, barre, pannello laterale, palette, impostazioni, informazioni, azioni                                                       |
+| `features/<nome>/` | componenti, hook e logica di una funzione: player, library, waveform, markers, eq, video                                                   |
+| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Kbd, Dialog, stili dei menu)                                         |
+| `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                                                         |
+| `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`                                            |
+| `i18n/`            | tutti i testi della UI                                                                                                                     |
 | `styles/theme.css` | unica fonte dei token: `@theme` Tailwind v4 dà i nomi, un blocco `[data-theme]` per tema i valori; utility `hw`/`well`/`lcd`/`panel-label` |
 
 ## Regole
