@@ -107,6 +107,8 @@ export type ClickRequest = {
 	countIn: number,
 	/**  Click on every beat while playing */
 	metronome: boolean,
+	/**  Beats in a bar (the first is accented) */
+	beatsPerBar: number,
 	/**  0..1 */
 	volume: number | null,
 };
@@ -261,6 +263,8 @@ export type Project_Deserialize = {
 	bpm?: number | null,
 	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
 	beatOffset?: number | null,
+	/**  Beats in a bar: 4 for most songs, 3 for a waltz, 5 or 7 for odd meters */
+	beatsPerBar?: number,
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
@@ -283,6 +287,8 @@ export type Project_Serialize = {
 	bpm: number | null,
 	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
 	beatOffset: number | null,
+	/**  Beats in a bar: 4 for most songs, 3 for a waltz, 5 or 7 for odd meters */
+	beatsPerBar: number,
 	speed: number | null,
 	semitones: number,
 	cents: number,

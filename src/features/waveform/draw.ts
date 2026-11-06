@@ -1,4 +1,4 @@
-import { BEATS_PER_BAR, type BeatGrid, beatSeconds, beatsBetween } from "@/features/practice/tempo";
+import { type BeatGrid, beatSeconds, beatsBetween } from "@/features/practice/tempo";
 import { formatTick } from "@/lib/time";
 import { type Peaks, pickLevel } from "./peaks";
 
@@ -114,7 +114,7 @@ export function drawBeatGrid(
   const pixelsPerSecond = view.width / view.span;
   const beatGap = beatSeconds(grid.bpm) * pixelsPerSecond;
   const minGap = MIN_BEAT_GAP_CSS * dpr;
-  if (layer === "beats" ? beatGap < minGap : beatGap * BEATS_PER_BAR < minGap) return;
+  if (layer === "beats" ? beatGap < minGap : beatGap * grid.beatsPerBar < minGap) return;
   const top = view.top ?? 0;
   const width = Math.max(1, dpr);
   for (const { time, bar } of beatsBetween(view.start, view.start + view.span, grid)) {

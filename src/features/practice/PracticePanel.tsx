@@ -15,7 +15,7 @@ import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { setDownbeatHere, tapBeat } from "./actions";
 import { formatDuration, trackSummary } from "./diaryStats";
-import { BPM, COUNT_IN_CHOICES, repetitionsToNextStep } from "./tempo";
+import { BEATS_PER_BAR, BPM, COUNT_IN_CHOICES, repetitionsToNextStep } from "./tempo";
 import { trainerPlan } from "./trainer";
 
 const p = t.practice;
@@ -40,6 +40,7 @@ function TempoGroup() {
   const bpm = usePracticeStore((s) => s.bpm);
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const showGrid = useSettingsStore((s) => s.showGrid);
+  const beatsPerBar = usePracticeStore((s) => s.beatsPerBar);
   return (
     <Group title={p.tempo} hint={p.bpmHint}>
       <div className="flex items-center gap-1.5">
@@ -79,6 +80,20 @@ function TempoGroup() {
           >
             {p.grid}
           </Chip>
+        </Tooltip>
+        <Tooltip label={p.beatsPerBarHint}>
+          <span>
+            <NumberField
+              label={p.beatsPerBar}
+              value={beatsPerBar}
+              min={BEATS_PER_BAR.min}
+              max={BEATS_PER_BAR.max}
+              step={BEATS_PER_BAR.step}
+              onChange={(value) => usePracticeStore.getState().setBeatsPerBar(value)}
+              format={(value) => `${value} ${p.beatsPerBarUnit}`}
+              className={`${FIELD} w-24`}
+            />
+          </span>
         </Tooltip>
         <Tooltip label={p.downbeatHint} shortcut="setDownbeat">
           <Button variant="hardware" disabled={!hasTrack || bpm === null} onClick={setDownbeatHere}>

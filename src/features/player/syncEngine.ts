@@ -46,7 +46,7 @@ export function syncWithEngine(): () => void {
   const clickSettings = () => {
     const settings = useSettingsStore.getState();
     const region = useLoopStore.getState().region();
-    const { bpm, beatOffset } = usePracticeStore.getState();
+    const { bpm, beatOffset, beatsPerBar } = usePracticeStore.getState();
     const firstBar = useMarkersStore
       .getState()
       .markers.filter((m) => m.kind === "beat")
@@ -59,6 +59,7 @@ export function syncWithEngine(): () => void {
       anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
       countIn: settings.countIn,
       metronome: settings.metronome,
+      beatsPerBar,
       volume: settings.clickVolume,
     };
   };

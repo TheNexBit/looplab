@@ -65,7 +65,7 @@ describe("speed trainer", () => {
 });
 
 describe("beat grid", () => {
-  const grid = { bpm: 120, offset: 0.25 };
+  const grid = { bpm: 120, offset: 0.25, beatsPerBar: 4 };
 
   it("finds the nearest beat", () => {
     expect(nearestBeat(0.95, grid)).toBe(0.75);
@@ -81,5 +81,14 @@ describe("beat grid", () => {
       { time: 1.75, bar: false },
       { time: 2.25, bar: true },
     ]);
+  });
+
+  it("follows odd meters", () => {
+    const fiveFour = { bpm: 60, offset: 0, beatsPerBar: 5 };
+    expect(
+      beatsBetween(0, 10, fiveFour)
+        .filter((b) => b.bar)
+        .map((b) => b.time),
+    ).toEqual([0, 5, 10]);
   });
 });

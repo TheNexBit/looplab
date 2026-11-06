@@ -156,7 +156,7 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   "Batti" / T per batterlo (diviso per la velocità, così vale per l'originale); conteggio di 1/2/4/8 battiti
   prima del play e prima di ogni ripetizione; metronomo (tasto K) con il primo battito della battuta più acuto.
   Senza BPM conteggio e metronomo restano spenti e la scheda lo dice.
-- Scelte fatte da me: la battuta è sempre di 4 battiti; la griglia dei click parte dall'inizio del loop (o dalla
+- Scelte fatte da me: la griglia dei click parte dall'inizio del loop (o dalla
   prima battuta B); il contatore ×N compare sul tasto Loop dalla seconda ripetizione.
 
 - Correzione dopo le prove: durante il conteggio tra una ripetizione e l'altra il playhead scattava avanti e
@@ -185,6 +185,9 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Correzione dopo le prove: durante il conteggio il video scattava (la musica aspetta ma il video andava
   avanti e veniva riportato indietro). Ora il video segue `playbackClock`: fermo sul fotogramma giusto durante
   conteggio e pausa tra le ripetizioni, riparte con la musica; la finestra video staccata riceve quanto manca.
+
+- **Battiti per battuta** (scheda Pratica, campo "Battuta", da 1 a 16, salvato nel progetto): griglia e
+  metronomo accentano il primo battito di ogni battuta anche nei tempi dispari (3, 5, 7…). Prima era sempre 4.
 
 ## Dopo la prima versione
 

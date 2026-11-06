@@ -101,6 +101,10 @@ export const it = {
     tapHint: "Premi a tempo almeno due volte (anche col tasto T)",
     clearBpm: "Tempo sconosciuto",
     grid: "Griglia",
+    beatsPerBar: "Battuta",
+    beatsPerBarUnit: "battiti",
+    beatsPerBarHint:
+      "Battiti in una battuta: 4 per la maggior parte dei brani, 3 per un valzer, 5 o 7 per i tempi dispari.",
     gridHint: "Battute sulla forma d'onda; la calamita si aggancia ai battiti.",
     downbeat: "Primo battito qui",
     downbeatHint:

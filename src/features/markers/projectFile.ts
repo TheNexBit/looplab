@@ -1,4 +1,5 @@
 import { GAP, LEAD_IN, SPEED } from "@/features/player/limits";
+import { BEATS_PER_BAR } from "@/features/practice/tempo";
 import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/bindings";
 import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
@@ -13,6 +14,7 @@ export interface ProjectData {
   loops: SavedLoopData[];
   bpm: number | null;
   beatOffset: number | null;
+  beatsPerBar: number;
   speed: number;
   semitones: number;
   cents: number;
@@ -40,6 +42,7 @@ export function fromFile(file: Project_Serialize): ProjectData {
       .filter((l) => l.end > l.start),
     bpm: typeof file.bpm === "number" && file.bpm > 0 ? file.bpm : null,
     beatOffset: typeof file.beatOffset === "number" ? file.beatOffset : null,
+    beatsPerBar: file.beatsPerBar > 0 ? file.beatsPerBar : BEATS_PER_BAR.default,
     speed: num(file.speed, SPEED.default),
     semitones: file.semitones,
     cents: file.cents,

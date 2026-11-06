@@ -61,13 +61,14 @@ export function repetitionsToNextStep(plan: TrainerPlan, repetitions: number): n
   return every - (repetitions % every);
 }
 
-/** Beats per bar: the grid draws a stronger line, and the metronome a higher click, on the first. */
-export const BEATS_PER_BAR = 4;
+/** Beats in a bar: the grid draws a stronger line, and the metronome a higher click, on the first. */
+export const BEATS_PER_BAR = { min: 1, max: 16, step: 1, default: 4 } as const;
 
 export interface BeatGrid {
   bpm: number;
   /** Seconds: a moment on the first beat of a bar */
   offset: number;
+  beatsPerBar: number;
 }
 
 /** Seconds per beat. */
@@ -91,7 +92,7 @@ export function beatsBetween(
   const beats = [];
   for (let index = first; index <= last; index++) {
     // Integer index: adding `length` repeatedly would drift
-    const bar = ((index % BEATS_PER_BAR) + BEATS_PER_BAR) % BEATS_PER_BAR === 0;
+    const bar = ((index % grid.beatsPerBar) + grid.beatsPerBar) % grid.beatsPerBar === 0;
     beats.push({ time: grid.offset + index * length, bar });
   }
   return beats;

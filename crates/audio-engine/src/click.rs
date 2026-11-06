@@ -18,6 +18,8 @@ pub struct ClickSettings {
     pub count_in: u32,
     /// Click on every beat while the track plays
     pub metronome: bool,
+    /// Beats in a bar: the first one is accented (0 counts as 4)
+    pub beats_per_bar: u32,
     /// 0..1
     pub volume: f32,
 }
@@ -28,6 +30,14 @@ impl ClickSettings {
         self.beat * u64::from(self.count_in)
     }
 
+    fn bar_length(&self) -> u64 {
+        if self.beats_per_bar == 0 {
+            DEFAULT_BEATS_PER_BAR
+        } else {
+            u64::from(self.beats_per_bar)
+        }
+    }
+
     /// Whether the track frame `position` falls on a metronome beat, and if it starts a bar.
     pub(crate) fn beat_at(&self, position: u64) -> Option<bool> {
         if !self.metronome || self.beat == 0 || position < self.anchor {
@@ -36,12 +46,12 @@ impl ClickSettings {
         let offset = position - self.anchor;
         offset
             .is_multiple_of(self.beat)
-            .then(|| (offset / self.beat).is_multiple_of(BEATS_PER_BAR))
+            .then(|| (offset / self.beat).is_multiple_of(self.bar_length()))
     }
 }
 
-/// Beats per bar: the first of each is accented.
-const BEATS_PER_BAR: u64 = 4;
+/// Bar length when none is set.
+const DEFAULT_BEATS_PER_BAR: u64 = 4;
 const CAPACITY: usize = 32;
 
 /// A click waiting to be heard: the input frame (stretcher feed count) it belongs to.
@@ -159,6 +169,19 @@ mod tests {
         assert_eq!(settings.beat_at(450), Some(true));
         assert_eq!(settings.beat_at(151), None);
         assert_eq!(settings.beat_at(0), None, "nothing before the anchor");
+    }
+
+    #[test]
+    fn odd_meters_accent_every_bar() {
+        let seven = ClickSettings {
+            beat: 10,
+            metronome: true,
+            beats_per_bar: 7,
+            ..ClickSettings::default()
+        };
+        assert_eq!(seven.beat_at(0), Some(true));
+        assert_eq!(seven.beat_at(40), Some(false));
+        assert_eq!(seven.beat_at(70), Some(true));
     }
 
     #[test]

@@ -147,6 +147,8 @@ pub struct ClickRequest {
     pub count_in: u32,
     /// Click on every beat while playing
     pub metronome: bool,
+    /// Beats in a bar (the first is accented)
+    pub beats_per_bar: u32,
     /// 0..1
     pub volume: f32,
 }
@@ -166,6 +168,7 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
         anchor: time::seconds_to_frames(settings.anchor.max(0.0), rate),
         count_in: settings.count_in,
         metronome: settings.metronome,
+        beats_per_bar: settings.beats_per_bar,
         volume: settings.volume.clamp(0.0, 1.0),
     });
     Ok(())
