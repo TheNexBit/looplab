@@ -116,7 +116,7 @@ export function DetailView() {
       {/* Ruler strip and centre line, drawn behind the transparent canvas */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 border-b border-black bg-[linear-gradient(#25272b,#1d1e21)]"
+        className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
         style={{ height: RULER_CSS }}
       />
       <div
@@ -145,7 +145,7 @@ export function DetailView() {
       </div>
       <div
         ref={playheadRef}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-playhead shadow-[0_0_6px_rgb(255_255_255/0.5)] will-change-transform"
+        className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
       >
         <div className="-translate-x-[5.5px] border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
       </div>

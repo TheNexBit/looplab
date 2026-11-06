@@ -208,7 +208,7 @@ export function NoteView() {
         <Chip active={mode === "loop"} disabled={!hasLoop} onClick={() => changeMode("loop")}>
           {n.loop}
         </Chip>
-        <span className="ml-2 min-w-0 flex-1 truncate font-mono text-xs text-lcd-fg tabular">
+        <span className="ml-2 min-w-0 flex-1 truncate font-mono text-xs text-readout tabular">
           {mode === "loop" && !hasLoop
             ? n.needsLoop
             : notes.length > 0

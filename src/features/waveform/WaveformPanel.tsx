@@ -10,7 +10,7 @@ export function WaveformPanel() {
   const notesOpen = useNotesStore((s) => s.open);
   const trackPath = usePlayerStore((s) => s.track?.path);
   return (
-    <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden bg-[#111214] p-2.5">
+    <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden bg-stage p-2.5">
       <Overview />
       <SectionLane />
       <DetailView />

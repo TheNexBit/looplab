@@ -1,6 +1,6 @@
 /** Floating panel: menus, popovers. */
 export const floatingPanel =
-  "z-50 rounded-panel border border-edge bg-bg-from text-sm text-fg shadow-[0_8px_24px_rgb(0_0_0/0.6),inset_0_1px_0_rgb(255_255_255/0.05)]";
+  "z-50 rounded-panel border border-edge bg-bg-from text-sm text-fg shadow-[0_8px_24px_rgb(0_0_0/0.6),inset_0_1px_0_var(--color-sheen)]";
 /** Shared look of Radix context and dropdown menus. */
 export const menuContent = `${floatingPanel} min-w-44 p-1`;
 export const menuItem =
@@ -9,4 +9,4 @@ export const menuLabel = "panel-label px-2.5 py-1";
 export const menuSeparator = "my-1 h-px bg-border";
 /** A tab key (side panel, settings): raised, sunk and amber when selected. */
 export const tabTrigger =
-  "hw h-[26px] rounded-control text-[11px] font-semibold tracking-[0.08em] text-fg-muted uppercase transition-colors hover:text-fg data-[state=active]:border-black data-[state=active]:bg-well data-[state=active]:bg-none data-[state=active]:text-accent data-[state=active]:shadow-[inset_0_1px_3px_rgb(0_0_0/0.7)]";
+  "hw h-[26px] rounded-control text-[11px] font-semibold tracking-[0.08em] text-fg-muted uppercase transition-colors hover:text-fg data-[state=active]:border-edge data-[state=active]:bg-well data-[state=active]:bg-none data-[state=active]:text-accent data-[state=active]:shadow-[inset_0_1px_3px_var(--color-shade)]";

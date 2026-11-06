@@ -43,10 +43,10 @@ export function Slider({
         aria-label={label}
       >
         {/* Fader: a groove cut into the panel, amber up to the value, a ridged cap */}
-        <RadixSlider.Track className="relative h-1 grow rounded-[2px] bg-well shadow-[inset_0_1px_1px_#000,0_1px_0_rgb(255_255_255/0.06)]">
+        <RadixSlider.Track className="relative h-1 grow rounded-[2px] bg-well shadow-[inset_0_1px_1px_var(--color-shade),0_1px_0_var(--color-sheen)]">
           <RadixSlider.Range className="absolute h-full rounded-[2px] bg-accent/70" />
         </RadixSlider.Track>
-        <RadixSlider.Thumb className="hw block h-5 w-3 rounded-[2px] bg-[linear-gradient(#64676d,#3b3d42)] transition-[filter] hover:brightness-125" />
+        <RadixSlider.Thumb className="hw block h-5 w-3 rounded-[2px] bg-[linear-gradient(var(--color-thumb-from),var(--color-thumb-to))] transition-[filter] hover:brightness-125" />
       </RadixSlider.Root>
       <NumberField
         label={label}

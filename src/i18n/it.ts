@@ -1,4 +1,5 @@
 import type { CacheKind, ErrorKind } from "@/lib/bindings";
+import type { ThemeId } from "@/lib/theme";
 
 // Every UI string lives here. Other languages must match this shape (see index.ts).
 export const it = {
@@ -256,6 +257,7 @@ export const it = {
       sound: "Suono",
       app: "App",
       savedLoops: "Loop salvati",
+      theme: "Tema",
     },
   },
   settings: {
@@ -276,6 +278,34 @@ export const it = {
     snap: "Calamita",
     snapHint: "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G)",
     reset: "Valori predefiniti",
+    appearance: {
+      title: "Aspetto",
+      theme: "Tema",
+      themeHint:
+        "I colori di tutta l'app, come nel menu Tema di Ableton: si applica subito e resta su questo PC. Marker e sezioni tengono i loro colori.",
+      themes: {
+        rack: {
+          name: "Rack",
+          description: "Grafite con display e forma d'onda ambra, loop verde.",
+        },
+        phosphor: {
+          name: "Fosforo",
+          description: "Verde come lo schermo di un vecchio campionatore; loop azzurro.",
+        },
+        night: {
+          name: "Blu notte",
+          description: "Pannelli ardesia e accento blu, come molti DAW scuri.",
+        },
+        light: {
+          name: "Studio chiaro",
+          description: "Pannelli grigio chiaro per stanze luminose; display scuri.",
+        },
+        contrast: {
+          name: "Alto contrasto",
+          description: "Nero, bianco e giallo: si legge anche da lontano.",
+        },
+      } satisfies Record<ThemeId, { name: string; description: string }>,
+    },
     data: {
       title: "Dati",
       cache: "Conversioni di FFmpeg",

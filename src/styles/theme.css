@@ -5,57 +5,80 @@
 /* Single source of every design token. Components use the generated utilities
    (bg-accent, text-fg-muted, rounded-control, …), never raw colors.
    "static" emits every token as a CSS variable, so canvas drawing can read them too.
-   Look: "Rack" — studio hardware. Graphite panels, raised buttons, LED lamps,
-   an amber display for time, an amber waveform and a green loop. */
+
+   Colours that change with the theme are only NAMED here (Tailwind needs the names to make
+   the utilities): their values live in the palettes below, one block per theme, applied with
+   `data-theme` on <html> (or on any element, which is how the theme picker shows previews). */
 @theme static {
-  /* Amber: the colour of the display, the waveform and every active switch */
-  --color-accent: #ffa726;
-  --color-accent-hover: #ffb547;
-  --color-accent-soft: rgb(255 167 38 / 0.14);
-  /* Text on an amber background */
-  --color-on-accent: #1a1205;
+  /* The colour of the displays, the waveform and every active switch */
+  --color-accent: currentColor;
+  --color-accent-hover: currentColor;
+  --color-accent-soft: currentColor;
+  /* Text on an accent background */
+  --color-on-accent: currentColor;
 
-  /* Green: loop and playback lamps */
-  --color-loop: #3ddc97;
-  --color-loop-soft: rgb(61 220 151 / 0.08);
-  --color-led-off: #3a3c41;
+  /* Loop and playback lamps */
+  --color-loop: currentColor;
+  --color-loop-soft: currentColor;
+  --color-led-off: currentColor;
 
-  /* Display (time, track name) */
-  --color-lcd: #0e120d;
-  --color-lcd-fg: #ffb347;
-  --color-lcd-dim: #b5874a;
+  /* Display (time, tempo, track name) */
+  --color-lcd: currentColor;
+  --color-lcd-fg: currentColor;
+  --color-lcd-dim: currentColor;
+  --color-lcd-glow: currentColor;
+  /* Values shown on the panels and in wells (fields, readouts): the display colour on dark
+     themes, darker where the panels are light */
+  --color-readout: currentColor;
+  --color-readout-dim: currentColor;
 
-  /* Graphite, from the window frame to the darkest wells */
-  --color-bg-from: #1d1e21;
-  --color-bg-to: #141517;
-  --color-well: #0d0e10;
-  --color-surface: #1c1d20;
-  --color-surface-hover: #2a2c31;
-  --color-raised-from: #2c2e33;
-  --color-raised-to: #232428;
+  /* Panels, from the window frame to the deepest wells */
+  --color-bg-from: currentColor;
+  --color-bg-to: currentColor;
+  --color-well: currentColor;
+  --color-surface: currentColor;
+  --color-surface-hover: currentColor;
+  --color-raised-from: currentColor;
+  --color-raised-to: currentColor;
+  /* Top bar, transport dock and ruler: slightly lit strips */
+  --color-topbar-from: currentColor;
+  --color-topbar-to: currentColor;
+  --color-dock-from: currentColor;
+  --color-dock-to: currentColor;
+  --color-ruler-from: currentColor;
+  --color-ruler-to: currentColor;
+  /* Behind the waveforms, and the search field */
+  --color-stage: currentColor;
+  --color-field: currentColor;
+  /* Fader caps */
+  --color-thumb-from: currentColor;
+  --color-thumb-to: currentColor;
 
-  --color-fg: #e8e6e3;
-  --color-fg-muted: #b5b8be;
-  --color-fg-subtle: #9a9ea6;
+  --color-fg: currentColor;
+  --color-fg-muted: currentColor;
+  --color-fg-subtle: currentColor;
 
-  --color-border: #2e3035;
-  /* Near-black hairline between panels, like the gaps in a rack */
-  --color-edge: #0b0b0c;
+  --color-border: currentColor;
+  /* Hairline between panels, like the gaps in a rack */
+  --color-edge: currentColor;
+  /* Light catching the top edge of a key, and the shadow inside a well */
+  --color-sheen: currentColor;
+  --color-shade: currentColor;
 
   /* Waveform canvases */
-  --color-wave: #d9952f;
-  --color-wave-dim: #a8772f;
-  --color-grid: #22242a;
-  --color-tick: #6b6f77;
+  --color-wave: currentColor;
+  --color-wave-dim: currentColor;
+  --color-grid: currentColor;
+  --color-tick: currentColor;
   /* Beat grid: faint beats behind the waveform, bar lines over it */
-  --color-beat: rgb(255 255 255 / 0.07);
-  --color-bar: rgb(255 255 255 / 0.28);
-  --color-playhead: #ffffff;
-  /* Note view keyboard: dimmed ivory and ebony, so the amber notes stand out */
-  --color-key-white: #b9b4ab;
-  --color-key-black: #1a1b1e;
+  --color-beat: currentColor;
+  --color-bar: currentColor;
+  --color-playhead: currentColor;
+  /* Note view keyboard */
+  --color-key-white: currentColor;
+  --color-key-black: currentColor;
 
-  /* Section palette: index stored in the project file (Section.color) */
+  /* Section palette: the same in every theme (index stored in the project file) */
   --color-section-0: #7f8cff;
   --color-section-1: #4fb3e8;
   --color-section-2: #41c08b;
@@ -73,6 +96,261 @@
 
   --default-transition-duration: 140ms;
   --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ── Palettes ─────────────────────────────────────────────────────────────────────────
+   Every theme sets every colour above. The ids match `THEMES` in src/lib/theme.ts. */
+
+/* Rack (default): graphite studio hardware, amber display and waveform, green loop */
+:root,
+[data-theme="rack"] {
+  --color-accent: #ffa726;
+  --color-accent-hover: #ffb547;
+  --color-accent-soft: rgb(255 167 38 / 0.14);
+  --color-on-accent: #1a1205;
+  --color-loop: #3ddc97;
+  --color-loop-soft: rgb(61 220 151 / 0.08);
+  --color-led-off: #3a3c41;
+  --color-lcd: #0e120d;
+  --color-lcd-fg: #ffb347;
+  --color-lcd-dim: #b5874a;
+  --color-lcd-glow: rgb(255 170 60 / 0.45);
+  --color-readout: #ffb347;
+  --color-readout-dim: #b5874a;
+  --color-bg-from: #1d1e21;
+  --color-bg-to: #141517;
+  --color-well: #0d0e10;
+  --color-surface: #1c1d20;
+  --color-surface-hover: #2a2c31;
+  --color-raised-from: #2c2e33;
+  --color-raised-to: #232428;
+  --color-topbar-from: #202125;
+  --color-topbar-to: #1a1b1e;
+  --color-dock-from: #26282c;
+  --color-dock-to: #1b1c1f;
+  --color-ruler-from: #25272b;
+  --color-ruler-to: #1d1e21;
+  --color-stage: #111214;
+  --color-field: #18191c;
+  --color-thumb-from: #64676d;
+  --color-thumb-to: #3b3d42;
+  --color-fg: #e8e6e3;
+  --color-fg-muted: #b5b8be;
+  --color-fg-subtle: #9a9ea6;
+  --color-border: #2e3035;
+  --color-edge: #0b0b0c;
+  --color-sheen: rgb(255 255 255 / 0.07);
+  --color-shade: rgb(0 0 0 / 0.75);
+  --color-wave: #d9952f;
+  --color-wave-dim: #a8772f;
+  --color-grid: #22242a;
+  --color-tick: #6b6f77;
+  --color-beat: rgb(255 255 255 / 0.07);
+  --color-bar: rgb(255 255 255 / 0.28);
+  --color-playhead: #ffffff;
+  --color-key-white: #b9b4ab;
+  --color-key-black: #1a1b1e;
+}
+
+/* Phosphor: green screen of a vintage sampler or oscilloscope; the loop turns cyan */
+[data-theme="phosphor"] {
+  --color-accent: #5fe08c;
+  --color-accent-hover: #7ff0a6;
+  --color-accent-soft: rgb(95 224 140 / 0.14);
+  --color-on-accent: #05140a;
+  --color-loop: #4fc3f7;
+  --color-loop-soft: rgb(79 195 247 / 0.08);
+  --color-led-off: #323a35;
+  --color-lcd: #07110a;
+  --color-lcd-fg: #7dff9a;
+  --color-lcd-dim: #4f9a63;
+  --color-lcd-glow: rgb(110 255 150 / 0.45);
+  --color-readout: #7dff9a;
+  --color-readout-dim: #4f9a63;
+  --color-bg-from: #1a1d1b;
+  --color-bg-to: #121513;
+  --color-well: #0b0e0c;
+  --color-surface: #1a1d1b;
+  --color-surface-hover: #262b28;
+  --color-raised-from: #2a2f2c;
+  --color-raised-to: #212522;
+  --color-topbar-from: #1e2220;
+  --color-topbar-to: #181b19;
+  --color-dock-from: #232826;
+  --color-dock-to: #191c1a;
+  --color-ruler-from: #222725;
+  --color-ruler-to: #1b1e1c;
+  --color-stage: #0f1210;
+  --color-field: #161a18;
+  --color-thumb-from: #626a65;
+  --color-thumb-to: #3a403c;
+  --color-fg: #e3ebe5;
+  --color-fg-muted: #b2bdb5;
+  --color-fg-subtle: #97a39a;
+  --color-border: #2b302d;
+  --color-edge: #080a09;
+  --color-sheen: rgb(255 255 255 / 0.06);
+  --color-shade: rgb(0 0 0 / 0.75);
+  --color-wave: #49c46f;
+  --color-wave-dim: #2f8a4c;
+  --color-grid: #1f2622;
+  --color-tick: #67736b;
+  --color-beat: rgb(255 255 255 / 0.07);
+  --color-bar: rgb(255 255 255 / 0.28);
+  --color-playhead: #ffffff;
+  --color-key-white: #b3bbb5;
+  --color-key-black: #171a18;
+}
+
+/* Night blue: cool slate panels with a blue accent, close to many dark DAW themes */
+[data-theme="night"] {
+  --color-accent: #4fb7ff;
+  --color-accent-hover: #74c7ff;
+  --color-accent-soft: rgb(79 183 255 / 0.14);
+  --color-on-accent: #04121d;
+  --color-loop: #3ddc97;
+  --color-loop-soft: rgb(61 220 151 / 0.08);
+  --color-led-off: #364050;
+  --color-lcd: #0a1018;
+  --color-lcd-fg: #7cc8ff;
+  --color-lcd-dim: #5b8db8;
+  --color-lcd-glow: rgb(110 190 255 / 0.45);
+  --color-readout: #7cc8ff;
+  --color-readout-dim: #5b8db8;
+  --color-bg-from: #1b2029;
+  --color-bg-to: #12161d;
+  --color-well: #0b0e13;
+  --color-surface: #1a1f27;
+  --color-surface-hover: #283040;
+  --color-raised-from: #2a3140;
+  --color-raised-to: #212834;
+  --color-topbar-from: #1e2430;
+  --color-topbar-to: #181d26;
+  --color-dock-from: #232a36;
+  --color-dock-to: #191e27;
+  --color-ruler-from: #222936;
+  --color-ruler-to: #1b2029;
+  --color-stage: #0e1218;
+  --color-field: #161b23;
+  --color-thumb-from: #5f6a7c;
+  --color-thumb-to: #384253;
+  --color-fg: #e4e9f0;
+  --color-fg-muted: #b0b9c6;
+  --color-fg-subtle: #95a0ae;
+  --color-border: #2b3340;
+  --color-edge: #07090c;
+  --color-sheen: rgb(255 255 255 / 0.06);
+  --color-shade: rgb(0 0 0 / 0.75);
+  --color-wave: #4aa3e0;
+  --color-wave-dim: #35779f;
+  --color-grid: #1e2531;
+  --color-tick: #66748a;
+  --color-beat: rgb(255 255 255 / 0.07);
+  --color-bar: rgb(255 255 255 / 0.28);
+  --color-playhead: #ffffff;
+  --color-key-white: #b4bcc8;
+  --color-key-black: #171b22;
+}
+
+/* Studio light: light grey panels for bright rooms, like the light themes of Ableton and
+   Logic; the displays stay dark, as on real hardware */
+[data-theme="light"] {
+  --color-accent: #d46f00;
+  --color-accent-hover: #e67e0a;
+  --color-accent-soft: rgb(212 111 0 / 0.14);
+  --color-on-accent: #fffaf2;
+  --color-loop: #0e8f5b;
+  --color-loop-soft: rgb(14 143 91 / 0.1);
+  --color-led-off: #b4b8bf;
+  --color-lcd: #1c1f1a;
+  --color-lcd-fg: #ffb347;
+  --color-lcd-dim: #c09257;
+  --color-lcd-glow: rgb(255 170 60 / 0.45);
+  --color-readout: #a85600;
+  --color-readout-dim: #7d6240;
+  --color-bg-from: #e9eaec;
+  --color-bg-to: #dcdee2;
+  --color-well: #f6f7f8;
+  --color-surface: #e9eaec;
+  --color-surface-hover: #d6d9de;
+  --color-raised-from: #fbfbfc;
+  --color-raised-to: #e4e6e9;
+  --color-topbar-from: #f1f2f4;
+  --color-topbar-to: #e3e5e8;
+  --color-dock-from: #eceef0;
+  --color-dock-to: #dadde1;
+  --color-ruler-from: #eef0f2;
+  --color-ruler-to: #e2e4e7;
+  --color-stage: #d3d6db;
+  --color-field: #f6f7f8;
+  --color-thumb-from: #ffffff;
+  --color-thumb-to: #cfd3d9;
+  --color-fg: #1d1f23;
+  --color-fg-muted: #3f454e;
+  --color-fg-subtle: #575e69;
+  --color-border: #c3c7cd;
+  --color-edge: #9ea4ac;
+  --color-sheen: rgb(255 255 255 / 0.8);
+  --color-shade: rgb(0 0 0 / 0.16);
+  --color-wave: #c46f00;
+  --color-wave-dim: #d99a4f;
+  --color-grid: #e0e3e7;
+  --color-tick: #6f757e;
+  --color-beat: rgb(0 0 0 / 0.07);
+  --color-bar: rgb(0 0 0 / 0.3);
+  --color-playhead: #15171a;
+  --color-key-white: #fbfbf9;
+  --color-key-black: #2a2c30;
+}
+
+/* High contrast: black and white with a yellow accent, for small screens or tired eyes */
+[data-theme="contrast"] {
+  --color-accent: #ffd400;
+  --color-accent-hover: #ffe14d;
+  --color-accent-soft: rgb(255 212 0 / 0.18);
+  --color-on-accent: #000000;
+  --color-loop: #00e5ff;
+  --color-loop-soft: rgb(0 229 255 / 0.12);
+  --color-led-off: #4a4a4a;
+  --color-lcd: #000000;
+  --color-lcd-fg: #ffd400;
+  --color-lcd-dim: #d4b200;
+  --color-lcd-glow: rgb(255 212 0 / 0.35);
+  --color-readout: #ffd400;
+  --color-readout-dim: #d4b200;
+  --color-bg-from: #0a0a0a;
+  --color-bg-to: #000000;
+  --color-well: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-hover: #262626;
+  --color-raised-from: #222222;
+  --color-raised-to: #161616;
+  --color-topbar-from: #0d0d0d;
+  --color-topbar-to: #050505;
+  --color-dock-from: #111111;
+  --color-dock-to: #050505;
+  --color-ruler-from: #111111;
+  --color-ruler-to: #080808;
+  --color-stage: #000000;
+  --color-field: #000000;
+  --color-thumb-from: #f0f0f0;
+  --color-thumb-to: #a0a0a0;
+  --color-fg: #ffffff;
+  --color-fg-muted: #e6e6e6;
+  --color-fg-subtle: #cfcfcf;
+  --color-border: #6a6a6a;
+  --color-edge: #5a5a5a;
+  --color-sheen: rgb(255 255 255 / 0.1);
+  --color-shade: rgb(0 0 0 / 0.9);
+  --color-wave: #ffd400;
+  --color-wave-dim: #b39500;
+  --color-grid: #2e2e2e;
+  --color-tick: #a8a8a8;
+  --color-beat: rgb(255 255 255 / 0.14);
+  --color-bar: rgb(255 255 255 / 0.5);
+  --color-playhead: #ffffff;
+  --color-key-white: #f0f0f0;
+  --color-key-black: #000000;
 }
 
 @layer base {
@@ -94,7 +372,7 @@
     cursor: default;
   }
 
-  /* Thin dark scrollbars, so lists do not show a light system bar */
+  /* Thin scrollbars in the theme's colours, so lists never show a system bar */
   * {
     scrollbar-color: var(--color-led-off) transparent;
     scrollbar-width: thin;
@@ -116,26 +394,31 @@
   background: linear-gradient(var(--color-raised-from), var(--color-raised-to));
   border: 1px solid var(--color-edge);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    inset 0 1px 0 var(--color-sheen),
     0 1px 1px rgb(0 0 0 / 0.4);
 }
 
 /* Recessed well: displays, waveforms, groups of keys */
 @utility well {
   background: var(--color-well);
-  border: 1px solid #000;
+  border: 1px solid var(--color-edge);
   box-shadow:
-    inset 0 1px 3px rgb(0 0 0 / 0.75),
-    0 1px 0 rgb(255 255 255 / 0.04);
+    inset 0 1px 3px var(--color-shade),
+    0 1px 0 var(--color-sheen);
 }
 
-/* Amber display (time, tempo): darker and deeper than a well, like a backlit LCD */
+/* Display (time, tempo): darker and deeper than a well, like a backlit LCD */
 @utility lcd {
   background: var(--color-lcd);
-  border: 1px solid #000;
+  border: 1px solid var(--color-edge);
   box-shadow:
     inset 0 2px 6px rgb(0 0 0 / 0.9),
-    0 1px 0 rgb(255 255 255 / 0.05);
+    0 1px 0 var(--color-sheen);
+}
+
+/* Glowing digits of a display */
+@utility lcd-glow {
+  text-shadow: 0 0 8px var(--color-lcd-glow);
 }
 
 /* Small caps label printed on the panel */

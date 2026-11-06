@@ -10,7 +10,7 @@ import { type SavedLoopData, useSavedLoopsStore } from "@/stores/savedLoops";
 function SavedLoopRow({ loop, current }: { loop: SavedLoopData; current: boolean }) {
   const { rename, remove, recall } = useSavedLoopsStore.getState();
   return (
-    <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-black hover:bg-well">
+    <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-edge hover:bg-well">
       <span
         aria-hidden
         className={

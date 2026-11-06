@@ -84,10 +84,10 @@ export function NumberField({
       onBlur={commit}
       onKeyDown={onKeyDown}
       className={cn(
-        "h-6 rounded-control border border-transparent bg-transparent font-mono text-lcd-fg tabular transition-colors",
+        "h-6 rounded-control border border-transparent bg-transparent font-mono tabular transition-colors",
         variant === "field"
-          ? "w-16 px-1.5 text-right text-xs"
-          : "w-12 px-0 text-left text-[18px] leading-none font-medium xl:w-14 xl:text-[20px] [text-shadow:0_0_8px_rgb(255_170_60/0.45)]",
+          ? "w-16 px-1.5 text-right text-xs text-readout"
+          : "w-12 px-0 text-left text-[18px] leading-none font-medium text-lcd-fg xl:w-14 xl:text-[20px] lcd-glow",
         "hover:border-border focus:border-accent focus:bg-well focus:outline-none disabled:pointer-events-none",
         className,
       )}

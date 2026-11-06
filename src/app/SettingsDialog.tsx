@@ -7,6 +7,7 @@ import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { t } from "@/i18n";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
+import { AppearanceSettings } from "./AppearanceSettings";
 import { DataSettings } from "./DataSettings";
 import { KeysSettings } from "./KeysSettings";
 
@@ -39,6 +40,7 @@ export function SettingsDialog() {
           {(
             [
               ["general", s.general],
+              ["appearance", s.appearance.title],
               ["keys", s.keys],
               ["data", s.data.title],
             ] as const
@@ -48,6 +50,9 @@ export function SettingsDialog() {
             </Tabs.Trigger>
           ))}
         </Tabs.List>
+        <Tabs.Content value="appearance">
+          <AppearanceSettings />
+        </Tabs.Content>
         <Tabs.Content value="data">
           <DataSettings />
         </Tabs.Content>

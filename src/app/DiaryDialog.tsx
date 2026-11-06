@@ -26,7 +26,7 @@ export function DiaryDialog() {
   return (
     <Dialog open={open} onClose={close} title={d.title} className="w-[min(44rem,calc(100vw-2rem))]">
       <div className="space-y-3 px-4 pt-3 pb-4">
-        <p className="font-mono text-xs text-lcd-fg">
+        <p className="font-mono text-xs text-readout">
           {d.lastWeek}: {formatDuration(weekSeconds)}
         </p>
         {rows.length === 0 ? (

@@ -124,7 +124,7 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 | `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                     |
 | `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`        |
 | `i18n/`            | tutti i testi della UI                                                                                 |
-| `styles/theme.css` | unica fonte dei token del tema "Rack" (`@theme` Tailwind v4), font e utility `hw`/`well`/`panel-label` |
+| `styles/theme.css` | unica fonte dei token: `@theme` Tailwind v4 dà i nomi, un blocco `[data-theme]` per tema i valori; utility `hw`/`well`/`lcd`/`panel-label` |
 
 ## Regole
 
@@ -135,4 +135,8 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 - L'audio è il clock principale: playhead e video lo seguono.
 - Animazioni a 60 fps (playhead, forme d'onda, tempo) girano in `requestAnimationFrame` leggendo gli store
   con `getState()`: non fanno ridisegnare React.
-- Canvas sempre alla risoluzione reale del monitor (`useCanvas`), anche cambiando monitor.
+- Canvas sempre alla risoluzione reale del monitor (`useCanvas`), anche cambiando monitor, e ridisegnati
+  quando cambia il tema.
+- Temi: `lib/theme.ts` (elenco `THEMES`, `applyTheme`, colori letti una volta per tema), `stores/theme.ts`
+  (scelta di questo PC), `app/AppearanceSettings.tsx`. Un tema nuovo = un blocco in `theme.css` con tutti i
+  colori (lo verifica `theme.test.ts`), il suo id in `THEMES` e nome e descrizione in `i18n`.

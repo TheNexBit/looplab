@@ -3,10 +3,12 @@ import { formatSpeed, SPEED_PRESETS } from "@/features/player/limits";
 import { detachVideo, dockVideo } from "@/features/video/detach";
 import { t } from "@/i18n";
 import { type ShortcutId, shortcutLabel, shortcuts } from "@/lib/shortcuts";
+import { THEMES } from "@/lib/theme";
 import { CHANNEL_MODES, useEqStore } from "@/stores/eq";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
+import { useThemeStore } from "@/stores/theme";
 import { useUiStore } from "@/stores/ui";
 import { useVideoStore } from "@/stores/video";
 import { shortcutHandlers } from "./shortcutHandlers";
@@ -111,6 +113,12 @@ export function buildActions(): Action[] {
         group: t.recent.title,
         run: () => void player.open(file.path),
       })),
+    ...THEMES.map((theme) => ({
+      id: `theme-${theme}`,
+      label: `${t.palette.groups.theme}: ${t.settings.appearance.themes[theme].name}`,
+      group: g.app,
+      run: () => useThemeStore.getState().setTheme(theme),
+    })),
     { id: "diary", label: t.diary.title, group: g.app, run: () => ui.openDialog("diary") },
     { id: "about", label: t.about.title, group: g.app, run: () => ui.openDialog("about") },
     { id: "updates", label: t.updates.check, group: g.app, run: () => ui.openDialog("about") },

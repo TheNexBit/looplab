@@ -46,7 +46,7 @@ export function TimeSignaturePicker({
             aria-label={`${p.meter}: ${beats}/${unit}`}
             className={
               variant === "panel"
-                ? "well flex h-7 min-w-14 items-center justify-center rounded-control px-2 font-mono text-sm font-medium text-lcd-fg tabular hover:brightness-125"
+                ? "well flex h-7 min-w-14 items-center justify-center rounded-control px-2 font-mono text-sm font-medium text-readout tabular hover:brightness-125"
                 : "flex h-6 min-w-10 items-center justify-center rounded-control px-1 font-mono text-[15px] font-medium text-lcd-fg tabular hover:brightness-125"
             }
           >
@@ -88,7 +88,9 @@ export function TimeSignaturePicker({
               >
                 <Minus className="size-3.5" />
               </Button>
-              <span className="w-7 text-center font-mono text-sm text-lcd-fg tabular">{beats}</span>
+              <span className="w-7 text-center font-mono text-sm text-readout tabular">
+                {beats}
+              </span>
               <Button
                 variant="hardware"
                 size="icon"

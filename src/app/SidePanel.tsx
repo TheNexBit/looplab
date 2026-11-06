@@ -32,7 +32,7 @@ export function SidePanel() {
           animate={{ width, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={resizing ? { duration: 0 } : { duration: 0.2, ease: [0.2, 0, 0, 1] }}
-          className="relative flex shrink-0 overflow-hidden border-l border-edge bg-bg-from shadow-[inset_1px_0_0_rgb(255_255_255/0.03)]"
+          className="relative flex shrink-0 overflow-hidden border-l border-edge bg-bg-from shadow-[inset_1px_0_0_var(--color-sheen)]"
         >
           {/* Drag the left edge to widen or narrow the panel; double-click for the usual width */}
           <ResizeHandle

@@ -117,7 +117,7 @@ export function Overview() {
       <LoopOverlay ref={loopRef} />
       <div
         ref={windowRef}
-        className="pointer-events-none absolute top-0 bottom-0 border border-white/55 bg-white/5"
+        className="pointer-events-none absolute top-0 bottom-0 border border-playhead/55 bg-playhead/5"
       />
       <div
         ref={playheadRef}
@@ -138,7 +138,7 @@ function LoadingShade() {
   if (loading === null) return null;
   return (
     <div
-      className="pointer-events-none absolute top-0 right-0 bottom-0 flex items-center justify-center bg-[repeating-linear-gradient(135deg,rgb(255_255_255/0.05)_0_6px,transparent_6px_12px)]"
+      className="pointer-events-none absolute top-0 right-0 bottom-0 flex items-center justify-center bg-[repeating-linear-gradient(135deg,color-mix(in_srgb,var(--color-playhead)_5%,transparent)_0_6px,transparent_6px_12px)]"
       style={{ left: `${loading * 100}%` }}
     >
       <span className="font-mono text-[11px] text-fg-muted tabular">

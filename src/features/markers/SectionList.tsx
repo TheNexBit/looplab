@@ -20,7 +20,7 @@ function SectionRow({ range }: { range: SectionRange }) {
 
   return (
     <SectionMenu range={range}>
-      <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-black hover:bg-well">
+      <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-edge hover:bg-well">
         <span
           aria-hidden
           className="h-4 w-1 shrink-0 rounded-[1px]"
@@ -89,7 +89,7 @@ export function SectionList() {
             {sortedMarkers.map((marker) => (
               <li
                 key={marker.id}
-                className="group flex items-center gap-2 rounded-control border border-transparent px-2 py-0.5 hover:border-black hover:bg-well"
+                className="group flex items-center gap-2 rounded-control border border-transparent px-2 py-0.5 hover:border-edge hover:bg-well"
               >
                 <button
                   type="button"

@@ -221,6 +221,13 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Temi di colore** (Impostazioni → Aspetto, anche dalla palette "Tema: …"), come il menu Tema di Ableton:
+  Rack (predefinito), Fosforo (verde, loop azzurro), Blu notte, Studio chiaro (pannelli chiari, display scuri),
+  Alto contrasto (nero, bianco, giallo). Si applica subito, forma d'onda e vista note comprese, e resta su questo PC
+  (non si azzera con "Valori predefiniti"). Ogni anteprima è disegnata nei colori del suo tema. Tutti i colori dei
+  componenti sono ora token del tema (barra in alto, trasporto, righello, fader, display, bordi); i numeri sui
+  pannelli hanno un colore proprio (`readout`), leggibile anche sul tema chiaro. Marker e sezioni tengono i loro
+  colori. Un test controlla che ogni tema definisca tutti i colori.
 - **Seconda pulizia del codice** (dopo analisi approvata): tolto codice mai usato; un solo punto per le
   percentuali scritte a mano, i valori con segno, le preferenze del PC (`lib/storage.ts`), la rotella sui valori
   (`useWheelSteps`), l'aspetto dei display ambra (`lcd` nel tema), le cartelle dati e cache dei comandi, l'avvio di

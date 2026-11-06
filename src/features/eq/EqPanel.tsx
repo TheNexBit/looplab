@@ -64,7 +64,7 @@ export function EqPanel() {
               aria-label={`${t.eq.enabled} ${t.eq.band} ${index + 1}`}
               aria-pressed={band.enabled}
               onClick={() => setBand(index, { enabled: !band.enabled })}
-              className="flex size-6 shrink-0 items-center justify-center rounded-control border border-black text-bg-to"
+              className="flex size-6 shrink-0 items-center justify-center rounded-control border border-edge text-bg-to"
               style={{
                 background: band.enabled ? sectionColor(index) : "var(--color-surface-hover)",
               }}

@@ -108,7 +108,7 @@ export function TopBar() {
   const complete = usePlayerStore((s) => s.track?.complete ?? false);
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(#202125,#1a1b1e)] px-3 shadow-[inset_0_-1px_0_rgb(255_255_255/0.03)]">
+    <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(var(--color-topbar-from),var(--color-topbar-to))] px-3 shadow-[inset_0_-1px_0_var(--color-sheen)]">
       <div className="flex h-6 items-center gap-2 border-r border-border pr-3">
         <AudioLines className="size-4 text-accent" aria-hidden />
         <span className="text-[11px] font-bold tracking-[0.18em] text-fg">LOOPLAB</span>
@@ -161,7 +161,7 @@ export function TopBar() {
       <button
         type="button"
         onClick={() => openDialog("palette")}
-        className="mx-auto flex h-7 w-56 shrink-0 lg:w-80 items-center gap-2 rounded-control border border-border bg-[#18191c] px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
+        className="mx-auto flex h-7 w-56 shrink-0 lg:w-80 items-center gap-2 rounded-control border border-border bg-field px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
       >
         <Search className="size-3.5" />
         {t.app.searchActions}

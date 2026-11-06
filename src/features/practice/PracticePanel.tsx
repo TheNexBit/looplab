@@ -106,17 +106,17 @@ function TrainerGroup() {
       <div className="well space-y-0.5 rounded-control px-2.5 py-1.5 font-mono text-[11px] tabular">
         {hasLoop ? (
           <>
-            <p className="text-lcd-fg">
+            <p className="text-readout">
               {p.repetition} {repetitions + 1} · {formatSpeed(speed)}
             </p>
             {settings.trainer && (
-              <p className="text-lcd-dim">
+              <p className="text-readout-dim">
                 {toNext === null ? p.atTarget : `${p.nextStep} ${toNext} ${p.repetitionsUnit}`}
               </p>
             )}
           </>
         ) : (
-          <p className="text-lcd-dim">{p.needsLoop}</p>
+          <p className="text-readout-dim">{p.needsLoop}</p>
         )}
       </div>
     </Group>
@@ -142,10 +142,10 @@ function DiaryGroup() {
     >
       <div className="well space-y-2 rounded-control px-2.5 py-2">
         <div className="flex justify-between font-mono text-[11px] tabular">
-          <span className="text-lcd-fg">
+          <span className="text-readout">
             {t.diary.today} {formatDuration(summary.today)}
           </span>
-          <span className="text-lcd-dim">
+          <span className="text-readout-dim">
             {t.diary.total} {formatDuration(summary.total)}
           </span>
         </div>

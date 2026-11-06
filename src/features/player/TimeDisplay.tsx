@@ -29,7 +29,7 @@ export function TimeDisplay() {
       </div>
       <span
         ref={positionRef}
-        className="font-mono text-[20px] leading-none xl:text-[26px] font-medium text-lcd-fg tabular [text-shadow:0_0_8px_rgb(255_170_60/0.45)]"
+        className="font-mono text-[20px] leading-none xl:text-[26px] font-medium text-lcd-fg tabular lcd-glow"
       />
     </div>
   );

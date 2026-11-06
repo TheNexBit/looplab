@@ -53,7 +53,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
                   {region ? `${formatTime(region.start)} → ${formatTime(region.end)}` : "—"}
                   {/* Repetitions played, like the counter of a looper pedal */}
                   {region && repetitions > 0 && (
-                    <span className="ml-1.5 text-lcd-fg">×{repetitions + 1}</span>
+                    <span className="ml-1.5 text-readout">×{repetitions + 1}</span>
                   )}
                 </span>
               </span>
@@ -67,7 +67,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
             sideOffset={8}
             className={`${floatingPanel} w-80 space-y-4 p-4`}
           >
-            <p className="font-mono text-xs text-lcd-fg tabular">
+            <p className="font-mono text-xs text-readout tabular">
               {region
                 ? `${formatTime(region.start)} – ${formatTime(region.end)}`
                 : t.transport.noLoop}

@@ -35,7 +35,7 @@ export function TransportDock() {
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
-    <footer className="flex h-[88px] shrink-0 items-center gap-1 border-t border-black bg-[linear-gradient(#26282c,#1b1c1f)] px-2 lg:gap-2 xl:gap-2.5 xl:px-4 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]">
+    <footer className="flex h-[88px] shrink-0 items-center gap-1 border-t border-edge bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2 lg:gap-2 xl:gap-2.5 xl:px-4 shadow-[inset_0_1px_0_var(--color-sheen)]">
       <div className={GROUP}>
         <Tooltip label={playLabel} shortcut="playPause">
           <Button

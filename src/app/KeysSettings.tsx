@@ -101,7 +101,7 @@ function ActionRow({
           learning
             ? "border border-loop bg-loop-soft text-loop"
             : midi
-              ? "well font-mono text-lcd-fg"
+              ? "well font-mono text-readout"
               : "hw text-fg-subtle hover:brightness-125",
         )}
       >
@@ -146,7 +146,7 @@ export function KeysSettings() {
         />
       </div>
       {notice && (
-        <p className="well rounded-control px-2 py-1.5 text-[11px] text-lcd-fg">{notice}</p>
+        <p className="well rounded-control px-2 py-1.5 text-[11px] text-readout">{notice}</p>
       )}
       <ul className="well max-h-[50vh] overflow-y-auto rounded-panel p-1">
         {(Object.keys(shortcuts) as ShortcutId[]).map((id) => (

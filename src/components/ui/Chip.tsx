@@ -14,7 +14,7 @@ export function Chip({ active = false, className, type = "button", ...props }: C
       className={cn(
         "h-6 rounded-control px-2 text-[11px] whitespace-nowrap transition-[color,filter]",
         active
-          ? "border border-black bg-accent font-semibold text-on-accent"
+          ? "border border-edge bg-accent font-semibold text-on-accent"
           : "hw text-fg-muted hover:text-fg hover:brightness-125",
         className,
       )}

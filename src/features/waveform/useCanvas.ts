@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { onThemeChange } from "@/lib/theme";
 
 export interface CanvasSize {
   /** Device pixels: what drawing code works in */
@@ -10,7 +11,8 @@ export interface CanvasSize {
 /**
  * Keeps a canvas backing store at the exact device-pixel size, so it stays
  * sharp on every monitor. Calls `onResize` after any change, including the
- * window moving to a monitor with a different scaling.
+ * window moving to a monitor with a different scaling, and after a theme change (the
+ * drawing reads the new colours).
  */
 export function useCanvas(onResize: () => void) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -49,7 +51,10 @@ export function useCanvas(onResize: () => void) {
     };
     watchScale();
 
+    const stopTheme = onThemeChange(() => callback.current());
+
     return () => {
+      stopTheme();
       observer.disconnect();
       query?.removeEventListener("change", onScaleChange);
     };
