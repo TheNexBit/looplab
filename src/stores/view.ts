@@ -53,7 +53,7 @@ interface ViewState extends ViewWindow {
   resumeFollow: () => void;
   /** Keeps the playhead visible, scrolling smoothly once it passes the middle. */
   followPlayhead: (position: number) => void;
-  /** Advances the zoom animation by one frame. */
+  /** Advances the zoom and scroll animation by one frame. */
   step: () => void;
 }
 
@@ -80,10 +80,13 @@ export const useViewStore = create<ViewState>((set, get) => {
     },
     zoom: (factor, anchor) =>
       set({ target: zoomWindow(get().target, factor, anchor, get().duration) }),
+    // Glides like the zoom instead of jumping a notch at a time; quick wheel turns add up
     scrollBy: (seconds) => {
-      const { start, span } = get();
-      set({ manualUntil: performance.now() + MANUAL_PAUSE_MS });
-      jump({ start: start + seconds, span });
+      const { target, duration } = get();
+      set({
+        manualUntil: performance.now() + MANUAL_PAUSE_MS,
+        target: clampView({ start: target.start + seconds, span: target.span }, duration),
+      });
     },
     scrollTo: (start) => {
       set({ manualUntil: performance.now() + MANUAL_PAUSE_MS });
@@ -105,7 +108,10 @@ export const useViewStore = create<ViewState>((set, get) => {
     step: () => {
       const { start, span, target } = get();
       if (start === target.start && span === target.span) return;
-      const close = Math.abs(span - target.span) < span * 0.002;
+      // Arrived once both the zoom and the position are within a fraction of a pixel
+      const close =
+        Math.abs(span - target.span) < span * 0.002 &&
+        Math.abs(start - target.start) < span * 0.0005;
       set(
         close
           ? { start: target.start, span: target.span }

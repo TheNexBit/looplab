@@ -221,6 +221,8 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Scorrimento fluido** con Maiusc+rotella (e scorrimento orizzontale del touchpad): la vista scivola come lo zoom
+  invece di saltare a ogni scatto; più scatti veloci si sommano.
 - **Inizio e fine del brano**: tasti Home e Fine (come in Reaper e Ableton), anche nella palette e assegnabili.
 - **Apertura come in Reaper** (dopo la misura: una lezione di 3 ore chiedeva ~20 s di attesa e ~2 GB di RAM):
   si suona dopo i primi 3 secondi decodificati, il resto si carica in sottofondo e la forma d'onda si riempie

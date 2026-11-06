@@ -48,3 +48,27 @@ describe("following the playhead", () => {
     expect(useViewStore.getState().target.span).toBe(targetSpan);
   });
 });
+
+describe("scrolling with Shift+wheel", () => {
+  beforeEach(() => useViewStore.getState().reset(300));
+
+  it("glides to the new place instead of jumping, and quick turns add up", () => {
+    const view = useViewStore.getState();
+    view.scrollBy(3);
+    view.scrollBy(3);
+    expect(useViewStore.getState().start).toBe(0); // nothing jumps at once
+    useViewStore.getState().step();
+    const first = useViewStore.getState().start;
+    expect(first).toBeGreaterThan(0);
+    expect(first).toBeLessThan(6); // part of the way, the rest in the next frames
+    for (let frame = 0; frame < 60; frame++) useViewStore.getState().step();
+    expect(useViewStore.getState().start).toBe(6);
+    expect(useViewStore.getState().span).toBe(30); // the zoom is untouched
+  });
+
+  it("stops at the track edges", () => {
+    useViewStore.getState().scrollBy(-10);
+    for (let frame = 0; frame < 60; frame++) useViewStore.getState().step();
+    expect(useViewStore.getState().start).toBe(0);
+  });
+});
