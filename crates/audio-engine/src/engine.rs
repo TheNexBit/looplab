@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, SampleFormat, SizedSample, StreamConfig};
 
+use crate::click::ClickSettings;
 use crate::dsp::channels::ChannelMode;
 use crate::dsp::eq::EqSettings;
 use crate::pcm::Pcm;
@@ -57,6 +58,7 @@ pub(crate) enum Command {
     SetLoop(LoopSettings),
     SetEq(EqSettings),
     SetChannelMode(ChannelMode),
+    SetClick(ClickSettings),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -64,6 +66,8 @@ pub(crate) enum Command {
 pub(crate) struct Shared {
     pub position: AtomicU64,
     pub playing: AtomicBool,
+    /// Loop repetitions started since the engine began (only ever grows)
+    pub loops: AtomicU64,
     /// Set when the output device fails (unplugged, disabled…)
     pub lost: AtomicBool,
 }
@@ -73,6 +77,8 @@ pub struct Status {
     /// Frame being heard right now (latency already compensated)
     pub position_frames: u64,
     pub playing: bool,
+    /// Loop repetitions started so far: it grows by one every time the loop wraps around
+    pub loops: u64,
 }
 
 #[derive(Debug)]
@@ -149,6 +155,7 @@ impl Engine {
         Status {
             position_frames: self.shared.position.load(Ordering::Relaxed),
             playing: self.shared.playing.load(Ordering::Relaxed),
+            loops: self.shared.loops.load(Ordering::Relaxed),
         }
     }
 
@@ -189,6 +196,11 @@ impl Engine {
 
     pub fn set_channel_mode(&self, mode: ChannelMode) {
         self.send(Command::SetChannelMode(mode));
+    }
+
+    /// Tempo, metronome and count-in.
+    pub fn set_click(&self, settings: ClickSettings) {
+        self.send(Command::SetClick(settings));
     }
 
     fn send(&self, command: Command) {

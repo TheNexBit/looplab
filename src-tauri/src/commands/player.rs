@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::{LoadError, LoopSettings, time};
+use audio_engine::{ClickSettings, LoadError, LoopSettings, time};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
@@ -131,6 +131,42 @@ pub fn set_loop(state: State<'_, AppState>, settings: LoopRequest) -> Result<(),
         end: frames(settings.end),
         lead_in: frames(settings.lead_in),
         gap: frames(settings.gap),
+    });
+    Ok(())
+}
+
+/// Tempo, metronome and count-in, in the units of the UI.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ClickRequest {
+    /// Beats per minute of the track at its original speed; 0 when unknown
+    pub bpm: f64,
+    /// Seconds: a moment that falls on the first beat of a bar
+    pub anchor: f64,
+    /// Beats counted in before playback and before every loop repetition
+    pub count_in: u32,
+    /// Click on every beat while playing
+    pub metronome: bool,
+    /// 0..1
+    pub volume: f32,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(), AppError> {
+    let engine = playing_engine(&state)?;
+    let rate = engine.sample_rate();
+    let beat = if settings.bpm > 0.0 {
+        time::seconds_to_frames(60.0 / settings.bpm, rate)
+    } else {
+        0
+    };
+    engine.set_click(ClickSettings {
+        beat,
+        anchor: time::seconds_to_frames(settings.anchor.max(0.0), rate),
+        count_in: settings.count_in,
+        metronome: settings.metronome,
+        volume: settings.volume.clamp(0.0, 1.0),
     });
     Ok(())
 }

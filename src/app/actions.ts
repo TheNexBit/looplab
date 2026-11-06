@@ -6,6 +6,7 @@ import { type ShortcutId, shortcutLabel, shortcuts } from "@/lib/shortcuts";
 import { CHANNEL_MODES, useEqStore } from "@/stores/eq";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
+import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useUiStore } from "@/stores/ui";
 import { useVideoStore } from "@/stores/video";
 import { shortcutHandlers } from "./shortcutHandlers";
@@ -94,6 +95,12 @@ export function buildActions(): Action[] {
       label: `${t.eq.channels.title}: ${t.eq.channels[mode]}`,
       group: g.sound,
       run: () => eq.setChannels(mode),
+    })),
+    ...useSavedLoopsStore.getState().loops.map((loop) => ({
+      id: `saved-loop-${loop.id}`,
+      label: loop.name,
+      group: g.savedLoops,
+      run: () => useSavedLoopsStore.getState().recall(loop.id),
     })),
     ...useRecentStore
       .getState()

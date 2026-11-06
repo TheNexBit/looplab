@@ -14,13 +14,36 @@ export interface Settings {
   snap: boolean;
   /** Stopping returns to where playback started (the last clicked point), like Reaper */
   returnToStart: boolean;
+  /** Beats counted in before playback and before every loop repetition (0 = off) */
+  countIn: number;
+  /** Click on every beat while playing */
+  metronome: boolean;
+  /** Volume of the clicks, 0..1 */
+  clickVolume: number;
+  /** Speed trainer: the loop starts at `trainerFrom` and speeds up by `trainerStep`… */
+  trainer: boolean;
+  trainerFrom: number;
+  trainerTo: number;
+  trainerStep: number;
+  /** …every `trainerEvery` repetitions */
+  trainerEvery: number;
 }
+
+type NumericSetting = {
+  [K in keyof Settings]: Settings[K] extends number ? K : never;
+}[keyof Settings];
 
 export const SETTING_LIMITS = {
   seekStep: { min: 1, max: 30, step: 1 },
   fineSeekStep: { min: 0.1, max: 5, step: 0.1 },
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
-} as const;
+  countIn: { min: 0, max: 8, step: 1 },
+  clickVolume: { min: 0, max: 1, step: 0.05 },
+  trainerFrom: { min: 0.25, max: 2, step: 0.01 },
+  trainerTo: { min: 0.25, max: 2, step: 0.01 },
+  trainerStep: { min: 0.01, max: 0.25, step: 0.01 },
+  trainerEvery: { min: 1, max: 20, step: 1 },
+} as const satisfies Record<NumericSetting, { min: number; max: number; step: number }>;
 
 const DEFAULTS: Settings = {
   seekStep: 5,
@@ -29,15 +52,49 @@ const DEFAULTS: Settings = {
   followPlayhead: true,
   snap: true,
   returnToStart: true,
+  countIn: 0,
+  metronome: false,
+  clickVolume: 0.6,
+  trainer: false,
+  trainerFrom: 0.6,
+  trainerTo: 1,
+  trainerStep: 0.05,
+  trainerEvery: 2,
 };
 const KEY = "looplab.settings";
+
+/** Keeps numbers inside their limits and drops values of the wrong type (e.g. an old file). */
+function sanitize(values: Partial<Settings>): Settings {
+  const result = { ...DEFAULTS };
+  for (const key of Object.keys(DEFAULTS) as (keyof Settings)[]) {
+    const value = values[key];
+    if (typeof value !== typeof DEFAULTS[key]) continue;
+    if (typeof value === "number") {
+      const limits = SETTING_LIMITS[key as NumericSetting];
+      (result as Record<string, unknown>)[key] = limits
+        ? clamp(value, limits.min, limits.max)
+        : value;
+    } else {
+      (result as Record<string, unknown>)[key] = value;
+    }
+  }
+  return result;
+}
 
 /** Preferences of this PC: kept in the WebView's local storage, so they survive updates. */
 function load(): Settings {
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? "{}") };
+    return sanitize(JSON.parse(localStorage.getItem(KEY) ?? "{}"));
   } catch {
     return DEFAULTS;
+  }
+}
+
+function persist(settings: Settings) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(settings));
+  } catch {
+    // Storage unavailable: the settings last until the app closes
   }
 }
 
@@ -46,44 +103,15 @@ interface SettingsState extends Settings {
   reset: () => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => {
-  const persist = () => {
-    // Only the settings themselves, picked by the keys of DEFAULTS (not the store's functions)
-    const state = get();
-    const values = Object.fromEntries(
-      Object.keys(DEFAULTS).map((key) => [key, state[key as keyof Settings]]),
-    );
-    try {
-      localStorage.setItem(KEY, JSON.stringify(values));
-    } catch {
-      // Storage unavailable: the settings last until the app closes
-    }
-  };
-  return {
-    ...load(),
-    update: (patch) => {
-      const next = { ...get(), ...patch };
-      set({
-        seekStep: clamp(next.seekStep, SETTING_LIMITS.seekStep.min, SETTING_LIMITS.seekStep.max),
-        fineSeekStep: clamp(
-          next.fineSeekStep,
-          SETTING_LIMITS.fineSeekStep.min,
-          SETTING_LIMITS.fineSeekStep.max,
-        ),
-        speedStep: clamp(
-          next.speedStep,
-          SETTING_LIMITS.speedStep.min,
-          SETTING_LIMITS.speedStep.max,
-        ),
-        followPlayhead: next.followPlayhead,
-        snap: next.snap,
-        returnToStart: next.returnToStart,
-      });
-      persist();
-    },
-    reset: () => {
-      set(DEFAULTS);
-      persist();
-    },
-  };
-});
+export const useSettingsStore = create<SettingsState>((set, get) => ({
+  ...load(),
+  update: (patch) => {
+    const next = sanitize({ ...get(), ...patch });
+    set(next);
+    persist(next);
+  },
+  reset: () => {
+    set(DEFAULTS);
+    persist(DEFAULTS);
+  },
+}));

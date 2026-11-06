@@ -3,12 +3,15 @@ import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/
 import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
 import type { MarkerData, SectionData } from "@/stores/markers";
+import type { SavedLoopData } from "@/stores/savedLoops";
 
 /** Project contents with every number guaranteed (JSON turns NaN into null). */
 export interface ProjectData {
   markers: MarkerData[];
   sections: SectionData[];
   loop: LoopOptions & { start: number | null; end: number | null };
+  loops: SavedLoopData[];
+  bpm: number | null;
   speed: number;
   semitones: number;
   cents: number;
@@ -31,6 +34,10 @@ export function fromFile(file: Project_Serialize): ProjectData {
       leadIn: num(file.loop.leadIn, LEAD_IN.default),
       gap: num(file.loop.gap, GAP.default),
     },
+    loops: file.loops
+      .map((l) => ({ ...l, start: num(l.start, 0), end: num(l.end, 0) }))
+      .filter((l) => l.end > l.start),
+    bpm: typeof file.bpm === "number" && file.bpm > 0 ? file.bpm : null,
     speed: num(file.speed, SPEED.default),
     semitones: file.semitones,
     cents: file.cents,

@@ -1,4 +1,13 @@
-import { AudioLines, ChevronDown, FolderOpen, PanelRight, Search, Settings } from "lucide-react";
+import {
+  AudioLines,
+  ChevronDown,
+  FolderOpen,
+  PanelRight,
+  Redo,
+  Search,
+  Settings,
+  Undo,
+} from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
@@ -6,6 +15,7 @@ import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
+import { useHistoryStore } from "@/stores/history";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
 import { useUiStore } from "@/stores/ui";
@@ -51,6 +61,41 @@ function RecentMenu() {
   );
 }
 
+/** Undo / redo keys, dimmed when there is nothing to undo or redo. */
+function HistoryKeys() {
+  const canUndo = useHistoryStore((s) => s.past.length > 0);
+  const canRedo = useHistoryStore((s) => s.future.length > 0);
+  const { undo, redo } = useHistoryStore.getState();
+  return (
+    <div className="flex">
+      <Tooltip label={t.history.undo} shortcut="undo">
+        <Button
+          variant="hardware"
+          size="icon"
+          className="rounded-r-none"
+          disabled={!canUndo}
+          onClick={undo}
+          aria-label={t.history.undo}
+        >
+          <Undo className="size-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip label={t.history.redo} shortcut="redo">
+        <Button
+          variant="hardware"
+          size="icon"
+          className="rounded-l-none border-l-0"
+          disabled={!canRedo}
+          onClick={redo}
+          aria-label={t.history.redo}
+        >
+          <Redo className="size-4" />
+        </Button>
+      </Tooltip>
+    </div>
+  );
+}
+
 export function TopBar() {
   const sidePanelOpen = useUiStore((s) => s.sidePanelOpen);
   const toggleSidePanel = useUiStore((s) => s.toggleSidePanel);
@@ -76,7 +121,7 @@ export function TopBar() {
       <RecentMenu />
 
       {/* Small display with the open track; the lamp is lit while a track is loaded */}
-      <div className="well flex h-7 min-w-64 items-center gap-2 rounded-control px-3">
+      <div className="well flex h-7 min-w-0 flex-1 items-center gap-2 rounded-control px-3 lg:max-w-80">
         <span
           aria-hidden
           className={
@@ -95,11 +140,12 @@ export function TopBar() {
           {trackName ?? t.app.noFile}
         </span>
       </div>
+      <HistoryKeys />
 
       <button
         type="button"
         onClick={() => openDialog("palette")}
-        className="mx-auto flex h-7 w-80 shrink-0 items-center gap-2 rounded-control border border-border bg-[#18191c] px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
+        className="mx-auto flex h-7 w-56 shrink-0 lg:w-80 items-center gap-2 rounded-control border border-border bg-[#18191c] px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
       >
         <Search className="size-3.5" />
         {t.app.searchActions}

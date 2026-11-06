@@ -9,6 +9,7 @@ import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
 import { syncWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
+import { startTrainer } from "@/features/practice/trainer";
 import { feedDetachedVideo } from "@/features/video/detach";
 import { VideoLayout } from "@/features/video/VideoLayout";
 import { followTrackVideo } from "@/features/video/videoLoader";
@@ -44,6 +45,7 @@ export function App() {
     const stopProjectSync = syncProject();
     const stopVideo = followTrackVideo();
     const stopDetached = feedDetachedVideo();
+    const stopTrainer = startTrainer();
     return () => {
       void unlisten.then((stop) => stop());
       window.removeEventListener("wheel", blockPageZoom);
@@ -51,6 +53,7 @@ export function App() {
       stopProjectSync();
       stopVideo();
       stopDetached();
+      stopTrainer();
     };
   }, []);
 

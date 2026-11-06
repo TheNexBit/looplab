@@ -51,6 +51,17 @@ pub struct Section {
     pub color: u8,
 }
 
+/// A loop kept under a name, to come back to it later.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedLoop {
+    pub id: String,
+    pub name: String,
+    /// Seconds
+    pub start: f64,
+    pub end: f64,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase", default)]
 pub struct ProjectLoop {
@@ -83,6 +94,10 @@ pub struct Project {
     pub sections: Vec<Section>,
     #[serde(rename = "loop")]
     pub loop_: ProjectLoop,
+    /// Loops saved by name
+    pub loops: Vec<SavedLoop>,
+    /// Tempo of the track in beats per minute; `None` until the user sets it
+    pub bpm: Option<f64>,
     pub speed: f64,
     pub semitones: i32,
     pub cents: i32,
@@ -97,6 +112,8 @@ impl Default for Project {
             markers: Vec::new(),
             sections: Vec::new(),
             loop_: ProjectLoop::default(),
+            loops: Vec::new(),
+            bpm: None,
             speed: 1.0,
             semitones: 0,
             cents: 0,
@@ -251,6 +268,13 @@ pub(crate) mod tests {
                 lead_in: 1.5,
                 gap: 0.0,
             },
+            loops: vec![SavedLoop {
+                id: "l1".into(),
+                name: "Riff".into(),
+                start: 3.0,
+                end: 9.0,
+            }],
+            bpm: Some(96.0),
             speed: 0.75,
             semitones: -2,
             cents: 15,

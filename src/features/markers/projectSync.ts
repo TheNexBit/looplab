@@ -1,10 +1,13 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { commands } from "@/lib/bindings";
 import { useEqStore } from "@/stores/eq";
+import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
+import { usePracticeStore } from "@/stores/practice";
 import { useRecentStore } from "@/stores/recent";
+import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { fromFile, type ProjectData, toFile } from "./projectFile";
 
 /** Pause after the last change before writing, so a burst of edits is one save. */
@@ -19,6 +22,8 @@ function snapshot(): ProjectData {
     markers,
     sections,
     loop: { start, end, enabled, leadIn, gap },
+    loops: useSavedLoopsStore.getState().loops,
+    bpm: usePracticeStore.getState().bpm,
     speed,
     semitones,
     cents,
@@ -30,6 +35,8 @@ function snapshot(): ProjectData {
 function apply(data: ProjectData) {
   useMarkersStore.getState().replace(data.markers, data.sections);
   useLoopStore.getState().restore(data.loop);
+  useSavedLoopsStore.getState().replace(data.loops);
+  usePracticeStore.getState().setBpm(data.bpm);
   const player = usePlayerStore.getState();
   player.setSpeed(data.speed);
   player.setPitch(data.semitones, data.cents);
@@ -103,6 +110,8 @@ export function syncProject(): () => void {
     }
     lastSaved = JSON.stringify(snapshot());
     applying = false;
+    // Undo never reaches back into the previous track
+    useHistoryStore.getState().reset();
     void useRecentStore.getState().refresh();
   };
 
@@ -121,6 +130,10 @@ export function syncProject(): () => void {
       if (state.markers !== previous.markers || state.sections !== previous.sections) schedule();
     }),
     useLoopStore.subscribe(schedule),
+    useSavedLoopsStore.subscribe(schedule),
+    usePracticeStore.subscribe((state, previous) => {
+      if (state.bpm !== previous.bpm) schedule();
+    }),
     useEqStore.subscribe((state, previous) => {
       if (state.settings !== previous.settings || state.channels !== previous.channels) schedule();
     }),

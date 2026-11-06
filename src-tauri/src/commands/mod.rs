@@ -26,6 +26,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::set_speed,
             player::set_pitch,
             player::set_loop,
+            player::set_click,
             library::load_project,
             library::save_project,
             library::recent_files,

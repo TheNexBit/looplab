@@ -142,6 +142,23 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   formato velocità, limiti di lead-in e pausa); gesti della forma d'onda in `gestures.ts`; il log di FFmpeg
   tiene solo le ultime righe. Comportamento invariato.
 
+## 8. Strumenti di pratica ✅
+
+- **Speed trainer** (scheda Pratica): il loop parte dalla velocità "Da" e sale di "Passo" ogni "Ogni"
+  ripetizioni fino ad "A". Il motore conta le ripetizioni (nuovo campo `loops` nello stato); il conteggio
+  ricomincia quando cambiano loop, brano o impostazioni del trainer. Le impostazioni valgono per il PC.
+- **Annulla / Ripeti** (Ctrl+Z / Ctrl+Y, tasti nella barra in alto) per marker, sezioni, loop e loop salvati.
+  Una serie di modifiche ravvicinate (un trascinamento) è un solo passo. Nei campi di testo Ctrl+Z resta
+  quello normale del campo.
+- **Loop salvati** (scheda Sezioni, Maiusc+L o pulsante): nome modificabile, riprendi, elimina; anche nella
+  palette dei comandi. Salvati nel `.looplab.json`.
+- **Tempo, conteggio e metronomo** (scheda Pratica): BPM del brano originale (salvato nel progetto), tasto
+  "Batti" / T per batterlo (diviso per la velocità, così vale per l'originale); conteggio di 1/2/4/8 battiti
+  prima del play e prima di ogni ripetizione; metronomo (tasto K) con il primo battito della battuta più acuto.
+  Senza BPM conteggio e metronomo restano spenti e la scheda lo dice.
+- Scelte fatte da me: la battuta è sempre di 4 battiti; la griglia dei click parte dall'inizio del loop (o dalla
+  prima battuta B); il contatore ×N compare sul tasto Loop dalla seconda ripetizione.
+
 ## Dopo la prima versione
 
-Separazione AI degli strumenti, analisi dello spettro, speed trainer, esportazione WAV.
+Separazione AI degli strumenti, analisi dello spettro, esportazione WAV.

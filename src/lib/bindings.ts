@@ -21,6 +21,7 @@ export const commands = {
 	/**  Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down). */
 	setPitch: (semitones: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pitch", { semitones })),
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
+	setClick: (settings: ClickRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_click", { settings })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
@@ -87,6 +88,20 @@ export type ChannelMode = "stereo" |
 "removeCenter" | 
 /**  Left plus right: keeps the centre, the sides get quieter */
 "isolateCenter";
+
+/**  Tempo, metronome and count-in, in the units of the UI. */
+export type ClickRequest = {
+	/**  Beats per minute of the track at its original speed; 0 when unknown */
+	bpm: number | null,
+	/**  Seconds: a moment that falls on the first beat of a bar */
+	anchor: number | null,
+	/**  Beats counted in before playback and before every loop repetition */
+	countIn: number,
+	/**  Click on every beat while playing */
+	metronome: boolean,
+	/**  0..1 */
+	volume: number | null,
+};
 
 export type EqSettings = EqSettings_Serialize | EqSettings_Deserialize;
 
@@ -156,6 +171,8 @@ export type PlaybackStatus = {
 	/**  Seconds */
 	position: number | null,
 	playing: boolean,
+	/**  Loop repetitions started so far: grows by one at every wrap (the speed trainer counts them) */
+	loops: number,
 	/**  The output device failed: the track must be reopened */
 	deviceLost: boolean,
 };
@@ -200,6 +217,10 @@ export type Project_Deserialize = {
 	markers?: Marker_Deserialize[],
 	sections?: Section[],
 	loop?: ProjectLoop_Deserialize,
+	/**  Loops saved by name */
+	loops?: SavedLoop[],
+	/**  Tempo of the track in beats per minute; `None` until the user sets it */
+	bpm?: number | null,
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
@@ -216,6 +237,10 @@ export type Project_Serialize = {
 	markers: Marker_Serialize[],
 	sections: Section[],
 	loop: ProjectLoop_Serialize,
+	/**  Loops saved by name */
+	loops: SavedLoop[],
+	/**  Tempo of the track in beats per minute; `None` until the user sets it */
+	bpm: number | null,
 	speed: number | null,
 	semitones: number,
 	cents: number,
@@ -228,6 +253,15 @@ export type RecentFile = {
 	name: string,
 	/**  False when the file has been moved or deleted since */
 	exists: boolean,
+};
+
+/**  A loop kept under a name, to come back to it later. */
+export type SavedLoop = {
+	id: string,
+	name: string,
+	/**  Seconds */
+	start: number | null,
+	end: number | null,
 };
 
 /**  A section runs from its start to the start of the next one (or the end of the track). */

@@ -15,7 +15,12 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     `render.rs` vive nella callback cpal: lettore con loop → stretch → dissolvenze → scheda audio.
     Comandi via ring buffer rtrb, posizione/stato via atomici, brani sostituiti liberati fuori dal thread audio.
     La posizione pubblicata è quella _udita_: una piccola cronologia collega l'ingresso dello stretch
-    al punto del brano, così latenza e ritorni del loop sono compensati.
+    al punto del brano, così latenza e ritorni del loop sono compensati; durante pause e conteggi
+    la posizione resta ferma. Il lettore conta le ripetizioni del loop (`Status::loops`).
+  - `click.rs`: metronomo e conteggio. I battiti si trovano leggendo il brano (tempo del brano, prima
+    dello stretch) e si mettono in coda con il frame d'ingresso; il click è sintetizzato in uscita
+    quando quel frame si sente, quindi non cambia suono con velocità e tonalità. Il conteggio è la
+    parte finale della pausa tra le ripetizioni, e precede anche il play.
   - `dsp/stretch.rs`: interfaccia sicura su Signalsmith Stretch (C++, in `vendor/`, MIT), compilato da
     `build.rs` tramite `cpp/stretch.cpp`. Unico codice non Rust; nessuna allocazione dopo la creazione.
   - `time.rs`: conversioni tempo ↔ frame.
@@ -43,6 +48,18 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 - `features/markers/projectSync.ts`: carica il progetto di ogni brano, salva 0,8 s dopo l'ultima modifica e
   alla chiusura; non sovrascrive mai un file illeggibile.
 - `features/video/videoLoader.ts`, `detach.ts`: video del brano, proxy, finestra staccata.
+
+## Pratica
+
+- `stores/practice.ts`: tempo del brano (salvato nel progetto) e contatore delle ripetizioni.
+- `features/practice/tempo.ts`: calcoli puri (battuta tap, durata del conteggio, velocità dello speed trainer).
+- `features/practice/trainer.ts`: conta le ripetizioni dal contatore del motore e imposta la velocità.
+- `features/player/syncEngine.ts` manda al motore tempo, conteggio e metronomo; la griglia dei battiti
+  parte dall'inizio del loop, altrimenti dalla prima battuta (marker B), altrimenti da 0.
+- Il player prevede il conteggio: il playhead aspetta fermo prima del play e a ogni ripetizione.
+- `stores/history.ts`: Annulla/Ripeti di marker, sezioni, loop e loop salvati; una raffica di modifiche
+  (un trascinamento) è un solo passo; si azzera all'apertura di ogni brano.
+- `stores/savedLoops.ts`: loop con nome, salvati nel progetto.
 
 ## Forma d'onda dettagliata
 

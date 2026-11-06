@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type SidePanelTab = "sections" | "eq";
+export type SidePanelTab = "sections" | "eq" | "practice";
 export type Dialog = "palette" | "settings" | "about";
 
 interface UiState {

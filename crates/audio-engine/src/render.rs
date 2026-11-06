@@ -1,4 +1,5 @@
-//! The audio callback: track → loop-aware reader → stretch (speed, pitch) → EQ → channels → fades → device.
+//! The audio callback: track → loop-aware reader → stretch (speed, pitch) → EQ → channels → fades
+//! (+ metronome clicks) → device.
 //!
 //! Real-time safe: every buffer is allocated in `Renderer::new`, nothing here
 //! locks, allocates or does I/O.
@@ -8,6 +9,7 @@ use std::sync::atomic::Ordering;
 
 use cpal::{FromSample, Sample};
 
+use crate::click::{ClickQueue, ClickSettings, ClickVoice};
 use crate::dsp::channels::Channels;
 use crate::dsp::eq::Eq;
 use crate::dsp::stretch::Stretch;
@@ -34,7 +36,11 @@ struct Reader {
     fade_out_left: usize,
     fade_in_left: usize,
     gap_left: u64,
+    /// The last part of the current gap that is a count-in (clicks on its beats)
+    count_in_span: u64,
     splice: usize,
+    /// Loop repetitions started
+    wraps: u64,
 }
 
 impl Reader {
@@ -45,7 +51,9 @@ impl Reader {
             fade_out_left: 0,
             fade_in_left: 0,
             gap_left: 0,
+            count_in_span: 0,
             splice: ((SPLICE_SECONDS * sample_rate as f32) as usize).max(1),
+            wraps: 0,
         }
     }
 
@@ -54,16 +62,33 @@ impl Reader {
         self.fade_out_left = 0;
         self.fade_in_left = 0;
         self.gap_left = 0;
+        self.count_in_span = 0;
     }
 
-    fn read(&mut self, track: Option<&Pcm>, settings: &LoopSettings, out: &mut [f32]) {
+    /// Silence with clicks before the next frame is read (count-in before playback starts).
+    fn start_count_in(&mut self, click: &ClickSettings) {
+        self.count_in_span = click.count_in_frames();
+        self.gap_left = self.count_in_span;
+    }
+
+    /// Fills `out`; beats met on the way are queued with their input frame (`fed` + index).
+    fn read(
+        &mut self,
+        track: Option<&Pcm>,
+        settings: &LoopSettings,
+        click: &ClickSettings,
+        fed: u64,
+        clicks: &mut ClickQueue,
+        out: &mut [f32],
+    ) {
         let sample = |frame: u64| match track {
             Some(pcm) if frame < pcm.frames() => pcm.frame(frame as usize),
             _ => [0.0; CHANNELS],
         };
         let splice = self.splice as f32;
 
-        for frame in out.as_chunks_mut::<CHANNELS>().0 {
+        for (index, frame) in out.as_chunks_mut::<CHANNELS>().0.iter_mut().enumerate() {
+            let at = fed + index as u64;
             let mut mixed = [0.0_f32; CHANNELS];
 
             if self.fade_out_left > 0 {
@@ -76,8 +101,18 @@ impl Reader {
             }
 
             if self.gap_left > 0 {
+                // The count-in is the end of the gap: one click per beat, the first accented
+                if self.gap_left <= self.count_in_span && click.beat > 0 {
+                    let into = self.count_in_span - self.gap_left;
+                    if into.is_multiple_of(click.beat) {
+                        clicks.push(at, into == 0);
+                    }
+                }
                 self.gap_left -= 1;
             } else {
+                if let Some(accent) = click.beat_at(self.position) {
+                    clicks.push(at, accent);
+                }
                 let weight = if self.fade_in_left > 0 {
                     self.fade_in_left -= 1;
                     1.0 - self.fade_in_left as f32 / splice
@@ -89,7 +124,7 @@ impl Reader {
                 }
                 self.position += 1;
                 if settings.is_active() && self.position == settings.end {
-                    self.wrap(settings);
+                    self.wrap(settings, click);
                 }
             }
 
@@ -97,13 +132,16 @@ impl Reader {
         }
     }
 
-    /// Loop end reached: let the old audio fade out while the restart fades in (after the gap).
-    fn wrap(&mut self, settings: &LoopSettings) {
+    /// Loop end reached: let the old audio fade out while the restart fades in
+    /// (after the gap and the count-in).
+    fn wrap(&mut self, settings: &LoopSettings, click: &ClickSettings) {
         self.fade_out_from = self.position;
         self.fade_out_left = self.splice;
         self.position = settings.restart_at();
-        self.gap_left = settings.gap;
+        self.count_in_span = click.count_in_frames();
+        self.gap_left = settings.gap + self.count_in_span;
         self.fade_in_left = self.splice;
+        self.wraps += 1;
     }
 }
 
@@ -112,6 +150,8 @@ impl Reader {
 struct Mark {
     fed: u64,
     position: u64,
+    /// Frames of silence still to come before `position` is read
+    gap: u64,
 }
 
 pub(crate) struct Renderer {
@@ -124,6 +164,11 @@ pub(crate) struct Renderer {
     eq: Eq,
     channels: Channels,
     settings: LoopSettings,
+    click: ClickSettings,
+    clicks: ClickQueue,
+    voice: ClickVoice,
+    /// Play was pressed with a count-in: the next jump starts with it
+    count_in_on_jump: bool,
 
     input: Vec<f32>,
     output: Vec<f32>,
@@ -175,6 +220,10 @@ impl Renderer {
             eq: Eq::new(sample_rate),
             channels: Channels::new(sample_rate),
             settings: LoopSettings::default(),
+            click: ClickSettings::default(),
+            clicks: ClickQueue::new(),
+            voice: ClickVoice::new(sample_rate),
+            count_in_on_jump: false,
             input: vec![0.0; max_input * CHANNELS],
             output: vec![0.0; CHUNK * CHANNELS],
             output_index: CHUNK,
@@ -215,6 +264,9 @@ impl Renderer {
         }
         self.shared.position.store(heard, Ordering::Relaxed);
         self.shared.playing.store(self.playing, Ordering::Relaxed);
+        self.shared
+            .loops
+            .store(self.reader.wraps, Ordering::Relaxed);
     }
 
     fn track_frames(&self) -> Option<u64> {
@@ -242,7 +294,10 @@ impl Renderer {
                     self.jump(0);
                 }
                 Command::Play => self.play(),
-                Command::Pause => self.playing = false,
+                Command::Pause => {
+                    self.playing = false;
+                    self.count_in_on_jump = false;
+                }
                 Command::Seek(frame) => {
                     self.pending_seek = Some(frame.min(self.track_frames().unwrap_or(0)));
                 }
@@ -251,6 +306,7 @@ impl Renderer {
                 Command::SetLoop(settings) => self.settings = settings,
                 Command::SetEq(settings) => self.eq.set(settings),
                 Command::SetChannelMode(mode) => self.channels.set(mode),
+                Command::SetClick(settings) => self.click = settings,
             }
         }
     }
@@ -268,6 +324,11 @@ impl Renderer {
                 0
             };
             self.pending_seek = Some(restart);
+        }
+        // With a count-in, playback restarts from the same point after the counted beats
+        if self.click.count_in_frames() > 0 {
+            self.pending_seek = Some(self.pending_seek.unwrap_or_else(|| self.heard_position()));
+            self.count_in_on_jump = true;
         }
         self.playing = true;
     }
@@ -300,7 +361,15 @@ impl Renderer {
         }
         let i = self.output_index * CHANNELS;
         self.output_index += 1;
-        [self.output[i] * self.gain, self.output[i + 1] * self.gain]
+        let heard = self.heard_fed();
+        while let Some(accent) = self.clicks.pop_due(heard) {
+            self.voice.start(accent);
+        }
+        let click = self.voice.next(self.click.volume);
+        [
+            self.output[i] * self.gain + click,
+            self.output[i + 1] * self.gain + click,
+        ]
     }
 
     fn render_chunk(&mut self) {
@@ -311,8 +380,14 @@ impl Renderer {
 
         self.remember();
         let input = &mut self.input[..frames * CHANNELS];
-        self.reader
-            .read(self.track.as_deref(), &self.settings, input);
+        self.reader.read(
+            self.track.as_deref(),
+            &self.settings,
+            &self.click,
+            self.fed,
+            &mut self.clicks,
+            input,
+        );
         self.fed += frames as u64;
 
         self.stretch
@@ -326,6 +401,11 @@ impl Renderer {
     fn jump(&mut self, frame: u64) {
         self.stretch.reset();
         self.reader.jump(frame);
+        self.clicks.clear();
+        self.voice.stop();
+        if std::mem::take(&mut self.count_in_on_jump) {
+            self.reader.start_count_in(&self.click);
+        }
         self.output_index = CHUNK;
         self.input_debt = 0.0;
 
@@ -334,10 +414,17 @@ impl Renderer {
         self.seek_mark = Some(Mark {
             fed: self.fed,
             position: frame,
+            gap: self.reader.gap_left,
         });
         let input = &mut self.input[..preroll * CHANNELS];
-        self.reader
-            .read(self.track.as_deref(), &self.settings, input);
+        self.reader.read(
+            self.track.as_deref(),
+            &self.settings,
+            &self.click,
+            self.fed,
+            &mut self.clicks,
+            input,
+        );
         self.fed += preroll as u64;
         self.stretch
             .seek(&self.input[..preroll * CHANNELS], f64::from(self.speed));
@@ -347,6 +434,7 @@ impl Renderer {
         self.history[self.history_next] = Mark {
             fed: self.fed,
             position: self.reader.position,
+            gap: self.reader.gap_left,
         };
         self.history_next = (self.history_next + 1) % HISTORY;
     }
@@ -354,10 +442,7 @@ impl Renderer {
     /// Track frame being heard now: the input point minus the stretcher latency and the
     /// output not yet played, mapped back through recent history (so loop wraps are undone).
     fn heard_position(&self) -> u64 {
-        let pending_output = (CHUNK - self.output_index) + self.stretch.output_latency();
-        let lag =
-            self.stretch.input_latency() as f64 + pending_output as f64 * f64::from(self.speed);
-        let heard_fed = (self.fed as f64 - lag).max(0.0) as u64;
+        let heard_fed = self.heard_fed() as u64;
 
         if let Some(mark) = self.seek_mark
             && heard_fed < mark.fed + self.stretch.input_latency() as u64
@@ -372,14 +457,27 @@ impl Renderer {
                 best = Some(*mark);
             }
         }
-        let position = best.map_or(0, |m| m.position + (heard_fed - m.fed));
+        // During a gap or count-in the playhead waits at the frame that comes next
+        let position = best.map_or(0, |m| {
+            m.position + (heard_fed - m.fed).saturating_sub(m.gap)
+        });
         position.min(self.track_frames().unwrap_or(0))
+    }
+
+    /// Input frame (stretcher feed count) being heard now: the feed point minus the
+    /// stretcher latency and the output not yet played.
+    fn heard_fed(&self) -> f64 {
+        let pending_output = (CHUNK - self.output_index) + self.stretch.output_latency();
+        let lag =
+            self.stretch.input_latency() as f64 + pending_output as f64 * f64::from(self.speed);
+        (self.fed as f64 - lag).max(0.0)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::click::ClickSettings;
     use crate::engine::{Control, channel};
 
     const RATE: u32 = 48_000;
@@ -663,5 +761,125 @@ mod tests {
         h.send(Command::SetTrack(track(0.5)));
         h.render(0.01);
         assert!(h.control.garbage.pop().is_ok());
+    }
+
+    fn short_loop() -> LoopSettings {
+        LoopSettings {
+            enabled: true,
+            start: SECOND,
+            end: SECOND + SECOND / 2,
+            lead_in: 0,
+            gap: 0,
+        }
+    }
+
+    /// Positions reported every 10 ms over `seconds`.
+    fn positions(h: &mut Harness, seconds: f32) -> Vec<u64> {
+        (0..(seconds * 100.0) as usize)
+            .map(|_| {
+                h.render(0.01);
+                h.position()
+            })
+            .collect()
+    }
+
+    /// Longest run of reports equal to `frame`, in seconds.
+    fn longest_wait_at(reports: &[u64], frame: u64) -> f32 {
+        let longest = reports
+            .iter()
+            .fold((0_usize, 0_usize), |(run, best), &p| {
+                let run = if p == frame { run + 1 } else { 0 };
+                (run, best.max(run))
+            })
+            .1;
+        longest as f32 / 100.0
+    }
+
+    #[test]
+    fn counts_every_loop_repetition() {
+        let mut h = Harness::new(5.0);
+        h.send(Command::SetLoop(short_loop()));
+        h.send(Command::Seek(SECOND));
+        h.send(Command::Play);
+        h.render(2.2);
+        let loops = h.shared.loops.load(Ordering::Relaxed);
+        assert!(
+            (3..=5).contains(&loops),
+            "{loops} repetitions in 2.2 s of a 0.5 s loop"
+        );
+    }
+
+    #[test]
+    fn count_in_before_play_holds_the_playhead_and_clicks() {
+        let mut h = Harness::new(5.0);
+        h.send(Command::SetClick(ClickSettings {
+            beat: SECOND / 4,
+            count_in: 4,
+            volume: 1.0,
+            ..ClickSettings::default()
+        }));
+        h.send(Command::Seek(2 * SECOND));
+        h.render(0.05);
+        h.send(Command::Play);
+        let reports = positions(&mut h, 1.5);
+        let waited = longest_wait_at(&reports, 2 * SECOND);
+        assert!(
+            (0.85..=1.15).contains(&waited),
+            "waited {waited} s for 4 beats of 0.25 s"
+        );
+        let last = *reports.last().unwrap_or(&0);
+        assert!(last > 2 * SECOND + SECOND / 5, "then plays on: {last}");
+    }
+
+    #[test]
+    fn count_in_comes_back_before_every_repetition() {
+        let mut h = Harness::new(5.0);
+        h.send(Command::SetLoop(short_loop()));
+        h.send(Command::Seek(SECOND));
+        h.render(0.05);
+        h.send(Command::SetClick(ClickSettings {
+            beat: SECOND / 4,
+            count_in: 2,
+            volume: 1.0,
+            ..ClickSettings::default()
+        }));
+        h.send(Command::Play);
+        // Skip the count-in before playback and the first repetition
+        h.render(1.1);
+        let reports = positions(&mut h, 1.2);
+        let waited = longest_wait_at(&reports, SECOND);
+        assert!(
+            (0.4..=0.6).contains(&waited),
+            "waited {waited} s for 2 beats of 0.25 s"
+        );
+    }
+
+    #[test]
+    fn metronome_clicks_on_every_beat() {
+        let mut h = Harness::new(4.0);
+        // A silent track: anything heard is a click
+        let mut silent = Pcm::with_capacity(RATE, 4 * RATE as usize);
+        silent.extend_from_f32(&vec![0.0; 8 * RATE as usize]);
+        h.send(Command::SetTrack(Arc::new(silent)));
+        h.send(Command::SetClick(ClickSettings {
+            beat: SECOND / 2,
+            metronome: true,
+            volume: 0.8,
+            ..ClickSettings::default()
+        }));
+        h.send(Command::Play);
+        let out = h.render(2.0);
+        // Onsets: a loud sample after at least 0.1 s of silence
+        let (_, onsets) = out.chunks(2).fold((usize::MAX, 0), |(quiet, onsets), f| {
+            if f[0].abs() > 0.2 {
+                (0, onsets + usize::from(quiet > RATE as usize / 10))
+            } else {
+                (quiet.saturating_add(1), onsets)
+            }
+        });
+        assert!(
+            (3..=5).contains(&onsets),
+            "{onsets} clicks in 2 s at 120 BPM"
+        );
     }
 }

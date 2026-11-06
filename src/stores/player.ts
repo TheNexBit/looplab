@@ -1,10 +1,12 @@
 import { Channel } from "@tauri-apps/api/core";
 import { create } from "zustand";
 import { CENTS, SEMITONES, SPEED } from "@/features/player/limits";
+import { countInSeconds } from "@/features/practice/tempo";
 import { fetchPeaks, type Peaks } from "@/features/waveform/peaks";
 import { type AppError, commands, type PlaybackStatus, type TrackInfo } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 import { advanceInLoop, restartAt, useLoopStore } from "./loop";
+import { usePracticeStore } from "./practice";
 import { useSettingsStore } from "./settings";
 import { useViewStore } from "./view";
 
@@ -40,6 +42,8 @@ interface PlayerState {
    * playback last started. With "return to start" on, stopping goes back here.
    */
   cue: number;
+  /** Loop repetitions the engine has started (only grows): the speed trainer counts them */
+  loops: number;
   open: (path: string) => Promise<void>;
   reportError: (path: string, error: AppError) => void;
   dismissError: () => void;
@@ -54,9 +58,19 @@ interface PlayerState {
 /** Playhead position in seconds, interpolated between engine updates (speed and loop included). */
 export function currentPosition(state: PlayerState = usePlayerStore.getState()): number {
   const duration = state.track?.duration ?? 0;
-  const elapsed = state.playing ? ((performance.now() - state.anchorTime) / 1000) * state.speed : 0;
+  // The anchor lies in the future while a count-in plays before playback
+  const elapsed = state.playing
+    ? Math.max(0, ((performance.now() - state.anchorTime) / 1000) * state.speed)
+    : 0;
   const loop = useLoopStore.getState();
-  return clamp(advanceInLoop(state.anchorPosition, elapsed, loop.region(), loop), 0, duration);
+  // The count-in before each repetition is heard as part of the gap
+  const options = { ...loop, gap: loop.gap + countInNow() };
+  return clamp(advanceInLoop(state.anchorPosition, elapsed, loop.region(), options), 0, duration);
+}
+
+/** Seconds of count-in, at the track's original speed, with the current settings. */
+export function countInNow(): number {
+  return countInSeconds(useSettingsStore.getState().countIn, usePracticeStore.getState().bpm);
 }
 
 /** Length of the open track in seconds, 0 when none is open. */
@@ -93,6 +107,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     semitones: SEMITONES.default,
     cents: CENTS.default,
     cue: 0,
+    loops: 0,
 
     open: async (path) => {
       const token = ++loadToken;
@@ -157,6 +172,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           : position;
       anchor(from, true);
       set({ cue: from });
+      // The engine counts in first: the playhead waits, and engine reports are ignored meanwhile
+      const delayMs = (countInNow() / get().speed) * 1000;
+      if (delayMs > 0) {
+        const start = performance.now() + delayMs;
+        set({ anchorTime: start, holdUntil: start + HOLD_MS });
+      }
       useViewStore.getState().resumeFollow();
       void commands.play().then(report);
     },
@@ -176,6 +197,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     seekBy: (delta) => get().seek(currentPosition() + delta),
 
     applyStatus: (status) => {
+      if (status.loops !== get().loops) set({ loops: status.loops });
       const state = get();
       if (!state.track || performance.now() < state.holdUntil) return;
       if (status.deviceLost) {

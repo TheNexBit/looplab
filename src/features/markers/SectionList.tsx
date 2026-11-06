@@ -1,6 +1,6 @@
 import { Repeat, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { InlineName } from "@/components/ui/InlineName";
 import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
 import {
@@ -11,16 +11,12 @@ import {
   useMarkersStore,
 } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
+import { SavedLoopList } from "./SavedLoopList";
 import { SectionMenu } from "./SectionMenu";
 import { loopSection } from "./sectionActions";
 
 function SectionRow({ range }: { range: SectionRange }) {
-  const [draft, setDraft] = useState<string | null>(null);
   const { renameSection, removeSection } = useMarkersStore.getState();
-  const commit = () => {
-    if (draft?.trim()) renameSection(range.id, draft.trim());
-    setDraft(null);
-  };
 
   return (
     <SectionMenu range={range}>
@@ -30,20 +26,10 @@ function SectionRow({ range }: { range: SectionRange }) {
           className="h-4 w-1 shrink-0 rounded-[1px]"
           style={{ background: sectionColor(range.color) }}
         />
-        <input
-          aria-label={t.markers.rename}
-          value={draft ?? range.name}
-          onFocus={() => setDraft(range.name)}
-          onChange={(event) => setDraft(event.target.value)}
-          onBlur={commit}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") event.currentTarget.blur();
-            if (event.key === "Escape") {
-              setDraft(null);
-              event.currentTarget.blur();
-            }
-          }}
-          className="min-w-0 flex-1 rounded-[4px] bg-transparent px-1 text-sm text-fg outline-none focus:bg-surface"
+        <InlineName
+          value={range.name}
+          label={t.markers.rename}
+          onRename={(name) => renameSection(range.id, name)}
         />
         <span className="font-mono text-[11px] text-fg-subtle tabular">
           {formatTime(range.start)}
@@ -69,7 +55,7 @@ function SectionRow({ range }: { range: SectionRange }) {
   );
 }
 
-/** Side panel tab: sections (renamable, loopable) and markers of the open track. */
+/** Side panel tab: saved loops, sections (renamable, loopable) and markers of the open track. */
 export function SectionList() {
   const sections = useMarkersStore((s) => s.sections);
   const markers = useMarkersStore((s) => s.markers);
@@ -80,6 +66,7 @@ export function SectionList() {
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-2">
+      <SavedLoopList />
       <section>
         <h3 className="panel-label px-2 pb-1.5">{t.markers.sections}</h3>
         {sections.length === 0 ? (

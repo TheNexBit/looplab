@@ -3,6 +3,7 @@ import { Tabs } from "radix-ui";
 import type { ReactNode } from "react";
 import { EqPanel } from "@/features/eq/EqPanel";
 import { SectionList } from "@/features/markers/SectionList";
+import { PracticePanel } from "@/features/practice/PracticePanel";
 import { t } from "@/i18n";
 import { type SidePanelTab, useUiStore } from "@/stores/ui";
 
@@ -10,6 +11,7 @@ const WIDTH = 300;
 
 const tabs: { id: SidePanelTab; label: string; content: ReactNode }[] = [
   { id: "sections", label: t.sidePanel.sections, content: <SectionList /> },
+  { id: "practice", label: t.sidePanel.practice, content: <PracticePanel /> },
   { id: "eq", label: t.sidePanel.eq, content: <EqPanel /> },
 ];
 

@@ -7,6 +7,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
 import { useLoopStore } from "@/stores/loop";
+import { usePracticeStore } from "@/stores/practice";
 import { GAP, LEAD_IN } from "./limits";
 
 const formatSeconds = (value: number) => `${value.toFixed(1)} ${t.transport.seconds}`;
@@ -15,6 +16,7 @@ const formatSeconds = (value: number) => `${value.toFixed(1)} ${t.transport.seco
 export function LoopMenu({ disabled }: { disabled: boolean }) {
   const loop = useLoopStore();
   const region = loop.region();
+  const repetitions = usePracticeStore((s) => s.repetitions);
 
   return (
     <div className="flex items-center">
@@ -47,6 +49,10 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
                 <span className="panel-label">{t.transport.loop}</span>
                 <span className="font-mono text-xs whitespace-nowrap text-fg tabular">
                   {region ? `${formatTime(region.start)} → ${formatTime(region.end)}` : "—"}
+                  {/* Repetitions played, like the counter of a looper pedal */}
+                  {region && repetitions > 0 && (
+                    <span className="ml-1.5 text-lcd-fg">×{repetitions + 1}</span>
+                  )}
                 </span>
               </span>
               <ChevronDown className="size-3.5" />

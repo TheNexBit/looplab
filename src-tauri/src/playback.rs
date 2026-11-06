@@ -20,6 +20,8 @@ pub struct PlaybackStatus {
     /// Seconds
     pub position: f64,
     pub playing: bool,
+    /// Loop repetitions started so far: grows by one at every wrap (the speed trainer counts them)
+    pub loops: u32,
     /// The output device failed: the track must be reopened
     pub device_lost: bool,
 }
@@ -37,6 +39,7 @@ pub fn spawn_status_loop(app: AppHandle) {
             let current = PlaybackStatus {
                 position: time::frames_to_seconds(status.position_frames, engine.sample_rate()),
                 playing: status.playing,
+                loops: u32::try_from(status.loops).unwrap_or(u32::MAX),
                 device_lost: engine.is_lost(),
             };
             if current.playing || last != Some(current) {

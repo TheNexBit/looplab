@@ -32,6 +32,11 @@ export const shortcuts = {
   commandPalette: "Ctrl+K",
   openSettings: "Ctrl+,",
   openFile: "Ctrl+O",
+  undo: "Ctrl+Z",
+  redo: "Ctrl+Y",
+  saveLoop: "Shift+L",
+  tapTempo: "T",
+  toggleMetronome: "K",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

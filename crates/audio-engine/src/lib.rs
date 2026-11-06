@@ -8,6 +8,7 @@
 //! → `pcm` (kept in memory) + `peaks` (waveform data).
 //! Playback: `engine` (handle) drives `render` (audio thread): reader → stretch → device.
 
+pub mod click;
 pub mod decode;
 pub mod dsp;
 pub mod engine;
@@ -18,6 +19,7 @@ mod render;
 pub mod resample;
 pub mod time;
 
+pub use click::ClickSettings;
 pub use dsp::channels::ChannelMode;
 pub use dsp::eq::{BANDS, Band, BandKind, EqSettings};
 pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status};

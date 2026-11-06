@@ -1,8 +1,11 @@
 import { pickAndOpenFile } from "@/features/library/pickFile";
+import { tapBeat, toggleMetronome } from "@/features/practice/actions";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
+import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { neighbourPoint, useMarkersStore } from "@/stores/markers";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
+import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { useViewStore } from "@/stores/view";
@@ -55,4 +58,9 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   commandPalette: () => useUiStore.getState().openDialog("palette"),
   openSettings: () => useUiStore.getState().openDialog("settings"),
   openFile: () => void pickAndOpenFile(),
+  undo: () => useHistoryStore.getState().undo(),
+  redo: () => useHistoryStore.getState().redo(),
+  saveLoop: () => useSavedLoopsStore.getState().saveCurrent(),
+  tapTempo: () => hasTrack() && tapBeat(),
+  toggleMetronome,
 };
