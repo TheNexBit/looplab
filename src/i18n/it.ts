@@ -43,6 +43,7 @@ export const it = {
     sections: "Sezioni",
     eq: "EQ",
     practice: "Pratica",
+    resize: "Trascina per allargare o stringere il pannello (doppio clic: larghezza normale)",
   },
   savedLoops: {
     title: "Loop salvati",
@@ -187,6 +188,7 @@ export const it = {
   },
   video: {
     title: "Video",
+    resize: "Trascina per cambiare la grandezza del video",
     none: "Nessun video",
     unavailable: "Video non disponibile",
     proxying: "Preparo una versione del video compatibile…",

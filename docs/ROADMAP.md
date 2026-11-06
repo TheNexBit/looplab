@@ -189,6 +189,10 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - **Battiti per battuta** (scheda Pratica, campo "Battuta", da 1 a 16, salvato nel progetto): griglia e
   metronomo accentano il primo battito di ogni battuta anche nei tempi dispari (3, 5, 7…). Prima era sempre 4.
 
+- **Pannello laterale ridimensionabile**: trascina il bordo sinistro (da 260 a 560 px, mai tanto da schiacciare
+  le forme d'onda), doppio clic per la larghezza normale; ricordata su questo PC. Le righe della scheda Pratica
+  vanno a capo quando il pannello è stretto. Maniglia unica `ResizeHandle`, usata anche dal pannello video.
+
 ## Dopo la prima versione
 
 Separazione AI degli strumenti, analisi dello spettro, esportazione WAV.

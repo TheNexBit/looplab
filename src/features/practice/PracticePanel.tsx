@@ -43,7 +43,7 @@ function TempoGroup() {
   const beatsPerBar = usePracticeStore((s) => s.beatsPerBar);
   return (
     <Group title={p.tempo} hint={p.bpmHint}>
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         <NumberField
           label={p.bpm}
           value={bpm ?? BPM.default}
@@ -71,7 +71,7 @@ function TempoGroup() {
           </Button>
         )}
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         <Tooltip label={p.gridHint}>
           <Chip
             active={showGrid}
@@ -112,7 +112,7 @@ function ClickGroup() {
   return (
     <>
       <Group title={p.countIn} hint={p.countInHint}>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1">
           {COUNT_IN_CHOICES.map((beats) => (
             <Chip
               key={beats}
@@ -127,7 +127,7 @@ function ClickGroup() {
         </div>
       </Group>
       <Group title={p.metronome} hint={p.metronomeHint}>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Chip
             active={settings.metronome}
             aria-pressed={settings.metronome}

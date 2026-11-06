@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, ExternalLink, PanelLeft, PanelTop } from "lucide-react";
-import type { PointerEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
+import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
@@ -22,33 +23,6 @@ const panelSize = (top: boolean, size: number) =>
   top
     ? { height: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px))` }
     : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
-
-/** Drag handle between the video and the waveforms. */
-function Resizer({ vertical }: { vertical: boolean }) {
-  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    const handle = event.currentTarget;
-    handle.setPointerCapture(event.pointerId);
-    const start = vertical ? event.clientY : event.clientX;
-    const initial = useVideoStore.getState().size;
-    const move = (e: globalThis.PointerEvent) =>
-      useVideoStore.getState().setSize(initial + (vertical ? e.clientY : e.clientX) - start);
-    const up = () => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", up);
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", up);
-  };
-  return (
-    <div
-      onPointerDown={onPointerDown}
-      className={cn(
-        "shrink-0 bg-border transition-colors hover:bg-accent",
-        vertical ? "h-1 cursor-row-resize" : "w-1 cursor-col-resize",
-      )}
-    />
-  );
-}
 
 /**
  * Docks the video panel above or beside the waveforms (`children`), resizable and
@@ -124,7 +98,14 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   return (
     <div className={cn("flex h-full overflow-hidden", top ? "flex-col" : "flex-row")}>
       {panel}
-      {!video.collapsed && <Resizer vertical={top} />}
+      {!video.collapsed && (
+        <ResizeHandle
+          vertical={top}
+          label={t.video.resize}
+          size={() => useVideoStore.getState().size}
+          onResize={(size) => useVideoStore.getState().setSize(size)}
+        />
+      )}
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>
     </div>
   );
