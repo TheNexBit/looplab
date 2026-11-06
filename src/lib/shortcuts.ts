@@ -13,6 +13,9 @@ export const shortcuts = {
   seekForward: "ArrowRight",
   seekBackFine: "Shift+ArrowLeft",
   seekForwardFine: "Shift+ArrowRight",
+  // Start and end of the track, as Home and End in Reaper and Ableton
+  goToStart: "Home",
+  goToEnd: "End",
   loopStart: "[",
   loopEnd: "]",
   loopToggle: "L",

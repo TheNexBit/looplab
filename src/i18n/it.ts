@@ -336,6 +336,8 @@ export const it = {
     seekForward: "Avanti 5 s",
     seekBackFine: "Indietro 1 s",
     seekForwardFine: "Avanti 1 s",
+    goToStart: "Inizio del brano",
+    goToEnd: "Fine del brano",
     loopStart: "Inizio loop",
     loopEnd: "Fine loop",
     loopToggle: "Loop on/off",
@@ -368,5 +370,7 @@ export const it = {
   keys: {
     Space: "Spazio",
     Shift: "Maiusc",
+    // As printed on Italian keyboards
+    End: "Fine",
   },
 } as const;
