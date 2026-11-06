@@ -15,7 +15,12 @@ type Gesture =
   | { kind: "press"; x: number; time: number; onBrace: boolean }
   | { kind: "select"; anchor: number }
   | { kind: "edge"; fixed: number; edge: number; x: number; moved: boolean }
-  | { kind: "move"; grab: number; length: number };
+  | { kind: "move"; grab: number; length: number }
+  /** Wheel button held down: the view follows the hand (start of the view when it was grabbed) */
+  | { kind: "pan"; x: number; start: number };
+
+/** Mouse button of the wheel (`PointerEvent.button`). */
+const WHEEL_BUTTON = 1;
 
 /**
  * The gestures of a DAW on the detailed waveform `element`, whose top `rulerHeight`
@@ -26,6 +31,7 @@ type Gesture =
  * - drag on the waveform or the ruler: a new loop (even over the current one)
  * - drag the loop bar in the ruler: move the loop; drag a loop edge: resize it
  * - wheel: zoom around the pointer; Shift+wheel: scroll
+ * - press the wheel and drag: move the view by hand, as in Reaper (playhead and loop stay)
  * With the magnet on, loop ends stick to nearby points. Returns a function that removes them.
  */
 export function attachWaveformGestures(element: HTMLElement, rulerHeight: number): () => void {
@@ -113,6 +119,14 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   };
 
   const onPointerDown = (event: PointerEvent) => {
+    if (event.button === WHEEL_BUTTON) {
+      // Windows would start its own auto-scroll (the round arrows icon): the drag is ours
+      event.preventDefault();
+      gesture = { kind: "pan", x: event.clientX, start: useViewStore.getState().start };
+      element.style.cursor = "grabbing";
+      element.setPointerCapture(event.pointerId);
+      return;
+    }
     if (event.button !== 0) return;
     // Marker flags handle their own presses
     if (event.target instanceof Element && event.target.closest("[data-no-seek]")) return;
@@ -137,6 +151,13 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   const onPointerMove = (event: PointerEvent) => {
     if (!gesture) {
       element.style.cursor = cursorFor(event);
+      return;
+    }
+    if (gesture.kind === "pan") {
+      // Dragging right shows earlier music, like pulling a sheet of paper
+      const { span } = useViewStore.getState();
+      const seconds = ((event.clientX - gesture.x) / element.clientWidth) * span;
+      useViewStore.getState().scrollTo(gesture.start - seconds);
       return;
     }
     const time = timeAt(event.clientX);
@@ -176,13 +197,22 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
     element.style.cursor = cursorFor(event);
   };
 
+  // The browser's own wheel-button actions (auto-scroll, middle-click paste) never start here
+  const blockWheelButton = (event: MouseEvent) => {
+    if (event.button === WHEEL_BUTTON) event.preventDefault();
+  };
+
   element.addEventListener("wheel", onWheel, { passive: false });
+  element.addEventListener("mousedown", blockWheelButton);
+  element.addEventListener("auxclick", blockWheelButton);
   element.addEventListener("pointerdown", onPointerDown);
   element.addEventListener("pointermove", onPointerMove);
   element.addEventListener("pointerup", onPointerUp);
   element.addEventListener("pointercancel", onPointerUp);
   return () => {
     element.removeEventListener("wheel", onWheel);
+    element.removeEventListener("mousedown", blockWheelButton);
+    element.removeEventListener("auxclick", blockWheelButton);
     element.removeEventListener("pointerdown", onPointerDown);
     element.removeEventListener("pointermove", onPointerMove);
     element.removeEventListener("pointerup", onPointerUp);

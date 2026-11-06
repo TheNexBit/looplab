@@ -221,6 +221,9 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Trascinare con la rotella premuta**, come in Reaper: sulla forma d'onda (e sul righello) la vista segue la
+  mano; playhead, loop e zoom restano, "segui il brano" si sospende 2 s. Lo scorrimento automatico di Windows
+  (icona a frecce) non parte più.
 - **Temi di colore** (Impostazioni → Aspetto, anche dalla palette "Tema: …"), come il menu Tema di Ableton:
   Rack (predefinito), Fosforo (verde, loop azzurro), Blu notte, Studio chiaro (pannelli chiari, display scuri),
   Alto contrasto (nero, bianco, giallo). Si applica subito, forma d'onda e vista note comprese, e resta su questo PC
