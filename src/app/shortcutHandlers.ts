@@ -66,6 +66,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   saveLoop: () => useSavedLoopsStore.getState().saveCurrent(),
   tapTempo: () => hasTrack() && tapBeat(),
   toggleMetronome,
+  toggleCountIn: () => useSettingsStore.getState().update({ countIn: !settings().countIn }),
   setDownbeat: () => hasTrack() && setDownbeatHere(),
   toggleNotes: () => useNotesStore.getState().toggle(),
   exportAudio: () => player().track?.complete && useUiStore.getState().openExport(),

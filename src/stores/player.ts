@@ -112,7 +112,8 @@ export function playbackClock(state: PlayerState = usePlayerStore.getState()) {
 
 /** Seconds of count-in, at the track's original speed, with the current settings. */
 function countInNow(): number {
-  return countInSeconds(useSettingsStore.getState().countInBars, currentGrid());
+  const { countIn, countInBars } = useSettingsStore.getState();
+  return countInSeconds(countIn ? countInBars : 0, currentGrid());
 }
 
 /** Length of the open track in seconds, 0 when none is open. */

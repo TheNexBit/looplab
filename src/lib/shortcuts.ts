@@ -42,6 +42,7 @@ export const shortcuts = {
   tapTempo: "T",
   setDownbeat: "Shift+T",
   toggleMetronome: "K",
+  toggleCountIn: "",
   // Render, as in Reaper
   exportAudio: "Ctrl+Alt+R",
   toggleNotes: "N",

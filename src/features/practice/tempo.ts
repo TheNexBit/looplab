@@ -1,7 +1,7 @@
 /** Tempo limits, in quarter notes per minute (as in DAWs, whatever the time signature). */
 export const BPM = { min: 30, max: 300, step: 1, default: 120 } as const;
-/** Bars offered for the count-in (0 = off), as in DAWs. */
-export const COUNT_IN_CHOICES = [0, 1, 2, 4] as const;
+/** Bars offered for the count-in, as in DAWs (it is switched off with its own key). */
+export const COUNT_IN_CHOICES = [1, 2, 4] as const;
 /** The time signatures offered first, like the menu of a DAW. */
 export const TIME_SIGNATURES = [
   [2, 4],

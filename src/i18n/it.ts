@@ -156,11 +156,11 @@ export const it = {
     downbeatHint:
       "Allinea griglia e metronomo: metti il playhead sul primo battito di una battuta.",
     countIn: "Conteggio",
-    countInHint:
-      "Battute contate prima del play e prima di ogni ripetizione del loop, come nei DAW.",
     oneBar: "1 battuta",
     bars: "battute",
-    countInOff: "No",
+    countInOn: "Attivo",
+    countInKeyHint:
+      "Conteggio on/off: battute contate prima del play e prima di ogni ripetizione. Tasto destro (o ▾ del Tempo): battute, volume e suoni.",
     metronome: "Metronomo",
     metronomeHint: "Un click su ogni battito; il primo di ogni battuta è più acuto.",
     volume: "Volume",
@@ -416,6 +416,7 @@ export const it = {
     tapTempo: "Batti il tempo",
     setDownbeat: "Primo battito qui",
     toggleMetronome: "Metronomo on/off",
+    toggleCountIn: "Conteggio on/off",
     exportAudio: "Esporta audio",
     toggleNotes: "Vista note on/off",
   },

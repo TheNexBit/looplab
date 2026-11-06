@@ -17,7 +17,9 @@ export interface Settings {
   snap: boolean;
   /** Stopping returns to where playback started (the last clicked point), like Reaper */
   returnToStart: boolean;
-  /** Bars counted in before playback and before every loop repetition (0 = off) */
+  /** Count-in before playback and before every loop repetition, switched like a DAW's key */
+  countIn: boolean;
+  /** Its length in bars, kept while it is off */
   countInBars: number;
   /** Click on every beat while playing */
   metronome: boolean;
@@ -49,7 +51,7 @@ export const SETTING_LIMITS = {
   seekStep: { min: 1, max: 30, step: 1 },
   fineSeekStep: { min: 0.1, max: 5, step: 0.1 },
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
-  countInBars: { min: 0, max: 4, step: 1 },
+  countInBars: { min: 1, max: 4, step: 1 },
   clickVolume: { min: 0, max: 1, step: 0.05 },
   accentLevel: { min: 0, max: 1, step: 0.05 },
   beatLevel: { min: 0, max: 1, step: 0.05 },
@@ -66,7 +68,8 @@ const DEFAULTS: Settings = {
   followPlayhead: true,
   snap: true,
   returnToStart: true,
-  countInBars: 0,
+  countIn: false,
+  countInBars: 1,
   metronome: false,
   clickVolume: 0.6,
   // The classic click: a high beep on the first beat, a lower one on the others
@@ -93,7 +96,7 @@ const isClickSound = (value: unknown): value is ClickSound =>
   CLICK_SOUNDS.includes(value as ClickSound);
 
 /** Keeps numbers inside their limits and drops values of the wrong type (e.g. an old file). */
-function sanitize(values: Partial<Settings>): Settings {
+export function sanitize(values: Partial<Settings>): Settings {
   const result = { ...DEFAULTS };
   for (const key of Object.keys(DEFAULTS) as (keyof Settings)[]) {
     const value = values[key];
@@ -106,6 +109,10 @@ function sanitize(values: Partial<Settings>): Settings {
     } else {
       (result as Record<string, unknown>)[key] = value;
     }
+  }
+  // Before the on/off key, 0 bars meant off: keep an existing count-in on
+  if (typeof values.countIn !== "boolean" && typeof values.countInBars === "number") {
+    result.countIn = values.countInBars > 0;
   }
   // A sound removed in a later version falls back to the classic click
   if (!isClickSound(result.accentSound)) result.accentSound = DEFAULTS.accentSound;

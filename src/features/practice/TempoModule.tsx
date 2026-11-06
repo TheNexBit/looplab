@@ -1,6 +1,6 @@
 import { Bell, ChevronDown, Crosshair, Grid3x3, Hand, X } from "lucide-react";
 import { Popover } from "radix-ui";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { floatingPanel } from "@/components/ui/menu";
@@ -111,8 +111,8 @@ function BpmDisplay() {
                   </Button>
                 </Popover.Close>
               </div>
-              {/* In narrow windows the count-in key is hidden: its settings live here */}
-              <div className="space-y-3 border-t border-border pt-3 xl:hidden">
+              {/* Count-in, volume and sounds: also here, and the only place in narrow windows */}
+              <div className="space-y-3 border-t border-border pt-3">
                 <ClickOptions />
               </div>
             </Popover.Content>
@@ -142,6 +142,7 @@ function BpmDisplay() {
 
 /** Count-in choices, click volume and the "needs a tempo" warning. */
 function ClickOptions() {
+  const countIn = useSettingsStore((s) => s.countIn);
   const bars = useSettingsStore((s) => s.countInBars);
   const volume = useSettingsStore((s) => s.clickVolume);
   const metronome = useSettingsStore((s) => s.metronome);
@@ -152,14 +153,23 @@ function ClickOptions() {
       <div className="space-y-1.5">
         <p className="panel-label">{p.countIn}</p>
         <div className="flex gap-1">
+          <Chip
+            active={countIn}
+            aria-pressed={countIn}
+            onClick={() => update({ countIn: !countIn })}
+          >
+            {p.countInOn}
+          </Chip>
+          <span className="mx-0.5 w-px self-stretch bg-border" aria-hidden />
           {COUNT_IN_CHOICES.map((choice) => (
             <Chip
               key={choice}
               active={bars === choice}
               aria-pressed={bars === choice}
-              onClick={() => update({ countInBars: choice })}
+              // Picking a length is choosing to count in: it switches the count-in on
+              onClick={() => update({ countInBars: choice, countIn: true })}
             >
-              {choice === 0 ? p.countInOff : choice === 1 ? p.oneBar : `${choice} ${p.bars}`}
+              {choice === 1 ? p.oneBar : `${choice} ${p.bars}`}
             </Chip>
           ))}
         </div>
@@ -180,33 +190,46 @@ function ClickOptions() {
       <div className="border-t border-border pt-3">
         <ClickSoundPicker />
       </div>
-      {!hasBpm && (bars > 0 || metronome) && (
+      {!hasBpm && (countIn || metronome) && (
         <p className="well rounded-control px-2 py-1.5 text-[11px] text-readout">{p.needsTempo}</p>
       )}
     </>
   );
 }
 
-/** Count-in and click volume behind one key, which shows the count-in it will play. */
+/**
+ * Count-in key, like Reaper's metronome key: a click switches it on and off (the lamp, the
+ * bars it will count shown on it); a right-click opens its options.
+ */
 function CountInKey() {
+  const on = useSettingsStore((s) => s.countIn);
   const bars = useSettingsStore((s) => s.countInBars);
-  const short = bars === 0 ? p.countInOff : `${bars} ${p.barsShort}`;
+  const [options, setOptions] = useState(false);
+  const short = `${bars} ${p.barsShort}`;
   return (
-    <Popover.Root>
-      <Tooltip label={p.countInHint}>
-        <Popover.Trigger asChild>
-          <Button
-            variant="hardware"
-            size="key"
-            led="amber"
-            active={bars > 0}
-            className="w-12"
-            aria-label={`${p.countIn}: ${short}`}
-          >
-            <span className="font-mono text-[10px] leading-none tabular">{short}</span>
-          </Button>
-        </Popover.Trigger>
-      </Tooltip>
+    <Popover.Root open={options} onOpenChange={setOptions}>
+      <Popover.Anchor asChild>
+        <span>
+          <Tooltip label={p.countInKeyHint} shortcut="toggleCountIn">
+            <Button
+              variant="hardware"
+              size="key"
+              led="amber"
+              active={on}
+              className="w-12"
+              aria-label={`${p.countIn}: ${short}`}
+              aria-pressed={on}
+              onClick={() => useSettingsStore.getState().update({ countIn: !on })}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                setOptions(true);
+              }}
+            >
+              <span className="font-mono text-[10px] leading-none tabular">{short}</span>
+            </Button>
+          </Tooltip>
+        </span>
+      </Popover.Anchor>
       <Popover.Portal>
         <Popover.Content
           side="top"

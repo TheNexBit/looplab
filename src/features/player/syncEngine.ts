@@ -31,7 +31,7 @@ function clickSettings() {
     bpm: bpm ?? 0,
     beatUnit,
     anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
-    countIn: settings.countInBars * beatsPerBar,
+    countIn: settings.countIn ? settings.countInBars * beatsPerBar : 0,
     metronome: settings.metronome,
     beatsPerBar,
     volume: settings.clickVolume,

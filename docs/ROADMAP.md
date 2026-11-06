@@ -221,6 +221,10 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Conteggio on/off come il tasto metronomo di Reaper**: clic sul tasto Conteggio = acceso/spento (spia ambra,
+  ricorda le battute, mostrate sul tasto: "2 bt"); tasto destro (o ▾ del Tempo) = battute 1/2/4, volume e suoni.
+  Scegliere le battute accende il conteggio. "No" non c'è più. Azione "Conteggio on/off" assegnabile a un tasto o
+  a un pedale MIDI. Le impostazioni vecchie restano valide (un conteggio acceso resta acceso).
 - **Suoni del metronomo** (tasto Conteggio della barra di trasporto, o ▾ del Tempo nelle finestre strette), come
   nelle impostazioni del metronomo di Reaper: per l'accento (1° battito) e per gli altri battiti si scelgono
   separatamente suono e livello; ▶ fa sentire il suono anche a brano fermo, e sceglierlo dal menu lo fa sentire

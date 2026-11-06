@@ -32,7 +32,7 @@ describe("playhead during a count-in between repetitions", () => {
     // One bar of 4/4 at 120 BPM: a 2 s count-in before every repetition
     usePracticeStore.getState().setBpm(120);
     usePracticeStore.getState().setTimeSignature(4, 4);
-    useSettingsStore.getState().update({ countInBars: 1, trainer: false });
+    useSettingsStore.getState().update({ countIn: true, countInBars: 1, trainer: false });
   });
   afterEach(() => vi.useRealTimers());
 
