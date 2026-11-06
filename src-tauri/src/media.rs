@@ -62,6 +62,11 @@ pub fn ffmpeg() -> Option<PathBuf> {
     None
 }
 
+/// Cache path of `source` in the `kind` folder, without extension (the caller adds what it needs).
+pub fn cache_stem(cache_dir: &Path, kind: &str, source: &Path) -> std::io::Result<PathBuf> {
+    Ok(cache_file(cache_dir, kind, source, "x")?.with_extension(""))
+}
+
 /// Cache file for `source`, named after its path, size and date: a changed file gets a new one.
 fn cache_file(
     cache_dir: &Path,

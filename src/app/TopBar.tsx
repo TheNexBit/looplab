@@ -105,6 +105,7 @@ export function TopBar() {
   const openDialog = useUiStore((s) => s.openDialog);
   const trackName = usePlayerStore((s) => s.track?.name);
   const notesOpen = useNotesStore((s) => s.open);
+  const complete = usePlayerStore((s) => s.track?.complete ?? false);
 
   return (
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(#202125,#1a1b1e)] px-3 shadow-[inset_0_-1px_0_rgb(255_255_255/0.03)]">
@@ -149,7 +150,7 @@ export function TopBar() {
         <Button
           variant="hardware"
           size="icon"
-          disabled={!trackName}
+          disabled={!trackName || !complete}
           onClick={() => useUiStore.getState().openExport()}
           aria-label={t.export.title}
         >

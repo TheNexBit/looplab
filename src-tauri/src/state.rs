@@ -1,18 +1,20 @@
 //! State shared by all commands.
 
-use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use audio_engine::spectrum::Analyzer;
-use audio_engine::{Engine, Pcm};
+use audio_engine::{Engine, Pcm, SharedPeaks};
 
 use crate::commands::AppError;
 
 #[derive(Default)]
 pub struct AppState {
     engine: Mutex<Option<Arc<Engine>>>,
-    /// Waveform data of the open track, already in the binary layout sent to the UI
-    peaks: Mutex<Option<Arc<Vec<u8>>>>,
+    /// Waveform data of the open track, growing while it loads
+    peaks: Mutex<Option<SharedPeaks>>,
+    /// Stops the background loading of the open track when another one is opened
+    load_cancel: Mutex<Option<Arc<AtomicBool>>>,
     /// Audio of the open track (shared with the engine), for exports and the spectrum
     track: Mutex<Option<Arc<Pcm>>>,
     /// Set to stop the export in progress
@@ -44,12 +46,24 @@ impl AppState {
         lock(&self.engine).clone()
     }
 
-    pub fn set_peaks(&self, bytes: Vec<u8>) {
-        *lock(&self.peaks) = Some(Arc::new(bytes));
+    pub fn set_peaks(&self, peaks: SharedPeaks) {
+        *lock(&self.peaks) = Some(peaks);
     }
 
-    pub fn peaks(&self) -> Option<Arc<Vec<u8>>> {
-        lock(&self.peaks).clone()
+    /// The waveform as loaded so far, in the binary layout sent to the UI.
+    pub fn peaks_bytes(&self) -> Option<Vec<u8>> {
+        let peaks = lock(&self.peaks).clone()?;
+        let bytes = lock(&peaks).peaks().to_bytes();
+        Some(bytes)
+    }
+
+    /// Stops the loader of the previous track and returns the flag for the next one.
+    pub fn new_load(&self) -> Arc<AtomicBool> {
+        let flag = Arc::new(AtomicBool::new(false));
+        if let Some(previous) = lock(&self.load_cancel).replace(Arc::clone(&flag)) {
+            previous.store(true, Ordering::Relaxed);
+        }
+        flag
     }
 
     pub fn set_track(&self, pcm: Arc<Pcm>) {

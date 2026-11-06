@@ -123,6 +123,27 @@ export function Overview() {
         ref={playheadRef}
         className="pointer-events-none absolute top-0 bottom-0 w-px bg-playhead"
       />
+      <LoadingShade />
+    </div>
+  );
+}
+
+/** Hatched over the part of the track still loading in the background, like Reaper's peaks. */
+function LoadingShade() {
+  const loading = usePlayerStore((s) =>
+    s.track && !s.track.complete && s.track.duration > 0
+      ? Math.min(1, s.track.ready / s.track.duration)
+      : null,
+  );
+  if (loading === null) return null;
+  return (
+    <div
+      className="pointer-events-none absolute top-0 right-0 bottom-0 flex items-center justify-center bg-[repeating-linear-gradient(135deg,rgb(255_255_255/0.05)_0_6px,transparent_6px_12px)]"
+      style={{ left: `${loading * 100}%` }}
+    >
+      <span className="font-mono text-[11px] text-fg-muted tabular">
+        {t.app.stillLoading} {Math.floor(loading * 100)}%
+      </span>
     </div>
   );
 }

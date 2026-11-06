@@ -3,7 +3,13 @@ import { create } from "zustand";
 import { CENTS, SEMITONES, SPEED } from "@/features/player/limits";
 import { countInSeconds } from "@/features/practice/tempo";
 import { fetchPeaks, type Peaks } from "@/features/waveform/peaks";
-import { type AppError, commands, type PlaybackStatus, type TrackInfo } from "@/lib/bindings";
+import {
+  type AppError,
+  commands,
+  type PlaybackStatus,
+  type TrackInfo,
+  type TrackLoading,
+} from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 import { advanceInLoop, loopWait, restartAt, useLoopStore } from "./loop";
 import { currentGrid } from "./practice";
@@ -16,8 +22,15 @@ const HOLD_MS = 150;
 const SNAP_SECONDS = 0.25;
 const BLEND = 0.2;
 
-/** The open track; `duration` is always a number here (JSON turns NaN into null). */
-export type Track = Omit<TrackInfo, "duration"> & { duration: number };
+/** The open track; `duration` and `ready` are always numbers here (JSON turns NaN into null). */
+export type Track = Omit<TrackInfo, "duration" | "ready"> & { duration: number; ready: number };
+
+/**
+ * While a track loads, how often the waveform is fetched again: every second for a song,
+ * every five for a three-hour lesson (its waveform data is ~65 MB).
+ */
+export const peaksRefreshMs = (duration: number) =>
+  Math.min(5000, Math.max(1000, (duration / 3600) * 1700));
 
 export type LoadState =
   | { kind: "idle" }
@@ -51,6 +64,8 @@ interface PlayerState {
   seek: (seconds: number) => void;
   seekBy: (delta: number) => void;
   applyStatus: (status: PlaybackStatus) => void;
+  /** Progress of the background loading of the open track */
+  applyLoading: (event: TrackLoading) => void;
   setSpeed: (speed: number) => void;
   setPitch: (semitones: number, cents: number) => void;
 }
@@ -110,6 +125,8 @@ function sendTempoAndPitch({ speed, semitones, cents }: PlayerState) {
 }
 
 let loadToken = 0;
+let peaksFetchedAt = 0;
+let peaksInFlight = false;
 
 export const usePlayerStore = create<PlayerState>((set, get) => {
   /**
@@ -159,7 +176,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       }
       const peaks = await fetchPeaks();
       if (token !== loadToken) return;
-      const track: Track = { ...result.data, duration: result.data.duration ?? 0 };
+      const track: Track = {
+        ...result.data,
+        duration: result.data.duration ?? 0,
+        ready: result.data.ready ?? 0,
+      };
+      peaksFetchedAt = performance.now();
       set({ track, peaks, load: { kind: "idle" }, cue: 0 });
       anchor(0, false);
       // The engine forgets the loop on a new track; speed and pitch carry over
@@ -222,6 +244,40 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
 
     seekBy: (delta) => get().seek(currentPosition() + delta),
+
+    applyLoading: (event) => {
+      const { track } = get();
+      if (!track || track.path !== event.path || track.complete) return;
+      const ready = event.ready ?? 0;
+      if (!event.done) {
+        set({ track: { ...track, ready } });
+        // The waveform fills in as the audio arrives, without flooding the IPC channel
+        const now = performance.now();
+        if (!peaksInFlight && now - peaksFetchedAt >= peaksRefreshMs(track.duration)) {
+          peaksInFlight = true;
+          peaksFetchedAt = now;
+          const token = loadToken;
+          void fetchPeaks().then((peaks) => {
+            peaksInFlight = false;
+            if (token === loadToken && !get().track?.complete) set({ peaks });
+          });
+        }
+        return;
+      }
+      const duration = event.duration ?? track.duration;
+      const token = loadToken;
+      set({ track: { ...track, ready: duration, duration, complete: true } });
+      useViewStore.getState().setDuration(duration);
+      void fetchPeaks().then((peaks) => {
+        if (token === loadToken) set({ peaks });
+      });
+      // Stopped early (damaged file): what was loaded stays playable, the banner says why
+      if (event.error && event.error !== "cancelled") {
+        set({
+          load: { kind: "error", path: track.path, error: { kind: event.error, detail: "" } },
+        });
+      }
+    },
 
     applyStatus: (status) => {
       if (status.loops !== get().loops) set({ loops: status.loops });

@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
 use audio_engine::{EngineError, LoadError};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// What went wrong, as a stable code: the UI turns it into a translated message.
-#[derive(Debug, Clone, Copy, Serialize, specta::Type)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub enum ErrorKind {
     FileNotFound,
@@ -22,6 +22,8 @@ pub enum ErrorKind {
     /// The user stopped it: not a problem, never shown as one
     Cancelled,
     ExportFailed,
+    /// The track is still loading in the background
+    StillLoading,
     Internal,
 }
 
@@ -59,6 +61,7 @@ impl From<LoadError> for AppError {
             LoadError::NoAudioTrack => ErrorKind::NoAudioTrack,
             LoadError::Empty => ErrorKind::EmptyFile,
             LoadError::Corrupt(_) => ErrorKind::CorruptFile,
+            LoadError::Cancelled => ErrorKind::Cancelled,
         };
         Self::new(kind, err)
     }

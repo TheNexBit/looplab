@@ -58,6 +58,7 @@ pub fn builder() -> Builder<tauri::Wry> {
         .events(collect_events![
             PlaybackStatus,
             VideoWindowHidden,
+            player::TrackLoading,
             MidiTrigger,
             MediaKey
         ])

@@ -66,6 +66,12 @@ pub async fn export_audio(
     let pcm = state
         .track()
         .ok_or_else(|| AppError::new(ErrorKind::NoTrack, "no track loaded"))?;
+    if !pcm.is_complete() {
+        return Err(AppError::new(
+            ErrorKind::StillLoading,
+            "track still loading",
+        ));
+    }
     let rate = pcm.sample_rate();
     let settings = ExportSettings {
         start: time::seconds_to_frames(request.start.max(0.0), rate),

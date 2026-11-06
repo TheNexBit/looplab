@@ -22,7 +22,7 @@ export function drawWaveform(
   const top = view.top ?? 0;
   const bandHeight = view.height - top;
   const middle = top + bandHeight / 2;
-  const scale = ((bandHeight / 2) * 0.92) / 127;
+  const scale = (((bandHeight / 2) * 0.92) / 127) * peaks.gain;
 
   const framesPerPixel = (view.span * peaks.sampleRate) / view.width;
   const level = pickLevel(peaks, framesPerPixel);

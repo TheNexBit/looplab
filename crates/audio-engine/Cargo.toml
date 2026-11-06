@@ -19,6 +19,8 @@ rtrb = "0.4.1"
 rubato = "5.0.1"
 # Already used by rubato: the note view reuses it
 realfft = "3.5.1"
+# Decoded tracks live in cache files mapped into memory, not in RAM
+memmap2 = "0.9.12"
 symphonia = { version = "0.6.1", default-features = false, features = [
   "aac",
   "alac",

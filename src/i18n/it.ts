@@ -4,6 +4,7 @@ import type { CacheKind, ErrorKind } from "@/lib/bindings";
 export const it = {
   app: {
     noFile: "Nessun file aperto",
+    stillLoading: "Caricamento",
     open: "Apri",
     searchActions: "Cerca un'azione…",
     toggleSidePanel: "Pannello laterale",
@@ -38,6 +39,7 @@ export const it = {
     projectFile:
       "Il file .looplab.json di questo brano non si legge o non si scrive: marker e sezioni non vengono salvati.",
     cancelled: "Operazione annullata.",
+    stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",
@@ -276,11 +278,12 @@ export const it = {
       title: "Dati",
       cache: "Conversioni di FFmpeg",
       cacheHint:
-        "Audio estratto e video resi compatibili: se servono di nuovo, Looplab li rifà da solo. Il video sullo schermo resta.",
-      kinds: { audio: "Audio estratto", video: "Video compatibili" } satisfies Record<
-        CacheKind,
-        string
-      >,
+        "Brani già letti (si riaprono all'istante; al massimo 10 GB, i più vecchi si tolgono da soli), audio estratto e video resi compatibili. Se servono di nuovo, Looplab li rifà da solo; il brano aperto resta.",
+      kinds: {
+        decoded: "Brani pronti all'ascolto",
+        audio: "Audio estratto",
+        video: "Video compatibili",
+      } satisfies Record<CacheKind, string>,
       files: "file",
       clear: "Svuota",
       freed: "Spazio liberato:",

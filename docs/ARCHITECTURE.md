@@ -9,8 +9,15 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 
 - **`crates/audio-engine`**: libreria senza dipendenze da Tauri: decodifica, thread audio real-time,
   DSP e dati della forma d'onda. Si testa da sola con `cargo test`.
-  - Caricamento (`load.rs`): `decode.rs` (file → stereo f32, pacchetto per pacchetto) →
-    `resample.rs` (→ frequenza della scheda audio, a blocchi) → `pcm.rs` (16 bit in memoria) + `peaks.rs`.
+  - Caricamento (`load.rs`, come in Reaper): `open` legge i primi 3 s e restituisce il brano già suonabile;
+    un thread `looplab-loader` continua: `decode.rs` (file → stereo f32) → `resample.rs` (→ frequenza della
+    scheda audio) → `pcm.rs` + `peaks.rs` (`PeaksBuilder`, forma d'onda che cresce), con `LoadEvent` di
+    avanzamento. `pcm.rs` tiene l'audio a 16 bit in un file della cache mappato in memoria (`memmap2`):
+    il loader aggiunge frame e pubblica `ready` (Release), il thread audio legge solo sotto `ready` (Acquire),
+    oltre c'è silenzio. A fine caricamento l'intestazione del file è segnata completa e la forma d'onda è
+    salvata accanto (`.peaks`): la prossima apertura le riusa subito. File di lunghezza sconosciuta, o cache
+    occupata, si decodificano in memoria come prima (`load`). I valori dei picchi sono a scala fissa
+    (±127 = fondo scala): l'interfaccia ingrandisce i brani bassi (`gain` in `peaks.ts`).
   - Riproduzione: `engine.rs` è la maniglia usata dall'app (comandi, `LoopSettings`, limiti di velocità);
     `render.rs` vive nella callback cpal: lettore con loop → stretch → dissolvenze → scheda audio.
     Comandi via ring buffer rtrb, posizione/stato via atomici, brani sostituiti liberati fuori dal thread audio.
@@ -43,7 +50,10 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     atomica (file temporaneo + rinomina) dei file JSON dell'app, usata da progetti, recenti e finestre. I valori predefiniti vivono solo qui
     (`default_project`). EQ e canali usano direttamente i tipi di `audio-engine` (feature `typed`).
   - `media.rs`: FFmpeg facoltativo (estrazione audio, proxy H.264, codifica FLAC/MP3 degli export), cache in
-    `paths::cache_dir`. `cache.rs`: spazio occupato e "Svuota" (salta i file in uso).
+    `paths::cache_dir`. `cache.rs`: spazio occupato e "Svuota" (salta i file in uso); brani decodificati in
+    `cache/decoded/<hash>-<frequenza>.pcm|.peaks`, al massimo 10 GB (`trim_decoded` toglie i più vecchi).
+  - `commands/player.rs`: `open_file` torna dopo i primi secondi; l'evento `TrackLoading` segue il resto
+    (l'interfaccia aggiorna la forma d'onda ogni 1–5 s secondo la lunghezza, e alla fine).
   - `log.rs`: registro degli errori in `logs/looplab.log` (avvio, errori dei comandi tramite `AppError::new`,
     panic, errori dell'interfaccia via `log_ui_error`).
   - `commands/export.rs`, `commands/spectrum.rs`, `commands/data.rs`: export, vista note, cache e registro.

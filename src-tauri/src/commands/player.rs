@@ -14,14 +14,34 @@ use crate::{media, paths};
 pub struct TrackInfo {
     pub path: String,
     pub name: String,
-    /// Seconds
+    /// Seconds; while the track still loads, the length the file announces
     pub duration: f64,
     /// Rate of the original file
     pub source_sample_rate: u32,
+    /// False while the rest of the track is loading in the background (see `TrackLoading`)
+    pub complete: bool,
+    /// Seconds already playable
+    pub ready: f64,
 }
 
-/// Decodes a file in the background and makes it the current track (paused at the start).
-/// `on_progress` receives values from 0 to 1.
+/// Background loading of the open track: a few times a second, and once when it is done.
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackLoading {
+    pub path: String,
+    /// Seconds already playable
+    pub ready: f64,
+    pub done: bool,
+    /// Exact length once done
+    pub duration: f64,
+    /// Set when loading stopped early: what was loaded stays playable
+    pub error: Option<ErrorKind>,
+}
+
+/// Opens a file and makes it the current track (paused at the start), like Reaper: it returns
+/// after the first seconds, the rest loads in the background (`TrackLoading` events), and the
+/// decoded audio stays in the cache so the next opening is instant.
+/// `on_progress` receives values from 0 to 1 while FFmpeg converts files symphonia cannot read.
 #[tauri::command]
 #[specta::specta]
 pub async fn open_file(
@@ -35,20 +55,72 @@ pub async fn open_file(
     let file = PathBuf::from(&path);
     let name = file_name(&file);
     let cache = paths::cache_dir(&app).map_err(AppError::internal)?;
+    let cancel = state.new_load();
 
-    let loaded = tauri::async_runtime::spawn_blocking(move || -> Result<_, AppError> {
-        let report = |fraction: f32| {
-            let _ = on_progress.send(fraction);
+    let events_app = app.clone();
+    let events_path = path.clone();
+    let on_event = move |event: audio_engine::LoadEvent| {
+        let seconds = |frames: u64| time::frames_to_seconds(frames, output_rate);
+        let loading = match event {
+            audio_engine::LoadEvent::Progress { ready_frames } => TrackLoading {
+                path: events_path.clone(),
+                ready: seconds(ready_frames),
+                done: false,
+                duration: 0.0,
+                error: None,
+            },
+            audio_engine::LoadEvent::Done { frames, error } => TrackLoading {
+                path: events_path.clone(),
+                ready: seconds(frames),
+                done: true,
+                duration: seconds(frames),
+                error: error.map(|err| AppError::from(err).kind),
+            },
         };
-        match audio_engine::load(&file, output_rate, report) {
+        let _ = tauri_specta::Event::emit(&loading, &events_app);
+    };
+
+    let opened = tauri::async_runtime::spawn_blocking(move || -> Result<_, AppError> {
+        let stem = |source: &Path| -> Result<PathBuf, AppError> {
+            let stem = media::cache_stem(&cache, crate::cache::CacheKind::Decoded.folder(), source)
+                .map_err(AppError::internal)?;
+            let stem = stem.with_file_name(format!(
+                "{}-{output_rate}",
+                stem.file_name()
+                    .map(|n| n.to_string_lossy())
+                    .unwrap_or_default()
+            ));
+            // Room for this track (estimated from the file size: decoded audio is never
+            // smaller than ten times an mp3), then mark its files as just used
+            let size = std::fs::metadata(source).map_or(0, |m| m.len());
+            crate::cache::trim_decoded(&cache, size.saturating_mul(10));
+            let (audio, peaks) = audio_engine::load::cache_files(&stem);
+            crate::cache::touch(&audio);
+            crate::cache::touch(&peaks);
+            Ok(stem)
+        };
+        let cache_stem = stem(&file)?;
+        match audio_engine::open(
+            &file,
+            output_rate,
+            &cache_stem,
+            cancel.clone(),
+            on_event.clone(),
+        ) {
             // symphonia cannot read it (e.g. Opus): let FFmpeg extract the audio, then retry
             Err(LoadError::UnsupportedCodec | LoadError::UnsupportedFormat)
                 if media::ffmpeg().is_some() =>
             {
-                let extracted = media::extract_audio(&cache, &file, |p| report(p * 0.5))?;
-                Ok(audio_engine::load(&extracted, output_rate, |p| {
-                    report(0.5 + p * 0.5)
-                })?)
+                let extracted = media::extract_audio(&cache, &file, |p| {
+                    let _ = on_progress.send(p);
+                })?;
+                Ok(audio_engine::open(
+                    &extracted,
+                    output_rate,
+                    &cache_stem,
+                    cancel,
+                    on_event,
+                )?)
             }
             other => Ok(other?),
         }
@@ -59,12 +131,14 @@ pub async fn open_file(
     let info = TrackInfo {
         path,
         name,
-        duration: loaded.pcm.duration_seconds(),
-        source_sample_rate: loaded.source_sample_rate,
+        duration: opened.pcm.duration_seconds(),
+        source_sample_rate: opened.source_sample_rate,
+        complete: opened.pcm.is_complete(),
+        ready: time::frames_to_seconds(opened.pcm.ready_frames(), output_rate),
     };
-    state.set_peaks(loaded.peaks.to_bytes());
-    state.set_track(std::sync::Arc::clone(&loaded.pcm));
-    engine.set_track(loaded.pcm);
+    state.set_peaks(opened.peaks);
+    state.set_track(std::sync::Arc::clone(&opened.pcm));
+    engine.set_track(opened.pcm);
     super::library::remember(&app, &info.path);
     Ok(info)
 }

@@ -8,8 +8,10 @@ export const commands = {
 	/**  Basic app information, also used to verify the typed Rust ↔ UI bridge. */
 	appInfo: () => __TAURI_INVOKE<AppInfo>("app_info"),
 	/**
-	 *  Decodes a file in the background and makes it the current track (paused at the start).
-	 *  `on_progress` receives values from 0 to 1.
+	 *  Opens a file and makes it the current track (paused at the start), like Reaper: it returns
+	 *  after the first seconds, the rest loads in the background (`TrackLoading` events), and the
+	 *  decoded audio stays in the cache so the next opening is instant.
+	 *  `on_progress` receives values from 0 to 1 while FFmpeg converts files symphonia cannot read.
 	 */
 	openFile: (path: string, onProgress: Channel<number | null>) => typedError<TrackInfo, AppError>(__TAURI_INVOKE("open_file", { path, onProgress })),
 	play: () => typedError<null, AppError>(__TAURI_INVOKE("play")),
@@ -75,6 +77,7 @@ export const events = {
 	mediaKey: makeEvent<MediaKey, MediaKey>("media-key"),
 	midiTrigger: makeEvent<MidiTrigger, MidiTrigger>("midi-trigger"),
 	playbackStatus: makeEvent<PlaybackStatus, PlaybackStatus>("playback-status"),
+	trackLoading: makeEvent<TrackLoading_Serialize, TrackLoading_Deserialize>("track-loading"),
 	videoWindowHidden: makeEvent<VideoWindowHidden, VideoWindowHidden>("video-window-hidden"),
 };
 
@@ -108,7 +111,9 @@ export type CacheKind =
 /**  Audio FFmpeg extracted from files symphonia cannot read */
 "audio" | 
 /**  H.264 copies of videos WebView2 cannot play */
-"video";
+"video" | 
+/**  Decoded audio and waveform of every track opened, so it reopens at once */
+"decoded";
 
 export type CacheUsage = {
 	kind: CacheKind,
@@ -174,7 +179,9 @@ export type EqSettings_Serialize = {
 /**  What went wrong, as a stable code: the UI turns it into a translated message. */
 export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" | "unsupportedCodec" | "noAudioTrack" | "emptyFile" | "corruptFile" | "audioDevice" | "noTrack" | "projectFile" | "ffmpegMissing" | "ffmpegFailed" | 
 /**  The user stopped it: not a problem, never shown as one */
-"cancelled" | "exportFailed" | "internal";
+"cancelled" | "exportFailed" | 
+/**  The track is still loading in the background */
+"stillLoading" | "internal";
 
 /**  File formats, like the render formats of a DAW. FLAC and MP3 need FFmpeg. */
 export type ExportFormat = "wav16" | "wav24" | "flac" | "mp3";
@@ -411,10 +418,41 @@ export type SpectrumRequest = {
 export type TrackInfo = {
 	path: string,
 	name: string,
-	/**  Seconds */
+	/**  Seconds; while the track still loads, the length the file announces */
 	duration: number | null,
 	/**  Rate of the original file */
 	sourceSampleRate: number,
+	/**  False while the rest of the track is loading in the background (see `TrackLoading`) */
+	complete: boolean,
+	/**  Seconds already playable */
+	ready: number | null,
+};
+
+/**  Background loading of the open track: a few times a second, and once when it is done. */
+export type TrackLoading = TrackLoading_Serialize | TrackLoading_Deserialize;
+
+/**  Background loading of the open track: a few times a second, and once when it is done. */
+export type TrackLoading_Deserialize = {
+	path: string,
+	/**  Seconds already playable */
+	ready: number | null,
+	done: boolean,
+	/**  Exact length once done */
+	duration: number | null,
+	/**  Set when loading stopped early: what was loaded stays playable */
+	error?: ErrorKind | null,
+};
+
+/**  Background loading of the open track: a few times a second, and once when it is done. */
+export type TrackLoading_Serialize = {
+	path: string,
+	/**  Seconds already playable */
+	ready: number | null,
+	done: boolean,
+	/**  Exact length once done */
+	duration: number | null,
+	/**  Set when loading stopped early: what was loaded stays playable */
+	error: ErrorKind | null,
 };
 
 /**  The detached video window was closed by the user (it is only hidden): dock the video again. */

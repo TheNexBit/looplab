@@ -14,6 +14,7 @@ Questo file è mostrato in "Informazioni" e incluso nell'installer.
 | cpal                            | uscita audio                   | Apache 2.0            | https://github.com/RustAudio/cpal                        |
 | rubato                          | conversione di frequenza       | MIT o Apache 2.0      | https://github.com/HEnquist/rubato                       |
 | realfft, rustfft                | vista note (spettro)           | MIT o Apache 2.0      | https://github.com/HEnquist/realfft                      |
+| memmap2                         | audio dei brani su disco       | MIT o Apache 2.0      | https://github.com/RazrFalcon/memmap2-rs                 |
 | rtrb                            | comunicazione col thread audio | MIT o Apache 2.0      | https://github.com/mgeier/rtrb                           |
 | midir                           | pedali e controller MIDI       | MIT                   | https://github.com/Boddlnagg/midir                       |
 | Tauri e i suoi plugin           | finestra dell'app              | MIT o Apache 2.0      | https://tauri.app                                        |

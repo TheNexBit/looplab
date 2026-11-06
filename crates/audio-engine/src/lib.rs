@@ -27,7 +27,7 @@ pub use dsp::channels::ChannelMode;
 pub use dsp::eq::{BANDS, Band, BandKind, EqSettings};
 pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status};
 pub use export::{ExportError, ExportSettings};
-pub use load::{LoadError, LoadedTrack, load};
+pub use load::{LoadError, LoadEvent, LoadedTrack, OpenedTrack, SharedPeaks, load, open};
 pub use pcm::Pcm;
 pub use peaks::Peaks;
 pub use wav::BitDepth;

@@ -276,7 +276,11 @@ export function ExportDialog() {
 
         <div className="flex items-center gap-3 pt-3">
           <span className="flex-1 font-mono text-xs text-fg-muted tabular">
-            {region ? `${x.length} ${formatTime(length)}` : x.sourceGone}
+            {!track?.complete
+              ? t.errors.stillLoading
+              : region
+                ? `${x.length} ${formatTime(length)}`
+                : x.sourceGone}
           </span>
           {running ? (
             <Button variant="hardware" onClick={() => void commands.cancelExport()}>
@@ -286,7 +290,7 @@ export function ExportDialog() {
             <Button
               variant="primary"
               onClick={() => void start()}
-              disabled={!region || formatMissing || !track}
+              disabled={!region || formatMissing || !track?.complete}
             >
               <Download className="size-4" />
               {x.start}

@@ -221,6 +221,15 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - Scelte fatte da me: nomi delle note in lettere (C D E…) come nei DAW; la vista note parte chiusa; nessuna
   normalizzazione del volume nell'export (si sente come in Looplab).
 
+- **Inizio e fine del brano**: tasti Home e Fine (come in Reaper e Ableton), anche nella palette e assegnabili.
+- **Apertura come in Reaper** (dopo la misura: una lezione di 3 ore chiedeva ~20 s di attesa e ~2 GB di RAM):
+  si suona dopo i primi 3 secondi decodificati, il resto si carica in sottofondo e la forma d'onda si riempie
+  da sola (la parte mancante è tratteggiata nella panoramica, con la percentuale). L'audio decodificato sta in un
+  file della cache letto dal disco (non più in RAM) e la riapertura dello stesso file è istantanea.
+  Misurato su 3 ore di AAC: suonabile in 0,01 s, tutto caricato in 12 s (78 s nella versione di sviluppo),
+  seconda apertura immediata. Cache dei brani pronti al massimo 10 GB, i più vecchi si tolgono da soli
+  (Impostazioni → Dati la mostra e la svuota). L'export aspetta che il brano sia caricato tutto.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

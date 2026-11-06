@@ -16,16 +16,19 @@ pub enum CacheKind {
     Audio,
     /// H.264 copies of videos WebView2 cannot play
     Video,
+    /// Decoded audio and waveform of every track opened, so it reopens at once
+    Decoded,
 }
 
 impl CacheKind {
-    pub const ALL: [Self; 2] = [Self::Audio, Self::Video];
+    pub const ALL: [Self; 3] = [Self::Decoded, Self::Audio, Self::Video];
 
     /// Subfolder of the cache, as used by `media::cache_file`.
     pub fn folder(self) -> &'static str {
         match self {
             Self::Audio => "audio",
             Self::Video => "video",
+            Self::Decoded => "decoded",
         }
     }
 }
@@ -83,6 +86,36 @@ pub fn clear(cache_dir: &Path, keep: &[PathBuf]) -> u64 {
     freed
 }
 
+/// Most space the decoded tracks may take: about 15 hours of audio at 48 kHz.
+pub const DECODED_LIMIT: u64 = 10 * 1024 * 1024 * 1024;
+
+/// Makes room for `needed` more bytes of decoded audio by deleting the tracks opened longest
+/// ago (by file date, refreshed at every opening). Files in use cannot be deleted and stay.
+pub fn trim_decoded(cache_dir: &Path, needed: u64) {
+    let mut found = files(&cache_dir.join(CacheKind::Decoded.folder()));
+    let mut total: u64 = found.iter().map(|(_, size)| size).sum();
+    if total + needed <= DECODED_LIMIT {
+        return;
+    }
+    let modified = |path: &Path| fs::metadata(path).and_then(|m| m.modified()).ok();
+    found.sort_by_key(|(path, _)| modified(path));
+    for (path, size) in found {
+        if total + needed <= DECODED_LIMIT {
+            break;
+        }
+        if fs::remove_file(&path).is_ok() {
+            total -= size;
+        }
+    }
+}
+
+/// Marks a cache file as just used, so trimming keeps it longest.
+pub fn touch(path: &Path) {
+    if let Ok(file) = fs::File::options().write(true).open(path) {
+        let _ = file.set_modified(std::time::SystemTime::now());
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -98,8 +131,8 @@ mod tests {
         fs::write(dir.join("video/c.mp4"), [0; 30]).unwrap();
 
         let usage = usage(&dir);
-        assert_eq!(usage[0].bytes, 100.0);
-        assert_eq!((usage[1].bytes, usage[1].files), (80.0, 2));
+        assert_eq!(usage[1].bytes, 100.0);
+        assert_eq!((usage[2].bytes, usage[2].files), (80.0, 2));
 
         assert_eq!(clear(&dir, &[dir.join("video/c.mp4")]), 150);
         assert!(dir.join("video/c.mp4").is_file());

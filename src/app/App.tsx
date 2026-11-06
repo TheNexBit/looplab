@@ -40,6 +40,9 @@ export function App() {
     const unlisten = events.playbackStatus.listen((event) =>
       usePlayerStore.getState().applyStatus(event.payload),
     );
+    const unlistenLoading = events.trackLoading.listen((event) =>
+      usePlayerStore.getState().applyLoading(event.payload),
+    );
     // Pinch and Ctrl+wheel must never zoom the whole page
     const blockPageZoom = (event: WheelEvent) => {
       if (event.ctrlKey) event.preventDefault();
@@ -54,6 +57,7 @@ export function App() {
     const stopDiary = startDiary();
     return () => {
       void unlisten.then((stop) => stop());
+      void unlistenLoading.then((stop) => stop());
       window.removeEventListener("wheel", blockPageZoom);
       stopEngineSync();
       stopProjectSync();

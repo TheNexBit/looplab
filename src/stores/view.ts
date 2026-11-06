@@ -43,6 +43,8 @@ interface ViewState extends ViewWindow {
    */
   manualUntil: number;
   reset: (duration: number) => void;
+  /** The track length changed (it finished loading): keeps the zoom and position */
+  setDuration: (duration: number) => void;
   zoom: (factor: number, anchor: number) => void;
   scrollBy: (seconds: number) => void;
   scrollTo: (start: number) => void;
@@ -71,6 +73,10 @@ export const useViewStore = create<ViewState>((set, get) => {
     reset: (duration) => {
       const view = clampView({ start: 0, span: DEFAULT_SPAN }, duration);
       set({ duration, ...view, target: view, manualUntil: 0 });
+    },
+    setDuration: (duration) => {
+      const view = clampView(get(), duration);
+      set({ duration, ...view, target: clampView(get().target, duration) });
     },
     zoom: (factor, anchor) =>
       set({ target: zoomWindow(get().target, factor, anchor, get().duration) }),

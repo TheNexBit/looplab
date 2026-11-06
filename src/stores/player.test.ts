@@ -14,7 +14,14 @@ describe("playhead during a count-in between repetitions", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["performance", "Date"] });
     usePlayerStore.setState({
-      track: { path: "x", name: "x", duration: 60, sourceSampleRate: 48_000 },
+      track: {
+        path: "x",
+        name: "x",
+        duration: 60,
+        sourceSampleRate: 48_000,
+        complete: true,
+        ready: 60,
+      },
       playing: true,
       speed: 1,
       anchorPosition: 13,

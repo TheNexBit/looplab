@@ -68,5 +68,5 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   toggleMetronome,
   setDownbeat: () => hasTrack() && setDownbeatHere(),
   toggleNotes: () => useNotesStore.getState().toggle(),
-  exportAudio: () => hasTrack() && useUiStore.getState().openExport(),
+  exportAudio: () => player().track?.complete && useUiStore.getState().openExport(),
 };
