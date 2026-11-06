@@ -6,7 +6,7 @@ vi.mock("@/lib/bindings", () => ({
 }));
 
 const { useLoopStore } = await import("./loop");
-const { currentPosition, usePlayerStore } = await import("./player");
+const { currentPosition, playbackClock, usePlayerStore } = await import("./player");
 const { usePracticeStore } = await import("./practice");
 const { useSettingsStore } = await import("./settings");
 
@@ -43,6 +43,17 @@ describe("playhead during a count-in between repetitions", () => {
     // 1 s to the loop end + 2 s of count-in: from 3 s after the anchor the repetition plays on
     vi.advanceTimersByTime(2_100);
     expect(currentPosition()).toBeCloseTo(11, 5);
+  });
+
+  it("tells the video to hold still during the count-in, then to play", () => {
+    vi.advanceTimersByTime(1_500);
+    const waiting = playbackClock();
+    expect(waiting.playing).toBe(false);
+    expect(waiting.position).toBe(10);
+    expect(waiting.wait).toBeCloseTo(1.5, 5);
+    vi.advanceTimersByTime(2_000);
+    expect(playbackClock().playing).toBe(true);
+    expect(playbackClock().wait).toBe(0);
   });
 
   it("keeps waiting when the speed changes in the middle of it (speed trainer)", () => {

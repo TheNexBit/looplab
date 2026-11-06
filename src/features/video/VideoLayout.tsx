@@ -4,16 +4,11 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
-import { currentPosition, usePlayerStore } from "@/stores/player";
+import { playbackClock } from "@/stores/player";
 import { useVideoStore } from "@/stores/video";
 import { detachVideo } from "./detach";
 import { VideoView } from "./VideoView";
 import { fallBackToProxy } from "./videoLoader";
-
-const clock = () => {
-  const { playing, speed } = usePlayerStore.getState();
-  return { position: currentPosition(), playing, speed };
-};
 
 /**
  * Space always left to the waveforms, in CSS pixels: overview, section lane and a usable
@@ -115,7 +110,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
               status={video.status}
               progress={video.progress}
               error={video.error}
-              clock={clock}
+              clock={playbackClock}
               onUnsupported={() => void fallBackToProxy()}
               onNoPicture={() => video.setStatus("none", { src: null })}
               onReady={() => video.setStatus("ready")}

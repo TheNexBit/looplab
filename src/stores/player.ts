@@ -80,6 +80,21 @@ export function currentPosition(state: PlayerState = usePlayerStore.getState()):
   return predict(state).position;
 }
 
+/**
+ * What the video follows: the playhead, and whether the music is actually moving. During a
+ * count-in or the gap between repetitions playback is on but the music waits: the picture
+ * must wait too, for `wait` more (real) seconds.
+ */
+export function playbackClock(state: PlayerState = usePlayerStore.getState()) {
+  const { position, wait } = predict(state);
+  return {
+    position,
+    playing: state.playing && wait === 0,
+    speed: state.speed,
+    wait: state.playing ? wait / state.speed : 0,
+  };
+}
+
 /** Seconds of count-in, at the track's original speed, with the current settings. */
 export function countInNow(): number {
   return countInSeconds(useSettingsStore.getState().countIn, usePracticeStore.getState().bpm);

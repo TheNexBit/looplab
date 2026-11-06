@@ -1,7 +1,7 @@
 import { emitTo } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { events } from "@/lib/bindings";
-import { currentPosition, usePlayerStore } from "@/stores/player";
+import { playbackClock, usePlayerStore } from "@/stores/player";
 import { useVideoStore, type VideoStatus } from "@/stores/video";
 
 /** Must match `window::VIDEO` in src-tauri/src/window.rs. */
@@ -18,12 +18,13 @@ export interface VideoSyncPayload {
   position: number;
   playing: boolean;
   speed: number;
+  /** Seconds the music still waits (count-in, gap) before `position` starts moving */
+  wait: number;
 }
 
 function payload(): VideoSyncPayload {
   const { src, status, progress } = useVideoStore.getState();
-  const { playing, speed } = usePlayerStore.getState();
-  return { src, status, progress, position: currentPosition(), playing, speed };
+  return { src, status, progress, ...playbackClock() };
 }
 
 /** Shows the pre-created video window (instant: it already exists, hidden). */

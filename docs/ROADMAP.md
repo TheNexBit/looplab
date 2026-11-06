@@ -182,6 +182,10 @@ la successiva), nessun riordino manuale (l'ordine √® quello del brano), velocit√
   ultimi 7 giorni; "Tutti i brani" (anche dalla palette) apre l'elenco e riapre un brano con un clic.
 - Crediti aggiornati: font Inter e JetBrains Mono (SIL OFL 1.1, testo incluso), Fontsource, midir.
 
+- Correzione dopo le prove: durante il conteggio il video scattava (la musica aspetta ma il video andava
+  avanti e veniva riportato indietro). Ora il video segue `playbackClock`: fermo sul fotogramma giusto durante
+  conteggio e pausa tra le ripetizioni, riparte con la musica; la finestra video staccata riceve quanto manca.
+
 ## Dopo la prima versione
 
 Separazione AI degli strumenti, analisi dello spettro, esportazione WAV.

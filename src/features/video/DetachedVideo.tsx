@@ -10,7 +10,7 @@ import { VideoView } from "./VideoView";
  */
 export function DetachedVideo() {
   const [state, setState] = useState<VideoSyncPayload | null>(null);
-  const received = useRef({ position: 0, playing: false, speed: 1, at: 0 });
+  const received = useRef({ position: 0, playing: false, speed: 1, wait: 0, at: 0 });
 
   useEffect(() => {
     const unlisten = listen<VideoSyncPayload>(VIDEO_SYNC_EVENT, ({ payload }) => {
@@ -29,9 +29,12 @@ export function DetachedVideo() {
   }, []);
 
   const clock = (): Clock => {
-    const { position, playing, speed, at } = received.current;
-    const elapsed = playing ? ((performance.now() - at) / 1000) * speed : 0;
-    return { position: position + elapsed, playing, speed };
+    const { position, playing, speed, wait, at } = received.current;
+    // A count-in that was under way when the update was sent ends by itself
+    const since = (performance.now() - at) / 1000;
+    const moving = (playing && wait === 0) || (wait > 0 && since >= wait);
+    const elapsed = moving ? (since - wait) * speed : 0;
+    return { position: position + elapsed, playing: moving, speed };
   };
 
   return (
