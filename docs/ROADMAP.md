@@ -351,6 +351,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   **elastici** (`pan` / `settle` in `stores/view.ts`): oltre 0:00 o la fine la vista segue ancora la mano, sempre
   più dura e al massimo per 1/5 della vista, la zona senza musica è ombreggiata e al rilascio torna al bordo.
 
+- **Ridimensionare il video subito**: la barra tra video e forme d'onda parte dalla misura che si vede, non da
+  quella salvata (più grande, se la finestra era più alta: il primo tratto del trascinamento non muoveva niente).
+  A ogni limite (video minimo, forme d'onda minime, pannello laterale) il trascinamento si riaggancia, così
+  tornando indietro si muove subito. Le barre prendono il mouse anche qualche pixel intorno.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un
