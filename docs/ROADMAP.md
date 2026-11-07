@@ -199,7 +199,7 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   le forme d'onda), doppio clic per la larghezza normale; ricordata su questo PC. Le righe della scheda Pratica
   vanno a capo quando il pannello è stretto. Maniglia unica `ResizeHandle`, usata anche dal pannello video.
 
-- **Script in ordine**: in `scripts\` solo i lanciatori numerati per importanza (`01-dev.cmd` … `07-pulisci.cmd`),
+- **Script in ordine**: in `scripts\` solo i lanciatori numerati per importanza (`01-dev.cmd` … `08-portable.cmd`),
   la logica PowerShell in `scripts\powershell\`. Riferimenti aggiornati in README, messaggi dell'app e documenti.
 
 ## 10. Esportare, vedere le note, manutenzione ✅
@@ -376,6 +376,18 @@ Scelte dall'utente tra le idee proposte (le più piccole e usate in ogni session
   con le frecce; Play la suona dall'inizio, passa da sola al passo successivo contando le ripetizioni del motore e
   si ferma alla fine. Cambiare il loop a mano o aprire un altro brano la interrompe. Salvata nel progetto
   (`playlist`); comando "Scaletta: avvia / ferma" assegnabile a un tasto o pedale.
+
+## 12. Versione portable ✅
+
+- **ZIP portable** (`Looplab_<versione>_x64-portable.zip`): `Looplab.exe`, FFmpeg, licenze e `portable.txt`. Con
+  quel file accanto all'exe, impostazioni, cache, registro errori e profilo WebView2 stanno in `dati\` lì accanto:
+  si estrae dove si vuole, anche su una chiavetta. Serve WebView2, già presente in Windows 10/11 aggiornati.
+- `04-build.cmd` crea lo ZIP insieme all'installer (con aggiornamenti segnalati); `08-portable.cmd` crea solo lo
+  ZIP, senza chiave né password (non cerca aggiornamenti).
+- Nella portable la cache dei brani decodificati si ferma a **2 GB** (10 GB nell'installata) e "Cerca
+  aggiornamenti" dice solo che c'è una versione nuova da scaricare: l'installer metterebbe una copia installata
+  accanto alla portable. Impostazioni → Dati dice quando si è nella portable.
+- I progetti `.looplab.json` restano accanto ai brani come sempre: viaggiano con la musica, non con l'app.
 
 ## Dopo la prima versione
 

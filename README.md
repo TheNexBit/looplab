@@ -14,10 +14,11 @@ In `scripts\` ci sono solo i lanciatori, numerati per importanza; la logica sta 
 | `scripts\01-dev.cmd`           | avvia l'app in sviluppo                                                       |
 | `scripts\02-test.cmd`          | tutti i controlli (Biome, TypeScript, Vitest, rustfmt, Clippy, cargo test)    |
 | `scripts\03-prova-build.cmd`   | compila in modalità rilascio e apre l'app con dati di prova                   |
-| `scripts\04-build.cmd`         | build ufficiale: installer NSIS firmato + `latest.json`                       |
+| `scripts\04-build.cmd`         | build ufficiale: installer NSIS firmato + `latest.json` + ZIP portable        |
 | `scripts\05-fetch-ffmpeg.cmd`  | scarica FFmpeg LGPL in `D:\tools\ffmpeg` (una volta; serve per Opus e proxy)  |
 | `scripts\06-genera-chiave.cmd` | crea la chiave di firma degli aggiornamenti in `D:\.config\tauri` (una volta) |
 | `scripts\07-pulisci.cmd`       | cancella `dist` e i dati di sviluppo e di prova                               |
+| `scripts\08-portable.cmd`      | solo la versione portable (ZIP), senza installer né password                  |
 
 Da terminale: `npm run app`, `npm run lint`, `npm test`, `npm run test:rust`, `npm run bindings`.
 

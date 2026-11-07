@@ -24,7 +24,7 @@ export function AboutDialog() {
 
   const check = async () => {
     setChecking(true);
-    setUpdate(updateMessage(await checkForUpdates()));
+    setUpdate(updateMessage(await checkForUpdates(info?.portable ?? false)));
     setChecking(false);
   };
 

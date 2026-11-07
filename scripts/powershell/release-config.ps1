@@ -67,3 +67,33 @@ function New-ReleaseConfig([bool]$WithUpdater) {
     $config | ConvertTo-Json -Depth 10 | Set-Content $file
     return $file
 }
+
+# Portable version: a ZIP with the exe, FFmpeg, the licenses and portable.txt, which makes the
+# app keep its data in a "dati" folder beside it (see src-tauri/src/paths.rs). Returns its path.
+function New-PortableZip([string]$Version) {
+    $stage = Join-Path $env:CARGO_TARGET_DIR 'looplab\portable\Looplab'
+    $outDir = Join-Path $ReleaseDir 'bundle\portable'
+    Remove-Item (Split-Path $stage -Parent) -Recurse -Force -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force $stage, $outDir | Out-Null
+
+    Copy-Item (Join-Path $ReleaseDir 'looplab.exe') (Join-Path $stage 'Looplab.exe')
+    foreach ($file in 'ffmpeg.exe', 'THIRD_PARTY_LICENSES.md', 'FFMPEG-LICENSE.txt') {
+        Copy-Item (Join-Path $ReleaseDir $file) $stage
+    }
+    @(
+        'Looplab - versione portable',
+        '',
+        'Questo file fa di Looplab la versione portable: impostazioni, progetti salvati',
+        'senza permesso di scrittura, cache e registro errori stanno nella cartella "dati"',
+        'qui accanto (si crea al primo avvio). La cartella si puo'' copiare su una chiavetta.',
+        '',
+        'Serve WebView2, gia'' presente in Windows 10 e 11 aggiornati.',
+        'Per aggiornare: scarica il nuovo ZIP e sostituisci i file, la cartella "dati" resta.',
+        'Se cancelli questo file, Looplab usa la cartella normale di Windows.'
+    ) | Set-Content (Join-Path $stage 'portable.txt') -Encoding utf8
+
+    $zip = Join-Path $outDir "Looplab_${Version}_x64-portable.zip"
+    Remove-Item $zip -ErrorAction SilentlyContinue
+    Compress-Archive -Path $stage -DestinationPath $zip
+    return $zip
+}

@@ -444,8 +444,9 @@ export const it = {
     data: {
       title: "Dati",
       cache: "Conversioni di FFmpeg",
-      cacheHint:
-        "Brani già letti (si riaprono all'istante; al massimo 10 GB, i più vecchi si tolgono da soli), audio estratto e video resi compatibili. Se servono di nuovo, Looplab li rifà da solo; il brano aperto resta.",
+      cacheHint: (limit: string) =>
+        `Brani già letti (si riaprono all'istante; al massimo ${limit}, i più vecchi si tolgono da soli), audio estratto e video resi compatibili. Se servono di nuovo, Looplab li rifà da solo; il brano aperto resta.`,
+      portable: "Versione portable: i dati stanno nella cartella «dati» accanto a Looplab.exe.",
       kinds: {
         decoded: "Brani pronti all'ascolto",
         audio: "Audio estratto",
@@ -466,6 +467,8 @@ export const it = {
     check: "Cerca aggiornamenti",
     latest: "Hai già l'ultima versione.",
     installing: "Installo la versione",
+    portable: (version: string) =>
+      `È uscita la versione ${version}. Nella versione portable si aggiorna a mano: scarica il nuovo ZIP da github.com/TheNexBit/Looplab/releases e sostituisci i file (la cartella «dati» resta).`,
     unavailable:
       "Aggiornamenti non disponibili: funzionano solo nella versione installata, con la connessione attiva.",
   },

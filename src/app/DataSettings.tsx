@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { cacheFilesInUse } from "@/features/video/videoLoader";
 import { t } from "@/i18n";
-import { type CacheUsage, commands } from "@/lib/bindings";
+import { type AppInfo, type CacheUsage, commands } from "@/lib/bindings";
 import { formatBytes } from "@/lib/bytes";
 
 const d = t.settings.data;
@@ -13,6 +13,7 @@ export function DataSettings() {
   const [usage, setUsage] = useState<CacheUsage[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState<AppInfo>();
 
   const refresh = useCallback(async () => {
     const result = await commands.cacheUsage();
@@ -21,6 +22,7 @@ export function DataSettings() {
 
   useEffect(() => {
     void refresh();
+    void commands.appInfo().then(setInfo);
   }, [refresh]);
 
   const clear = async () => {
@@ -41,7 +43,10 @@ export function DataSettings() {
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <p className="text-sm text-fg">{d.cache}</p>
-            <p className="text-xs text-fg-subtle">{d.cacheHint}</p>
+            <p className="text-xs text-fg-subtle">
+              {d.cacheHint(formatBytes(info?.decodedLimit ?? 0))}
+            </p>
+            {info?.portable && <p className="text-xs text-readout">{d.portable}</p>}
           </div>
           <Button variant="hardware" onClick={() => void clear()} disabled={busy || total === 0}>
             <Trash2 className="size-4" />

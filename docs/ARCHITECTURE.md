@@ -41,6 +41,9 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 - **`src-tauri`**: guscio desktop. Comandi sottili in `commands/` che delegano all'engine.
   - `paths.rs`: unica fonte dei percorsi in cui l'app scrive. In sviluppo tutto va in
     `LOOPLAB_DEV_DATA_DIR` (definito in `.cargo/config.toml`), in rilascio nella cartella standard di Windows.
+    Versione portable: con `portable.txt` accanto all'exe tutto va in `dati\` lì accanto (`portable_data`); la
+    cache dei brani decodificati si ferma a 2 GB invece di 10 e gli aggiornamenti si segnalano soltanto (lo ZIP
+    nuovo si scarica a mano). Lo ZIP lo crea `New-PortableZip` in `scripts/powershell/release-config.ps1`.
   - `window.rs`: le finestre si creano nel codice (non in `tauri.conf.json`) per poter spostare
     il profilo WebView2 prima che parta.
   - `state.rs`: motore audio (avviato in background, ricreato se la scheda audio si guasta) e picchi del brano.

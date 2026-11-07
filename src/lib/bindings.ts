@@ -97,6 +97,10 @@ export type AppInfo = {
 	name: string,
 	version: string,
 	engineVersion: string,
+	/**  The portable version: data next to the exe, updates downloaded by hand */
+	portable: boolean,
+	/**  Most space the decoded tracks may take, in bytes */
+	decodedLimit: number | null,
 };
 
 export type Band = {

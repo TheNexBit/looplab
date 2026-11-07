@@ -3,6 +3,7 @@
 #  1. controlla FFmpeg, chiave di firma e i test
 #  2. compila in modalita' rilascio (alcuni minuti)
 #  3. scrive latest.json per l'aggiornamento automatico
+#  4. crea anche lo ZIP della versione portable
 #  Il risultato resta nella cache Rust (D:\.cache\cargo-target), fuori dal
 #  progetto. La versione e' quella di package.json: aggiornala prima.
 #  Prima prova l'app con 03-prova-build.cmd.
@@ -47,8 +48,10 @@ $latest = [ordered]@{
     }
 }
 $latest | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $nsis 'latest.json')
+$zip = New-PortableZip $version
 
 Write-Host "`nBuild completata in $nsis :" -ForegroundColor Green
 Get-ChildItem $nsis -Filter "*$version*" | ForEach-Object { "  $($_.Name)" }
 Write-Host '  latest.json'
-Write-Host "Per pubblicare: crea la release v$version su GitHub e allega installer, .sig e latest.json."
+Write-Host "Versione portable: $zip"
+Write-Host "Per pubblicare: crea la release v$version su GitHub e allega installer, .sig, latest.json e lo ZIP portable."

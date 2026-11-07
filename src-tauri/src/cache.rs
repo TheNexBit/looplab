@@ -88,19 +88,34 @@ pub fn clear(cache_dir: &Path, keep: &[PathBuf]) -> u64 {
 
 /// Most space the decoded tracks may take: about 15 hours of audio at 48 kHz.
 pub const DECODED_LIMIT: u64 = 10 * 1024 * 1024 * 1024;
+/// The same for the portable version, which may sit on a small USB stick: about 3 hours.
+pub const PORTABLE_DECODED_LIMIT: u64 = 2 * 1024 * 1024 * 1024;
+
+/// The decoded-audio limit of this copy.
+pub fn decoded_limit() -> u64 {
+    if crate::paths::portable_data().is_some() {
+        PORTABLE_DECODED_LIMIT
+    } else {
+        DECODED_LIMIT
+    }
+}
 
 /// Makes room for `needed` more bytes of decoded audio by deleting the tracks opened longest
 /// ago (by file date, refreshed at every opening). Files in use cannot be deleted and stay.
 pub fn trim_decoded(cache_dir: &Path, needed: u64) {
+    trim_decoded_to(cache_dir, needed, decoded_limit());
+}
+
+fn trim_decoded_to(cache_dir: &Path, needed: u64, limit: u64) {
     let mut found = files(&cache_dir.join(CacheKind::Decoded.folder()));
     let mut total: u64 = found.iter().map(|(_, size)| size).sum();
-    if total + needed <= DECODED_LIMIT {
+    if total + needed <= limit {
         return;
     }
     let modified = |path: &Path| fs::metadata(path).and_then(|m| m.modified()).ok();
     found.sort_by_key(|(path, _)| modified(path));
     for (path, size) in found {
-        if total + needed <= DECODED_LIMIT {
+        if total + needed <= limit {
             break;
         }
         if fs::remove_file(&path).is_ok() {
