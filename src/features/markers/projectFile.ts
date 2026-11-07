@@ -3,7 +3,7 @@ import { BEATS_PER_BAR } from "@/features/practice/tempo";
 import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/bindings";
 import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
-import type { MarkerData, SectionData } from "@/stores/markers";
+import { type MarkerData, type SectionData, withEnds } from "@/stores/markers";
 import type { PlaylistStepData } from "@/stores/playlist";
 import type { SavedLoopData } from "@/stores/savedLoops";
 
@@ -30,11 +30,21 @@ export interface ProjectData {
 const num = (value: number | null | undefined, fallback: number) =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
-/** Reads a project from Rust; defaults come from Rust too (`default_project`). */
-export function fromFile(file: Project_Serialize): ProjectData {
+/**
+ * Reads a project from Rust; defaults come from Rust too (`default_project`). `duration` ends
+ * the last section of files that kept only where sections start.
+ */
+export function fromFile(file: Project_Serialize, duration = 0): ProjectData {
   return {
     markers: file.markers.map((m) => ({ ...m, time: num(m.time, 0) })),
-    sections: file.sections.map((s) => ({ ...s, start: num(s.start, 0) })),
+    sections: withEnds(
+      file.sections.map((s) => ({
+        ...s,
+        start: num(s.start, 0),
+        end: typeof s.end === "number" ? s.end : null,
+      })),
+      duration,
+    ),
     loop: {
       enabled: file.loop.enabled,
       start: file.loop.start ?? null,

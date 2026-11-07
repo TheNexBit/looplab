@@ -125,7 +125,8 @@ export function syncProject(): () => void {
     const [result, fallback] = await Promise.all([commands.loadProject(path), projectDefaults()]);
     if (track !== path) return;
     if (result.status === "ok") {
-      apply(result.data ? fromFile(result.data.project) : fallback);
+      const duration = usePlayerStore.getState().track?.duration ?? 0;
+      apply(result.data ? fromFile(result.data.project, duration) : fallback);
       if (result.data) useMarkersStore.getState().setSavedTo(result.data.location);
       writable = true;
     } else {

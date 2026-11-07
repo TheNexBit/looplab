@@ -26,7 +26,10 @@ export const shortcuts = {
   toggleContinuousScroll: "",
   addMarker: "M",
   addBeat: "B",
+  // S opens a section, S again closes it (Esc drops it), like recording a region
   addSection: "S",
+  // The loop becomes a section, like Reaper's "insert region from time selection"
+  sectionFromLoop: "Shift+S",
   previousMarker: ",",
   nextMarker: ".",
   speedUp: "+",

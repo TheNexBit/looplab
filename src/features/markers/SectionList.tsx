@@ -9,7 +9,7 @@ import {
   beatNumbers,
   type SectionRange,
   sectionColor,
-  sectionRanges,
+  sortedSections,
   useMarkersStore,
 } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
@@ -34,7 +34,7 @@ function SectionRow({ range }: { range: SectionRange }) {
           onRename={(name) => renameSection(range.id, name)}
         />
         <span className="font-mono text-[11px] text-fg-subtle tabular">
-          {formatTime(range.start)}
+          {formatTime(range.start)}–{formatTime(range.end)}
         </span>
         <MemoButton
           memo={range.memo}
@@ -67,7 +67,6 @@ export function SectionList() {
   const sections = useMarkersStore((s) => s.sections);
   const markers = useMarkersStore((s) => s.markers);
   const savedTo = useMarkersStore((s) => s.savedTo);
-  const duration = usePlayerStore((s) => s.track?.duration ?? 0);
   const numbers = beatNumbers(markers);
   const sortedMarkers = [...markers].sort((a, b) => a.time - b.time);
 
@@ -81,7 +80,7 @@ export function SectionList() {
           <p className="px-2 text-sm text-fg-subtle">{t.markers.noSections}</p>
         ) : (
           <ul>
-            {sectionRanges(sections, duration).map((range) => (
+            {sortedSections(sections).map((range) => (
               <SectionRow key={range.id} range={range} />
             ))}
           </ul>

@@ -20,8 +20,8 @@ describe("the memo shown while playing", () => {
     useMarkersStore.getState().replace(
       [],
       [
-        { id: "a", start: 0, name: "Intro", color: 0, memo: "" },
-        { id: "b", start: 30, name: "Assolo", color: 1, memo: "Bending al 12" },
+        { id: "a", start: 0, end: 30, name: "Intro", color: 0, memo: "" },
+        { id: "b", start: 30, end: 120, name: "Assolo", color: 1, memo: "Bending al 12" },
       ],
     );
   });

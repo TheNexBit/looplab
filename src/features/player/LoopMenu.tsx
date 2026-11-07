@@ -1,4 +1,4 @@
-import { BookmarkPlus, ChevronDown, Download, Repeat, Trash2 } from "lucide-react";
+import { BookmarkPlus, ChevronDown, Download, Flag, Repeat, Trash2 } from "lucide-react";
 import { Popover } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
@@ -8,6 +8,8 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
 import { useLoopStore } from "@/stores/loop";
+import { useMarkersStore } from "@/stores/markers";
+import { trackDuration } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { SETTING_CHOICES, useSettingsStore } from "@/stores/settings";
@@ -133,9 +135,21 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
               <Trash2 className="size-4" />
               {t.transport.clearLoop}
             </Button>
+            <Tooltip label={t.shortcuts.sectionFromLoop} shortcut="sectionFromLoop">
+              <Button
+                variant="hardware"
+                onClick={() =>
+                  region &&
+                  useMarkersStore.getState().addSection(region.start, region.end, trackDuration())
+                }
+                disabled={!region}
+              >
+                <Flag className="size-4" />
+                {t.markers.makeSection}
+              </Button>
+            </Tooltip>
             <Button
               variant="hardware"
-              className="col-span-2"
               onClick={() => useUiStore.getState().openExport({ kind: "loop" })}
               disabled={!region}
             >

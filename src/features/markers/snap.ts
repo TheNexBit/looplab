@@ -34,7 +34,7 @@ export interface SnapExclude {
 }
 
 /**
- * With the magnet on, moves `time` onto the nearest marker, bar, section start,
+ * With the magnet on, moves `time` onto the nearest marker, bar, section edge,
  * loop edge, playhead, beat of the grid or track edge, if one is within `SNAP_PX` on screen
  * (like Reaper's snapping to the time selection).
  * `area` is the element whose width shows the visible time span.
@@ -56,7 +56,7 @@ export function snapTime(
     ...(exclude.playhead ? [] : [currentPosition()]),
     ...(region ? [region.start, region.end] : []),
     ...markers.filter((m) => m.id !== exclude.markerId).map((m) => m.time),
-    ...sections.filter((s) => s.id !== exclude.sectionId).map((s) => s.start),
+    ...sections.filter((s) => s.id !== exclude.sectionId).flatMap((s) => [s.start, s.end]),
     ...(grid ? [nearestBeat(time, grid)] : []),
   ];
   return nearestWithin(time, points, SNAP_PX * secondsPerPixel);

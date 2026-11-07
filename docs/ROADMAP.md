@@ -408,6 +408,23 @@ Scelte dall'utente tra le idee proposte (le più piccole e usate in ogni session
   finestra mini, al posto dell'intervallo del loop, e nel suggerimento della striscia delle sezioni.
 - Nel codice si chiamano `memo` per non confonderli con la vista note (le note musicali, tasto N).
 
+## 15. Sezioni come le region di Reaper ✅
+
+Scelta dell'utente: le sezioni consecutive della fase 4 (ognuna fino alla successiva, l'ultima fino alla fine)
+erano scomode. Ora ogni sezione ha **inizio e fine**, con spazio libero tra l'una e l'altra.
+
+- **Creare**: S apre la sezione (sulla striscia "Sezione in corso…" cresce col playhead), S di nuovo la chiude, Esc
+  la annulla; trascinando in uno spazio vuoto della striscia (con lo Snap); Maiusc+S o "Crea sezione" nel menu
+  del Loop fanno del loop una sezione (come "Insert region from time selection" di Reaper).
+- **Non si sovrappongono**: una sezione nuova accorcia quelle che copre, divide in due quella in cui cade, toglie
+  quelle che copre per intero (`insertSection`). Trascinando bordi o sezione si resta nello spazio libero
+  (`roomAround`, `setSectionBounds`).
+- **Striscia**: clic = playhead all'inizio della sezione, doppio clic = loop, trascinare = spostarla, bordi =
+  allungarla o accorciarla, tasto destro = menu; clic nel vuoto = playhead lì. La lista mostra inizio–fine; `,` e
+  `.` si fermano anche sulle fini; la calamita si aggancia a inizi e fini.
+- **Progetti vecchi**: le sezioni senza fine ricevono l'inizio della successiva, l'ultima la fine del brano
+  (`withEnds`, al caricamento): nulla si perde.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

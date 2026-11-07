@@ -14,7 +14,7 @@ import { readPrefs, writeStored } from "@/lib/storage";
 import { formatTime } from "@/lib/time";
 import { eqToRust, useEqStore } from "@/stores/eq";
 import { normalizeRegion, useLoopStore } from "@/stores/loop";
-import { sectionRanges, useMarkersStore } from "@/stores/markers";
+import { sortedSections, useMarkersStore } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
 import { useUiStore } from "@/stores/ui";
 import {
@@ -90,7 +90,7 @@ export function ExportDialog() {
   const loopEnd = useLoopStore((s) => s.end);
   const sectionData = useMarkersStore((s) => s.sections);
   const duration = track?.duration ?? 0;
-  const sections = useMemo(() => sectionRanges(sectionData, duration), [sectionData, duration]);
+  const sections = useMemo(() => sortedSections(sectionData), [sectionData]);
   const loop = useMemo(
     () =>
       loopStart !== null && loopEnd !== null ? normalizeRegion(loopStart, loopEnd, duration) : null,

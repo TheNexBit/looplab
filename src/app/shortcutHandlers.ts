@@ -12,7 +12,7 @@ import {
   shiftedRegion,
   useLoopStore,
 } from "@/stores/loop";
-import { neighbourPoint, sectionRanges, useMarkersStore } from "@/stores/markers";
+import { neighbourPoint, sortedSections, useMarkersStore } from "@/stores/markers";
 import { useNotesStore } from "@/stores/notes";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
@@ -65,7 +65,7 @@ const recallSavedLoop = (index: number) => {
 };
 const recallSection = (index: number) => {
   const { sections } = useMarkersStore.getState();
-  const range = sectionRanges(sections, trackDuration())[index];
+  const range = sortedSections(sections)[index];
   if (range) loopSection(range);
 };
 
@@ -82,14 +82,27 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   loopEnd: () => useLoopStore.getState().setEnd(currentPosition(), trackDuration()),
   loopToggle: () => useLoopStore.getState().toggle(),
   // Esc first closes an open dialog (Radix handles that); only then does it clear the loop
-  clearLoop: () => useUiStore.getState().dialog === null && useLoopStore.getState().clear(),
+  // A section being marked with S is dropped first, then the loop goes
+  clearLoop: () => {
+    if (useUiStore.getState().dialog !== null) return;
+    if (useMarkersStore.getState().pendingSection !== null) {
+      useMarkersStore.getState().cancelSection();
+    } else {
+      useLoopStore.getState().clear();
+    }
+  },
   toggleSnap: () => settings().update({ snap: !settings().snap }),
   toggleFollow: () => setFollow(!settings().followPlayhead),
   toggleContinuousScroll: () =>
     settings().update({ followMode: settings().followMode === "center" ? "page" : "center" }),
   addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
   addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),
-  addSection: () => hasTrack() && useMarkersStore.getState().addSection(currentPosition()),
+  addSection: () =>
+    hasTrack() && useMarkersStore.getState().markSection(currentPosition(), trackDuration()),
+  sectionFromLoop: () => {
+    const region = currentLoop();
+    if (region) useMarkersStore.getState().addSection(region.start, region.end, trackDuration());
+  },
   previousMarker: () => jumpToNeighbour(-1),
   nextMarker: () => jumpToNeighbour(1),
   speedUp: () => player().setSpeed(player().speed + settings().speedStep),

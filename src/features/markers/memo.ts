@@ -1,6 +1,6 @@
 import { useLoopStore } from "@/stores/loop";
-import { sectionRanges, useMarkersStore } from "@/stores/markers";
-import { currentPosition, trackDuration } from "@/stores/player";
+import { useMarkersStore } from "@/stores/markers";
+import { currentPosition } from "@/stores/player";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
 
 export interface Memo {
@@ -23,8 +23,8 @@ export function memoNow(): Memo | null {
     if (saved?.memo) return { name: saved.name, text: saved.memo };
   }
   const position = currentPosition();
-  const section = sectionRanges(useMarkersStore.getState().sections, trackDuration()).find(
-    (range) => position >= range.start && position < range.end,
-  );
+  const section = useMarkersStore
+    .getState()
+    .sections.find((range) => position >= range.start && position < range.end);
   return section?.memo ? { name: section.name, text: section.memo } : null;
 }

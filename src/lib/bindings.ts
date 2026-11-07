@@ -483,14 +483,19 @@ export type SavedLoop_Serialize = {
 	memo: string,
 };
 
-/**  A section runs from its start to the start of the next one (or the end of the track). */
+/**  A part of the track with a name, like a Reaper region: it runs from `start` to `end`. */
 export type Section = Section_Serialize | Section_Deserialize;
 
-/**  A section runs from its start to the start of the next one (or the end of the track). */
+/**  A part of the track with a name, like a Reaper region: it runs from `start` to `end`. */
 export type Section_Deserialize = {
 	id: string,
 	/**  Seconds */
 	start: number | null,
+	/**
+	 *  Seconds. Missing in files of versions where a section ran up to the next one: the UI
+	 *  then gives it the next section's start (or the end of the track)
+	 */
+	end?: number | null,
 	name: string,
 	/**  Index into the section palette of `theme.css` */
 	color: number,
@@ -498,11 +503,16 @@ export type Section_Deserialize = {
 	memo?: string,
 };
 
-/**  A section runs from its start to the start of the next one (or the end of the track). */
+/**  A part of the track with a name, like a Reaper region: it runs from `start` to `end`. */
 export type Section_Serialize = {
 	id: string,
 	/**  Seconds */
 	start: number | null,
+	/**
+	 *  Seconds. Missing in files of versions where a section ran up to the next one: the UI
+	 *  then gives it the next section's start (or the end of the track)
+	 */
+	end: number | null,
 	name: string,
 	/**  Index into the section palette of `theme.css` */
 	color: number,

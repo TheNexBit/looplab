@@ -39,13 +39,17 @@ pub struct Marker {
     pub label: String,
 }
 
-/// A section runs from its start to the start of the next one (or the end of the track).
+/// A part of the track with a name, like a Reaper region: it runs from `start` to `end`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Section {
     pub id: String,
     /// Seconds
     pub start: f64,
+    /// Seconds. Missing in files of versions where a section ran up to the next one: the UI
+    /// then gives it the next section's start (or the end of the track)
+    #[serde(default)]
+    pub end: Option<f64>,
     pub name: String,
     /// Index into the section palette of `theme.css`
     pub color: u8,
@@ -289,6 +293,7 @@ pub(crate) mod tests {
             sections: vec![Section {
                 id: "s1".into(),
                 start: 3.0,
+                end: Some(9.0),
                 name: "Intro".into(),
                 color: 2,
                 memo: "Pennata alternata".into(),

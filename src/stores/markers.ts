@@ -1,6 +1,8 @@
 import { create } from "zustand";
+import { MIN_LOOP } from "@/features/player/limits";
 import { t } from "@/i18n";
 import type { MarkerKind, ProjectLocation } from "@/lib/bindings";
+import { clamp } from "@/lib/time";
 
 /** Number of colours in the section palette (`--color-section-*` in theme.css). */
 export const SECTION_COLORS = 8;
@@ -13,23 +15,74 @@ export interface MarkerData {
   label: string;
 }
 
+/** A part of the track with a name, from `start` to `end` (like a Reaper region). */
 export interface SectionData {
   id: string;
   start: number;
+  end: number;
   name: string;
   color: number;
   /** The player's own words about it, shown while it plays */
   memo: string;
 }
 
-export interface SectionRange extends SectionData {
-  end: number;
+export type SectionRange = SectionData;
+
+const newId = () => crypto.randomUUID();
+
+/** Shortest section, in seconds: as short as a loop can be. */
+export const MIN_SECTION = MIN_LOOP;
+
+/** Sections in time order. */
+export const sortedSections = (sections: readonly SectionData[]): SectionData[] =>
+  [...sections].sort((a, b) => a.start - b.start);
+
+/**
+ * Sections of a project file. Files of versions where a section ran up to the next one have
+ * no ends: each gets the next section's start, the last the end of the track.
+ */
+export function withEnds(
+  sections: readonly (Omit<SectionData, "end"> & { end: number | null })[],
+  duration: number,
+): SectionData[] {
+  const sorted = [...sections].sort((a, b) => a.start - b.start);
+  return sorted
+    .map((section, i) => ({ ...section, end: section.end ?? sorted[i + 1]?.start ?? duration }))
+    .filter((section) => section.end - section.start >= MIN_SECTION);
 }
 
-/** Sections in time order, each ending where the next begins (the last at the track end). */
-export function sectionRanges(sections: SectionData[], duration: number): SectionRange[] {
-  const sorted = [...sections].sort((a, b) => a.start - b.start);
-  return sorted.map((section, i) => ({ ...section, end: sorted[i + 1]?.start ?? duration }));
+/**
+ * `added` placed among `sections`, which never overlap: the ones it covers lose that part
+ * (one it falls inside is split in two), the ones it covers whole are gone.
+ */
+export function insertSection(sections: readonly SectionData[], added: SectionData): SectionData[] {
+  const kept: SectionData[] = [];
+  for (const section of sections) {
+    if (section.end <= added.start || section.start >= added.end) {
+      kept.push(section);
+      continue;
+    }
+    if (section.start < added.start) kept.push({ ...section, end: added.start });
+    if (section.end > added.end) {
+      const after = { ...section, start: added.end };
+      kept.push(section.start < added.start ? { ...after, id: newId() } : after);
+    }
+  }
+  return [...kept.filter((section) => section.end - section.start >= MIN_SECTION), added];
+}
+
+/** Free room for section `id`: from the end of the section before it to the start of the next. */
+export function roomAround(
+  sections: readonly SectionData[],
+  id: string,
+  duration: number,
+): { min: number; max: number } {
+  const sorted = sortedSections(sections);
+  const index = sorted.findIndex((section) => section.id === id);
+  return {
+    min: sorted[index - 1]?.end ?? 0,
+    max: sorted[index + 1]?.start ?? duration,
+  };
 }
 
 /** Bar number of every beat marker, counting in time order from 1. */
@@ -48,7 +101,7 @@ export function neighbourPoint(
   markers: MarkerData[],
   sections: SectionData[],
 ): number | null {
-  const points = [...markers.map((m) => m.time), ...sections.map((s) => s.start)];
+  const points = [...markers.map((m) => m.time), ...sections.flatMap((s) => [s.start, s.end])];
   const candidates =
     direction > 0
       ? points.filter((p) => p > position + SAME_POINT)
@@ -56,8 +109,6 @@ export function neighbourPoint(
   if (candidates.length === 0) return null;
   return direction > 0 ? Math.min(...candidates) : Math.max(...candidates);
 }
-
-const newId = () => crypto.randomUUID();
 
 interface MarkersState {
   markers: MarkerData[];
@@ -67,8 +118,15 @@ interface MarkersState {
   addMarker: (kind: MarkerKind, time: number) => void;
   moveMarker: (id: string, time: number) => void;
   removeMarker: (id: string) => void;
-  addSection: (time: number) => void;
-  moveSection: (id: string, start: number) => void;
+  /** Start of the section opened by S, until S again closes it (or Esc drops it) */
+  pendingSection: number | null;
+  /** S: opens a section at `time`, or closes the open one there */
+  markSection: (time: number, duration: number) => void;
+  cancelSection: () => void;
+  /** A new section from `a` to `b` (in any order); covered parts of others make room */
+  addSection: (a: number, b: number, duration: number) => void;
+  /** New start and end of a section, kept inside its free room and long enough */
+  setSectionBounds: (id: string, start: number, end: number, duration: number) => void;
   renameSection: (id: string, name: string) => void;
   recolorSection: (id: string, color: number) => void;
   setSectionMemo: (id: string, memo: string) => void;
@@ -89,26 +147,41 @@ export const useMarkersStore = create<MarkersState>((set, get) => ({
     set({ markers: get().markers.map((m) => (m.id === id ? { ...m, time } : m)) }),
   removeMarker: (id) => set({ markers: get().markers.filter((m) => m.id !== id) }),
 
-  addSection: (time) => {
+  pendingSection: null,
+  markSection: (time, duration) => {
+    const open = get().pendingSection;
+    if (open === null) {
+      set({ pendingSection: clamp(time, 0, duration) });
+      return;
+    }
+    set({ pendingSection: null });
+    get().addSection(open, time, duration);
+  },
+  cancelSection: () => set({ pendingSection: null }),
+
+  addSection: (a, b, duration) => {
+    const start = clamp(Math.min(a, b), 0, duration);
+    const end = clamp(Math.max(a, b), 0, duration);
+    if (end - start < MIN_SECTION) return;
     const { sections } = get();
-    // Two sections at the same instant would make one of them empty
-    if (sections.some((s) => Math.abs(s.start - time) < SAME_POINT)) return;
-    const number = sections.length + 1;
+    const added: SectionData = {
+      id: newId(),
+      start,
+      end,
+      name: `${t.markers.sectionName} ${sections.length + 1}`,
+      color: sections.length % SECTION_COLORS,
+      memo: "",
+    };
+    set({ sections: insertSection(sections, added) });
+  },
+  setSectionBounds: (id, start, end, duration) => {
+    const { min, max } = roomAround(get().sections, id, duration);
+    const from = clamp(Math.min(start, end), min, max - MIN_SECTION);
+    const to = clamp(Math.max(start, end), from + MIN_SECTION, max);
     set({
-      sections: [
-        ...sections,
-        {
-          id: newId(),
-          start: time,
-          name: `${t.markers.sectionName} ${number}`,
-          color: sections.length % SECTION_COLORS,
-          memo: "",
-        },
-      ],
+      sections: get().sections.map((s) => (s.id === id ? { ...s, start: from, end: to } : s)),
     });
   },
-  moveSection: (id, start) =>
-    set({ sections: get().sections.map((s) => (s.id === id ? { ...s, start } : s)) }),
   renameSection: (id, name) =>
     set({ sections: get().sections.map((s) => (s.id === id ? { ...s, name } : s)) }),
   recolorSection: (id, color) =>
@@ -117,6 +190,6 @@ export const useMarkersStore = create<MarkersState>((set, get) => ({
     set({ sections: get().sections.map((s) => (s.id === id ? { ...s, memo } : s)) }),
   removeSection: (id) => set({ sections: get().sections.filter((s) => s.id !== id) }),
 
-  replace: (markers, sections) => set({ markers, sections }),
+  replace: (markers, sections) => set({ markers, sections, pendingSection: null }),
   setSavedTo: (savedTo) => set({ savedTo }),
 }));
