@@ -1,14 +1,16 @@
 import { ChevronDown, Crosshair, Grid3x3, Hand, Metronome, X } from "lucide-react";
 import { Popover } from "radix-ui";
-import { useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { Kbd } from "@/components/ui/Kbd";
 import { floatingPanel } from "@/components/ui/menu";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
+import type { ShortcutId } from "@/lib/shortcuts";
 import { clamp } from "@/lib/time";
 import { useWheelSteps } from "@/lib/useWheelSteps";
 import { usePlayerStore } from "@/stores/player";
@@ -21,24 +23,129 @@ import { BPM, COUNT_IN_CHOICES } from "./tempo";
 
 const p = t.practice;
 
-/** Small caption over a display, like the labels printed on a hardware panel. */
-function Caption({ children }: { children: string }) {
+/** One entry of the tempo menu: icon, name, what it does, its key. */
+function MenuEntry({
+  icon,
+  label,
+  hint,
+  shortcut,
+  active,
+  disabled,
+  closes = true,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  hint: string;
+  shortcut?: ShortcutId;
+  active?: boolean;
+  disabled?: boolean;
+  /** Close the menu after it (not for on/off entries) */
+  closes?: boolean;
+  onClick: () => void;
+}) {
+  const entry = (
+    <button
+      type="button"
+      disabled={disabled}
+      aria-pressed={active}
+      onClick={onClick}
+      className="flex w-full items-start gap-2.5 rounded-control px-2 py-1.5 text-left transition-colors hover:bg-surface-hover disabled:pointer-events-none disabled:opacity-40"
+    >
+      <span className={cn("mt-0.5 shrink-0", active ? "text-accent" : "text-fg-muted")}>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2 text-sm text-fg">
+          {label}
+          {active !== undefined && (
+            <span
+              aria-hidden
+              className={cn(
+                "size-1.5 rounded-full",
+                active ? "bg-accent shadow-[0_0_6px_var(--color-accent)]" : "bg-led-off",
+              )}
+            />
+          )}
+        </span>
+        <span className="block text-[11px] leading-snug text-fg-subtle">{hint}</span>
+      </span>
+      {shortcut && <Kbd shortcut={shortcut} />}
+    </button>
+  );
+  return closes ? <Popover.Close asChild>{entry}</Popover.Close> : entry;
+}
+
+/** Everything about the tempo and the click, opened from the display. */
+function TempoMenu() {
+  const bpm = usePracticeStore((s) => s.bpm);
+  const hasTrack = usePlayerStore((s) => s.track !== null);
+  const showGrid = useSettingsStore((s) => s.showGrid);
   return (
-    <span className="text-[9px] font-medium tracking-[0.16em] text-lcd-dim uppercase">
-      {children}
-    </span>
+    <>
+      <div className="space-y-1">
+        <p className="panel-label px-2">{p.tempo}</p>
+        <MenuEntry
+          icon={<Hand className="size-3.5" />}
+          label={p.tapTempo}
+          hint={p.tapMenuHint}
+          shortcut="tapTempo"
+          disabled={!hasTrack}
+          onClick={tapBeat}
+        />
+        <MenuEntry
+          icon={<Crosshair className="size-3.5" />}
+          label={p.downbeat}
+          hint={p.downbeatHint}
+          shortcut="setDownbeat"
+          disabled={!hasTrack || bpm === null}
+          onClick={setDownbeatHere}
+        />
+        <MenuEntry
+          icon={<Grid3x3 className="size-3.5" />}
+          label={p.gridItem}
+          hint={p.gridHint}
+          active={showGrid}
+          closes={false}
+          onClick={() => useSettingsStore.getState().update({ showGrid: !showGrid })}
+        />
+        <MenuEntry
+          icon={<X className="size-3.5" />}
+          label={p.clearBpm}
+          hint={p.clearBpmHint}
+          disabled={bpm === null}
+          onClick={() => usePracticeStore.getState().setBpm(null)}
+        />
+      </div>
+      {/* Count-in, volume and sounds: also here, and the only place in narrow windows */}
+      <div className="space-y-3 border-t border-border px-2 pt-3">
+        <ClickOptions />
+      </div>
+    </>
   );
 }
 
 /**
- * Tempo display, like the BPM field of Reaper's and Ableton's transport: click to type,
- * ↑/↓ or the mouse wheel to change it by one; the arrow beside it opens tap, first beat,
- * grid and "tempo unknown".
+ * Tempo display, like the BPM field of Reaper's and Ableton's transport: click the number to
+ * type it, ↑/↓ or the mouse wheel to change it by one. Its menu (tap, downbeat, grid, count-in,
+ * click) opens from the "Tempo ▾" caption or with a right-click anywhere on the display.
  */
 function BpmDisplay() {
   const bpm = usePracticeStore((s) => s.bpm);
-  const hasTrack = usePlayerStore((s) => s.track !== null);
-  const showGrid = useSettingsStore((s) => s.showGrid);
+  const [menu, setMenu] = useState(false);
+
+  // Right-click anywhere on the display opens its menu, like the options of a DAW's keys
+  const displayRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const display = displayRef.current;
+    if (!display) return;
+    const open = (event: MouseEvent) => {
+      event.preventDefault();
+      setMenu(true);
+    };
+    display.addEventListener("contextmenu", open);
+    return () => display.removeEventListener("contextmenu", open);
+  }, []);
 
   // The wheel changes the tempo by one
   const ref = useRef<HTMLDivElement>(null);
@@ -48,95 +155,60 @@ function BpmDisplay() {
   });
 
   return (
-    <div className="flex h-[58px] flex-col justify-center gap-1 lcd rounded-panel px-2">
-      <div className="flex items-center justify-between gap-2">
-        <Caption>{p.tempo}</Caption>
-        <Popover.Root>
+    <Popover.Root open={menu} onOpenChange={setMenu}>
+      <Popover.Anchor asChild>
+        <div
+          ref={displayRef}
+          className="flex h-[58px] flex-col justify-center gap-1 lcd rounded-panel px-2"
+        >
           <Tooltip label={p.tempoMenu}>
             <Popover.Trigger asChild>
               <button
                 type="button"
                 aria-label={p.tempoMenu}
-                className="-my-1 rounded-control px-0.5 text-lcd-dim hover:text-lcd-fg"
+                className={cn(
+                  "-mx-1 flex items-center justify-between gap-2 rounded-control px-1 transition-colors",
+                  "text-lcd-dim hover:bg-lcd-fg/10 hover:text-lcd-fg",
+                  menu && "bg-lcd-fg/10 text-lcd-fg",
+                )}
               >
-                <ChevronDown className="size-3" />
+                <span className="text-[9px] font-medium tracking-[0.16em] uppercase">
+                  {p.tempo}
+                </span>
+                <ChevronDown className={cn("size-3 transition-transform", menu && "rotate-180")} />
               </button>
             </Popover.Trigger>
           </Tooltip>
-          <Popover.Portal>
-            <Popover.Content
-              side="top"
-              align="start"
-              sideOffset={8}
-              className={`${floatingPanel} w-72 space-y-3 p-3`}
-            >
-              <div className="grid gap-1">
-                <Popover.Close asChild>
-                  <Button variant="hardware" disabled={!hasTrack} onClick={tapBeat}>
-                    <Hand className="size-3.5" />
-                    {p.tap}
-                  </Button>
-                </Popover.Close>
-                <Tooltip label={p.downbeatHint} shortcut="setDownbeat">
-                  <Popover.Close asChild>
-                    <Button
-                      variant="hardware"
-                      disabled={!hasTrack || bpm === null}
-                      onClick={setDownbeatHere}
-                    >
-                      <Crosshair className="size-3.5" />
-                      {p.downbeat}
-                    </Button>
-                  </Popover.Close>
-                </Tooltip>
-                <Tooltip label={p.gridHint}>
-                  <Button
-                    variant="hardware"
-                    active={showGrid}
-                    aria-pressed={showGrid}
-                    onClick={() => useSettingsStore.getState().update({ showGrid: !showGrid })}
-                  >
-                    <Grid3x3 className="size-3.5" />
-                    {p.gridItem}
-                  </Button>
-                </Tooltip>
-                <Popover.Close asChild>
-                  <Button
-                    variant="ghost"
-                    disabled={bpm === null}
-                    onClick={() => usePracticeStore.getState().setBpm(null)}
-                  >
-                    <X className="size-3.5" />
-                    {p.clearBpm}
-                  </Button>
-                </Popover.Close>
-              </div>
-              {/* Count-in, volume and sounds: also here, and the only place in narrow windows */}
-              <div className="space-y-3 border-t border-border pt-3">
-                <ClickOptions />
-              </div>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
-      </div>
-      <div ref={ref} className="flex items-center gap-1">
-        <Tooltip label={p.bpmHint}>
-          <span>
-            <NumberField
-              label={p.bpm}
-              value={bpm ?? BPM.default}
-              min={BPM.min}
-              max={BPM.max}
-              step={BPM.step}
-              onChange={(value) => usePracticeStore.getState().setBpm(value)}
-              format={(value) => (bpm === null ? p.noBpm : String(value))}
-              variant="display"
-            />
-          </span>
-        </Tooltip>
-        <TimeSignaturePicker side="top" variant="display" />
-      </div>
-    </div>
+          <div ref={ref} className="flex items-center gap-1">
+            <Tooltip label={p.bpmHint}>
+              <span>
+                <NumberField
+                  label={p.bpm}
+                  value={bpm ?? BPM.default}
+                  min={BPM.min}
+                  max={BPM.max}
+                  step={BPM.step}
+                  onChange={(value) => usePracticeStore.getState().setBpm(value)}
+                  format={(value) => (bpm === null ? p.noBpm : value.toFixed(1))}
+                  variant="display"
+                />
+              </span>
+            </Tooltip>
+            <TimeSignaturePicker side="top" variant="display" />
+          </div>
+        </div>
+      </Popover.Anchor>
+      <Popover.Portal>
+        <Popover.Content
+          side="top"
+          align="start"
+          sideOffset={8}
+          className={`${floatingPanel} w-80 space-y-3 p-2 pb-3`}
+        >
+          <TempoMenu />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 

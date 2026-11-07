@@ -141,14 +141,18 @@ export const it = {
     tempo: "Tempo",
     bpm: "BPM",
     bpmHint:
-      "Tempo del brano originale in quarti al minuto, come nei DAW (non cambia con la velocità). Clic per scriverlo, rotella o ↑ ↓ per cambiarlo; accanto, la metrica.",
+      "Tempo del brano originale in quarti al minuto, come nei DAW (non cambia con la velocità). Clic per scriverlo, rotella o ↑ ↓ per cambiarlo; tasto destro per il menu.",
     noBpm: "—",
     tap: "Tap",
     tapHint:
       "Premi a tempo sui battiti della metrica, almeno due volte (in 7/8 sugli ottavi; anche col tasto T)",
     clearBpm: "Tempo sconosciuto",
     gridItem: "Griglia sulla forma d'onda",
-    tempoMenu: "Tap, downbeat, griglia",
+    tempoMenu:
+      "Menu del tempo: tap, downbeat, griglia, count-in, click (anche tasto destro sul display)",
+    tapTempo: "Tap tempo",
+    tapMenuHint: "Premi a tempo sui battiti (anche col tasto): il BPM si calcola da solo",
+    clearBpmHint: "Togli il BPM: griglia, metronomo e count-in si spengono",
     meter: "Metrica",
     meterHint: "Metrica del brano: clic per sceglierla, rotella per cambiare i battiti",
     meterBeats: "Battiti per battuta",

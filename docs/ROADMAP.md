@@ -291,6 +291,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - **Focus da tastiera**: una linea sottile attaccata al controllo invece dell'alone verde arrotondato (si vedeva
   attorno alla scheda attiva del pannello laterale).
 
+- **Display Tempo**: il numero dei BPM non si taglia più (era stretto per "129.5"); si mostra sempre con un
+  decimale, come nei DAW. Il menu si apre dalla scritta "Tempo ▾" (tutta cliccabile, si illumina) o col tasto
+  destro ovunque sul display. Il menu è diviso in Tempo (Tap tempo, Downbeat qui, Griglia con spia, Tempo
+  sconosciuto) e Count-in / click; ogni voce dice cosa fa e mostra il suo tasto.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un
