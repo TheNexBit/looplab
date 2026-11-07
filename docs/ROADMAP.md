@@ -294,7 +294,8 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - **Display Tempo**: il numero dei BPM non si taglia più (era stretto per "129.5"); si mostra sempre con un
   decimale, come nei DAW. Il menu si apre dalla scritta "Tempo ▾" (tutta cliccabile, si illumina) o col tasto
   destro ovunque sul display. Il menu è diviso in Tempo (Tap tempo, Downbeat qui, Griglia con spia, Tempo
-  sconosciuto) e Count-in / click; ogni voce dice cosa fa e mostra il suo tasto.
+  sconosciuto) e Count-in / click; ogni voce dice cosa fa e mostra il suo tasto. Una voce spenta scrive
+  perché (es. "Apri un brano per usarlo", "Prima imposta il BPM").
 
 ## Dopo la prima versione
 

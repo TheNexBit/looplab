@@ -30,7 +30,7 @@ function MenuEntry({
   hint,
   shortcut,
   active,
-  disabled,
+  unavailable,
   closes = true,
   onClick,
 }: {
@@ -39,7 +39,8 @@ function MenuEntry({
   hint: string;
   shortcut?: ShortcutId;
   active?: boolean;
-  disabled?: boolean;
+  /** Why the entry cannot be used now; shown instead of the hint (the entry is then off) */
+  unavailable?: string | null;
   /** Close the menu after it (not for on/off entries) */
   closes?: boolean;
   onClick: () => void;
@@ -47,16 +48,24 @@ function MenuEntry({
   const entry = (
     <button
       type="button"
-      disabled={disabled}
+      disabled={Boolean(unavailable)}
       aria-pressed={active}
       onClick={onClick}
-      className="flex w-full items-start gap-2.5 rounded-control px-2 py-1.5 text-left transition-colors hover:bg-surface-hover disabled:pointer-events-none disabled:opacity-40"
+      className="flex w-full items-start gap-2.5 rounded-control px-2 py-1.5 text-left transition-colors hover:bg-surface-hover disabled:pointer-events-none"
     >
-      <span className={cn("mt-0.5 shrink-0", active ? "text-accent" : "text-fg-muted")}>
+      <span
+        className={cn(
+          "mt-0.5 shrink-0",
+          active ? "text-accent" : "text-fg-muted",
+          unavailable && "opacity-40",
+        )}
+      >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-sm text-fg">
+        <span
+          className={cn("flex items-center gap-2 text-sm text-fg", unavailable && "opacity-40")}
+        >
           {label}
           {active !== undefined && (
             <span
@@ -68,9 +77,17 @@ function MenuEntry({
             />
           )}
         </span>
-        <span className="block text-[11px] leading-snug text-fg-subtle">{hint}</span>
+        {unavailable ? (
+          <span className="block text-[11px] leading-snug text-readout">{unavailable}</span>
+        ) : (
+          <span className="block text-[11px] leading-snug text-fg-subtle">{hint}</span>
+        )}
       </span>
-      {shortcut && <Kbd shortcut={shortcut} />}
+      {shortcut && (
+        <span className={cn(unavailable && "opacity-40")}>
+          <Kbd shortcut={shortcut} />
+        </span>
+      )}
     </button>
   );
   return closes ? <Popover.Close asChild>{entry}</Popover.Close> : entry;
@@ -90,7 +107,7 @@ function TempoMenu() {
           label={p.tapTempo}
           hint={p.tapMenuHint}
           shortcut="tapTempo"
-          disabled={!hasTrack}
+          unavailable={hasTrack ? null : p.needsTrack}
           onClick={tapBeat}
         />
         <MenuEntry
@@ -98,7 +115,7 @@ function TempoMenu() {
           label={p.downbeat}
           hint={p.downbeatHint}
           shortcut="setDownbeat"
-          disabled={!hasTrack || bpm === null}
+          unavailable={!hasTrack ? p.needsTrack : bpm === null ? p.needsBpm : null}
           onClick={setDownbeatHere}
         />
         <MenuEntry
@@ -113,7 +130,7 @@ function TempoMenu() {
           icon={<X className="size-3.5" />}
           label={p.clearBpm}
           hint={p.clearBpmHint}
-          disabled={bpm === null}
+          unavailable={bpm === null ? p.noBpmSet : null}
           onClick={() => usePracticeStore.getState().setBpm(null)}
         />
       </div>
