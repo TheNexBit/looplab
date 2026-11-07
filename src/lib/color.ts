@@ -1,6 +1,8 @@
+import { clamp } from "./time";
+
 /** Small colour helpers for the custom colours of Settings → Appearance (hex in, CSS out). */
 
-export interface Rgb {
+interface Rgb {
   r: number;
   g: number;
   b: number;
@@ -20,11 +22,11 @@ export const isHex = (value: unknown): value is string =>
   typeof value === "string" && parseHex(value) !== null;
 
 const channel = (value: number) =>
-  Math.round(Math.min(255, Math.max(0, value)))
+  Math.round(clamp(value, 0, 255))
     .toString(16)
     .padStart(2, "0");
 
-export const toHex = ({ r, g, b }: Rgb) => `#${channel(r)}${channel(g)}${channel(b)}`;
+const toHex = ({ r, g, b }: Rgb) => `#${channel(r)}${channel(g)}${channel(b)}`;
 
 /** `hex` see-through: `alpha` 0..1, as `rgb(r g b / a)`. */
 export function withAlpha(hex: string, alpha: number): string {
@@ -45,7 +47,7 @@ export function lighten(hex: string, amount: number): string {
 }
 
 /** Relative luminance (WCAG), 0 = black, 1 = white. */
-export function luminance(hex: string): number {
+function luminance(hex: string): number {
   const rgb = parseHex(hex) ?? { r: 0, g: 0, b: 0 };
   const linear = (value: number) => {
     const c = value / 255;

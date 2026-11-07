@@ -1,5 +1,6 @@
 import type { PointerEvent } from "react";
 import { cn } from "@/lib/cn";
+import { followPointer } from "@/lib/followPointer";
 
 interface ResizeHandleProps {
   /** A horizontal bar dragged up and down (else a vertical bar dragged sideways) */
@@ -37,31 +38,24 @@ export function ResizeHandle({
 }: ResizeHandleProps) {
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
-    const handle = event.currentTarget;
-    handle.setPointerCapture(event.pointerId);
     let start = vertical ? event.clientY : event.clientX;
     let initial = size();
     const sign = grows === "after" ? 1 : -1;
     onStart?.();
-    const move = (e: globalThis.PointerEvent) => {
-      const at = vertical ? e.clientY : e.clientX;
-      const wanted = initial + sign * (at - start);
-      onResize(wanted);
-      const reached = size();
-      if (Math.abs(reached - wanted) >= 1) {
-        start = at;
-        initial = reached;
-      }
-    };
-    const up = () => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", up);
-      handle.removeEventListener("pointercancel", up);
-      onEnd?.();
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", up);
-    handle.addEventListener("pointercancel", up);
+    followPointer(
+      event,
+      (e) => {
+        const at = vertical ? e.clientY : e.clientX;
+        const wanted = initial + sign * (at - start);
+        onResize(wanted);
+        const reached = size();
+        if (Math.abs(reached - wanted) >= 1) {
+          start = at;
+          initial = reached;
+        }
+      },
+      () => onEnd?.(),
+    );
   };
 
   return (

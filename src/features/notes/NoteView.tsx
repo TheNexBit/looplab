@@ -4,6 +4,7 @@ import { useCanvas } from "@/features/waveform/useCanvas";
 import { t } from "@/i18n";
 import { commands } from "@/lib/bindings";
 import { themeColor } from "@/lib/theme";
+import { clamp } from "@/lib/time";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useEqStore } from "@/stores/eq";
 import { normalizeRegion, useLoopStore } from "@/stores/loop";
@@ -67,8 +68,7 @@ function draw(canvas: HTMLCanvasElement, width: number, height: number, picture:
   const top = Math.max(...picture.keys);
   const lit = new Set(picture.notes);
   /** 0 for keys far below the loudest, 1 for the loudest */
-  const strength = (db: number) =>
-    Math.min(1, Math.max(0, (db - (top - NOTE_RANGE_DB)) / NOTE_RANGE_DB));
+  const strength = (db: number) => clamp((db - (top - NOTE_RANGE_DB)) / NOTE_RANGE_DB, 0, 1);
 
   // Faint octave lines behind the curve, on every C
   ctx.fillStyle = themeColor("grid");
@@ -80,7 +80,7 @@ function draw(canvas: HTMLCanvasElement, width: number, height: number, picture:
   if (picture.levels.length > 0 && top > FLOOR_DB) {
     const y = (db: number | null) => {
       const value = typeof db === "number" ? db : FLOOR_DB;
-      const share = Math.min(1, Math.max(0, (value - (top - SHOWN_DB)) / SHOWN_DB));
+      const share = clamp((value - (top - SHOWN_DB)) / SHOWN_DB, 0, 1);
       return keyboardTop - share * (keyboardTop - 4);
     };
     ctx.beginPath();

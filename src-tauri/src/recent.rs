@@ -19,7 +19,7 @@ pub struct RecentFile {
     pub name: String,
     /// False when the file has been moved or deleted since
     pub exists: bool,
-    /// When it was last opened, in seconds since 1970 (unknown for lists of older versions)
+    /// When it was last opened, in seconds since 1970
     pub opened_at: Option<f64>,
     /// Length in seconds, as announced when it was last opened
     pub duration: Option<f64>,
@@ -42,35 +42,16 @@ struct Entry {
 
 #[derive(Default, Serialize, Deserialize)]
 struct Stored {
-    /// How versions before the details kept the list: paths only
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    paths: Vec<String>,
     #[serde(default)]
     entries: Vec<Entry>,
 }
 
 fn read(data_dir: &Path) -> Vec<Entry> {
-    let stored = json_file::read_or_default::<Stored>(&data_dir.join(FILE));
-    if !stored.entries.is_empty() {
-        return stored.entries;
-    }
-    let old = stored.paths.into_iter();
-    old.map(|path| Entry {
-        path,
-        opened_at: None,
-        duration: None,
-    })
-    .collect()
+    json_file::read_or_default::<Stored>(&data_dir.join(FILE)).entries
 }
 
 fn write(data_dir: &Path, entries: Vec<Entry>) -> std::io::Result<()> {
-    json_file::write(
-        &data_dir.join(FILE),
-        &Stored {
-            paths: Vec::new(),
-            entries,
-        },
-    )
+    json_file::write(&data_dir.join(FILE), &Stored { entries })
 }
 
 fn now() -> f64 {
@@ -180,17 +161,5 @@ mod tests {
         assert!(list(&dir).is_empty());
         fs::write(dir.join(FILE), "{ broken").unwrap();
         assert!(list(&dir).is_empty());
-    }
-
-    #[test]
-    fn reads_the_list_of_older_versions() {
-        let dir = temp_dir("recent-old");
-        fs::write(dir.join(FILE), r#"{"paths":["D:\\old.mp3"]}"#).unwrap();
-        let recent = list(&dir);
-        assert_eq!(recent.len(), 1);
-        assert_eq!(recent[0].path, r"D:\old.mp3");
-        assert_eq!(recent[0].opened_at, None);
-        add(&dir, r"D:\new.mp3", Some(10.0)).unwrap();
-        assert_eq!(list(&dir).len(), 2);
     }
 }

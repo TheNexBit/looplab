@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { formatSpeed } from "@/features/player/limits";
 import { t } from "@/i18n";
+import { formatPercent } from "@/lib/format";
 import { useDiaryStore } from "@/stores/diary";
 import { useLoopStore } from "@/stores/loop";
 import { usePlayerStore } from "@/stores/player";
@@ -63,7 +63,7 @@ function TrainerGroup() {
         max={L[key].max}
         step={L[key].step}
         onChange={(value) => settings.update({ [key]: value })}
-        format={formatSpeed}
+        format={formatPercent}
         parse={parsePercent}
         className={FIELD}
       />
@@ -107,7 +107,7 @@ function TrainerGroup() {
         {hasLoop ? (
           <>
             <p className="text-readout">
-              {p.repetition} {repetitions + 1} · {formatSpeed(speed)}
+              {p.repetition} {repetitions + 1} · {formatPercent(speed)}
             </p>
             {settings.trainer && (
               <p className="text-readout-dim">

@@ -3,7 +3,9 @@ import { useCanvas } from "@/features/waveform/useCanvas";
 import { t } from "@/i18n";
 import { commands } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
+import { followPointer } from "@/lib/followPointer";
 import { themeColor } from "@/lib/theme";
+import { clamp } from "@/lib/time";
 import { eqToRust, GAIN, hasGain, Q, useEqStore } from "@/stores/eq";
 import { sectionColor } from "@/stores/markers";
 import {
@@ -47,7 +49,7 @@ export function EqCurve() {
     ctx.beginPath();
     points.forEach((db, i) => {
       const x = (i / (points.length - 1)) * width;
-      const y = gainToY(Math.max(GAIN.min, Math.min(GAIN.max, db))) * height;
+      const y = gainToY(clamp(db, GAIN.min, GAIN.max)) * height;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
@@ -74,9 +76,7 @@ export function EqCurve() {
   const dragBand = (index: number, event: PointerEvent<HTMLButtonElement>) => {
     const area = containerRef.current;
     if (!area || event.button !== 0) return;
-    const handle = event.currentTarget;
-    handle.setPointerCapture(event.pointerId);
-    const move = (e: globalThis.PointerEvent) => {
+    followPointer(event, (e) => {
       const rect = area.getBoundingClientRect();
       const band = useEqStore.getState().settings.bands[index];
       if (!band) return;
@@ -86,22 +86,14 @@ export function EqCurve() {
           ? { gain: Math.round(yToGain((e.clientY - rect.top) / rect.height) * 2) / 2 }
           : {}),
       });
-    };
-    const up = () => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", up);
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", up);
+    });
   };
 
   const widenBand = (index: number, event: WheelEvent) => {
     const band = useEqStore.getState().settings.bands[index];
     if (!band) return;
     const q = band.q * Math.exp(-event.deltaY * 0.002);
-    useEqStore
-      .getState()
-      .setBand(index, { q: Math.round(Math.min(Q.max, Math.max(Q.min, q)) * 10) / 10 });
+    useEqStore.getState().setBand(index, { q: Math.round(clamp(q, Q.min, Q.max) * 10) / 10 });
   };
 
   return (

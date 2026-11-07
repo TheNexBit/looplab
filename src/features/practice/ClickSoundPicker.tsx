@@ -8,10 +8,10 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { tryClick } from "@/features/player/syncEngine";
 import { t } from "@/i18n";
 import type { ClickSound } from "@/lib/bindings";
+import { formatPercent } from "@/lib/format";
 import { CLICK_SOUNDS, SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 
 const p = t.practice;
-const percent = (value: number) => `${Math.round(value * 100)}%`;
 
 /** One beat kind: its sound (menu), a key to hear it and its level. */
 function SoundRow({ accent }: { accent: boolean }) {
@@ -76,7 +76,7 @@ function SoundRow({ accent }: { accent: boolean }) {
         max={limits.max}
         step={limits.step}
         onChange={(value) => update(accent ? { accentLevel: value } : { beatLevel: value })}
-        format={percent}
+        format={formatPercent}
         parse={parsePercent}
         trackClassName="flex-1"
         className="justify-between"

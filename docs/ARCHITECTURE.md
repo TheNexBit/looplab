@@ -123,7 +123,7 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `app/`             | shell: layout, barre, pannello laterale, palette, impostazioni, informazioni, azioni                                                       |
 | `features/<nome>/` | componenti, hook e logica di una funzione: player, library, waveform, markers, eq, video                                                   |
-| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Stepper, OnOffKey, ChoiceKeys, Kbd, Dialog, stili dei menu)          |
+| `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Stepper, OnOffKey, ChoiceKeys, OptionsKey, Kbd, Dialog, menu)        |
 | `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                                                         |
 | `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`, `appearance`                              |
 | `i18n/`            | tutti i testi della UI                                                                                                                     |
@@ -152,4 +152,9 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
   `stores/settings.ts`, nomi in `i18n` (`settings.choices`, controllati da TypeScript). Controlli delle
   impostazioni: `OnOffKey`, `Stepper` (− / + / rotella), `ChoiceKeys` in `components/ui/`.
 - Tasto destro: un controllo che lo usa lo dice sempre. Tasti: `Button options` (triangolino nell'angolo) e
-  `Tooltip rightClick` (seconda riga "Tasto destro: …"); altri elementi: `title` con `withRightClick`.
+  `Tooltip rightClick` (seconda riga "Tasto destro: …"); un tasto con opzioni nuovo usa `OptionsKey`
+  (o `useOptions` + `OptionsPanel` se il pannello si apre anche da un altro tasto); altri elementi: `title` con
+  `withRightClick`.
+- Trascinamenti col puntatore: `lib/followPointer.ts` (cattura, fine anche se il mouse viene preso da Windows).
+- Righe e gruppi delle Impostazioni: `app/SettingLayout.tsx`. Disegno a ogni frame: `useAnimationFrame`, un solo
+  ciclo per tutta l'app.

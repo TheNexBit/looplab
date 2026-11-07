@@ -29,8 +29,7 @@ export type Track = Omit<TrackInfo, "duration" | "ready"> & { duration: number; 
  * While a track loads, how often the waveform is fetched again: every second for a song,
  * every five for a three-hour lesson (its waveform data is ~65 MB).
  */
-const peaksRefreshMs = (duration: number) =>
-  Math.min(5000, Math.max(1000, (duration / 3600) * 1700));
+const peaksRefreshMs = (duration: number) => clamp((duration / 3600) * 1700, 1000, 5000);
 
 export type LoadState =
   | { kind: "idle" }

@@ -7,6 +7,9 @@ export function signed(value: number, unit?: string): string {
   return unit ? `${text} ${unit}` : text;
 }
 
+/** A share as a percentage, as on speed and volume readouts: 0.75 → "75%". */
+export const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
+
 /** Words for `formatAgo`, from `i18n`. */
 export interface AgoWords {
   now: string;

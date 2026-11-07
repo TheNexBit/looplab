@@ -1,8 +1,9 @@
 import { PRESETS } from "@/features/eq/presets";
-import { formatSpeed, SPEED_PRESETS } from "@/features/player/limits";
+import { SPEED_PRESETS } from "@/features/player/limits";
 import { detachVideo, dockVideo } from "@/features/video/detach";
 import { t } from "@/i18n";
 import { UI_SCALE } from "@/lib/appearance";
+import { formatPercent } from "@/lib/format";
 import { type ShortcutId, shortcutLabel, shortcuts } from "@/lib/shortcuts";
 import { THEMES } from "@/lib/theme";
 import { useAppearanceStore } from "@/stores/appearance";
@@ -60,7 +61,7 @@ export function buildActions(): Action[] {
     ...fromShortcuts,
     ...SPEED_PRESETS.map((speed) => ({
       id: `speed-${speed}`,
-      label: `${t.transport.speed} ${formatSpeed(speed)}`,
+      label: `${t.transport.speed} ${formatPercent(speed)}`,
       group: g.playback,
       run: () => player.setSpeed(speed),
     })),

@@ -41,7 +41,7 @@ const lamps: Record<Led, string> = {
  * Triangle in the bottom-right corner of a key whose right button opens options, like the
  * corner marks of Logic's and Cubase's buttons and of hardware with a menu behind a key.
  */
-export function OptionsCorner() {
+function OptionsCorner() {
   return (
     <span
       aria-hidden

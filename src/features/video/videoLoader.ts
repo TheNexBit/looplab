@@ -1,11 +1,8 @@
 import { Channel, convertFileSrc } from "@tauri-apps/api/core";
-import { VIDEO_EXTENSIONS } from "@/features/library/formats";
+import { isVideoPath } from "@/features/library/formats";
 import { commands } from "@/lib/bindings";
 import { usePlayerStore } from "@/stores/player";
 import { useVideoStore } from "@/stores/video";
-
-const isVideoFile = (path: string) =>
-  (VIDEO_EXTENSIONS as readonly string[]).includes(path.split(".").pop()?.toLowerCase() ?? "");
 
 let current: string | null = null;
 /** Set once a proxy was made for the current file: if even that fails, give up */
@@ -22,7 +19,7 @@ async function load(path: string) {
   proxied = false;
   proxyPath = null;
   const video = useVideoStore.getState();
-  if (!isVideoFile(path)) {
+  if (!isVideoPath(path)) {
     video.setStatus("none", { src: null, error: null });
     return;
   }

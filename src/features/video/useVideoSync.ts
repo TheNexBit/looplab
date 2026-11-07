@@ -1,4 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
+import { clamp } from "@/lib/time";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 
 export interface Clock {
@@ -82,7 +83,7 @@ export function useVideoSync(ref: RefObject<HTMLVideoElement | null>, clock: () 
       seek(position + s.seekSeconds * speed);
       video.playbackRate = speed;
     } else if (Math.abs(drift) > DEAD_ZONE) {
-      const nudge = Math.max(-MAX_NUDGE, Math.min(MAX_NUDGE, -drift * 1.5));
+      const nudge = clamp(-drift * 1.5, -MAX_NUDGE, MAX_NUDGE);
       video.playbackRate = speed * (1 + nudge);
     } else {
       video.playbackRate = speed;

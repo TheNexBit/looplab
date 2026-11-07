@@ -6,18 +6,15 @@ import { withRightClick } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { commands, type RecentFile } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
-import { formatAgo } from "@/lib/format";
+import { formatAgo, formatPercent } from "@/lib/format";
 import { formatLength } from "@/lib/time";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
-import { VIDEO_EXTENSIONS } from "./formats";
+import { isVideoPath } from "./formats";
 
 const r = t.recent;
 /** Below this many tracks a search field would only be in the way */
 const SEARCH_FROM = 7;
-
-const isVideo = (path: string) =>
-  (VIDEO_EXTENSIONS as readonly string[]).includes(path.split(".").pop()?.toLowerCase() ?? "");
 
 const open = (file: RecentFile) => void usePlayerStore.getState().open(file.path);
 
@@ -26,8 +23,7 @@ function projectSummary(file: RecentFile): string {
   const parts: string[] = [];
   if (file.savedLoops > 0) parts.push(`${file.savedLoops} ${r.loops}`);
   if (file.sections > 0) parts.push(`${file.sections} ${r.sectionsShort}`);
-  if (file.speed && Math.abs(file.speed - 1) > 0.001)
-    parts.push(`${Math.round(file.speed * 100)}%`);
+  if (file.speed && Math.abs(file.speed - 1) > 0.001) parts.push(formatPercent(file.speed));
   return parts.join(" · ");
 }
 
@@ -123,7 +119,7 @@ export function RecentList() {
       </div>
       <ul className="min-h-0 overflow-y-auto">
         {shown.map((file) => {
-          const Icon = isVideo(file.path) ? FileVideo : FileAudio;
+          const Icon = isVideoPath(file.path) ? FileVideo : FileAudio;
           return (
             <li
               key={file.path}
@@ -145,7 +141,10 @@ export function RecentList() {
                       : "text-fg-subtle line-through",
                   )}
                 >
-                  <Icon className="size-4" aria-label={isVideo(file.path) ? r.video : r.audio} />
+                  <Icon
+                    className="size-4"
+                    aria-label={isVideoPath(file.path) ? r.video : r.audio}
+                  />
                   <span className="truncate">{file.name}</span>
                   <span className="text-xs text-readout-dim tabular">{projectSummary(file)}</span>
                   <span className="text-right font-mono text-xs text-fg-subtle tabular">

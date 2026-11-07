@@ -1,7 +1,7 @@
 import { Dialog } from "@/components/ui/Dialog";
-import { formatSpeed } from "@/features/player/limits";
 import { formatDuration, lastDays, tracksPractised } from "@/features/practice/diaryStats";
 import { t } from "@/i18n";
+import { formatPercent } from "@/lib/format";
 import { useDiaryStore } from "@/stores/diary";
 import { usePlayerStore } from "@/stores/player";
 import { useUiStore } from "@/stores/ui";
@@ -65,7 +65,7 @@ export function DiaryDialog() {
                       {row.days}
                     </td>
                     <td className="px-3 py-1.5 text-right font-mono text-xs text-fg-muted tabular">
-                      {formatSpeed(row.maxSpeed)}
+                      {formatPercent(row.maxSpeed)}
                     </td>
                     <td className="px-3 py-1.5 text-right font-mono text-xs text-fg-muted tabular">
                       {formatDay(row.lastDay)}

@@ -1,9 +1,8 @@
 import { BookmarkPlus, ChevronDown, Download, Repeat, Trash2 } from "lucide-react";
 import { Popover } from "radix-ui";
-import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
-import { floatingPanel } from "@/components/ui/menu";
+import { OptionsPanel, useOptions } from "@/components/ui/OptionsKey";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
@@ -23,7 +22,8 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
   const region = loop.region();
   const repetitions = usePracticeStore((s) => s.repetitions);
   const afterLoop = useSettingsStore((s) => s.afterLoop);
-  const [options, setOptions] = useState(false);
+  // Both the ▾ key and a right-click on the Loop key open the options
+  const { open, setOpen, onContextMenu } = useOptions();
 
   return (
     <div className="flex items-center">
@@ -40,11 +40,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           disabled={disabled || !region}
           active={loop.enabled && region !== null}
           onClick={loop.toggle}
-          onContextMenu={(event) => {
-            // Right-click: the loop options, like the options of a DAW's keys
-            event.preventDefault();
-            setOptions(true);
-          }}
+          onContextMenu={onContextMenu}
           aria-label={t.transport.loop}
           aria-pressed={loop.enabled}
           className="rounded-r-none"
@@ -52,7 +48,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           <Repeat className="size-4" />
         </Button>
       </Tooltip>
-      <Popover.Root open={options} onOpenChange={setOptions}>
+      <Popover.Root open={open} onOpenChange={setOpen}>
         <Tooltip label={t.transport.loopOptions}>
           <Popover.Trigger asChild>
             <Button
@@ -76,84 +72,78 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
             </Button>
           </Popover.Trigger>
         </Tooltip>
-        <Popover.Portal>
-          <Popover.Content
-            side="top"
-            sideOffset={8}
-            className={`${floatingPanel} w-80 space-y-4 p-4`}
-          >
-            <p className="font-mono text-xs text-readout tabular">
-              {region
-                ? `${formatTime(region.start)} – ${formatTime(region.end)}`
-                : t.transport.noLoop}
-            </p>
-            <div className="space-y-1">
-              <Slider
-                label={t.transport.leadIn}
-                value={loop.leadIn}
-                defaultValue={LEAD_IN.default}
-                min={LEAD_IN.min}
-                max={LEAD_IN.max}
-                step={LEAD_IN.step}
-                onChange={loop.setLeadIn}
-                format={formatSeconds}
-                trackClassName="flex-1"
-                className="justify-between"
-              />
-              <p className="text-xs text-fg-subtle">{t.transport.leadInHint}</p>
-            </div>
-            <div className="space-y-1">
-              <Slider
-                label={t.transport.gap}
-                value={loop.gap}
-                defaultValue={GAP.default}
-                min={GAP.min}
-                max={GAP.max}
-                step={GAP.step}
-                onChange={loop.setGap}
-                format={formatSeconds}
-                trackClassName="flex-1"
-                className="justify-between"
-              />
-              <p className="text-xs text-fg-subtle">{t.transport.gapHint}</p>
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-sm text-fg">{t.settings.afterLoop}</p>
-              <ChoiceKeys
-                label={t.settings.afterLoop}
-                value={afterLoop}
-                choices={SETTING_CHOICES.afterLoop.map(
-                  (choice) => [choice, t.settings.choices.afterLoop[choice]] as const,
-                )}
-                onChange={(next) => useSettingsStore.getState().update({ afterLoop: next })}
-              />
-              <p className="text-xs text-fg-subtle">{t.settings.afterLoopHint}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              <Button
-                variant="hardware"
-                onClick={() => useSavedLoopsStore.getState().saveCurrent()}
-                disabled={!region}
-              >
-                <BookmarkPlus className="size-4" />
-                {t.savedLoops.save}
-              </Button>
-              <Button variant="hardware" onClick={loop.clear} disabled={!region}>
-                <Trash2 className="size-4" />
-                {t.transport.clearLoop}
-              </Button>
-              <Button
-                variant="hardware"
-                className="col-span-2"
-                onClick={() => useUiStore.getState().openExport({ kind: "loop" })}
-                disabled={!region}
-              >
-                <Download className="size-4" />
-                {t.export.exportLoop}
-              </Button>
-            </div>
-          </Popover.Content>
-        </Popover.Portal>
+        <OptionsPanel className="w-80 space-y-4 p-4">
+          <p className="font-mono text-xs text-readout tabular">
+            {region
+              ? `${formatTime(region.start)} – ${formatTime(region.end)}`
+              : t.transport.noLoop}
+          </p>
+          <div className="space-y-1">
+            <Slider
+              label={t.transport.leadIn}
+              value={loop.leadIn}
+              defaultValue={LEAD_IN.default}
+              min={LEAD_IN.min}
+              max={LEAD_IN.max}
+              step={LEAD_IN.step}
+              onChange={loop.setLeadIn}
+              format={formatSeconds}
+              trackClassName="flex-1"
+              className="justify-between"
+            />
+            <p className="text-xs text-fg-subtle">{t.transport.leadInHint}</p>
+          </div>
+          <div className="space-y-1">
+            <Slider
+              label={t.transport.gap}
+              value={loop.gap}
+              defaultValue={GAP.default}
+              min={GAP.min}
+              max={GAP.max}
+              step={GAP.step}
+              onChange={loop.setGap}
+              format={formatSeconds}
+              trackClassName="flex-1"
+              className="justify-between"
+            />
+            <p className="text-xs text-fg-subtle">{t.transport.gapHint}</p>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-sm text-fg">{t.settings.afterLoop}</p>
+            <ChoiceKeys
+              label={t.settings.afterLoop}
+              value={afterLoop}
+              choices={SETTING_CHOICES.afterLoop.map(
+                (choice) => [choice, t.settings.choices.afterLoop[choice]] as const,
+              )}
+              onChange={(next) => useSettingsStore.getState().update({ afterLoop: next })}
+            />
+            <p className="text-xs text-fg-subtle">{t.settings.afterLoopHint}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <Button
+              variant="hardware"
+              onClick={() => useSavedLoopsStore.getState().saveCurrent()}
+              disabled={!region}
+            >
+              <BookmarkPlus className="size-4" />
+              {t.savedLoops.save}
+            </Button>
+            <Button variant="hardware" onClick={loop.clear} disabled={!region}>
+              <Trash2 className="size-4" />
+              {t.transport.clearLoop}
+            </Button>
+            <Button
+              variant="hardware"
+              className="col-span-2"
+              onClick={() => useUiStore.getState().openExport({ kind: "loop" })}
+              disabled={!region}
+            >
+              <Download className="size-4" />
+              {t.export.exportLoop}
+            </Button>
+          </div>
+        </OptionsPanel>
       </Popover.Root>
     </div>
   );

@@ -409,7 +409,7 @@ export type RecentFile_Deserialize = {
 	name: string,
 	/**  False when the file has been moved or deleted since */
 	exists: boolean,
-	/**  When it was last opened, in seconds since 1970 (unknown for lists of older versions) */
+	/**  When it was last opened, in seconds since 1970 */
 	openedAt?: number | null,
 	/**  Length in seconds, as announced when it was last opened */
 	duration?: number | null,
@@ -425,7 +425,7 @@ export type RecentFile_Serialize = {
 	name: string,
 	/**  False when the file has been moved or deleted since */
 	exists: boolean,
-	/**  When it was last opened, in seconds since 1970 (unknown for lists of older versions) */
+	/**  When it was last opened, in seconds since 1970 */
 	openedAt: number | null,
 	/**  Length in seconds, as announced when it was last opened */
 	duration: number | null,

@@ -1,5 +1,5 @@
 import { type BeatGrid, beatSeconds, beatsBetween } from "@/features/practice/tempo";
-import { formatTick } from "@/lib/time";
+import { clamp, formatTick } from "@/lib/time";
 import { type Peaks, pickLevel } from "./peaks";
 
 /** Part of the track to draw. Times in seconds, sizes in device pixels. */
@@ -39,7 +39,7 @@ export function drawWaveform(
   const reach = half ? bandHeight * 0.96 : (bandHeight / 2) * 0.92;
   const scale = (reach / 127) * peaks.gain * look.zoom;
   // Zoomed peaks stop at the edges of the band instead of spilling onto the ruler
-  const limit = (y: number) => Math.min(view.height, Math.max(top, y));
+  const limit = (y: number) => clamp(y, top, view.height);
 
   const framesPerPixel = (view.span * peaks.sampleRate) / view.width;
   const level = pickLevel(peaks, framesPerPixel);

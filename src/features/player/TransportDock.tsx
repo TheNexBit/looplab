@@ -6,13 +6,13 @@ import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
-import { signed } from "@/lib/format";
+import { formatPercent, signed } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { showsWhole, useViewStore } from "@/stores/view";
 import { FollowKey } from "./FollowKey";
 import { LoopMenu } from "./LoopMenu";
-import { CENTS, formatSpeed, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
+import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
 
 /** Recessed panel holding a group of keys or a fader. */
@@ -120,7 +120,7 @@ export function TransportDock() {
             max={SPEED.max}
             step={SPEED.step}
             onChange={setSpeed}
-            format={formatSpeed}
+            format={formatPercent}
             parse={parsePercent}
             labelClassName={LABEL}
             trackClassName={TRACK}
@@ -130,10 +130,10 @@ export function TransportDock() {
               key={preset}
               active={speed === preset}
               onClick={() => setSpeed(preset)}
-              aria-label={`${t.transport.speedPreset} ${formatSpeed(preset)}`}
+              aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
               className="hidden h-[22px] px-1.5 font-mono text-[10px] tabular xl:inline-block"
             >
-              {formatSpeed(preset)}
+              {formatPercent(preset)}
             </Chip>
           ))}
         </div>

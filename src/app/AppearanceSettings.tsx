@@ -1,5 +1,5 @@
 import { Check, Pipette, RotateCcw } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
 import { Stepper } from "@/components/ui/Stepper";
@@ -15,8 +15,10 @@ import {
 } from "@/lib/appearance";
 import { cn } from "@/lib/cn";
 import { isHex } from "@/lib/color";
+import { formatPercent } from "@/lib/format";
 import { THEMES, type ThemeId } from "@/lib/theme";
 import { useAppearanceStore } from "@/stores/appearance";
+import { SettingGroup, SettingRow } from "./SettingLayout";
 
 const a = t.settings.appearance;
 
@@ -55,30 +57,6 @@ function shownColor(color: CustomColor): string {
     .getPropertyValue(THEME_VARIABLE[color])
     .trim();
   return isHex(value) ? value : "#ffffff";
-}
-
-function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
-  return (
-    <section className="space-y-2.5">
-      <div>
-        <p className="panel-label text-fg-muted">{title}</p>
-        <p className="text-xs text-fg-subtle">{hint}</p>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center gap-4 py-1">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-fg">{label}</p>
-        {hint && <p className="text-xs text-fg-subtle">{hint}</p>}
-      </div>
-      {children}
-    </div>
-  );
 }
 
 /**
@@ -193,23 +171,24 @@ function ColorRow({ color }: { color: CustomColor }) {
   );
 }
 
-const percent = (value: number) => `${Math.round(value * 100)}%`;
-
 /** Settings → Appearance: theme, colours and sizes of this PC, applied at once. */
 export function AppearanceSettings() {
   const appearance = useAppearanceStore();
   const changed = Object.keys(appearance.colors[appearance.theme] ?? {}).length > 0;
   return (
-    <div className="space-y-5 px-4 pt-3 pb-4">
-      <Section title={a.theme} hint={a.themeHint}>
+    <div className="space-y-2 px-4 pb-4">
+      <SettingGroup title={a.theme} hint={a.themeHint}>
         <div className="grid grid-cols-3 gap-2.5">
           {THEMES.map((theme) => (
             <ThemeCard key={theme} theme={theme} selected={theme === appearance.theme} />
           ))}
         </div>
-      </Section>
+      </SettingGroup>
 
-      <Section title={`${a.colorsTitle} · ${a.themes[appearance.theme].name}`} hint={a.colorsHint}>
+      <SettingGroup
+        title={`${a.colorsTitle} · ${a.themes[appearance.theme].name}`}
+        hint={a.colorsHint}
+      >
         <div className="divide-y divide-border">
           {CUSTOM_COLORS.map((color) => (
             <ColorRow key={color} color={color} />
@@ -220,21 +199,21 @@ export function AppearanceSettings() {
             {a.resetColors}
           </Button>
         </div>
-      </Section>
+      </SettingGroup>
 
-      <Section title={a.layoutTitle} hint={a.layoutHint}>
+      <SettingGroup title={a.layoutTitle} hint={a.layoutHint}>
         <div className="divide-y divide-border">
-          <Row label={a.uiScale} hint={a.uiScaleHint}>
+          <SettingRow label={a.uiScale} hint={a.uiScaleHint}>
             <Stepper
               label={a.uiScale}
               value={appearance.uiScale}
               {...UI_SCALE}
               defaultValue={UI_SCALE.default}
               onChange={(uiScale) => appearance.update({ uiScale })}
-              format={percent}
+              format={formatPercent}
             />
-          </Row>
-          <Row label={a.font} hint={a.fontHint}>
+          </SettingRow>
+          <SettingRow label={a.font} hint={a.fontHint}>
             <ChoiceKeys
               label={a.font}
               value={appearance.font}
@@ -243,8 +222,8 @@ export function AppearanceSettings() {
               )}
               onChange={(font) => appearance.update({ font })}
             />
-          </Row>
-          <Row label={a.corners} hint={a.cornersHint}>
+          </SettingRow>
+          <SettingRow label={a.corners} hint={a.cornersHint}>
             <ChoiceKeys
               label={a.corners}
               value={appearance.corners}
@@ -253,8 +232,8 @@ export function AppearanceSettings() {
               )}
               onChange={(corners) => appearance.update({ corners })}
             />
-          </Row>
-          <Row label={a.overview} hint={a.overviewHint}>
+          </SettingRow>
+          <SettingRow label={a.overview} hint={a.overviewHint}>
             <ChoiceKeys
               label={a.overview}
               value={appearance.overviewHeight}
@@ -263,12 +242,12 @@ export function AppearanceSettings() {
               )}
               onChange={(overviewHeight) => appearance.update({ overviewHeight })}
             />
-          </Row>
+          </SettingRow>
         </div>
         <div className="flex justify-end">
           <Button onClick={appearance.resetLayout}>{a.resetLayout}</Button>
         </div>
-      </Section>
+      </SettingGroup>
     </div>
   );
 }

@@ -336,25 +336,27 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
     sul display del Tempo; sui recenti, sulle sezioni e sulle bandierine dei marker la stessa riga è nel `title`
     (`withRightClick`).
 
-- **Trascinamento col tasto centrale più affidabile**: l'auto-scroll di Windows (l'icona con le frecce tonde) non
-  parte più in nessun punto della finestra, perché a metà trascinamento si prendeva il mouse; mentre tieni la
-  vista (tasto centrale sulla forma d'onda o trascinamento nella panoramica) il Follow aspetta anche se il mouse
-  è fermo, e riparte 2 s dopo il rilascio (`holdFollow`); se la finestra perde il mouse il trascinamento finisce.
-  Poi: la rotella che gira di uno scatto mentre la premi non fa più zoom durante il trascinamento; oltre l'inizio
-  o la fine del brano la vista si riaggancia dove si è fermata, così tornando indietro si muove subito invece di
-  dover prima recuperare la strada fatta oltre il bordo (anche nella panoramica).
-  Causa principale (il trascinamento "a vuoto per un tratto"): il pointerdown del tasto centrale veniva annullato,
-  e allora Chromium non manda più il mousedown, l'unico il cui annullamento ferma l'auto-scroll. Ora il pointerdown
-  resta libero e l'auto-scroll si ferma sul mousedown (`main.tsx`).
-  Poi una registrazione dei segnali del mouse (tolta) ha mostrato che arrivano tutti e la vista li segue: il
-  "vuoto" era il bordo, cioè tirare la vista oltre l'inizio del brano, dove si fermava di colpo. Ora i bordi sono
-  **elastici** (`pan` / `settle` in `stores/view.ts`): oltre 0:00 o la fine la vista segue ancora la mano, sempre
-  più dura e al massimo per 1/5 della vista, la zona senza musica è ombreggiata e al rilascio torna al bordo.
+- **Trascinamento col tasto centrale**: il "vuoto" all'inizio del trascinamento non era di Looplab, ma di uno
+  script AutoHotkey dell'utente (CenterWindow) che tratteneva il tasto centrale per 150 ms; ora lo script ha le
+  eccezioni per le app audio. Restano utili: l'auto-scroll di Windows bloccato su tutta la finestra (sul
+  mousedown, `main.tsx`), lo scatto della rotella ignorato mentre la si preme, il Follow in pausa mentre si tiene
+  la vista e i **bordi elastici** (`pan` / `settle` in `stores/view.ts`): oltre 0:00 o la fine la vista segue
+  ancora la mano, sempre più dura e al massimo per 1/5 della vista, con la zona senza musica ombreggiata.
 
 - **Ridimensionare il video subito**: la barra tra video e forme d'onda parte dalla misura che si vede, non da
   quella salvata (più grande, se la finestra era più alta: il primo tratto del trascinamento non muoveva niente).
   A ogni limite (video minimo, forme d'onda minime, pannello laterale) il trascinamento si riaggancia, così
   tornando indietro si muove subito. Le barre prendono il mouse anche qualche pixel intorno.
+
+- **Pulizia del codice** (report approvato dall'utente):
+  - tasti con opzioni sul tasto destro in un componente unico (`OptionsKey`, `useOptions`, `OptionsPanel`);
+  - trascinamenti con il puntatore in una funzione sola (`lib/followPointer.ts`): finiscono anche se Windows
+    prende il mouse (prima le bande dell'EQ potevano restare agganciate);
+  - righe e gruppi delle Impostazioni condivisi (`app/SettingLayout.tsx`);
+  - una sola `formatPercent`, un solo `isVideoPath`, `clamp` al posto dei limiti scritti a mano;
+  - un solo ciclo di animazione per forme d'onda, posizione e note (`useAnimationFrame`), fermo quando nessuno
+    disegna; un disegno che va in errore finisce nel registro senza fermare gli altri;
+  - tolte le letture dei formati vecchi di `recent.json` (solo percorsi) e del tema (`looplab.theme`).
 
 ## Dopo la prima versione
 

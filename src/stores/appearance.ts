@@ -17,8 +17,6 @@ import { DEFAULT_THEME, isTheme, THEMES, type ThemeId } from "@/lib/theme";
 import { clamp } from "@/lib/time";
 
 const KEY = "looplab.appearance";
-/** Where versions before the custom colours kept the theme alone */
-const OLD_THEME_KEY = "looplab.theme";
 
 export const DEFAULT_APPEARANCE: Appearance = {
   theme: DEFAULT_THEME,
@@ -56,12 +54,8 @@ export function sanitizeAppearance(value: unknown): Appearance {
   };
 }
 
-/** The appearance chosen on this PC (with the theme of older versions, if that is all there is). */
-export function storedAppearance(): Appearance {
-  const stored = readStored(KEY);
-  if (stored !== undefined) return sanitizeAppearance(stored);
-  return sanitizeAppearance({ theme: readStored(OLD_THEME_KEY) });
-}
+/** The appearance chosen on this PC. */
+export const storedAppearance = (): Appearance => sanitizeAppearance(readStored(KEY));
 
 /** Size of the whole window's content, like Ctrl + / Ctrl − in a browser. */
 export function applyUiScale(scale: number) {

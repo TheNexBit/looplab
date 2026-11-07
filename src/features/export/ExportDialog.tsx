@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Dialog } from "@/components/ui/Dialog";
 import { menuContent, menuItem } from "@/components/ui/menu";
-import { formatSpeed } from "@/features/player/limits";
 import { t } from "@/i18n";
 import { type AppError, commands, type ExportFormat } from "@/lib/bindings";
-import { signed } from "@/lib/format";
+import { formatPercent, signed } from "@/lib/format";
 import { readPrefs, writeStored } from "@/lib/storage";
 import { formatTime } from "@/lib/time";
 import { eqToRust, useEqStore } from "@/stores/eq";
@@ -238,7 +237,7 @@ export function ExportDialog() {
             <Check
               checked={prefs.withSound}
               onChange={(withSound) => updatePrefs({ withSound })}
-              label={`${x.withSound} (${formatSpeed(speed)}, ${signed(semitones, t.transport.semitones)}${cents ? ` ${signed(cents, t.transport.cents)}` : ""})`}
+              label={`${x.withSound} (${formatPercent(speed)}, ${signed(semitones, t.transport.semitones)}${cents ? ` ${signed(cents, t.transport.cents)}` : ""})`}
             />
             <Check
               checked={prefs.withEq}

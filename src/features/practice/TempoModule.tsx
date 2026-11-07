@@ -1,15 +1,16 @@
 import { ChevronDown, Crosshair, Grid3x3, Hand, Metronome, X } from "lucide-react";
 import { Popover } from "radix-ui";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Kbd } from "@/components/ui/Kbd";
-import { floatingPanel } from "@/components/ui/menu";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
+import { OptionsKey, OptionsPanel, useOptions } from "@/components/ui/OptionsKey";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
+import { formatPercent } from "@/lib/format";
 import type { ShortcutId } from "@/lib/shortcuts";
 import { clamp } from "@/lib/time";
 import { useWheelSteps } from "@/lib/useWheelSteps";
@@ -149,20 +150,16 @@ function TempoMenu() {
  */
 function BpmDisplay() {
   const bpm = usePracticeStore((s) => s.bpm);
-  const [menu, setMenu] = useState(false);
+  const { open: menu, setOpen: setMenu, onContextMenu } = useOptions();
 
-  // Right-click anywhere on the display opens its menu, like the options of a DAW's keys
+  // Right-click anywhere on the display opens its menu (a native listener: the display
+  // is not a control of its own)
   const displayRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const display = displayRef.current;
-    if (!display) return;
-    const open = (event: MouseEvent) => {
-      event.preventDefault();
-      setMenu(true);
-    };
-    display.addEventListener("contextmenu", open);
-    return () => display.removeEventListener("contextmenu", open);
-  }, []);
+    display?.addEventListener("contextmenu", onContextMenu);
+    return () => display?.removeEventListener("contextmenu", onContextMenu);
+  }, [onContextMenu]);
 
   // The wheel changes the tempo by one
   const ref = useRef<HTMLDivElement>(null);
@@ -215,16 +212,9 @@ function BpmDisplay() {
           </div>
         </div>
       </Popover.Anchor>
-      <Popover.Portal>
-        <Popover.Content
-          side="top"
-          align="start"
-          sideOffset={8}
-          className={`${floatingPanel} w-80 space-y-3 p-2 pb-3`}
-        >
-          <TempoMenu />
-        </Popover.Content>
-      </Popover.Portal>
+      <OptionsPanel align="start" className="w-80 space-y-3 p-2 pb-3">
+        <TempoMenu />
+      </OptionsPanel>
     </Popover.Root>
   );
 }
@@ -271,7 +261,7 @@ function ClickOptions() {
         max={SETTING_LIMITS.clickVolume.max}
         step={SETTING_LIMITS.clickVolume.step}
         onChange={(clickVolume) => update({ clickVolume })}
-        format={(value) => `${Math.round(value * 100)}%`}
+        format={formatPercent}
         parse={parsePercent}
         trackClassName="flex-1"
         className="justify-between"
@@ -293,52 +283,26 @@ function ClickOptions() {
 function CountInKey() {
   const on = useSettingsStore((s) => s.countIn);
   const bars = useSettingsStore((s) => s.countInBars);
-  const [options, setOptions] = useState(false);
   const short = bars === 1 ? p.oneBar : `${bars} ${p.bars}`;
   return (
-    <Popover.Root open={options} onOpenChange={setOptions}>
-      <Popover.Anchor asChild>
-        <span>
-          <Tooltip
-            label={p.countInKeyHint}
-            shortcut="toggleCountIn"
-            rightClick={p.countInRightClick}
-          >
-            <Button
-              variant="hardware"
-              size="key"
-              led="amber"
-              options
-              active={on}
-              className="w-16"
-              aria-label={`${p.countIn}: ${short}`}
-              aria-pressed={on}
-              onClick={() => useSettingsStore.getState().update({ countIn: !on })}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                setOptions(true);
-              }}
-            >
-              <span className="flex flex-col items-center gap-0.5 leading-none">
-                <span className="text-[8px] font-semibold tracking-[0.06em] uppercase">
-                  {p.countIn}
-                </span>
-                <span className="text-[10px] tabular">{short}</span>
-              </span>
-            </Button>
-          </Tooltip>
-        </span>
-      </Popover.Anchor>
-      <Popover.Portal>
-        <Popover.Content
-          side="top"
-          sideOffset={8}
-          className={`${floatingPanel} w-72 space-y-3 p-3`}
-        >
-          <ClickOptions />
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+    <OptionsKey
+      label={p.countInKeyHint}
+      shortcut="toggleCountIn"
+      rightClick={p.countInRightClick}
+      panel={<ClickOptions />}
+      panelClassName="w-72 space-y-3 p-3"
+      led="amber"
+      active={on}
+      className="w-16"
+      aria-label={`${p.countIn}: ${short}`}
+      aria-pressed={on}
+      onClick={() => useSettingsStore.getState().update({ countIn: !on })}
+    >
+      <span className="flex flex-col items-center gap-0.5 leading-none">
+        <span className="text-[8px] font-semibold tracking-[0.06em] uppercase">{p.countIn}</span>
+        <span className="text-[10px] tabular">{short}</span>
+      </span>
+    </OptionsKey>
   );
 }
 

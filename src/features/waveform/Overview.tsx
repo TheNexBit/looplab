@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { t } from "@/i18n";
 import { OVERVIEW_HEIGHTS } from "@/lib/appearance";
 import { themeColor } from "@/lib/theme";
+import { clamp } from "@/lib/time";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useAppearanceStore } from "@/stores/appearance";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
@@ -66,7 +67,7 @@ export function Overview() {
     const box = windowRef.current;
     if (box) {
       // A view stretched past an end (hand drag) stays inside the strip
-      const left = Math.max(0, Math.min(start, duration - span));
+      const left = clamp(start, 0, Math.max(0, duration - span));
       box.style.left = `${(left / duration) * 100}%`;
       box.style.width = `${(Math.min(span, duration) / duration) * 100}%`;
     }
