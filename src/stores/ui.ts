@@ -27,6 +27,8 @@ interface UiState {
   dialog: Dialog | null;
   /** What the export window starts with; null = the loop if there is one, else the track */
   exportSource: ExportSource | null;
+  /** The window is the mini bar, always on top (`app/miniMode.ts` switches it) */
+  mini: boolean;
   toggleSidePanel: () => void;
   setSidePanelTab: (tab: SidePanelTab) => void;
   setSidePanelWidth: (width: number) => void;
@@ -42,6 +44,7 @@ export const useUiStore = create<UiState>((set) => ({
   sidePanelTab: "sections",
   dialog: null,
   exportSource: null,
+  mini: false,
   toggleSidePanel: () => set((state) => ({ sidePanelOpen: !state.sidePanelOpen })),
   setSidePanelTab: (tab) => set({ sidePanelTab: tab, sidePanelOpen: true }),
   setSidePanelWidth: (width) => {

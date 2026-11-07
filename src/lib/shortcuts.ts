@@ -44,6 +44,8 @@ export const shortcuts = {
   loopDouble: "Ctrl+ArrowUp",
   loopHalve: "Ctrl+ArrowDown",
   togglePlaylist: "",
+  // A slim bar always on top of other programs, like a media player's mini mode
+  toggleMini: "Ctrl+M",
   commandPalette: "Ctrl+K",
   openSettings: "Ctrl+,",
   openFile: "Ctrl+O",

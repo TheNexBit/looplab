@@ -7,6 +7,8 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	/**  Basic app information, also used to verify the typed Rust ↔ UI bridge. */
 	appInfo: () => __TAURI_INVOKE<AppInfo>("app_info"),
+	/**  Mini mode on or off: the main window as a slim bar always on top (see `window::set_mini`). */
+	setMiniMode: (on: boolean) => typedError<null, AppError>(__TAURI_INVOKE("set_mini_mode", { on })),
 	/**
 	 *  Opens a file and makes it the current track (paused at the start), like Reaper: it returns
 	 *  after the first seconds, the rest loads in the background (`TrackLoading` events), and the

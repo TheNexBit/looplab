@@ -389,6 +389,15 @@ Scelte dall'utente tra le idee proposte (le più piccole e usate in ogni session
   accanto alla portable. Impostazioni → Dati dice quando si è nella portable.
 - I progetti `.looplab.json` restano accanto ai brani come sempre: viaggiano con la musica, non con l'app.
 
+## 13. Finestra mini ✅
+
+- **Finestra mini** (Ctrl+M o il tasto ⧉ in alto, come il mini player di un lettore multimediale): la finestra
+  diventa una barra sottile **sempre in primo piano** con play, loop, posizione, velocità − / + e il brano. Resta
+  sopra la tablatura nel browser o il video di una lezione; tutte le scorciatoie funzionano. Ctrl+M o ⤢ la
+  riportano com'era (posizione, dimensione, massimizzata). Chiudendo l'app in mini, si ricorda la finestra intera.
+- Fatta in Rust (`window::set_mini`): la finestra principale si rimpicciolisce, niente seconda finestra da tenere
+  sincronizzata.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

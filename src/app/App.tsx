@@ -23,9 +23,11 @@ import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
+import { useUiStore } from "@/stores/ui";
 import { AboutDialog } from "./AboutDialog";
 import { CommandPalette } from "./CommandPalette";
 import { DiaryDialog } from "./DiaryDialog";
+import { MiniBar } from "./MiniBar";
 import { SettingsDialog } from "./SettingsDialog";
 import { SidePanel } from "./SidePanel";
 import { shortcutHandlers } from "./shortcutHandlers";
@@ -35,6 +37,7 @@ export function App() {
   const [info, setInfo] = useState<AppInfo>();
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const loading = usePlayerStore((s) => s.load.kind === "loading");
+  const mini = useUiStore((s) => s.mini);
   const hovering = useFileDrop(openDroppedFiles);
 
   useEffect(() => {
@@ -75,6 +78,15 @@ export function App() {
   }, []);
 
   useShortcuts(shortcutHandlers);
+
+  // Mini mode: the window is a slim bar on top of other programs, with only the essentials
+  if (mini) {
+    return (
+      <TooltipProvider>
+        <MiniBar />
+      </TooltipProvider>
+    );
+  }
 
   return (
     <TooltipProvider>

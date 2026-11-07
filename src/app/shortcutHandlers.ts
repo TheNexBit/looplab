@@ -19,6 +19,7 @@ import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { useViewStore } from "@/stores/view";
+import { toggleMini } from "./miniMode";
 
 const KEYBOARD_ZOOM = 1.5;
 
@@ -107,6 +108,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   loopDouble: () => resizeLoop(2),
   loopHalve: () => resizeLoop(0.5),
   togglePlaylist,
+  toggleMini,
   commandPalette: () => useUiStore.getState().openDialog("palette"),
   openSettings: () => useUiStore.getState().openDialog("settings"),
   openFile: () => void pickAndOpenFile(),

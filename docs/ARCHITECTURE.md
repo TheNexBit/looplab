@@ -45,7 +45,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     cache dei brani decodificati si ferma a 2 GB invece di 10 e gli aggiornamenti si segnalano soltanto (lo ZIP
     nuovo si scarica a mano). Lo ZIP lo crea `New-PortableZip` in `scripts/powershell/release-config.ps1`.
   - `window.rs`: le finestre si creano nel codice (non in `tauri.conf.json`) per poter spostare
-    il profilo WebView2 prima che parta.
+    il profilo WebView2 prima che parta. `set_mini` fa della finestra principale la barra mini sempre in primo
+    piano e la rimette com'era; la UI mostra allora solo `app/MiniBar.tsx`.
   - `state.rs`: motore audio (avviato in background, ricreato se la scheda audio si guasta) e picchi del brano.
   - `playback.rs`: evento tipizzato `PlaybackStatus` ~15 volte al secondo mentre suona.
   - `commands/waveform.rs`: `get_peaks` restituisce byte grezzi; tauri-specta non sa descriverli, quindi è

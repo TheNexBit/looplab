@@ -101,6 +101,10 @@ export const it = {
     rename: "Rinomina il loop",
     remove: "Elimina il loop",
   },
+  mini: {
+    enter: "Finestra mini sempre in primo piano",
+    leave: "Torna alla finestra intera",
+  },
   playlist: {
     title: "Scaletta",
     hint: "I loop salvati in fila, ognuno suonato più volte, poi il successivo: una sessione di studio guidata. Alla fine si ferma; cambiare il loop a mano la interrompe.",
@@ -573,6 +577,7 @@ export const it = {
     loopDouble: "Loop doppio",
     loopHalve: "Loop a metà",
     togglePlaylist: "Scaletta: avvia / ferma",
+    toggleMini: "Finestra mini on/off",
     commandPalette: "Cerca azioni",
     openSettings: "Impostazioni",
     openFile: "Apri file",

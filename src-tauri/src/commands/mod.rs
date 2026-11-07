@@ -27,6 +27,7 @@ pub fn builder() -> Builder<tauri::Wry> {
     Builder::<tauri::Wry>::new()
         .commands(collect_commands![
             app::app_info,
+            app::set_mini_mode,
             player::open_file,
             player::play,
             player::pause,

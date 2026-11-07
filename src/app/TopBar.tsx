@@ -5,6 +5,7 @@ import {
   FolderOpen,
   PanelRight,
   Piano,
+  PictureInPicture2,
   Redo,
   Search,
   Settings,
@@ -22,6 +23,7 @@ import { useNotesStore } from "@/stores/notes";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
 import { useUiStore } from "@/stores/ui";
+import { toggleMini } from "./miniMode";
 
 function RecentMenu() {
   const files = useRecentStore((s) => s.files);
@@ -190,6 +192,17 @@ export function TopBar() {
           aria-pressed={notesOpen}
         >
           <Piano className="size-4" />
+        </Button>
+      </Tooltip>
+      <Tooltip label={t.mini.enter} shortcut="toggleMini">
+        <Button
+          variant="hardware"
+          size="icon"
+          disabled={!trackName}
+          onClick={toggleMini}
+          aria-label={t.mini.enter}
+        >
+          <PictureInPicture2 className="size-4" />
         </Button>
       </Tooltip>
       <Tooltip label={t.app.toggleSidePanel}>

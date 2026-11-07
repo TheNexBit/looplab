@@ -12,6 +12,13 @@ pub struct AppInfo {
     pub decoded_limit: f64,
 }
 
+/// Mini mode on or off: the main window as a slim bar always on top (see `window::set_mini`).
+#[tauri::command]
+#[specta::specta]
+pub fn set_mini_mode(window: tauri::WebviewWindow, on: bool) -> Result<(), super::AppError> {
+    crate::window::set_mini(&window, on).map_err(super::AppError::internal)
+}
+
 /// Basic app information, also used to verify the typed Rust ↔ UI bridge.
 #[tauri::command]
 #[specta::specta]

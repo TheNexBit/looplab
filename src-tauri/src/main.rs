@@ -79,6 +79,10 @@ fn main() {
                     let _ = commands::VideoWindowHidden.emit(window.app_handle());
                 }
                 (window::MAIN, WindowEvent::CloseRequested { .. }) => {
+                    // The place to remember is the full window, not the mini bar
+                    if window::is_mini() {
+                        let _ = window::set_mini(&webview, false);
+                    }
                     window_state::save(&webview);
                     if let Some(video) = window.app_handle().get_webview_window(window::VIDEO) {
                         window_state::save(&video);
