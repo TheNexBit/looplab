@@ -51,6 +51,28 @@ describe("following the playhead", () => {
     expect(Number.isFinite(useViewStore.getState().manualUntil)).toBe(true);
   });
 
+  it("stretches past the start under the hand, then glides back", () => {
+    const view = useViewStore.getState();
+    view.pan(-10);
+    const pulled = useViewStore.getState().start;
+    expect(pulled).toBeLessThan(0); // something moved under the hand
+    expect(pulled).toBeGreaterThan(-6); // but never more than a fifth of the 30 s view
+    useViewStore.getState().pan(-20);
+    expect(useViewStore.getState().start).toBeLessThan(pulled); // still moving, more stiffly
+    useViewStore.getState().pan(5);
+    expect(useViewStore.getState().start).toBe(5); // inside the track: exactly with the hand
+    useViewStore.getState().pan(-10);
+    useViewStore.getState().settle();
+    for (let frame = 0; frame < 120; frame++) useViewStore.getState().step();
+    expect(useViewStore.getState().start).toBe(0); // back to the start once let go
+  });
+
+  it("stretches past the end too", () => {
+    useViewStore.getState().pan(290); // 300 s track, 30 s view: the last start is 270
+    expect(useViewStore.getState().start).toBeGreaterThan(270);
+    expect(useViewStore.getState().start).toBeLessThan(276);
+  });
+
   it("turns the page at the right edge in page mode, like Reaper", () => {
     useViewStore.getState().followPlayhead(20, "page");
     expect(useViewStore.getState().start).toBe(0); // still inside the page

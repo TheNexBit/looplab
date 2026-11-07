@@ -141,8 +141,6 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
       // Not cancelled here: Chromium would then skip the mousedown, the only event whose
       // cancelling stops its auto-scroll (see `main.tsx`), and that took the drag away
       gesture = { kind: "pan", x: event.clientX, start: useViewStore.getState().start };
-      // Held still for a while during playback, the view must not run off under the hand
-      useViewStore.getState().holdFollow(true);
       element.style.cursor = "grabbing";
       element.setPointerCapture(event.pointerId);
       return;
@@ -177,13 +175,8 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
       // Dragging right shows earlier music, like pulling a sheet of paper
       const { span } = useViewStore.getState();
       const seconds = ((event.clientX - gesture.x) / element.clientWidth) * span;
-      const wanted = gesture.start - seconds;
-      useViewStore.getState().scrollTo(wanted);
-      // Past either end of the track the view stops: grab it again where it stopped, so
-      // moving back moves it at once instead of first making up the distance gone past
-      const reached = useViewStore.getState().start;
-      if (Math.abs(reached - wanted) > 1e-9)
-        gesture = { ...gesture, x: event.clientX, start: reached };
+      // Past the start or the end the view stretches, so the hand never pulls on nothing
+      useViewStore.getState().pan(gesture.start - seconds);
       return;
     }
     const time = timeAt(event.clientX);
@@ -213,7 +206,7 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   };
 
   const onPointerUp = (event: PointerEvent) => {
-    if (gesture?.kind === "pan") useViewStore.getState().holdFollow(false);
+    if (gesture?.kind === "pan") useViewStore.getState().settle();
     const player = usePlayerStore.getState();
     const region = useLoopStore.getState().region();
     // A click on the loop bar goes to the loop start, a click on an edge to that edge

@@ -65,8 +65,10 @@ export function Overview() {
     const { start, span } = useViewStore.getState();
     const box = windowRef.current;
     if (box) {
-      box.style.left = `${(start / duration) * 100}%`;
-      box.style.width = `${(span / duration) * 100}%`;
+      // A view stretched past an end (hand drag) stays inside the strip
+      const left = Math.max(0, Math.min(start, duration - span));
+      box.style.left = `${(left / duration) * 100}%`;
+      box.style.width = `${(Math.min(span, duration) / duration) * 100}%`;
     }
     placeLoopOverlay(loopRef.current, (time) => (time / duration) * 100, "%");
     const playhead = playheadRef.current;

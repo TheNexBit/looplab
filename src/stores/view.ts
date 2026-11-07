@@ -32,6 +32,19 @@ export function zoomWindow(
   return clampView({ start: anchor - fraction * span, span }, duration);
 }
 
+/** Farthest a hand drag can pull the view past an end of the track, as a share of the span. */
+const STRETCH = 0.2;
+
+/**
+ * Where a view pulled `past` seconds beyond an end of the track is shown: it still moves
+ * with the hand, ever more stiffly, and never further than `STRETCH` of `span` (like the
+ * elastic edge of a touch screen list).
+ */
+export function stretched(past: number, span: number): number {
+  const most = span * STRETCH;
+  return Math.sign(past) * most * (1 - 1 / (Math.abs(past) / most + 1));
+}
+
 /** True when `view` shows the whole track (within a hair). */
 export const showsWhole = (view: ViewWindow, duration: number) =>
   duration > 0 && view.start <= 1e-6 && view.span >= duration * 0.999;
@@ -60,6 +73,13 @@ interface ViewState extends ViewWindow {
   zoom: (factor: number, anchor: number) => void;
   scrollBy: (seconds: number) => void;
   scrollTo: (start: number) => void;
+  /**
+   * The view dragged by hand to `start`: past either end of the track it stretches
+   * instead of stopping dead, so something always moves under the hand; `settle` lets go.
+   */
+  pan: (start: number) => void;
+  /** End of a hand drag: a stretched view glides back to the end of the track. */
+  settle: () => void;
   centerOn: (time: number) => void;
   /** Follow again right away (after a seek or when playback starts). */
   resumeFollow: () => void;
@@ -132,6 +152,19 @@ export const useViewStore = create<ViewState>((set, get) => {
     scrollTo: (start) => {
       set({ manualUntil: performance.now() + MANUAL_PAUSE_MS });
       jump({ start, span: get().span });
+    },
+    pan: (start) => {
+      const { span, duration } = get();
+      const inside = clampView({ start, span }, duration).start;
+      const shown = { start: inside + stretched(start - inside, span), span };
+      set({ ...shown, target: shown, manualUntil: Number.POSITIVE_INFINITY });
+    },
+    settle: () => {
+      const { start, span, duration } = get();
+      set({
+        target: clampView({ start, span }, duration),
+        manualUntil: performance.now() + MANUAL_PAUSE_MS,
+      });
     },
     centerOn: (time) => jump({ start: time - get().span / 2, span: get().span }),
     resumeFollow: () => set({ manualUntil: 0 }),

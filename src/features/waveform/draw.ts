@@ -108,7 +108,8 @@ export function drawRuler(
   ctx.textBaseline = "middle";
   // Integer tick index: adding `step` repeatedly would drift (0.1 + 0.2 ≠ 0.3)
   const last = Math.floor((view.start + view.span) / step);
-  for (let tick = Math.ceil(view.start / step); tick <= last; tick++) {
+  // Nothing before 0:00 (a view stretched past the start shows empty space there)
+  for (let tick = Math.max(0, Math.ceil(view.start / step)); tick <= last; tick++) {
     const time = tick * step;
     const x = Math.round((time - view.start) * pixelsPerSecond);
     if (colors.grid) {
@@ -147,7 +148,7 @@ export function drawBeatGrid(
   if (layer === "beats" ? beatGap < minGap : beatGap * grid.beatsPerBar < minGap) return;
   const top = view.top ?? 0;
   const width = Math.max(1, dpr);
-  for (const { time, bar } of beatsBetween(view.start, view.start + view.span, grid)) {
+  for (const { time, bar } of beatsBetween(Math.max(0, view.start), view.start + view.span, grid)) {
     if ((layer === "bars") !== bar) continue;
     const x = Math.round((time - view.start) * pixelsPerSecond);
     ctx.fillStyle = colors.line;

@@ -65,6 +65,15 @@ export function DetailView() {
 
     if (dirty.current || drawn.current.start !== start || drawn.current.span !== span) {
       ctx.clearRect(0, 0, width, height);
+      // A view stretched past an end of the track (hand drag): shade where there is no music
+      const pixelsPerSecond = width / span;
+      ctx.fillStyle = themeColor("grid");
+      if (start < 0) ctx.fillRect(0, 0, Math.round(-start * pixelsPerSecond), height);
+      const end = viewStore.duration;
+      if (start + span > end) {
+        const x = Math.round((end - start) * pixelsPerSecond);
+        ctx.fillRect(x, 0, width - x, height);
+      }
       const view = { start, span, width, height, top: RULER_CSS * dpr };
       const settings = useSettingsStore.getState();
       drawRuler(ctx, view, dpr, {

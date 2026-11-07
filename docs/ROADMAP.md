@@ -346,6 +346,10 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   Causa principale (il trascinamento "a vuoto per un tratto"): il pointerdown del tasto centrale veniva annullato,
   e allora Chromium non manda più il mousedown, l'unico il cui annullamento ferma l'auto-scroll. Ora il pointerdown
   resta libero e l'auto-scroll si ferma sul mousedown (`main.tsx`).
+  Poi una registrazione dei segnali del mouse (tolta) ha mostrato che arrivano tutti e la vista li segue: il
+  "vuoto" era il bordo, cioè tirare la vista oltre l'inizio del brano, dove si fermava di colpo. Ora i bordi sono
+  **elastici** (`pan` / `settle` in `stores/view.ts`): oltre 0:00 o la fine la vista segue ancora la mano, sempre
+  più dura e al massimo per 1/5 della vista, la zona senza musica è ombreggiata e al rilascio torna al bordo.
 
 ## Dopo la prima versione
 
