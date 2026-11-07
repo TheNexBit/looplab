@@ -103,7 +103,14 @@ export function Overview() {
         element.style.cursor = "grabbing";
       }
       if (press.dragging) {
-        useViewStore.getState().scrollTo(press.viewStart + timeAt(event.clientX) - press.time);
+        const wanted = press.viewStart + timeAt(event.clientX) - press.time;
+        useViewStore.getState().scrollTo(wanted);
+        // Stopped at an end of the track: grab again there, like the wheel-button drag
+        const reached = useViewStore.getState().start;
+        if (Math.abs(reached - wanted) > 1e-9) {
+          press.viewStart = reached;
+          press.time = timeAt(event.clientX);
+        }
       }
     };
     const onPointerUp = () => {

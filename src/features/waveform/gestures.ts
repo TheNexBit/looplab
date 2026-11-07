@@ -119,6 +119,8 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
 
   const onWheel = (event: WheelEvent) => {
     event.preventDefault();
+    // Pressing the wheel often turns it a notch too: that must not zoom under the hand
+    if (gesture?.kind === "pan") return;
     const view = useViewStore.getState();
     const { wheel, wheelSpeed } = useSettingsStore.getState();
     const unit = (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? LINE_HEIGHT_PX : 1) * wheelSpeed;
@@ -175,7 +177,13 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
       // Dragging right shows earlier music, like pulling a sheet of paper
       const { span } = useViewStore.getState();
       const seconds = ((event.clientX - gesture.x) / element.clientWidth) * span;
-      useViewStore.getState().scrollTo(gesture.start - seconds);
+      const wanted = gesture.start - seconds;
+      useViewStore.getState().scrollTo(wanted);
+      // Past either end of the track the view stops: grab it again where it stopped, so
+      // moving back moves it at once instead of first making up the distance gone past
+      const reached = useViewStore.getState().start;
+      if (Math.abs(reached - wanted) > 1e-9)
+        gesture = { ...gesture, x: event.clientX, start: reached };
       return;
     }
     const time = timeAt(event.clientX);

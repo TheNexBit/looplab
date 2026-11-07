@@ -340,6 +340,9 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   parte più in nessun punto della finestra, perché a metà trascinamento si prendeva il mouse; mentre tieni la
   vista (tasto centrale sulla forma d'onda o trascinamento nella panoramica) il Follow aspetta anche se il mouse
   è fermo, e riparte 2 s dopo il rilascio (`holdFollow`); se la finestra perde il mouse il trascinamento finisce.
+  Poi: la rotella che gira di uno scatto mentre la premi non fa più zoom durante il trascinamento; oltre l'inizio
+  o la fine del brano la vista si riaggancia dove si è fermata, così tornando indietro si muove subito invece di
+  dover prima recuperare la strada fatta oltre il bordo (anche nella panoramica).
 
 ## Dopo la prima versione
 
