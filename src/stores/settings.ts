@@ -37,6 +37,11 @@ export interface Settings {
   accentLevel: number;
   beatSound: ClickSound;
   beatLevel: number;
+  /** …of the clicks between beats (subdivisions, pulses inside a group) and of the cross rhythm */
+  subSound: ClickSound;
+  subLevel: number;
+  crossSound: ClickSound;
+  crossLevel: number;
   /** Speed trainer: the loop starts at `trainerFrom` and speeds up by `trainerStep`… */
   trainer: boolean;
   trainerFrom: number;
@@ -116,6 +121,8 @@ export const SETTING_LIMITS = {
   clickVolume: { min: 0, max: 1, step: 0.05 },
   accentLevel: { min: 0, max: 1, step: 0.05 },
   beatLevel: { min: 0, max: 1, step: 0.05 },
+  subLevel: { min: 0, max: 1, step: 0.05 },
+  crossLevel: { min: 0, max: 1, step: 0.05 },
   trainerFrom: { min: 0.25, max: 2, step: 0.01 },
   trainerTo: { min: 0.25, max: 2, step: 0.01 },
   trainerStep: { min: 0.01, max: 0.25, step: 0.01 },
@@ -144,6 +151,11 @@ const DEFAULTS: Settings = {
   accentLevel: 1,
   beatSound: "beepLow",
   beatLevel: 1,
+  // Softer than the beats, so the pulse stays clear; the cross rhythm lower, to follow it against them
+  subSound: "woodLow",
+  subLevel: 0.45,
+  crossSound: "cowbell",
+  crossLevel: 0.7,
   trainer: false,
   trainerFrom: 0.6,
   trainerTo: 1,
@@ -204,6 +216,8 @@ export function sanitize(values: Partial<Settings>): Settings {
   // A sound removed in a later version falls back to the classic click
   if (!isClickSound(result.accentSound)) result.accentSound = DEFAULTS.accentSound;
   if (!isClickSound(result.beatSound)) result.beatSound = DEFAULTS.beatSound;
+  if (!isClickSound(result.subSound)) result.subSound = DEFAULTS.subSound;
+  if (!isClickSound(result.crossSound)) result.crossSound = DEFAULTS.crossSound;
   if (!INSTRUMENTS.includes(result.referenceInstrument)) {
     result.referenceInstrument = DEFAULTS.referenceInstrument;
   }

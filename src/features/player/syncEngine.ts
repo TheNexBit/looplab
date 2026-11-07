@@ -1,10 +1,10 @@
-import { commands } from "@/lib/bindings";
+import { commands, type SoundsRequest } from "@/lib/bindings";
 import { eqToRust, useEqStore } from "@/stores/eq";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
-import { useSettingsStore } from "@/stores/settings";
+import { type Settings, useSettingsStore } from "@/stores/settings";
 
 /** Sends a value only when it differs from the last one sent (or when forced). */
 function sender<T>(send: (value: T) => unknown) {
@@ -29,16 +29,36 @@ function clickSettings() {
     .reduce<number | null>((first, m) => (first === null ? m.time : Math.min(first, m.time)), null);
   return {
     bpm: bpm ?? 0,
-    beatUnit,
     anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
     countIn: settings.countIn ? settings.countInBars * beatsPerBar : 0,
     metronome: settings.metronome,
-    beatsPerBar,
+    // The plain bar of the track's meter: groups, accents and subdivisions come with the
+    // metronome mode
+    bar: {
+      beats: beatsPerBar,
+      unit: beatUnit,
+      grouping: [],
+      states: ["accent" as const],
+      subdivision: 1,
+      swing: 0.5,
+      cross: 0,
+    },
     volume: settings.clickVolume,
+    sounds: clickSounds(settings),
+  };
+}
+
+/** Sound and level of every kind of click, from the settings (shared with the metronome mode). */
+export function clickSounds(settings: Settings): SoundsRequest {
+  return {
     accentSound: settings.accentSound,
     accentLevel: settings.accentLevel,
     beatSound: settings.beatSound,
     beatLevel: settings.beatLevel,
+    subSound: settings.subSound,
+    subLevel: settings.subLevel,
+    crossSound: settings.crossSound,
+    crossLevel: settings.crossLevel,
   };
 }
 

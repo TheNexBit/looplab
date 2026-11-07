@@ -1,10 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::{ClickSettings, ClickSound, LoadError, LoopSettings, ToneSettings, time};
+use audio_engine::{ClickSettings, LoadError, LoopSettings, ToneSettings, time};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
 
+use super::metronome::{BarRequest, SoundsRequest};
 use super::{AppError, ErrorKind};
 use crate::media;
 use crate::state::AppState;
@@ -212,23 +213,17 @@ pub fn set_loop(state: State<'_, AppState>, settings: LoopRequest) -> Result<(),
 pub struct ClickRequest {
     /// Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown
     pub bpm: f64,
-    /// Note value of one beat: 4 for x/4 meters, 8 for x/8…
-    pub beat_unit: u32,
+    /// Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar
+    pub bar: BarRequest,
     /// Seconds: a moment that falls on the first beat of a bar
     pub anchor: f64,
     /// Beats counted in before playback and before every loop repetition
     pub count_in: u32,
     /// Click on every beat while playing
     pub metronome: bool,
-    /// Beats in a bar (the first is accented)
-    pub beats_per_bar: u32,
     /// 0..1
     pub volume: f32,
-    /// Sound and level (0..1) of the first beat of a bar, and of the other beats
-    pub accent_sound: ClickSound,
-    pub accent_level: f32,
-    pub beat_sound: ClickSound,
-    pub beat_level: f32,
+    pub sounds: SoundsRequest,
 }
 
 #[tauri::command]
@@ -237,8 +232,7 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
     let engine = playing_engine(&state)?;
     let rate = engine.sample_rate();
     let beat = if settings.bpm > 0.0 {
-        let quarters_per_beat = 4.0 / f64::from(settings.beat_unit.max(1));
-        time::seconds_to_frames(60.0 / settings.bpm * quarters_per_beat, rate)
+        time::seconds_to_frames(settings.bar.pulse_seconds(settings.bpm), rate)
     } else {
         0
     };
@@ -247,12 +241,9 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
         anchor: time::seconds_to_frames(settings.anchor.max(0.0), rate),
         count_in: settings.count_in,
         metronome: settings.metronome,
-        beats_per_bar: settings.beats_per_bar,
+        pattern: settings.bar.pattern(),
         volume: settings.volume.clamp(0.0, 1.0),
-        accent_sound: settings.accent_sound,
-        accent_level: settings.accent_level.clamp(0.0, 1.0),
-        beat_sound: settings.beat_sound,
-        beat_level: settings.beat_level.clamp(0.0, 1.0),
+        sounds: settings.sounds.sounds(),
     });
     Ok(())
 }

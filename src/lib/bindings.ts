@@ -36,6 +36,13 @@ export const commands = {
 	 *  before any track is open (it starts the audio device like `preview_click`).
 	 */
 	setReferenceTone: (hz: number | null, level: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_reference_tone", { hz, level })),
+	/**
+	 *  Settings of the metronome on its own; while it runs they take over at once, keeping
+	 *  the place in the bar. Starts the audio device if needed: no track is required.
+	 */
+	setMetronome: (settings: MetronomeRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_metronome", { settings })),
+	/**  Starts the metronome on its own from its count-in, or stops it. */
+	runMetronome: (running: boolean) => typedError<null, AppError>(__TAURI_INVOKE("run_metronome", { running })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
@@ -122,6 +129,27 @@ export type Band = {
 
 export type BandKind = "lowShelf" | "peak" | "highShelf" | "highPass" | "lowPass";
 
+/**  The shape of a bar, as MetroFlow describes it. */
+export type BarRequest = {
+	/**  Pulses in a bar (the numerator) */
+	beats: number,
+	/**  Note value of a pulse: 4 for x/4, 8 for x/8… */
+	unit: number,
+	/**  How the pulses group into felt beats (7/8 as [2, 2, 3]); empty: every pulse is a beat */
+	grouping: number[],
+	/**  Accent, normal or muted, one per felt beat */
+	states: BeatState[],
+	/**  Clicks per pulse: 1, 2 (eighths of a quarter), 3 (triplets), 4 (sixteenths)… */
+	subdivision: number,
+	/**  Share of a pair given to its first click: 0.5 even … 0.75 hard shuffle */
+	swing: number | null,
+	/**  Cross pulses over the bar (3 against 4…); 0 = off */
+	cross: number,
+};
+
+/**  What one felt beat does. A muted beat silences its subdivisions too, but keeps its place. */
+export type BeatState = "accent" | "normal" | "muted";
+
 /**  One kind of file in the cache, named after its subfolder. */
 export type CacheKind = 
 /**  Audio FFmpeg extracted from files symphonia cannot read */
@@ -152,23 +180,17 @@ export type ChannelMode = "stereo" |
 export type ClickRequest = {
 	/**  Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown */
 	bpm: number | null,
-	/**  Note value of one beat: 4 for x/4 meters, 8 for x/8… */
-	beatUnit: number,
+	/**  Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar */
+	bar: BarRequest,
 	/**  Seconds: a moment that falls on the first beat of a bar */
 	anchor: number | null,
 	/**  Beats counted in before playback and before every loop repetition */
 	countIn: number,
 	/**  Click on every beat while playing */
 	metronome: boolean,
-	/**  Beats in a bar (the first is accented) */
-	beatsPerBar: number,
 	/**  0..1 */
 	volume: number | null,
-	/**  Sound and level (0..1) of the first beat of a bar, and of the other beats */
-	accentSound: ClickSound,
-	accentLevel: number | null,
-	beatSound: ClickSound,
-	beatLevel: number | null,
+	sounds: SoundsRequest,
 };
 
 /**
@@ -305,6 +327,17 @@ export type MediaKey = {
 
 export type MediaKeyKind = "playPause" | "next" | "previous";
 
+/**  The metronome on its own: tempo, bar, count-in, volume and sounds. */
+export type MetronomeRequest = {
+	/**  Quarter notes per minute */
+	bpm: number | null,
+	bar: BarRequest,
+	countInBars: number,
+	/**  0..1 */
+	volume: number | null,
+	sounds: SoundsRequest,
+};
+
 export type MidiKind = "note" | "cc" | "program";
 
 /**  A MIDI message that can run an action. */
@@ -324,6 +357,12 @@ export type PlaybackStatus = {
 	loops: number,
 	/**  The output device failed: the track must be reopened */
 	deviceLost: boolean,
+	/**
+	 *  The metronome on its own: running, and where it is in pulses from bar 0
+	 *  (negative during the count-in)
+	 */
+	metronomeRunning: boolean,
+	metronomePulses: number | null,
 };
 
 /**  One step of the practice playlist: a saved loop played a number of times. */
@@ -523,6 +562,18 @@ export type Section_Serialize = {
 	color: number,
 	/**  The player's own words about it ("watch the bend at 0:42"), shown while it plays */
 	memo: string,
+};
+
+/**  Sound and level (0..1) of each kind of click. */
+export type SoundsRequest = {
+	accentSound: ClickSound,
+	accentLevel: number | null,
+	beatSound: ClickSound,
+	beatLevel: number | null,
+	subSound: ClickSound,
+	subLevel: number | null,
+	crossSound: ClickSound,
+	crossLevel: number | null,
 };
 
 export type SpectrumRequest = {

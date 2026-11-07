@@ -30,6 +30,13 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     dello stretch) e si mettono in coda con il frame d'ingresso; il click è sintetizzato in uscita
     quando quel frame si sente, quindi non cambia suono con velocità e tonalità. Il conteggio è la
     parte finale della pausa tra le ripetizioni, e precede anche il play.
+  - `pattern.rs` (da MetroFlow): la battuta (`BarPattern`): impulsi, gruppi (7/8 = 2+2+3), stato di ogni
+    battito, suddivisioni, swing, poliritmo. Il tempo si misura in impulsi: un click suona nel frame il cui tratto
+    `[da, a)` contiene il suo istante, quindi ognuno si trova una volta sola a qualsiasi tempo. Le battute prima
+    di 0 sono il count-in e suonano semplici. Lo usano sia il click sopra il brano (impulsi dai frame del brano)
+    sia `metronome.rs`: il metronomo da solo, con un orologio in frame d'uscita mescolato dopo lo stretch; un
+    cambio di tempo o di battuta riparte dal punto in cui si è nella battuta. Il poliritmo ha una voce sua
+    (`cross_voice`), perché suona insieme ai battiti.
   - `tone.rs`: nota di riferimento per accordarsi (`SetTone`, comando `set_reference_tone`): fondamentale
     più tre armoniche, dissolvenza di 30 ms all'accensione, allo spegnimento e al cambio di livello; si
     somma al click, quindi si sente sopra il brano e a brano fermo.

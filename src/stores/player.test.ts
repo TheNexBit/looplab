@@ -36,7 +36,14 @@ describe("playhead during a count-in between repetitions", () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  const status = (position: number) => ({ position, playing: true, loops: 1, deviceLost: false });
+  const status = (position: number) => ({
+    position,
+    playing: true,
+    loops: 1,
+    deviceLost: false,
+    metronomeRunning: false,
+    metronomePulses: 0,
+  });
 
   it("waits at the loop start while the beats are counted", () => {
     vi.advanceTimersByTime(1_500); // 1 s to the loop end, then 0.5 s into the count-in

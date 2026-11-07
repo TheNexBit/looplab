@@ -4,9 +4,12 @@
 //! queued with the input frame they belong to. The click itself is synthesised on the
 //! output side, when that frame is heard: it keeps its pitch and sharpness at any speed
 //! or transposition. Real-time safe: fixed-size queue, no allocation.
-//! The sounds are synthesised (`ClickSound`): accent and other beats each pick theirs.
+//! The sounds are synthesised (`ClickSound`): accents, beats, subdivisions and the cross
+//! rhythm each pick theirs. The shape of the bar is a `BarPattern`.
 
 use std::f32::consts::TAU;
+
+use crate::pattern::{BarPattern, ClickKind, Hits};
 
 /// Tempo grid and click options, in frames of the track.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -19,16 +22,44 @@ pub struct ClickSettings {
     pub count_in: u32,
     /// Click on every beat while the track plays
     pub metronome: bool,
-    /// Beats in a bar: the first one is accented (0 counts as 4)
-    pub beats_per_bar: u32,
+    /// Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar
+    pub pattern: BarPattern,
     /// 0..1
     pub volume: f32,
-    /// Sound and level (0..1) of the first beat of a bar
-    pub accent_sound: ClickSound,
-    pub accent_level: f32,
-    /// Sound and level of the other beats
-    pub beat_sound: ClickSound,
-    pub beat_level: f32,
+    pub sounds: ClickSounds,
+}
+
+/// Sound and level (0..1) of each kind of click, like the metronome settings of Reaper.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ClickSounds {
+    pub accent: (ClickSound, f32),
+    pub beat: (ClickSound, f32),
+    pub sub: (ClickSound, f32),
+    pub cross: (ClickSound, f32),
+}
+
+impl Default for ClickSounds {
+    fn default() -> Self {
+        Self {
+            accent: (ClickSound::BeepHigh, 1.0),
+            beat: (ClickSound::BeepLow, 1.0),
+            // Quieter than the beats, so the pulse stays clear
+            sub: (ClickSound::WoodLow, 0.45),
+            // Lower than the beats: a cross rhythm is followed against them
+            cross: (ClickSound::Cowbell, 0.7),
+        }
+    }
+}
+
+impl ClickSounds {
+    pub(crate) fn of(&self, kind: ClickKind) -> (ClickSound, f32) {
+        match kind {
+            ClickKind::Accent => self.accent,
+            ClickKind::Beat => self.beat,
+            ClickKind::Sub => self.sub,
+            ClickKind::Cross => self.cross,
+        }
+    }
 }
 
 impl Default for ClickSettings {
@@ -38,24 +69,17 @@ impl Default for ClickSettings {
             anchor: 0,
             count_in: 0,
             metronome: false,
-            beats_per_bar: 0,
+            pattern: BarPattern::default(),
             volume: 0.0,
-            accent_sound: ClickSound::BeepHigh,
-            accent_level: 1.0,
-            beat_sound: ClickSound::BeepLow,
-            beat_level: 1.0,
+            sounds: ClickSounds::default(),
         }
     }
 }
 
 impl ClickSettings {
-    /// Sound and level of an accented or ordinary beat.
-    pub(crate) fn sound(&self, accent: bool) -> (ClickSound, f32) {
-        if accent {
-            (self.accent_sound, self.accent_level)
-        } else {
-            (self.beat_sound, self.beat_level)
-        }
+    /// Sound and level of a kind of click.
+    pub(crate) fn sound(&self, kind: ClickKind) -> (ClickSound, f32) {
+        self.sounds.of(kind)
     }
 
     /// Length of the count-in, in track frames (0 when off or without a tempo).
@@ -63,36 +87,38 @@ impl ClickSettings {
         self.beat * u64::from(self.count_in)
     }
 
-    /// Beats in a bar (the default when none is set).
+    /// Pulses in a bar.
     pub(crate) fn bar_length(&self) -> u64 {
-        if self.beats_per_bar == 0 {
-            DEFAULT_BEATS_PER_BAR
-        } else {
-            u64::from(self.beats_per_bar)
-        }
+        u64::from(self.pattern.pulses())
     }
 
-    /// Whether the track frame `position` falls on a metronome beat, and if it starts a bar.
-    pub(crate) fn beat_at(&self, position: u64) -> Option<bool> {
+    /// The clicks that start on track frame `position` (none before the anchor).
+    pub(crate) fn hits_at(&self, position: u64) -> Hits {
         if !self.metronome || self.beat == 0 || position < self.anchor {
-            return None;
+            return Hits::default();
         }
-        let offset = position - self.anchor;
-        offset
-            .is_multiple_of(self.beat)
-            .then(|| (offset / self.beat).is_multiple_of(self.bar_length()))
+        let beat = self.beat as f64;
+        let offset = (position - self.anchor) as f64;
+        self.pattern.hits(offset / beat, (offset + 1.0) / beat)
     }
 }
 
-/// Bar length when none is set.
-const DEFAULT_BEATS_PER_BAR: u64 = 4;
 const CAPACITY: usize = 32;
 
 /// A click waiting to be heard: the input frame (stretcher feed count) it belongs to.
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 struct Pending {
     fed: u64,
-    accent: bool,
+    kind: ClickKind,
+}
+
+impl Default for Pending {
+    fn default() -> Self {
+        Self {
+            fed: 0,
+            kind: ClickKind::Beat,
+        }
+    }
 }
 
 /// Clicks found by the reader, oldest first.
@@ -112,15 +138,15 @@ impl ClickQueue {
     }
 
     /// Queues a click; dropped when the queue is full (it never is at musical tempos).
-    pub fn push(&mut self, fed: u64, accent: bool) {
+    pub fn push(&mut self, fed: u64, kind: ClickKind) {
         if self.len < CAPACITY {
-            self.items[(self.head + self.len) % CAPACITY] = Pending { fed, accent };
+            self.items[(self.head + self.len) % CAPACITY] = Pending { fed, kind };
             self.len += 1;
         }
     }
 
     /// The oldest click if it is due at `heard_fed`.
-    pub fn pop_due(&mut self, heard_fed: f64) -> Option<bool> {
+    pub fn pop_due(&mut self, heard_fed: f64) -> Option<ClickKind> {
         if self.len == 0 {
             return None;
         }
@@ -130,7 +156,7 @@ impl ClickQueue {
         }
         self.head = (self.head + 1) % CAPACITY;
         self.len -= 1;
-        Some(first.accent)
+        Some(first.kind)
     }
 
     pub fn clear(&mut self) {
@@ -329,6 +355,12 @@ impl ClickVoice {
 mod tests {
     use super::*;
 
+    use crate::pattern::ClickKind::{Accent, Beat, Cross};
+
+    fn main_at(settings: &ClickSettings, position: u64) -> Option<ClickKind> {
+        settings.hits_at(position).main
+    }
+
     #[test]
     fn beats_fall_on_the_grid_with_the_bar_accented() {
         let settings = ClickSettings {
@@ -337,11 +369,11 @@ mod tests {
             metronome: true,
             ..ClickSettings::default()
         };
-        assert_eq!(settings.beat_at(50), Some(true));
-        assert_eq!(settings.beat_at(150), Some(false));
-        assert_eq!(settings.beat_at(450), Some(true));
-        assert_eq!(settings.beat_at(151), None);
-        assert_eq!(settings.beat_at(0), None, "nothing before the anchor");
+        assert_eq!(main_at(&settings, 50), Some(Accent));
+        assert_eq!(main_at(&settings, 150), Some(Beat));
+        assert_eq!(main_at(&settings, 450), Some(Accent));
+        assert_eq!(main_at(&settings, 151), None);
+        assert_eq!(main_at(&settings, 0), None, "nothing before the anchor");
     }
 
     #[test]
@@ -349,12 +381,12 @@ mod tests {
         let seven = ClickSettings {
             beat: 10,
             metronome: true,
-            beats_per_bar: 7,
+            pattern: BarPattern::regular(7),
             ..ClickSettings::default()
         };
-        assert_eq!(seven.beat_at(0), Some(true));
-        assert_eq!(seven.beat_at(40), Some(false));
-        assert_eq!(seven.beat_at(70), Some(true));
+        assert_eq!(main_at(&seven, 0), Some(Accent));
+        assert_eq!(main_at(&seven, 40), Some(Beat));
+        assert_eq!(main_at(&seven, 70), Some(Accent));
     }
 
     #[test]
@@ -363,13 +395,13 @@ mod tests {
             beat: 100,
             ..ClickSettings::default()
         };
-        assert_eq!(off.beat_at(0), None);
+        assert_eq!(main_at(&off, 0), None);
         let no_tempo = ClickSettings {
             metronome: true,
             count_in: 4,
             ..ClickSettings::default()
         };
-        assert_eq!(no_tempo.beat_at(0), None);
+        assert_eq!(main_at(&no_tempo, 0), None);
         assert_eq!(no_tempo.count_in_frames(), 0);
     }
 
@@ -408,27 +440,29 @@ mod tests {
     }
 
     #[test]
-    fn accent_and_beats_use_their_own_sound() {
+    fn every_kind_of_click_uses_its_own_sound() {
         let settings = ClickSettings {
-            accent_sound: ClickSound::Cowbell,
-            accent_level: 0.8,
-            beat_sound: ClickSound::HiHat,
-            beat_level: 0.4,
+            sounds: ClickSounds {
+                accent: (ClickSound::Cowbell, 0.8),
+                beat: (ClickSound::HiHat, 0.4),
+                ..ClickSounds::default()
+            },
             ..ClickSettings::default()
         };
-        assert_eq!(settings.sound(true), (ClickSound::Cowbell, 0.8));
-        assert_eq!(settings.sound(false), (ClickSound::HiHat, 0.4));
+        assert_eq!(settings.sound(Accent), (ClickSound::Cowbell, 0.8));
+        assert_eq!(settings.sound(Beat), (ClickSound::HiHat, 0.4));
+        assert_eq!(settings.sound(Cross), ClickSounds::default().cross);
     }
 
     #[test]
     fn queue_releases_clicks_in_order_when_due() {
         let mut queue = ClickQueue::new();
-        queue.push(10, true);
-        queue.push(20, false);
+        queue.push(10, Accent);
+        queue.push(20, Cross);
         assert_eq!(queue.pop_due(5.0), None);
-        assert_eq!(queue.pop_due(10.0), Some(true));
+        assert_eq!(queue.pop_due(10.0), Some(Accent));
         assert_eq!(queue.pop_due(15.0), None);
-        assert_eq!(queue.pop_due(25.0), Some(false));
+        assert_eq!(queue.pop_due(25.0), Some(Cross));
         assert_eq!(queue.pop_due(100.0), None);
     }
 }

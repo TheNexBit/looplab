@@ -447,7 +447,11 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
 1. ✅ **Logica pura** importata con test nuovi (MetroFlow non ne aveva): `features/metronome/` (battuta con gruppi
    e accenti, swing, poliritmi, gap trainer, ritmo da suonare, metrica casuale, routine), `lib/music/` (note,
    scale, accordi), `features/fretboard/` (manico e accordature). Ancora non usata dall'app.
-2. Motore in Rust: gruppi, accenti per battito, suddivisioni, swing, poliritmo (anche sopra i brani).
+2. ✅ **Motore in Rust** (`pattern.rs`, `metronome.rs`): gruppi, accenti per battito (forte / normale / muto),
+   suddivisioni fino a 8, swing, poliritmo su una voce sua; suoni e livelli per accento, battito, suddivisione e
+   poliritmo. Il click sopra i brani usa già lo stesso modello (per ora con la battuta semplice, come prima). Il
+   metronomo da solo ha un orologio suo: parte dal count-in, cambia tempo o battuta tenendo il punto della battuta
+   (pronto per lo speed trainer), comandi `set_metronome` / `run_metronome`, posizione nello stato di riproduzione.
 3. Modalità Metronomo (mockup approvato come base): display, battuta cliccabile, trasporto.
 4. Esercizi: speed trainer, gap trainer, click muti a caso, ritmo da suonare.
 5. Brani, scaletta di tempi, routine; sequenza di battute.

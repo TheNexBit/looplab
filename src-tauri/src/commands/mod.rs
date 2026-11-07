@@ -6,6 +6,7 @@ mod data;
 mod error;
 mod export;
 mod library;
+mod metronome;
 mod player;
 mod sound;
 mod spectrum;
@@ -38,6 +39,8 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::set_click,
             player::preview_click,
             player::set_reference_tone,
+            metronome::set_metronome,
+            metronome::run_metronome,
             library::load_project,
             library::save_project,
             library::recent_files,

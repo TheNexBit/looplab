@@ -24,6 +24,10 @@ pub struct PlaybackStatus {
     pub loops: u32,
     /// The output device failed: the track must be reopened
     pub device_lost: bool,
+    /// The metronome on its own: running, and where it is in pulses from bar 0
+    /// (negative during the count-in)
+    pub metronome_running: bool,
+    pub metronome_pulses: f64,
 }
 
 /// Emits the status while playing, and once after every change.
@@ -41,8 +45,10 @@ pub fn spawn_status_loop(app: AppHandle) {
                 playing: status.playing,
                 loops: u32::try_from(status.loops).unwrap_or(u32::MAX),
                 device_lost: engine.is_lost(),
+                metronome_running: status.metronome_running,
+                metronome_pulses: status.metronome_pulses,
             };
-            if current.playing || last != Some(current) {
+            if current.playing || current.metronome_running || last != Some(current) {
                 let _ = current.emit(&app);
                 last = Some(current);
             }

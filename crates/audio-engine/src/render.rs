@@ -14,6 +14,8 @@ use crate::dsp::channels::Channels;
 use crate::dsp::eq::Eq;
 use crate::dsp::stretch::Stretch;
 use crate::engine::{Command, LoopSettings, MAX_SPEED, Shared};
+use crate::metronome::Metronome;
+use crate::pattern::ClickKind;
 use crate::pcm::{CHANNELS, Pcm};
 use crate::tone::ToneVoice;
 
@@ -108,13 +110,22 @@ impl Reader {
                     let into = self.count_in_span - self.gap_left;
                     if into.is_multiple_of(click.beat) {
                         let beat = into / click.beat;
-                        clicks.push(at, beat.is_multiple_of(click.bar_length()));
+                        let kind = if beat.is_multiple_of(click.bar_length()) {
+                            ClickKind::Accent
+                        } else {
+                            ClickKind::Beat
+                        };
+                        clicks.push(at, kind);
                     }
                 }
                 self.gap_left -= 1;
             } else {
-                if let Some(accent) = click.beat_at(self.position) {
-                    clicks.push(at, accent);
+                let hits = click.hits_at(self.position);
+                if let Some(kind) = hits.main {
+                    clicks.push(at, kind);
+                }
+                if hits.cross {
+                    clicks.push(at, ClickKind::Cross);
                 }
                 let weight = if self.fade_in_left > 0 {
                     self.fade_in_left -= 1;
@@ -170,6 +181,10 @@ pub(crate) struct Renderer {
     click: ClickSettings,
     clicks: ClickQueue,
     voice: ClickVoice,
+    /// The cross rhythm sounds together with the beats, so it has its own voice
+    cross_voice: ClickVoice,
+    /// The metronome on its own, mixed after everything
+    metronome: Metronome,
     /// Reference note to tune by ear, mixed over everything
     tone: ToneVoice,
     /// Play was pressed with a count-in: the next jump starts with it
@@ -228,6 +243,8 @@ impl Renderer {
             click: ClickSettings::default(),
             clicks: ClickQueue::new(),
             voice: ClickVoice::new(sample_rate),
+            cross_voice: ClickVoice::new(sample_rate),
+            metronome: Metronome::new(sample_rate),
             tone: ToneVoice::new(sample_rate),
             count_in_on_jump: false,
             input: vec![0.0; max_input * CHANNELS],
@@ -273,6 +290,12 @@ impl Renderer {
         self.shared
             .loops
             .store(self.reader.wraps, Ordering::Relaxed);
+        self.shared
+            .metronome_running
+            .store(self.metronome.is_running(), Ordering::Relaxed);
+        self.shared
+            .metronome_pulses
+            .store(self.metronome.position().to_bits(), Ordering::Relaxed);
     }
 
     fn track_frames(&self) -> Option<u64> {
@@ -313,7 +336,16 @@ impl Renderer {
                 Command::SetEq(settings) => self.eq.set(settings),
                 Command::SetChannelMode(mode) => self.channels.set(mode),
                 Command::SetClick(settings) => self.click = settings,
-                Command::PreviewClick(accent) => self.voice.start(self.click.sound(accent)),
+                Command::PreviewClick(accent) => {
+                    let kind = if accent {
+                        ClickKind::Accent
+                    } else {
+                        ClickKind::Beat
+                    };
+                    self.voice.start(self.click.sound(kind));
+                }
+                Command::SetMetronome(settings) => self.metronome.set(settings),
+                Command::RunMetronome(running) => self.metronome.run(running),
                 Command::SetTone(settings) => self.tone.set(settings),
             }
         }
@@ -361,7 +393,7 @@ impl Renderer {
             // Paused: the reader and the stretcher stay frozen until play; only a click being
             // tried out in the settings and the reference note are heard
             if !self.playing {
-                let extra = self.voice.next(self.click.volume) + self.tone.next();
+                let extra = self.extra();
                 return [extra; 2];
             }
         }
@@ -372,14 +404,29 @@ impl Renderer {
         let i = self.output_index * CHANNELS;
         self.output_index += 1;
         let heard = self.heard_fed();
-        while let Some(accent) = self.clicks.pop_due(heard) {
-            self.voice.start(self.click.sound(accent));
+        while let Some(kind) = self.clicks.pop_due(heard) {
+            let voice = if kind == ClickKind::Cross {
+                &mut self.cross_voice
+            } else {
+                &mut self.voice
+            };
+            voice.start(self.click.sound(kind));
         }
-        let extra = self.voice.next(self.click.volume) + self.tone.next();
+        let extra = self.extra();
         [
             self.output[i] * self.gain + extra,
             self.output[i + 1] * self.gain + extra,
         ]
+    }
+
+    /// Everything mixed over the track: its clicks, the metronome on its own, the reference note.
+    #[inline]
+    fn extra(&mut self) -> f32 {
+        let volume = self.click.volume;
+        self.voice.next(volume)
+            + self.cross_voice.next(volume)
+            + self.metronome.next()
+            + self.tone.next()
     }
 
     fn render_chunk(&mut self) {
@@ -870,7 +917,7 @@ mod tests {
         let click = ClickSettings {
             beat: 100,
             count_in: 6,
-            beats_per_bar: 3,
+            pattern: crate::pattern::BarPattern::regular(3),
             volume: 1.0,
             ..ClickSettings::default()
         };
@@ -886,7 +933,9 @@ mod tests {
             &mut clicks,
             &mut silence,
         );
-        let accents: Vec<bool> = std::iter::from_fn(|| clicks.pop_due(f64::MAX)).collect();
+        let accents: Vec<bool> = std::iter::from_fn(|| clicks.pop_due(f64::MAX))
+            .map(|kind| kind == ClickKind::Accent)
+            .collect();
         assert_eq!(accents, [true, false, false, true, false, false]);
     }
 

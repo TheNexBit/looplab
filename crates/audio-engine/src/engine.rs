@@ -14,6 +14,7 @@ use cpal::{FromSample, SampleFormat, SizedSample, StreamConfig};
 use crate::click::ClickSettings;
 use crate::dsp::channels::ChannelMode;
 use crate::dsp::eq::EqSettings;
+use crate::metronome::MetronomeSettings;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
 use crate::tone::ToneSettings;
@@ -64,6 +65,10 @@ pub(crate) enum Command {
     PreviewClick(bool),
     /// Reference note to tune by ear, heard also while paused
     SetTone(ToneSettings),
+    /// The metronome on its own (no track): its bar, tempo and sounds…
+    SetMetronome(MetronomeSettings),
+    /// …started from its count-in, or stopped
+    RunMetronome(bool),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -75,6 +80,9 @@ pub(crate) struct Shared {
     pub loops: AtomicU64,
     /// Set when the output device fails (unplugged, disabled…)
     pub lost: AtomicBool,
+    /// The metronome on its own: running, and where (pulses from bar 0, as f64 bits)
+    pub metronome_running: AtomicBool,
+    pub metronome_pulses: AtomicU64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -84,6 +92,10 @@ pub struct Status {
     pub playing: bool,
     /// Loop repetitions started so far: it grows by one every time the loop wraps around
     pub loops: u64,
+    /// The metronome on its own: running, and where it is in pulses from bar 0
+    /// (negative during the count-in)
+    pub metronome_running: bool,
+    pub metronome_pulses: f64,
 }
 
 #[derive(Debug)]
@@ -161,6 +173,8 @@ impl Engine {
             position_frames: self.shared.position.load(Ordering::Relaxed),
             playing: self.shared.playing.load(Ordering::Relaxed),
             loops: self.shared.loops.load(Ordering::Relaxed),
+            metronome_running: self.shared.metronome_running.load(Ordering::Relaxed),
+            metronome_pulses: f64::from_bits(self.shared.metronome_pulses.load(Ordering::Relaxed)),
         }
     }
 
@@ -211,6 +225,16 @@ impl Engine {
     /// Plays one accented (`true`) or ordinary click at once, with the current click settings.
     pub fn preview_click(&self, accent: bool) {
         self.send(Command::PreviewClick(accent));
+    }
+
+    /// The metronome on its own: bar, tempo and sounds (taking over at once while it runs).
+    pub fn set_metronome(&self, settings: MetronomeSettings) {
+        self.send(Command::SetMetronome(settings));
+    }
+
+    /// Starts the metronome on its own from its count-in, or stops it.
+    pub fn run_metronome(&self, running: bool) {
+        self.send(Command::RunMetronome(running));
     }
 
     /// Steady reference note (`hz` 0 = off), heard over the track and while paused.
