@@ -138,8 +138,8 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button === WHEEL_BUTTON) {
-      // Windows would start its own auto-scroll (the round arrows icon): the drag is ours
-      event.preventDefault();
+      // Not cancelled here: Chromium would then skip the mousedown, the only event whose
+      // cancelling stops its auto-scroll (see `main.tsx`), and that took the drag away
       gesture = { kind: "pan", x: event.clientX, start: useViewStore.getState().start };
       // Held still for a while during playback, the view must not run off under the hand
       useViewStore.getState().holdFollow(true);

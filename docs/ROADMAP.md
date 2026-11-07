@@ -343,6 +343,9 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   Poi: la rotella che gira di uno scatto mentre la premi non fa più zoom durante il trascinamento; oltre l'inizio
   o la fine del brano la vista si riaggancia dove si è fermata, così tornando indietro si muove subito invece di
   dover prima recuperare la strada fatta oltre il bordo (anche nella panoramica).
+  Causa principale (il trascinamento "a vuoto per un tratto"): il pointerdown del tasto centrale veniva annullato,
+  e allora Chromium non manda più il mousedown, l'unico il cui annullamento ferma l'auto-scroll. Ora il pointerdown
+  resta libero e l'auto-scroll si ferma sul mousedown (`main.tsx`).
 
 ## Dopo la prima versione
 
