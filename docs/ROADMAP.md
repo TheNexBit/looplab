@@ -284,6 +284,13 @@ la successiva), nessun riordino manuale (l'ordine √® quello del brano), velocit√
     posto dei numeri da scrivere (doppio clic sul valore = predefinito), tasti di scelta. "Valori predefiniti"
     di ogni scheda rimette solo le sue voci.
 
+- **Nomi standard dei DAW** (richiesta dell'utente: "1 bt", "Batti" e la campanella non si capivano): Tap,
+  icona metronomo, tasto Count-in con scritta e "1 bar / 2 bars / 4 bars", Snap, Follow, Pre-roll, Gap, Pitch,
+  Fine tune, Downbeat qui; EQ Low shelf / Peak / High shelf / HPF / LPF e Gain; suoni Woodblock, Cowbell, Stick,
+  Hi-hat. Spiegazioni e menu restano in italiano.
+- **Focus da tastiera**: una linea sottile attaccata al controllo invece dell'alone verde arrotondato (si vedeva
+  attorno alla scheda attiva del pannello laterale).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

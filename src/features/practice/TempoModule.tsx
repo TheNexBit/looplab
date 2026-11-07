@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, Crosshair, Grid3x3, Hand, X } from "lucide-react";
+import { ChevronDown, Crosshair, Grid3x3, Hand, Metronome, X } from "lucide-react";
 import { Popover } from "radix-ui";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -205,7 +205,7 @@ function CountInKey() {
   const on = useSettingsStore((s) => s.countIn);
   const bars = useSettingsStore((s) => s.countInBars);
   const [options, setOptions] = useState(false);
-  const short = `${bars} ${p.barsShort}`;
+  const short = bars === 1 ? p.oneBar : `${bars} ${p.bars}`;
   return (
     <Popover.Root open={options} onOpenChange={setOptions}>
       <Popover.Anchor asChild>
@@ -216,7 +216,7 @@ function CountInKey() {
               size="key"
               led="amber"
               active={on}
-              className="w-12"
+              className="w-16"
               aria-label={`${p.countIn}: ${short}`}
               aria-pressed={on}
               onClick={() => useSettingsStore.getState().update({ countIn: !on })}
@@ -225,7 +225,12 @@ function CountInKey() {
                 setOptions(true);
               }}
             >
-              <span className="font-mono text-[10px] leading-none tabular">{short}</span>
+              <span className="flex flex-col items-center gap-0.5 leading-none">
+                <span className="text-[8px] font-semibold tracking-[0.06em] uppercase">
+                  {p.countIn}
+                </span>
+                <span className="text-[10px] tabular">{short}</span>
+              </span>
             </Button>
           </Tooltip>
         </span>
@@ -264,8 +269,7 @@ export function TempoModule({ className }: { className?: string }) {
             onClick={tapBeat}
             aria-label={p.tap}
           >
-            <Hand className="size-4" />
-            <span className="text-[9px] leading-none">{p.tap}</span>
+            <span className="text-[11px] font-semibold tracking-[0.08em] uppercase">{p.tap}</span>
           </Button>
         </Tooltip>
       </div>
@@ -279,7 +283,7 @@ export function TempoModule({ className }: { className?: string }) {
           aria-label={p.metronome}
           aria-pressed={metronome}
         >
-          <Bell className="size-4" />
+          <Metronome className="size-4" />
         </Button>
       </Tooltip>
       <div className="hidden xl:flex">
