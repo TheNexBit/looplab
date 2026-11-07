@@ -1,0 +1,197 @@
+import { create } from "zustand";
+import {
+  BEATS_MAX,
+  BEATS_MIN,
+  beatsInBar,
+  defaultPattern,
+  fitPattern,
+  isValidGrouping,
+  nextBeatState,
+  SWING_MAX,
+  SWING_STRAIGHT,
+} from "@/features/metronome/beatGrid";
+import type { BeatState, TimeSignature } from "@/features/metronome/types";
+import type { PlaybackStatus } from "@/lib/bindings";
+import { readStored, writeStored } from "@/lib/storage";
+import { clamp } from "@/lib/time";
+
+/** Tempo in quarter notes per minute, as everywhere in Looplab (and in Reaper, Ableton). */
+export const METRONOME_BPM = { min: 20, max: 400, step: 1, default: 120 } as const;
+/** Note values a pulse can be: 2/x … 16/x. */
+export const METRONOME_UNITS = [2, 4, 8, 16] as const;
+export type MetronomeUnit = (typeof METRONOME_UNITS)[number];
+/** Clicks a pulse can be split into (1 = only the pulses). */
+export const SUBDIVISIONS = [1, 2, 3, 4, 5, 6] as const;
+export const CROSS = { min: 2, max: 16 } as const;
+export const COUNT_IN_BARS = { min: 0, max: 4 } as const;
+
+/** The bar, the tempo and the sounds' volume: what is kept between sessions. */
+export interface MetronomeSetup {
+  bpm: number;
+  beats: number;
+  unit: MetronomeUnit;
+  /** Pulses grouped into felt beats (7/8 as 2+2+3); null: every pulse is a beat */
+  grouping: number[] | null;
+  /** One per felt beat */
+  states: BeatState[];
+  subdivision: number;
+  /** 0.5 even … 0.75 hard shuffle */
+  swing: number;
+  /** Cross pulses over the bar; 0 = off */
+  cross: number;
+  countInBars: number;
+  volume: number;
+}
+
+const DEFAULTS: MetronomeSetup = {
+  bpm: METRONOME_BPM.default,
+  beats: 4,
+  unit: 4,
+  grouping: null,
+  states: defaultPattern(4),
+  subdivision: 1,
+  swing: SWING_STRAIGHT,
+  cross: 0,
+  countInBars: 0,
+  volume: 0.8,
+};
+const KEY = "looplab.metronome";
+
+/** The setup's own time signature, in MetroFlow's terms. */
+export const signatureOf = (setup: Pick<MetronomeSetup, "beats" | "unit" | "grouping">) =>
+  ({ beats: setup.beats, unit: setup.unit, grouping: setup.grouping }) as TimeSignature;
+
+const isState = (value: unknown): value is BeatState =>
+  value === "accent" || value === "normal" || value === "muted";
+
+/** Keeps a stored setup inside its limits; anything unusable falls back to the default. */
+export function sanitizeSetup(value: Partial<MetronomeSetup>): MetronomeSetup {
+  const number = (v: unknown, fallback: number, min: number, max: number) =>
+    typeof v === "number" && Number.isFinite(v) ? clamp(v, min, max) : fallback;
+  const beats = Math.round(number(value.beats, DEFAULTS.beats, BEATS_MIN, BEATS_MAX));
+  const unit = (METRONOME_UNITS as readonly number[]).includes(value.unit as number)
+    ? (value.unit as MetronomeUnit)
+    : DEFAULTS.unit;
+  const grouping = isValidGrouping(value.grouping, beats) ? value.grouping : null;
+  const felt = grouping ? grouping.length : beats;
+  const states = Array.isArray(value.states) ? value.states.filter(isState) : [];
+  const subdivision = (SUBDIVISIONS as readonly number[]).includes(value.subdivision as number)
+    ? (value.subdivision as number)
+    : DEFAULTS.subdivision;
+  const cross = Math.round(number(value.cross, 0, 0, CROSS.max));
+  return {
+    bpm: number(value.bpm, DEFAULTS.bpm, METRONOME_BPM.min, METRONOME_BPM.max),
+    beats,
+    unit,
+    grouping,
+    states: states.length > 0 ? fitPattern(states, felt) : defaultPattern(felt),
+    subdivision,
+    swing: number(value.swing, SWING_STRAIGHT, SWING_STRAIGHT, SWING_MAX),
+    cross: cross < CROSS.min ? 0 : cross,
+    countInBars: Math.round(number(value.countInBars, 0, COUNT_IN_BARS.min, COUNT_IN_BARS.max)),
+    volume: number(value.volume, DEFAULTS.volume, 0, 1),
+  };
+}
+
+function load(): MetronomeSetup {
+  const stored = readStored(KEY);
+  return stored && typeof stored === "object"
+    ? sanitizeSetup(stored as Partial<MetronomeSetup>)
+    : DEFAULTS;
+}
+
+interface MetronomeState extends MetronomeSetup {
+  /** The metronome mode is on screen */
+  open: boolean;
+  running: boolean;
+  /** Last position the engine reported (pulses from bar 0) and when it arrived */
+  pulses: number;
+  pulsesAt: number;
+  /** When it was started (performance.now), for the elapsed time */
+  startedAt: number;
+  taps: number[];
+  setOpen: (open: boolean) => void;
+  setRunning: (running: boolean) => void;
+  update: (patch: Partial<MetronomeSetup>) => void;
+  /** New meter: the accents are kept where they still fit */
+  setMeter: (beats: number, unit: MetronomeUnit, grouping: number[] | null) => void;
+  /** Accent → normal → muted → accent, like a click on a beat in MetroFlow */
+  cycleBeat: (index: number) => void;
+  addTap: (time: number) => void;
+  applyStatus: (status: PlaybackStatus) => void;
+}
+
+const MAX_TAPS = 8;
+
+/** The metronome on its own: its bar and tempo (kept on this PC) and where it is. */
+export const useMetronomeStore = create<MetronomeState>((set, get) => {
+  const save = () => {
+    const { bpm, beats, unit, grouping, states, subdivision, swing, cross, countInBars, volume } =
+      get();
+    writeStored(KEY, {
+      bpm,
+      beats,
+      unit,
+      grouping,
+      states,
+      subdivision,
+      swing,
+      cross,
+      countInBars,
+      volume,
+    });
+  };
+  return {
+    ...load(),
+    open: false,
+    running: false,
+    pulses: 0,
+    pulsesAt: 0,
+    startedAt: 0,
+    taps: [],
+    setOpen: (open) => set(open ? { open } : { open, running: false }),
+    setRunning: (running) =>
+      set({
+        running,
+        startedAt: performance.now(),
+        // Until the engine reports, the count-in is where it starts
+        pulses: running ? -get().countInBars * get().beats : 0,
+        pulsesAt: performance.now(),
+      }),
+    update: (patch) => {
+      set(sanitizeSetup({ ...get(), ...patch }));
+      save();
+    },
+    setMeter: (beats, unit, grouping) => {
+      const felt = grouping && isValidGrouping(grouping, beats) ? grouping.length : beats;
+      get().update({ beats, unit, grouping, states: fitPattern(get().states, felt) });
+    },
+    cycleBeat: (index) => {
+      const states = [...get().states];
+      const state = states[index];
+      if (state === undefined) return;
+      states[index] = nextBeatState(state);
+      get().update({ states });
+    },
+    addTap: (time) => set({ taps: [...get().taps, time].slice(-MAX_TAPS) }),
+    applyStatus: (status) => {
+      if (!get().running) return;
+      set({ pulses: status.metronomePulses ?? get().pulses, pulsesAt: performance.now() });
+    },
+  };
+});
+
+/** Pulses per second at the current tempo (a pulse is the note value of the numerator). */
+export function pulsesPerSecond(setup: Pick<MetronomeSetup, "bpm" | "unit">): number {
+  return (setup.bpm / 60) * (setup.unit / 4);
+}
+
+/** Where the metronome is now, in pulses (between two reports it runs on at the tempo). */
+export function currentPulses(now = performance.now()): number | null {
+  const state = useMetronomeStore.getState();
+  if (!state.running) return null;
+  return state.pulses + ((now - state.pulsesAt) / 1000) * pulsesPerSecond(state);
+}
+
+/** Felt beats in a bar of the current setup. */
+export const feltBeats = (setup: MetronomeSetup) => beatsInBar(signatureOf(setup));

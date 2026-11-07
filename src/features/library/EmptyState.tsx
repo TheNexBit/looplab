@@ -1,9 +1,10 @@
-import { FolderOpen, Lightbulb, Music, Upload } from "lucide-react";
+import { FolderOpen, Lightbulb, Metronome, Music, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
+import { useMetronomeStore } from "@/stores/metronome";
 import { useRecentStore } from "@/stores/recent";
 import { formatsLabel } from "./formats";
 import { pickAndOpenFile } from "./pickFile";
@@ -90,6 +91,15 @@ export function EmptyState({ hovering }: { hovering: boolean }) {
           <DropStrip hovering={hovering} />
         </>
       )}
+      <Button
+        variant="hardware"
+        className="h-9 shrink-0 self-start px-3"
+        onClick={() => useMetronomeStore.getState().setOpen(true)}
+      >
+        <Metronome className="size-4" />
+        {t.metronome.title}
+        <Kbd shortcut="toggleMetronomeMode" />
+      </Button>
       <p className="flex shrink-0 items-center gap-1.5 text-[11px] text-fg-subtle">
         <Lightbulb className="size-3 shrink-0" aria-hidden />
         <span className="font-medium">{t.recent.tipLabel}</span>

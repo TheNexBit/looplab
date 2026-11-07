@@ -170,6 +170,10 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
   `Tooltip rightClick` (seconda riga "Tasto destro: …"); un tasto con opzioni nuovo usa `OptionsKey`
   (o `useOptions` + `OptionsPanel` se il pannello si apre anche da un altro tasto); altri elementi: `title` con
   `withRightClick`.
+- Metronomo da solo: `stores/metronome.ts` (battuta, tempo, posizione riportata dal motore e proseguita a tempo
+  tra un rapporto e l'altro: `currentPulses`), `features/metronome/metronomeEngine.ts` (`syncMetronome`, avviato
+  dall'app: manda ogni cambio al motore, avvio e arresto; brano e metronomo non suonano insieme), schermata
+  `MetronomeView.tsx` (+ `TempoPanel`, `MeterMenu`, `BeatStrip`), scelte pure in `meterChoices.ts`.
 - Riga informazioni (`app/InfoBar.tsx`, opzione `infoBar`): legge gli attributi `data-info*` che `Tooltip`
   mette sul suo elemento, altrimenti `title` o `aria-label` dell'elemento sotto il puntatore. Un testo nuovo
   in un `Tooltip` compare quindi da solo anche lì.

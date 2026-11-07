@@ -452,7 +452,15 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    poliritmo. Il click sopra i brani usa già lo stesso modello (per ora con la battuta semplice, come prima). Il
    metronomo da solo ha un orologio suo: parte dal count-in, cambia tempo o battuta tenendo il punto della battuta
    (pronto per lo speed trainer), comandi `set_metronome` / `run_metronome`, posizione nello stato di riproduzione.
-3. Modalità Metronomo (mockup approvato come base): display, battuta cliccabile, trasporto.
+3. ✅ **Modalità Metronomo** (Ctrl+Maiusc+M, tasto in alto, pulsante nella pagina iniziale): si apre sopra il
+   brano, che resta caricato sotto; pannello laterale e barra di trasporto del brano si nascondono. Display del
+   tempo (− / +, rotella, frecce, doppio clic = 120, Tap o T, nome italiano del tempo, ♪ = … se l'impulso non è un
+   quarto), display della battuta con menu (metriche comuni, composte con nome, tutti i gruppi possibili, impulsi
+   e valore con − / +), battuta cliccabile (forte → normale → muto, blocchi larghi quanto il gruppo, impulso che si
+   accende, puntini delle suddivisioni, riga del poliritmo), suddivisione 1–6, swing 50–75 % (solo in 2 o 4),
+   poliritmo 2–16, trasporto suo (Spazio, count-in 0–4 battute, battuta e tempo trascorso, volume). Spazio, T e
+   + / − guidano il metronomo mentre è aperto; avviarlo mette in pausa il brano e viceversa. Impostazioni salvate
+   su questo PC (`stores/metronome.ts`).
 4. Esercizi: speed trainer, gap trainer, click muti a caso, ritmo da suonare.
 5. Brani, scaletta di tempi, routine; sequenza di battute.
 6. Tastiera della chitarra, voce che conta, lampeggio.

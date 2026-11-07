@@ -1,5 +1,7 @@
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { loopSection } from "@/features/markers/sectionActions";
+import { toggleMetronomeRun } from "@/features/metronome/metronomeEngine";
+import { nudgeBpm, tapMetronome } from "@/features/metronome/TempoPanel";
 import { setFollow } from "@/features/player/FollowKey";
 import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/actions";
 import { togglePlaylist } from "@/features/practice/playlist";
@@ -13,6 +15,7 @@ import {
   useLoopStore,
 } from "@/stores/loop";
 import { neighbourPoint, sortedSections, useMarkersStore } from "@/stores/markers";
+import { useMetronomeStore } from "@/stores/metronome";
 import { useNotesStore } from "@/stores/notes";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
@@ -24,6 +27,8 @@ import { toggleMini } from "./miniMode";
 const KEYBOARD_ZOOM = 1.5;
 
 const player = () => usePlayerStore.getState();
+/** The metronome mode is on screen: transport keys drive the metronome, not the track. */
+const metronomeMode = () => useMetronomeStore.getState().open;
 const settings = () => useSettingsStore.getState();
 const zoomAroundPlayhead = (factor: number) =>
   useViewStore.getState().zoom(factor, currentPosition());
@@ -71,7 +76,7 @@ const recallSection = (index: number) => {
 
 /** What every shortcut of `lib/shortcuts.ts` does. The command palette reuses them. */
 export const shortcutHandlers: Required<ShortcutHandlers> = {
-  playPause: () => player().togglePlay(),
+  playPause: () => (metronomeMode() ? toggleMetronomeRun() : player().togglePlay()),
   seekBack: () => player().seekBy(-settings().seekStep),
   seekForward: () => player().seekBy(settings().seekStep),
   seekBackFine: () => player().seekBy(-settings().fineSeekStep),
@@ -105,8 +110,10 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   },
   previousMarker: () => jumpToNeighbour(-1),
   nextMarker: () => jumpToNeighbour(1),
-  speedUp: () => player().setSpeed(player().speed + settings().speedStep),
-  speedDown: () => player().setSpeed(player().speed - settings().speedStep),
+  speedUp: () =>
+    metronomeMode() ? nudgeBpm(1) : player().setSpeed(player().speed + settings().speedStep),
+  speedDown: () =>
+    metronomeMode() ? nudgeBpm(-1) : player().setSpeed(player().speed - settings().speedStep),
   pitchUp: () => shiftPitch(1),
   pitchDown: () => shiftPitch(-1),
   zoomIn: () => zoomAroundPlayhead(1 / KEYBOARD_ZOOM),
@@ -122,13 +129,17 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   loopHalve: () => resizeLoop(0.5),
   togglePlaylist,
   toggleMini,
+  toggleMetronomeMode: () => {
+    const metronome = useMetronomeStore.getState();
+    metronome.setOpen(!metronome.open);
+  },
   commandPalette: () => useUiStore.getState().openDialog("palette"),
   openSettings: () => useUiStore.getState().openDialog("settings"),
   openFile: () => void pickAndOpenFile(),
   undo: () => useHistoryStore.getState().undo(),
   redo: () => useHistoryStore.getState().redo(),
   saveLoop: () => useSavedLoopsStore.getState().saveCurrent(),
-  tapTempo: () => hasTrack() && tapBeat(),
+  tapTempo: () => (metronomeMode() ? tapMetronome() : hasTrack() && tapBeat()),
   toggleMetronome,
   toggleCountIn: () => useSettingsStore.getState().update({ countIn: !settings().countIn }),
   setDownbeat: () => hasTrack() && setDownbeatHere(),

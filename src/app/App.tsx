@@ -8,6 +8,8 @@ import { LoadingState } from "@/features/library/LoadingState";
 import { openDroppedFiles, openLastTrack } from "@/features/library/pickFile";
 import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
+import { MetronomeView } from "@/features/metronome/MetronomeView";
+import { syncMetronome } from "@/features/metronome/metronomeEngine";
 import { syncWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
 import { startDiary } from "@/features/practice/diaryRecorder";
@@ -21,6 +23,7 @@ import { WaveformPanel } from "@/features/waveform/WaveformPanel";
 import { t } from "@/i18n";
 import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
+import { useMetronomeStore } from "@/stores/metronome";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
@@ -39,15 +42,17 @@ export function App() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const loading = usePlayerStore((s) => s.load.kind === "loading");
   const mini = useUiStore((s) => s.mini);
+  const metronomeOpen = useMetronomeStore((s) => s.open);
   const infoBar = useSettingsStore((s) => s.infoBar);
   const hovering = useFileDrop(openDroppedFiles);
 
   useEffect(() => {
     void commands.appInfo().then(setInfo);
     if (useSettingsStore.getState().startup === "last") void openLastTrack();
-    const unlisten = events.playbackStatus.listen((event) =>
-      usePlayerStore.getState().applyStatus(event.payload),
-    );
+    const unlisten = events.playbackStatus.listen((event) => {
+      usePlayerStore.getState().applyStatus(event.payload);
+      useMetronomeStore.getState().applyStatus(event.payload);
+    });
     const unlistenLoading = events.trackLoading.listen((event) =>
       usePlayerStore.getState().applyLoading(event.payload),
     );
@@ -64,6 +69,7 @@ export function App() {
     const stopPlaylist = runPlaylist();
     const stopRemote = startRemoteControl();
     const stopDiary = startDiary();
+    const stopMetronome = syncMetronome();
     return () => {
       void unlisten.then((stop) => stop());
       void unlistenLoading.then((stop) => stop());
@@ -76,6 +82,7 @@ export function App() {
       stopPlaylist();
       stopRemote();
       stopDiary();
+      stopMetronome();
     };
   }, []);
 
@@ -112,10 +119,16 @@ export function App() {
                 {info.name} {info.version} · {t.app.engine} {info.engineVersion}
               </span>
             )}
+            {/* Over the track, which stays loaded underneath: leaving finds it as it was */}
+            {metronomeOpen && (
+              <div className="absolute inset-0 z-10 bg-stage">
+                <MetronomeView />
+              </div>
+            )}
           </main>
-          <SidePanel />
+          {!metronomeOpen && <SidePanel />}
         </div>
-        <TransportDock />
+        {!metronomeOpen && <TransportDock />}
         {infoBar && <InfoBar />}
         <CommandPalette />
         <SettingsDialog />

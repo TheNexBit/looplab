@@ -3,6 +3,7 @@ import {
   ChevronDown,
   Download,
   FolderOpen,
+  Metronome,
   PanelRight,
   Piano,
   PictureInPicture2,
@@ -19,6 +20,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
+import { useMetronomeStore } from "@/stores/metronome";
 import { useNotesStore } from "@/stores/notes";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
@@ -108,6 +110,7 @@ export function TopBar() {
   const trackName = usePlayerStore((s) => s.track?.name);
   const notesOpen = useNotesStore((s) => s.open);
   const complete = usePlayerStore((s) => s.track?.complete ?? false);
+  const metronomeOpen = useMetronomeStore((s) => s.open);
 
   return (
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(var(--color-topbar-from),var(--color-topbar-to))] px-3 shadow-[inset_0_-1px_0_var(--color-sheen)]">
@@ -172,6 +175,21 @@ export function TopBar() {
         </span>
       </button>
 
+      <Tooltip
+        label={metronomeOpen ? t.metronome.close : t.metronome.open}
+        shortcut="toggleMetronomeMode"
+      >
+        <Button
+          variant="hardware"
+          size="icon"
+          active={metronomeOpen}
+          onClick={() => useMetronomeStore.getState().setOpen(!metronomeOpen)}
+          aria-label={t.metronome.open}
+          aria-pressed={metronomeOpen}
+        >
+          <Metronome className="size-4" />
+        </Button>
+      </Tooltip>
       <Tooltip label={t.shortcuts.openSettings} shortcut="openSettings">
         <Button
           variant="hardware"

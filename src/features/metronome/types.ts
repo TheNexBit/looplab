@@ -2,7 +2,7 @@
 export type SubdivisionId = "quarter" | "eighth" | "triplet" | "sixteenth";
 
 /** Denominator of the time signature. Only simple/compound meters we support. */
-export type BeatUnit = 2 | 4 | 8;
+export type BeatUnit = 2 | 4 | 8 | 16;
 
 export interface TimeSignature {
   /** Numerator: how many pulses per bar. */

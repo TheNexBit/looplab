@@ -49,6 +49,8 @@ export const shortcuts = {
   togglePlaylist: "",
   // A slim bar always on top of other programs, like a media player's mini mode
   toggleMini: "Ctrl+M",
+  // The metronome on its own, also without a track
+  toggleMetronomeMode: "Ctrl+Shift+M",
   commandPalette: "Ctrl+K",
   openSettings: "Ctrl+,",
   openFile: "Ctrl+O",
