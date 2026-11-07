@@ -22,6 +22,17 @@ window.addEventListener("unhandledrejection", (event) => {
   void commands.logUiError(getCurrentWindow().label, `unhandled promise: ${reason}`);
 });
 
+// A desktop app has no browser menu (Back, Reload, Print, Inspect) on right-click: only
+// the app's own menus (they stop the event first) and the usual Cut/Copy/Paste in text fields.
+// In development, Shift + right-click still opens it, for Inspect.
+document.addEventListener("contextmenu", (event) => {
+  if (event.defaultPrevented) return;
+  if (import.meta.env.DEV && event.shiftKey) return;
+  const target = event.target as HTMLElement | null;
+  if (target?.closest("input, textarea, [contenteditable='true']")) return;
+  event.preventDefault();
+});
+
 // The look of this PC before anything is drawn, so the window never flashes the default one
 const appearance = storedAppearance();
 applyAppearance(appearance);

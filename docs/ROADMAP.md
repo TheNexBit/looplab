@@ -326,6 +326,9 @@ la successiva), nessun riordino manuale (l'ordine √® quello del brano), velocit√
     riquadro grande resta solo al primo avvio, quando non ci sono recenti.
   - _Lo sapevi?_: un suggerimento di una riga, diverso a ogni avvio. Tolte le scorciatoie fisse (sono in Ctrl+K).
 
+- **Niente menu del browser col tasto destro** (Indietro, Aggiorna, Stampa, Esamina): restano solo i menu
+  dell'app e Taglia/Copia/Incolla nei campi di testo. In sviluppo Maiusc + tasto destro lo riapre (per Esamina).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

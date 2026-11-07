@@ -63,6 +63,7 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   - `window.rs` + `window_state.rs`: finestra principale e finestra video nascosta; posizioni per monitor.
 - **`src/`**: interfaccia React. Le due finestre caricano la stessa pagina: `main.tsx` mostra l'app o solo
   il video (finestra staccata, che riceve sorgente e orologio dalla principale con l'evento `video-sync`).
+  Blocca anche il menu del browser sul tasto destro (restano i menu dell'app e quello dei campi di testo).
 
 ## Sincronizzazione con il motore e col disco
 
