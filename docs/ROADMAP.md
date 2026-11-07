@@ -336,6 +336,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
     sul display del Tempo; sui recenti, sulle sezioni e sulle bandierine dei marker la stessa riga è nel `title`
     (`withRightClick`).
 
+- **Trascinamento col tasto centrale più affidabile**: l'auto-scroll di Windows (l'icona con le frecce tonde) non
+  parte più in nessun punto della finestra, perché a metà trascinamento si prendeva il mouse; mentre tieni la
+  vista (tasto centrale sulla forma d'onda o trascinamento nella panoramica) il Follow aspetta anche se il mouse
+  è fermo, e riparte 2 s dopo il rilascio (`holdFollow`); se la finestra perde il mouse il trascinamento finisce.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

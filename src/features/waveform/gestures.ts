@@ -139,6 +139,8 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
       // Windows would start its own auto-scroll (the round arrows icon): the drag is ours
       event.preventDefault();
       gesture = { kind: "pan", x: event.clientX, start: useViewStore.getState().start };
+      // Held still for a while during playback, the view must not run off under the hand
+      useViewStore.getState().holdFollow(true);
       element.style.cursor = "grabbing";
       element.setPointerCapture(event.pointerId);
       return;
@@ -203,6 +205,7 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   };
 
   const onPointerUp = (event: PointerEvent) => {
+    if (gesture?.kind === "pan") useViewStore.getState().holdFollow(false);
     const player = usePlayerStore.getState();
     const region = useLoopStore.getState().region();
     // A click on the loop bar goes to the loop start, a click on an edge to that edge
@@ -222,6 +225,10 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
     if (!player.playing) player.togglePlay();
   };
 
+  const onLostCapture = (event: PointerEvent) => {
+    if (gesture) onPointerUp(event);
+  };
+
   // The browser's own wheel-button actions (auto-scroll, middle-click paste) never start here
   const blockWheelButton = (event: MouseEvent) => {
     if (event.button === WHEEL_BUTTON) event.preventDefault();
@@ -235,7 +242,10 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   element.addEventListener("pointermove", onPointerMove);
   element.addEventListener("pointerup", onPointerUp);
   element.addEventListener("pointercancel", onPointerUp);
+  // Capture lost without a pointerup (window switch, a dialog): end the drag all the same
+  element.addEventListener("lostpointercapture", onLostCapture);
   return () => {
+    element.removeEventListener("lostpointercapture", onLostCapture);
     element.removeEventListener("wheel", onWheel);
     element.removeEventListener("dblclick", onDoubleClick);
     element.removeEventListener("mousedown", blockWheelButton);

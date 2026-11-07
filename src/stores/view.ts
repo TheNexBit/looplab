@@ -64,6 +64,11 @@ interface ViewState extends ViewWindow {
   /** Follow again right away (after a seek or when playback starts). */
   resumeFollow: () => void;
   /**
+   * The view is held by the hand (a drag): following waits for as long as it is held, even
+   * with the mouse still, and the usual pause starts once it is let go.
+   */
+  holdFollow: (held: boolean) => void;
+  /**
    * Keeps the playhead visible: "center" scrolls smoothly once it passes the middle;
    * "page" turns the page when it reaches the right edge, like Reaper.
    */
@@ -130,6 +135,8 @@ export const useViewStore = create<ViewState>((set, get) => {
     },
     centerOn: (time) => jump({ start: time - get().span / 2, span: get().span }),
     resumeFollow: () => set({ manualUntil: 0 }),
+    holdFollow: (held) =>
+      set({ manualUntil: held ? Number.POSITIVE_INFINITY : performance.now() + MANUAL_PAUSE_MS }),
     followPlayhead: (position, mode = "center") => {
       const { manualUntil, start, span, target, duration } = get();
       if (performance.now() < manualUntil) return;

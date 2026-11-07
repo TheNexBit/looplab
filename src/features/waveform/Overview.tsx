@@ -99,6 +99,7 @@ export function Overview() {
       if (!press) return;
       if (!press.dragging && Math.abs(event.clientX - press.x) > DRAG_PX) {
         press.dragging = true;
+        useViewStore.getState().holdFollow(true);
         element.style.cursor = "grabbing";
       }
       if (press.dragging) {
@@ -110,6 +111,7 @@ export function Overview() {
         usePlayerStore.getState().seek(press.time);
         useViewStore.getState().centerOn(press.time);
       }
+      if (press?.dragging) useViewStore.getState().holdFollow(false);
       press = null;
       element.style.cursor = "";
     };

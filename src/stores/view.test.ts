@@ -40,6 +40,17 @@ describe("following the playhead", () => {
     expect(useViewStore.getState().start).toBe(25); // following came back by itself
   });
 
+  it("waits for as long as the view is held by hand, then pauses as usual", () => {
+    const view = useViewStore.getState();
+    view.scrollTo(100);
+    view.holdFollow(true);
+    useViewStore.getState().followPlayhead(40);
+    expect(useViewStore.getState().start).toBe(100); // held: never pulled away
+    expect(useViewStore.getState().manualUntil).toBe(Number.POSITIVE_INFINITY);
+    useViewStore.getState().holdFollow(false);
+    expect(Number.isFinite(useViewStore.getState().manualUntil)).toBe(true);
+  });
+
   it("turns the page at the right edge in page mode, like Reaper", () => {
     useViewStore.getState().followPlayhead(20, "page");
     expect(useViewStore.getState().start).toBe(0); // still inside the page

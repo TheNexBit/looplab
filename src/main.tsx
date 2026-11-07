@@ -33,6 +33,19 @@ document.addEventListener("contextmenu", (event) => {
   event.preventDefault();
 });
 
+// The wheel button never starts the browser's auto-scroll (the round arrows icon) anywhere:
+// it would take the mouse away from the waveform's own wheel-button drag halfway through
+// (both events: once pointerdown is cancelled, Chromium no longer sends the mousedown)
+for (const type of ["pointerdown", "mousedown"] as const) {
+  window.addEventListener(
+    type,
+    (event) => {
+      if (event.button === 1) event.preventDefault();
+    },
+    { capture: true },
+  );
+}
+
 // The look of this PC before anything is drawn, so the window never flashes the default one
 const appearance = storedAppearance();
 applyAppearance(appearance);
