@@ -1,9 +1,7 @@
 import { NotebookPen } from "lucide-react";
-import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { formatPercent } from "@/lib/format";
 import { useDiaryStore } from "@/stores/diary";
@@ -13,37 +11,13 @@ import { usePracticeStore } from "@/stores/practice";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { formatDuration, trackSummary } from "./diaryStats";
+import { Group } from "./Group";
+import { ReferenceGroup } from "./ReferenceGroup";
 import { repetitionsToNextStep } from "./tempo";
 import { trainerPlan } from "./trainer";
 
 const p = t.practice;
 const FIELD = "well h-6 w-16 rounded-control";
-
-/** A section of the tab; its explanation shows on hover over the title, so the panel stays clean. */
-function Group({
-  title,
-  hint,
-  action,
-  children,
-}: {
-  title: string;
-  hint: string;
-  /** Key or link on the right of the title */
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section className="space-y-2">
-      <div className="flex min-h-6 items-center justify-between gap-2">
-        <Tooltip label={hint}>
-          <h3 className="panel-label cursor-help">{title}</h3>
-        </Tooltip>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
 
 function TrainerGroup() {
   const settings = useSettingsStore();
@@ -170,13 +144,14 @@ function DiaryGroup() {
 }
 
 /**
- * Side panel tab: the speed trainer and the diary. Tempo, metronome and count-in live in the
+ * Side panel tab: the speed trainer, the reference note and the diary. Tempo, metronome and count-in live in the
  * transport dock (`TempoModule`), where every DAW keeps them.
  */
 export function PracticePanel() {
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto p-3">
       <TrainerGroup />
+      <ReferenceGroup />
       <DiaryGroup />
     </div>
   );

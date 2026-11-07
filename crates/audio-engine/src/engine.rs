@@ -16,6 +16,7 @@ use crate::dsp::channels::ChannelMode;
 use crate::dsp::eq::EqSettings;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
+use crate::tone::ToneSettings;
 
 /// Speeds the playback chain is sized for. The UI may offer a narrower range.
 pub const MIN_SPEED: f32 = 0.25;
@@ -61,6 +62,8 @@ pub(crate) enum Command {
     SetClick(ClickSettings),
     /// Plays one click now, to hear the chosen sound (also while paused)
     PreviewClick(bool),
+    /// Reference note to tune by ear, heard also while paused
+    SetTone(ToneSettings),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -208,6 +211,11 @@ impl Engine {
     /// Plays one accented (`true`) or ordinary click at once, with the current click settings.
     pub fn preview_click(&self, accent: bool) {
         self.send(Command::PreviewClick(accent));
+    }
+
+    /// Steady reference note (`hz` 0 = off), heard over the track and while paused.
+    pub fn set_tone(&self, settings: ToneSettings) {
+        self.send(Command::SetTone(settings));
     }
 
     fn send(&self, command: Command) {

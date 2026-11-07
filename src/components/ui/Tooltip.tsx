@@ -30,7 +30,15 @@ interface TooltipProps {
 export function Tooltip({ label, shortcut, rightClick, children }: TooltipProps) {
   return (
     <RadixTooltip.Root>
-      <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
+      {/* The same text is read by the info bar at the foot of the window (`InfoBar`) */}
+      <RadixTooltip.Trigger
+        asChild
+        data-info={label}
+        data-info-shortcut={shortcut}
+        data-info-right={rightClick}
+      >
+        {children}
+      </RadixTooltip.Trigger>
       <RadixTooltip.Portal>
         <RadixTooltip.Content
           sideOffset={6}

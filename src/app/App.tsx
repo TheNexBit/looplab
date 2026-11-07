@@ -27,6 +27,7 @@ import { useUiStore } from "@/stores/ui";
 import { AboutDialog } from "./AboutDialog";
 import { CommandPalette } from "./CommandPalette";
 import { DiaryDialog } from "./DiaryDialog";
+import { InfoBar } from "./InfoBar";
 import { MiniBar } from "./MiniBar";
 import { SettingsDialog } from "./SettingsDialog";
 import { SidePanel } from "./SidePanel";
@@ -38,6 +39,7 @@ export function App() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const loading = usePlayerStore((s) => s.load.kind === "loading");
   const mini = useUiStore((s) => s.mini);
+  const infoBar = useSettingsStore((s) => s.infoBar);
   const hovering = useFileDrop(openDroppedFiles);
 
   useEffect(() => {
@@ -114,6 +116,7 @@ export function App() {
           <SidePanel />
         </div>
         <TransportDock />
+        {infoBar && <InfoBar />}
         <CommandPalette />
         <SettingsDialog />
         <AboutDialog />

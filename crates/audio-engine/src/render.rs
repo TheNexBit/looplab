@@ -1,5 +1,5 @@
 //! The audio callback: track → loop-aware reader → stretch (speed, pitch) → EQ → channels → fades
-//! (+ metronome clicks) → device.
+//! (+ metronome clicks and the reference tone) → device.
 //!
 //! Real-time safe: every buffer is allocated in `Renderer::new`, nothing here
 //! locks, allocates or does I/O.
@@ -15,6 +15,7 @@ use crate::dsp::eq::Eq;
 use crate::dsp::stretch::Stretch;
 use crate::engine::{Command, LoopSettings, MAX_SPEED, Shared};
 use crate::pcm::{CHANNELS, Pcm};
+use crate::tone::ToneVoice;
 
 /// Output frames produced per stretch call.
 const CHUNK: usize = 256;
@@ -169,6 +170,8 @@ pub(crate) struct Renderer {
     click: ClickSettings,
     clicks: ClickQueue,
     voice: ClickVoice,
+    /// Reference note to tune by ear, mixed over everything
+    tone: ToneVoice,
     /// Play was pressed with a count-in: the next jump starts with it
     count_in_on_jump: bool,
 
@@ -225,6 +228,7 @@ impl Renderer {
             click: ClickSettings::default(),
             clicks: ClickQueue::new(),
             voice: ClickVoice::new(sample_rate),
+            tone: ToneVoice::new(sample_rate),
             count_in_on_jump: false,
             input: vec![0.0; max_input * CHANNELS],
             output: vec![0.0; CHUNK * CHANNELS],
@@ -310,6 +314,7 @@ impl Renderer {
                 Command::SetChannelMode(mode) => self.channels.set(mode),
                 Command::SetClick(settings) => self.click = settings,
                 Command::PreviewClick(accent) => self.voice.start(self.click.sound(accent)),
+                Command::SetTone(settings) => self.tone.set(settings),
             }
         }
     }
@@ -354,10 +359,10 @@ impl Renderer {
                 self.jump(frame);
             }
             // Paused: the reader and the stretcher stay frozen until play; only a click being
-            // tried out in the settings is heard
+            // tried out in the settings and the reference note are heard
             if !self.playing {
-                let click = self.voice.next(self.click.volume);
-                return [click; 2];
+                let extra = self.voice.next(self.click.volume) + self.tone.next();
+                return [extra; 2];
             }
         }
 
@@ -370,10 +375,10 @@ impl Renderer {
         while let Some(accent) = self.clicks.pop_due(heard) {
             self.voice.start(self.click.sound(accent));
         }
-        let click = self.voice.next(self.click.volume);
+        let extra = self.voice.next(self.click.volume) + self.tone.next();
         [
-            self.output[i] * self.gain + click,
-            self.output[i + 1] * self.gain + click,
+            self.output[i] * self.gain + extra,
+            self.output[i + 1] * self.gain + extra,
         ]
     }
 

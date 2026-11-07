@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::{ClickSettings, ClickSound, LoadError, LoopSettings, time};
+use audio_engine::{ClickSettings, ClickSound, LoadError, LoopSettings, ToneSettings, time};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
@@ -263,6 +263,15 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
 #[specta::specta]
 pub fn preview_click(state: State<'_, AppState>, accent: bool) -> Result<(), AppError> {
     state.engine()?.preview_click(accent);
+    Ok(())
+}
+
+/// Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
+/// before any track is open (it starts the audio device like `preview_click`).
+#[tauri::command]
+#[specta::specta]
+pub fn set_reference_tone(state: State<'_, AppState>, hz: f32, level: f32) -> Result<(), AppError> {
+    state.engine()?.set_tone(ToneSettings { hz, level });
     Ok(())
 }
 

@@ -425,7 +425,44 @@ erano scomode. Ora ogni sezione ha **inizio e fine**, con spazio libero tra l'un
 - **Progetti vecchi**: le sezioni senza fine ricevono l'inizio della successiva, l'ultima la fine del brano
   (`withEnds`, al caricamento): nulla si perde.
 
+## 16. Nota di riferimento, velatura, riga informazioni ✅
+
+Le ultime idee proposte rimaste aperte, fatte in ordine su richiesta dell'utente.
+
+- **Nota di riferimento** (scheda Pratica): Chitarra / Basso, accordatura dello strumento (Standard, Mi♭, Drop D,
+  Re, Drop C♯, Drop C), un tasto per corda dalla più grave e il La. Clic = la nota suona finché non la fermi (o
+  si cambia scheda), anche sopra il brano e a brano fermo, senza bisogno di un brano aperto. La = 415…466 Hz
+  (440 standard) e volume con − / + o rotella. Sintetizzata nel motore (`tone.rs`), niente microfono.
+- **Velatura fino al punto di partenza** (Impostazioni → Forma d'onda, spenta di serie): mentre suona, una fascia
+  leggera del colore del punto di partenza dal punto di partenza al playhead.
+- **Riga informazioni** (Impostazioni → Generale, spenta di serie), come la Info View di Ableton: in fondo alla
+  finestra dice cosa c'è sotto il mouse, con scorciatoia e tasto destro.
+
+## 17. Mappa del tempo e rilevamento automatico 🔜
+
+**Obiettivo (milestone):** su brani con tempi dispari e cambi continui di tempo e metrica (es. Dream Theater "The
+Dance of Eternity", Tool "Schism") Looplab trova da solo tempo, battiti, battute e cambi; l'utente controlla col
+metronomo e corregge solo dove serve. Oggi c'è un solo tempo e una sola metrica per tutto il brano.
+
+- **Mappa del tempo come in Reaper**: punti di tempo e metrica lungo il brano (es. 7/8 a 0:42, 5/4 a 1:10). Griglia,
+  metronomo, conteggio, Snap, `,` e `.`, battute nella striscia seguono la mappa. I progetti vecchi diventano una
+  mappa con un solo punto: nulla si perde.
+- **Rilevamento automatico** (in Rust, sul brano decodificato, una volta e poi in cache): trova attacchi delle note
+  → tempo e battiti → primo battere della battuta → metrica e punti di cambio. Da decidere con l'utente: metodo
+  classico (leggero, niente download) o piccolo modello AI di beat tracking (più preciso sui tempi dispari).
+  Licenze: niente GPL/AGPL (es. aubio, Essentia), come per Rubber Band.
+- **Proposta, non imposizione**: il risultato appare come bozza sulla striscia, si ascolta col metronomo e si
+  accetta tutto o tratto per tratto.
+- **Correzione a mano**: spostare, aggiungere o togliere punti; Tap tempo, "Downbeat qui" e metrica per il singolo
+  tratto; tutto con un passo di Annulla.
+- **Prove**: alcuni brani di riferimento con la mappa fatta a mano, per misurare quanto ci azzecca.
+- Aspettativa realistica: tempo e battiti giusti quasi sempre; metrica e inizio battuta nei cambi frequenti sono il
+  caso più difficile per qualunque programma, quindi proposti e da confermare.
+
 ## Dopo la prima versione
 
-- **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un
-  modello (~300 MB) e una libreria di calcolo. Andrà prima dello stretch nella catena.
+- **Separazione AI degli strumenti** (voce, batteria, basso, altro) — **rimandata dall'utente a un secondo
+  momento**, non iniziare senza il suo via. Previsto: modello tipo HTDemucs (~300 MB) con ONNX Runtime, scaricati
+  solo su richiesta; nella catena prima dello stretch. Da decidere insieme: tracce calcolate una volta per brano e
+  salvate in cache (consigliato) o in tempo reale; processore o scheda video; comandi livello/Mute/Solo per
+  traccia; limite di spazio della cache; posizione in `dati\` nella versione portable.

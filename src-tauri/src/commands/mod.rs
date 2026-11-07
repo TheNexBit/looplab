@@ -37,6 +37,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::set_loop,
             player::set_click,
             player::preview_click,
+            player::set_reference_tone,
             library::load_project,
             library::save_project,
             library::recent_files,

@@ -30,6 +30,9 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     dello stretch) e si mettono in coda con il frame d'ingresso; il click è sintetizzato in uscita
     quando quel frame si sente, quindi non cambia suono con velocità e tonalità. Il conteggio è la
     parte finale della pausa tra le ripetizioni, e precede anche il play.
+  - `tone.rs`: nota di riferimento per accordarsi (`SetTone`, comando `set_reference_tone`): fondamentale
+    più tre armoniche, dissolvenza di 30 ms all'accensione, allo spegnimento e al cambio di livello; si
+    somma al click, quindi si sente sopra il brano e a brano fermo.
   - `dsp/stretch.rs`: interfaccia sicura su Signalsmith Stretch (C++, in `vendor/`, MIT), compilato da
     `build.rs` tramite `cpp/stretch.cpp`. Unico codice non Rust; nessuna allocazione dopo la creazione.
   - `time.rs`: conversioni tempo ↔ frame.
@@ -80,7 +83,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 
 - `stores/practice.ts`: tempo del brano (salvato nel progetto) e contatore delle ripetizioni.
 - `features/practice/TempoModule.tsx`: tempo, metrica, batti, metronomo e conteggio nella barra di trasporto;
-  `PracticePanel.tsx` (scheda Pratica): speed trainer e diario.
+  `PracticePanel.tsx` (scheda Pratica): speed trainer, nota di riferimento (`ReferenceGroup.tsx`, corde e
+  accordature in `reference.ts`) e diario; titolo e spiegazione dei gruppi in `Group.tsx`.
 - `features/practice/tempo.ts`: calcoli puri (battuta tap, durata del conteggio, velocità dello speed trainer).
 - `features/practice/trainer.ts`: conta le ripetizioni dal contatore del motore e imposta la velocità.
 - `features/player/syncEngine.ts` manda al motore tempo, conteggio e metronomo; la griglia dei battiti
@@ -159,6 +163,9 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
   `Tooltip rightClick` (seconda riga "Tasto destro: …"); un tasto con opzioni nuovo usa `OptionsKey`
   (o `useOptions` + `OptionsPanel` se il pannello si apre anche da un altro tasto); altri elementi: `title` con
   `withRightClick`.
+- Riga informazioni (`app/InfoBar.tsx`, opzione `infoBar`): legge gli attributi `data-info*` che `Tooltip`
+  mette sul suo elemento, altrimenti `title` o `aria-label` dell'elemento sotto il puntatore. Un testo nuovo
+  in un `Tooltip` compare quindi da solo anche lì.
 - Scaletta: i passi in `stores/playlist.ts` (salvati nel progetto), chi la fa avanzare in
   `features/practice/playlist.ts` (`runPlaylist`, avviato dall'app come il trainer, conta `player.loops`).
 - Trascinamenti col puntatore: `lib/followPointer.ts` (cattura, fine anche se il mouse viene preso da Windows).

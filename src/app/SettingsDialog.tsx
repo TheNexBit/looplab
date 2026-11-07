@@ -105,6 +105,7 @@ const GENERAL: readonly (keyof Settings)[] = [
   "followMode",
   "returnToStart",
   "snap",
+  "infoBar",
   "wheel",
   "wheelSpeed",
   "doubleClick",
@@ -120,6 +121,7 @@ const WAVEFORM: readonly (keyof Settings)[] = [
   "showGrid",
   "rulerLines",
   "centerLine",
+  "cueShade",
 ];
 
 /** Ctrl+,: preferences of this PC. */
@@ -164,6 +166,7 @@ export function SettingsDialog() {
             <Choice setting="followMode" />
             <Toggle setting="returnToStart" />
             <Toggle setting="snap" />
+            <Toggle setting="infoBar" />
           </SettingGroup>
           <SettingGroup rows title={s.mouse}>
             <Choice setting="wheel" />
@@ -188,6 +191,7 @@ export function SettingsDialog() {
             <Toggle setting="showGrid" />
             <Toggle setting="rulerLines" />
             <Toggle setting="centerLine" />
+            <Toggle setting="cueShade" />
           </SettingGroup>
           <div className="flex justify-end pt-3">
             <Button onClick={() => resetSome(WAVEFORM)}>{s.reset}</Button>

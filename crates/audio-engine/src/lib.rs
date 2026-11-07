@@ -20,6 +20,7 @@ mod render;
 pub mod resample;
 pub mod spectrum;
 pub mod time;
+pub mod tone;
 pub mod wav;
 
 pub use click::{ClickSettings, ClickSound};
@@ -30,6 +31,7 @@ pub use export::{ExportError, ExportSettings};
 pub use load::{LoadError, LoadEvent, LoadedTrack, OpenedTrack, SharedPeaks, load, open};
 pub use pcm::Pcm;
 pub use peaks::Peaks;
+pub use tone::ToneSettings;
 pub use wav::BitDepth;
 
 /// Engine version, shown in the UI to prove the Rust ↔ UI link works.

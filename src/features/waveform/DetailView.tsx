@@ -45,6 +45,7 @@ export function DetailView() {
   const loopRef = useRef<HTMLDivElement>(null);
   const braceRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const shadeRef = useRef<HTMLDivElement>(null);
   const dirty = useRef(true);
   const drawn = useRef({ start: -1, span: -1 });
   const { ref: canvasRef, size } = useCanvas(() => {
@@ -130,6 +131,19 @@ export function DetailView() {
       cue.style.visibility = shown ? "visible" : "hidden";
       cue.style.transform = `translateX(${toX(player.cue)}px)`;
     }
+    const shade = shadeRef.current;
+    if (shade) {
+      // From the start point to the playhead while playing: what stopping goes back over
+      const { cueShade, returnToStart } = useSettingsStore.getState();
+      const from = Math.max(0, toX(player.cue));
+      const to = Math.min(width / dpr, toX(position));
+      const shown = cueShade && returnToStart && player.playing && to > from;
+      shade.style.visibility = shown ? "visible" : "hidden";
+      if (shown) {
+        shade.style.transform = `translateX(${from}px)`;
+        shade.style.width = `${to - from}px`;
+      }
+    }
     const playhead = playheadRef.current;
     if (playhead) {
       playhead.style.transform = `translateX(${toX(position) - playheadWidth / 2}px)`;
@@ -172,6 +186,12 @@ export function DetailView() {
       <LoopOverlay ref={braceRef} variant="brace" height={RULER_CSS - 4} />
       <MarkerFlags area={containerRef} top={RULER_CSS} />
       <CurrentMemo top={RULER_CSS} />
+      <div
+        ref={shadeRef}
+        aria-hidden
+        className="pointer-events-none invisible absolute bottom-0 left-0 bg-cue/15 will-change-transform"
+        style={{ top: RULER_CSS }}
+      />
       <div
         ref={cueRef}
         aria-hidden

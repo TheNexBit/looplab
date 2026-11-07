@@ -13,6 +13,7 @@ export const it = {
   },
   app: {
     noFile: "Nessun file aperto",
+    infoBarIdle: "Passa il mouse su un comando per sapere cosa fa",
     stillLoading: "Caricamento",
     open: "Apri",
     searchActions: "Cerca un'azione…",
@@ -234,6 +235,29 @@ export const it = {
     repetition: "Ripetizione",
     nextStep: "prossimo aumento tra",
     atTarget: "velocità finale raggiunta",
+    reference: "Nota di riferimento",
+    referenceHint:
+      "Per accordarti a orecchio, senza microfono: clic su una corda e la nota suona finché non la fermi (anche sopra il brano). Se il brano sembra crescente o calante, cambia il La.",
+    instruments: { guitar: "Chitarra", bass: "Basso" },
+    instrument: "Strumento",
+    referenceTuning: "Accordatura dello strumento",
+    referenceTunings: {
+      standard: "Standard",
+      eFlat: "Mi♭ (½ tono sotto)",
+      dropD: "Drop D",
+      d: "Re (1 tono sotto)",
+      dropCSharp: "Drop C♯ (½ tono sotto)",
+      dropC: "Drop C (1 tono sotto)",
+    },
+    stringKey: (number: number, name: string, octave: number, hz: string) =>
+      `${number}ª corda: ${name}${octave} · ${hz} Hz`,
+    aNote: "La",
+    aNoteHint: "Il La di riferimento degli accordatori",
+    referencePitch: "La =",
+    referencePitchHint:
+      "Frequenza del La: 440 Hz è lo standard; alcuni dischi sono un po' più alti o bassi",
+    referenceLevel: "Volume della nota",
+    stopTone: "Ferma",
   },
   waveform: {
     overview: "Panoramica del brano",
@@ -336,6 +360,9 @@ export const it = {
     speedStepHint: "Quanto cambia la velocità con + e −",
     followPlayhead: "Follow",
     followPlayheadHint: "La forma d'onda scorre da sola durante l'ascolto",
+    infoBar: "Riga informazioni",
+    infoBarHint:
+      "Una riga in fondo alla finestra spiega sempre cosa hai sotto il mouse, tasto destro compreso (come la Info View di Ableton)",
     returnToStart: "Torna al punto di partenza",
     returnToStartHint:
       "Fermando la riproduzione si torna all'ultimo punto cliccato, come in Reaper",
@@ -378,6 +405,9 @@ export const it = {
     rulerLinesHint: "Linee leggere sotto ogni tempo del righello",
     centerLine: "Linea centrale",
     centerLineHint: "La riga a metà della forma d'onda grande",
+    cueShade: "Velatura fino al punto di partenza",
+    cueShadeHint:
+      "Mentre suona, una fascia leggera dal punto di partenza al playhead: il tratto che torna indietro quando fermi",
     choices: {
       startup: { empty: "Schermata vuota", last: "Ultimo brano" },
       openView: { start: "Primi 30 s", whole: "Tutto il brano" },

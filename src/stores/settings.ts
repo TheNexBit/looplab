@@ -1,4 +1,11 @@
 import { create } from "zustand";
+import {
+  INSTRUMENTS,
+  type Instrument,
+  REFERENCE_PITCH,
+  REFERENCE_TUNING_IDS,
+  type ReferenceTuning,
+} from "@/features/practice/reference";
 import { t } from "@/i18n";
 import type { ClickSound } from "@/lib/bindings";
 import { readStored, writeStored } from "@/lib/storage";
@@ -51,6 +58,10 @@ export interface Settings {
   rulerLines: boolean;
   /** The line through the middle of the detailed view */
   centerLine: boolean;
+  /** While playing, a light shade from the start point to the playhead: where stopping returns */
+  cueShade: boolean;
+  /** A line at the foot of the window says what is under the pointer, like Ableton's Info View */
+  infoBar: boolean;
   /** At start-up: the empty screen, or the last track opened (if it still exists) */
   startup: Startup;
   /** Plain wheel over the waveform: zoom (Shift scrolls), like Reaper, or the other way round */
@@ -67,6 +78,11 @@ export interface Settings {
   resumePosition: boolean;
   /** After dragging a new loop: the playhead stays, goes to the loop start, or plays from there */
   afterLoop: AfterLoop;
+  /** Reference note: the A the strings are tuned from (Hz), its level 0..1, instrument and tuning */
+  referencePitch: number;
+  referenceLevel: number;
+  referenceInstrument: Instrument;
+  referenceTuning: ReferenceTuning;
 }
 
 /** The values of the settings that are a choice among a few, in menu order. */
@@ -107,6 +123,8 @@ export const SETTING_LIMITS = {
   waveZoom: { min: 1, max: 4, step: 0.5 },
   playheadWidth: { min: 1, max: 3, step: 1 },
   wheelSpeed: { min: 0.5, max: 2, step: 0.25 },
+  referencePitch: REFERENCE_PITCH,
+  referenceLevel: { min: 0.05, max: 1, step: 0.05 },
 } as const satisfies Record<NumericSetting, { min: number; max: number; step: number }>;
 
 const DEFAULTS: Settings = {
@@ -138,6 +156,9 @@ const DEFAULTS: Settings = {
   playheadWidth: 1,
   rulerLines: true,
   centerLine: true,
+  // Off: on very colourful tracks it tires the eyes
+  cueShade: false,
+  infoBar: false,
   startup: "empty",
   wheel: "zoom",
   wheelSpeed: 1,
@@ -146,6 +167,10 @@ const DEFAULTS: Settings = {
   openView: "start",
   // A loop is made to be played: start from its beginning, and stopping returns there
   afterLoop: "start",
+  referencePitch: REFERENCE_PITCH.default,
+  referenceLevel: 0.5,
+  referenceInstrument: "guitar",
+  referenceTuning: "standard",
 };
 const KEY = "looplab.settings";
 
@@ -179,6 +204,12 @@ export function sanitize(values: Partial<Settings>): Settings {
   // A sound removed in a later version falls back to the classic click
   if (!isClickSound(result.accentSound)) result.accentSound = DEFAULTS.accentSound;
   if (!isClickSound(result.beatSound)) result.beatSound = DEFAULTS.beatSound;
+  if (!INSTRUMENTS.includes(result.referenceInstrument)) {
+    result.referenceInstrument = DEFAULTS.referenceInstrument;
+  }
+  if (!REFERENCE_TUNING_IDS.includes(result.referenceTuning)) {
+    result.referenceTuning = DEFAULTS.referenceTuning;
+  }
   for (const key of Object.keys(SETTING_CHOICES) as ChoiceSetting[]) {
     const allowed: readonly string[] = SETTING_CHOICES[key];
     if (!allowed.includes(result[key])) (result as Record<string, unknown>)[key] = DEFAULTS[key];

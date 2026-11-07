@@ -31,6 +31,11 @@ export const commands = {
 	 *  Starts the audio device if needed: trying a sound must work before any track is open.
 	 */
 	previewClick: (accent: boolean) => typedError<null, AppError>(__TAURI_INVOKE("preview_click", { accent })),
+	/**
+	 *  Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
+	 *  before any track is open (it starts the audio device like `preview_click`).
+	 */
+	setReferenceTone: (hz: number | null, level: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_reference_tone", { hz, level })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
