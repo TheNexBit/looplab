@@ -49,6 +49,9 @@ pub struct Section {
     pub name: String,
     /// Index into the section palette of `theme.css`
     pub color: u8,
+    /// The player's own words about it ("watch the bend at 0:42"), shown while it plays
+    #[serde(default)]
+    pub memo: String,
 }
 
 /// A loop kept under a name, to come back to it later.
@@ -60,6 +63,9 @@ pub struct SavedLoop {
     /// Seconds
     pub start: f64,
     pub end: f64,
+    /// The player's own words about it, shown while it plays
+    #[serde(default)]
+    pub memo: String,
 }
 
 /// One step of the practice playlist: a saved loop played a number of times.
@@ -285,6 +291,7 @@ pub(crate) mod tests {
                 start: 3.0,
                 name: "Intro".into(),
                 color: 2,
+                memo: "Pennata alternata".into(),
             }],
             loop_: ProjectLoop {
                 enabled: true,
@@ -298,6 +305,7 @@ pub(crate) mod tests {
                 name: "Riff".into(),
                 start: 3.0,
                 end: 9.0,
+                memo: String::new(),
             }],
             playlist: vec![PlaylistStep {
                 loop_id: "l1".into(),

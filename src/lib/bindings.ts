@@ -367,10 +367,10 @@ export type ProjectLoop_Serialize = {
 export type Project_Deserialize = {
 	version?: number,
 	markers?: Marker_Deserialize[],
-	sections?: Section[],
+	sections?: Section_Deserialize[],
 	loop?: ProjectLoop_Deserialize,
 	/**  Loops saved by name */
-	loops?: SavedLoop[],
+	loops?: SavedLoop_Deserialize[],
 	/**  Practice playlist: saved loops in order, each played a number of times */
 	playlist?: PlaylistStep[],
 	/**  Seconds: where the playhead was, so reopening the track goes back there */
@@ -399,10 +399,10 @@ export type Project_Deserialize = {
 export type Project_Serialize = {
 	version: number,
 	markers: Marker_Serialize[],
-	sections: Section[],
+	sections: Section_Serialize[],
 	loop: ProjectLoop_Serialize,
 	/**  Loops saved by name */
-	loops: SavedLoop[],
+	loops: SavedLoop_Serialize[],
 	/**  Practice playlist: saved loops in order, each played a number of times */
 	playlist: PlaylistStep[],
 	/**  Seconds: where the playhead was, so reopening the track goes back there */
@@ -459,22 +459,55 @@ export type RecentFile_Serialize = {
 };
 
 /**  A loop kept under a name, to come back to it later. */
-export type SavedLoop = {
+export type SavedLoop = SavedLoop_Serialize | SavedLoop_Deserialize;
+
+/**  A loop kept under a name, to come back to it later. */
+export type SavedLoop_Deserialize = {
 	id: string,
 	name: string,
 	/**  Seconds */
 	start: number | null,
 	end: number | null,
+	/**  The player's own words about it, shown while it plays */
+	memo?: string,
+};
+
+/**  A loop kept under a name, to come back to it later. */
+export type SavedLoop_Serialize = {
+	id: string,
+	name: string,
+	/**  Seconds */
+	start: number | null,
+	end: number | null,
+	/**  The player's own words about it, shown while it plays */
+	memo: string,
 };
 
 /**  A section runs from its start to the start of the next one (or the end of the track). */
-export type Section = {
+export type Section = Section_Serialize | Section_Deserialize;
+
+/**  A section runs from its start to the start of the next one (or the end of the track). */
+export type Section_Deserialize = {
 	id: string,
 	/**  Seconds */
 	start: number | null,
 	name: string,
 	/**  Index into the section palette of `theme.css` */
 	color: number,
+	/**  The player's own words about it ("watch the bend at 0:42"), shown while it plays */
+	memo?: string,
+};
+
+/**  A section runs from its start to the start of the next one (or the end of the track). */
+export type Section_Serialize = {
+	id: string,
+	/**  Seconds */
+	start: number | null,
+	name: string,
+	/**  Index into the section palette of `theme.css` */
+	color: number,
+	/**  The player's own words about it ("watch the bend at 0:42"), shown while it plays */
+	memo: string,
 };
 
 export type SpectrumRequest = {

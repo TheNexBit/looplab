@@ -1,6 +1,7 @@
 import { BookmarkPlus, Repeat, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { InlineName } from "@/components/ui/InlineName";
+import { MemoButton } from "@/components/ui/MemoButton";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
@@ -8,7 +9,7 @@ import { useLoopStore } from "@/stores/loop";
 import { type SavedLoopData, useSavedLoopsStore } from "@/stores/savedLoops";
 
 function SavedLoopRow({ loop, current }: { loop: SavedLoopData; current: boolean }) {
-  const { rename, remove, recall } = useSavedLoopsStore.getState();
+  const { rename, remove, recall, setMemo } = useSavedLoopsStore.getState();
   return (
     <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-edge hover:bg-well">
       <span
@@ -27,6 +28,11 @@ function SavedLoopRow({ loop, current }: { loop: SavedLoopData; current: boolean
       <span className="font-mono text-[11px] text-fg-subtle tabular">
         {formatTime(loop.start)}–{formatTime(loop.end)}
       </span>
+      <MemoButton
+        memo={loop.memo}
+        label={`${t.memo.title}: ${loop.name}`}
+        onSave={(memo) => setMemo(loop.id, memo)}
+      />
       <Button
         size="icon"
         className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"

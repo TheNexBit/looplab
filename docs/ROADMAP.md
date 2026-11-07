@@ -398,6 +398,16 @@ Scelte dall'utente tra le idee proposte (le più piccole e usate in ogni session
 - Fatta in Rust (`window::set_mini`): la finestra principale si rimpicciolisce, niente seconda finestra da tenere
   sincronizzata.
 
+## 14. Appunti su loop e sezioni ✅
+
+- **Appunti** ("attenzione al bending", "diteggiatura 1-3-4"): tasto 🗒 su ogni loop salvato e sezione della
+  scheda Sezioni, acceso quando c'è un appunto; il suggerimento lo mostra, un clic apre il riquadro per scriverlo
+  (si salva chiudendo, un solo passo di Annulla). Salvati nel progetto (`memo` di loop salvati e sezioni).
+- **Mentre suoni** l'appunto si vede in un riquadro in alto a sinistra della forma d'onda grande: quello del loop
+  salvato in loop, altrimenti quello della sezione sotto il playhead (`features/markers/memo.ts`). Anche nella
+  finestra mini, al posto dell'intervallo del loop, e nel suggerimento della striscia delle sezioni.
+- Nel codice si chiamano `memo` per non confonderli con la vista note (le note musicali, tasto N).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

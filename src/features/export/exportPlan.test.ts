@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { exportedLength, fileName, regionOf } from "./exportPlan";
 
 const sections = [
-  { id: "a", start: 0, end: 30, name: "Intro", color: 0 },
-  { id: "b", start: 30, end: 60, name: "Verse/1", color: 1 },
+  { id: "a", start: 0, end: 30, name: "Intro", color: 0, memo: "" },
+  { id: "b", start: 30, end: 60, name: "Verse/1", color: 1, memo: "" },
 ];
 
 describe("regionOf", () => {

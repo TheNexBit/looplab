@@ -9,6 +9,8 @@ export interface SavedLoopData {
   /** Seconds */
   start: number;
   end: number;
+  /** The player's own words about it, shown while it plays */
+  memo: string;
 }
 
 const newId = () => crypto.randomUUID();
@@ -18,6 +20,7 @@ interface SavedLoopsState {
   /** Keeps the current loop under a new name; does nothing without a loop or if already saved. */
   saveCurrent: () => void;
   rename: (id: string, name: string) => void;
+  setMemo: (id: string, memo: string) => void;
   remove: (id: string) => void;
   /** Makes a saved loop the current one and moves the playhead to where it starts. */
   recall: (id: string) => void;
@@ -35,10 +38,12 @@ export const useSavedLoopsStore = create<SavedLoopsState>((set, get) => ({
     // The same loop saved twice would only be a duplicate
     if (loops.some((loop) => loop.start === region.start && loop.end === region.end)) return;
     const name = `${t.savedLoops.defaultName} ${loops.length + 1}`;
-    set({ loops: [...loops, { id: newId(), name, ...region }] });
+    set({ loops: [...loops, { id: newId(), name, ...region, memo: "" }] });
   },
   rename: (id, name) =>
     set({ loops: get().loops.map((loop) => (loop.id === id ? { ...loop, name } : loop)) }),
+  setMemo: (id, memo) =>
+    set({ loops: get().loops.map((loop) => (loop.id === id ? { ...loop, memo } : loop)) }),
   remove: (id) => set({ loops: get().loops.filter((loop) => loop.id !== id) }),
   recall: (id) => {
     const saved = get().loops.find((loop) => loop.id === id);

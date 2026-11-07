@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { CurrentMemo } from "@/features/markers/CurrentMemo";
 import { MarkerFlags } from "@/features/markers/MarkerFlags";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
@@ -170,6 +171,7 @@ export function DetailView() {
       <LoopOverlay ref={loopRef} />
       <LoopOverlay ref={braceRef} variant="brace" height={RULER_CSS - 4} />
       <MarkerFlags area={containerRef} top={RULER_CSS} />
+      <CurrentMemo top={RULER_CSS} />
       <div
         ref={cueRef}
         aria-hidden

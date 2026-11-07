@@ -18,6 +18,8 @@ export interface SectionData {
   start: number;
   name: string;
   color: number;
+  /** The player's own words about it, shown while it plays */
+  memo: string;
 }
 
 export interface SectionRange extends SectionData {
@@ -69,6 +71,7 @@ interface MarkersState {
   moveSection: (id: string, start: number) => void;
   renameSection: (id: string, name: string) => void;
   recolorSection: (id: string, color: number) => void;
+  setSectionMemo: (id: string, memo: string) => void;
   removeSection: (id: string) => void;
   replace: (markers: MarkerData[], sections: SectionData[]) => void;
   setSavedTo: (location: ProjectLocation | null) => void;
@@ -99,6 +102,7 @@ export const useMarkersStore = create<MarkersState>((set, get) => ({
           start: time,
           name: `${t.markers.sectionName} ${number}`,
           color: sections.length % SECTION_COLORS,
+          memo: "",
         },
       ],
     });
@@ -109,6 +113,8 @@ export const useMarkersStore = create<MarkersState>((set, get) => ({
     set({ sections: get().sections.map((s) => (s.id === id ? { ...s, name } : s)) }),
   recolorSection: (id, color) =>
     set({ sections: get().sections.map((s) => (s.id === id ? { ...s, color } : s)) }),
+  setSectionMemo: (id, memo) =>
+    set({ sections: get().sections.map((s) => (s.id === id ? { ...s, memo } : s)) }),
   removeSection: (id) => set({ sections: get().sections.filter((s) => s.id !== id) }),
 
   replace: (markers, sections) => set({ markers, sections }),

@@ -101,6 +101,12 @@ export const it = {
     rename: "Rinomina il loop",
     remove: "Elimina il loop",
   },
+  memo: {
+    title: "Appunto",
+    add: "Scrivi un appunto",
+    placeholder: "Es. attenzione al bending, diteggiatura 1-3-4…",
+    hint: "Si vede sopra la forma d'onda mentre suoni questo passaggio. Si salva chiudendo.",
+  },
   mini: {
     enter: "Finestra mini sempre in primo piano",
     leave: "Torna alla finestra intera",

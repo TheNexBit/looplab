@@ -40,7 +40,9 @@ export function SectionLane() {
               <button
                 type="button"
                 title={withRightClick(
-                  `${range.name} — ${t.markers.loopSection}`,
+                  [`${range.name} — ${t.markers.loopSection}`, range.memo]
+                    .filter(Boolean)
+                    .join("\n"),
                   t.markers.sectionRightClick,
                 )}
                 onClick={() => loopSection(range)}

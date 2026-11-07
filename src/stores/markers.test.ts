@@ -13,7 +13,7 @@ const marker = (id: string, time: number, kind: MarkerData["kind"] = "free"): Ma
   kind,
   label: "",
 });
-const section = (id: string, start: number) => ({ id, start, name: id, color: 0 });
+const section = (id: string, start: number) => ({ id, start, name: id, color: 0, memo: "" });
 
 describe("sectionRanges", () => {
   it("runs each section to the next one, the last to the end", () => {

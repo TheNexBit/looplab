@@ -1,6 +1,7 @@
 import { Repeat, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { InlineName } from "@/components/ui/InlineName";
+import { MemoButton } from "@/components/ui/MemoButton";
 import { PlaylistPanel } from "@/features/practice/PlaylistPanel";
 import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
@@ -17,7 +18,7 @@ import { SectionMenu } from "./SectionMenu";
 import { loopSection } from "./sectionActions";
 
 function SectionRow({ range }: { range: SectionRange }) {
-  const { renameSection, removeSection } = useMarkersStore.getState();
+  const { renameSection, removeSection, setSectionMemo } = useMarkersStore.getState();
 
   return (
     <SectionMenu range={range}>
@@ -35,6 +36,11 @@ function SectionRow({ range }: { range: SectionRange }) {
         <span className="font-mono text-[11px] text-fg-subtle tabular">
           {formatTime(range.start)}
         </span>
+        <MemoButton
+          memo={range.memo}
+          label={`${t.memo.title}: ${range.name}`}
+          onSave={(memo) => setSectionMemo(range.id, memo)}
+        />
         <Button
           size="icon"
           className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"

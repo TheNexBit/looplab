@@ -1,6 +1,7 @@
 import { Maximize2, Minus, Pause, Play, Plus, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { useCurrentMemo } from "@/features/markers/CurrentMemo";
 import { TimeDisplay } from "@/features/player/TimeDisplay";
 import { t } from "@/i18n";
 import { formatPercent } from "@/lib/format";
@@ -26,6 +27,7 @@ export function MiniBar() {
   const { togglePlay, setSpeed } = usePlayerStore.getState();
   const step = useSettingsStore((s) => s.speedStep);
   const playLabel = playing ? t.transport.pause : t.transport.play;
+  const memo = useCurrentMemo();
 
   return (
     <div className="flex h-full items-center gap-2 bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2">
@@ -63,10 +65,16 @@ export function MiniBar() {
       <TimeDisplay />
       <div className="min-w-0 flex-1">
         <p className="truncate font-mono text-xs text-fg">{name ?? t.app.noFile}</p>
-        {region && (
-          <p className="truncate font-mono text-[11px] text-fg-subtle tabular">
-            {t.transport.loop} {formatTime(region.start)} → {formatTime(region.end)}
+        {memo ? (
+          <p className="truncate text-[11px] text-accent" title={memo.text}>
+            {memo.name}: {memo.text}
           </p>
+        ) : (
+          region && (
+            <p className="truncate font-mono text-[11px] text-fg-subtle tabular">
+              {t.transport.loop} {formatTime(region.start)} → {formatTime(region.end)}
+            </p>
+          )
         )}
       </div>
       <div className="well flex items-center gap-1 rounded-panel p-1">
