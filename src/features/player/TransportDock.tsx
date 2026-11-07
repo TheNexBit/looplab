@@ -1,4 +1,4 @@
-import { LocateFixed, Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
+import { Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
@@ -10,6 +10,7 @@ import { signed } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { showsWhole, useViewStore } from "@/stores/view";
+import { FollowKey } from "./FollowKey";
 import { LoopMenu } from "./LoopMenu";
 import { CENTS, formatSpeed, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
@@ -31,7 +32,6 @@ export function TransportDock() {
   const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
   const snap = useSettingsStore((s) => s.snap);
   const returnToStart = useSettingsStore((s) => s.returnToStart);
-  const follow = useSettingsStore((s) => s.followPlayhead);
   const whole = useViewStore((s) => showsWhole(s.target, s.duration));
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
@@ -74,22 +74,7 @@ export function TransportDock() {
       <TimeDisplay />
       <div className={GROUP}>
         <LoopMenu disabled={!hasTrack} />
-        <Tooltip label={t.transport.follow} shortcut="toggleFollow">
-          <Button
-            variant="hardware"
-            size="key"
-            led="amber"
-            active={follow}
-            onClick={() => {
-              useSettingsStore.getState().update({ followPlayhead: !follow });
-              useViewStore.getState().resumeFollow();
-            }}
-            aria-label={t.shortcuts.toggleFollow}
-            aria-pressed={follow}
-          >
-            <LocateFixed className="size-4" />
-          </Button>
-        </Tooltip>
+        <FollowKey />
         {/* Below 1024 px the dock has no room for it: the Z key and the palette still do it */}
         <div className="hidden lg:flex">
           <Tooltip label={t.transport.wholeTrack} shortcut="zoomToTrack">

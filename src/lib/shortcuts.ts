@@ -22,6 +22,8 @@ export const shortcuts = {
   clearLoop: "Escape",
   toggleSnap: "G",
   toggleFollow: "F",
+  // Reaper's "Continuous scrolling" toggle: no key by default, assignable in the settings
+  toggleContinuousScroll: "",
   addMarker: "M",
   addBeat: "B",
   addSection: "S",

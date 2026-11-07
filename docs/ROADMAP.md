@@ -301,6 +301,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   progetto di Reaper: la forma d'onda grande mostra tutto il brano; premuto di nuovo torna allo zoom di prima.
   La spia è accesa mentre si vede tutto. Sotto i 1024 px il tasto si nasconde (restano Z e la palette).
 
+- **Scorrimento a pagine più facile da trovare**: tasto destro sul tasto Follow (come le opzioni dei tasti di
+  Reaper) apre Follow on/off e Scorrimento Continuo / A pagine; comando "Scorrimento continuo on/off" (come
+  "Continuous scrolling" di Reaper) nella palette e assegnabile a un tasto o pedale. Resta anche in
+  Impostazioni → Generale.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

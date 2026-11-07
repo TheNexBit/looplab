@@ -1,4 +1,5 @@
 import { pickAndOpenFile } from "@/features/library/pickFile";
+import { setFollow } from "@/features/player/FollowKey";
 import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/actions";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
@@ -43,10 +44,9 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   // Esc first closes an open dialog (Radix handles that); only then does it clear the loop
   clearLoop: () => useUiStore.getState().dialog === null && useLoopStore.getState().clear(),
   toggleSnap: () => settings().update({ snap: !settings().snap }),
-  toggleFollow: () => {
-    settings().update({ followPlayhead: !settings().followPlayhead });
-    useViewStore.getState().resumeFollow();
-  },
+  toggleFollow: () => setFollow(!settings().followPlayhead),
+  toggleContinuousScroll: () =>
+    settings().update({ followMode: settings().followMode === "center" ? "page" : "center" }),
   addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
   addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),
   addSection: () => hasTrack() && useMarkersStore.getState().addSection(currentPosition()),

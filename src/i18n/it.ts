@@ -315,9 +315,9 @@ export const it = {
     startupHint: "Cosa mostra Looplab quando lo apri",
     openView: "Vista all'apertura",
     openViewHint: "Quanto brano si vede nella forma d'onda grande appena lo apri",
-    followMode: "Modo del follow",
+    followMode: "Scorrimento",
     followModeHint:
-      "Continuo: il playhead resta al centro. A pagine: la vista salta quando arriva al bordo, come in Reaper",
+      "Continuo: il playhead resta al centro e il brano scorre sotto. A pagine: quando il playhead arriva al bordo destro la vista gira pagina, come in Reaper (la pagina è lunga quanto lo zoom)",
     wheel: "Rotella sulla forma d'onda",
     wheelHint: "Cosa fa la rotella da sola; con Maiusc fa l'altra cosa",
     wheelSpeed: "Velocità della rotella",
@@ -471,7 +471,8 @@ export const it = {
     position: "Posizione",
     wholeTrack:
       "Tutto il brano a schermo, come lo zoom al progetto di Reaper. Premi di nuovo per tornare allo zoom di prima.",
-    follow: "Follow: la forma d'onda scorre con il playhead durante l'ascolto",
+    follow:
+      "Follow: la forma d'onda segue il playhead durante l'ascolto. Tasto destro: scorrimento continuo o a pagine, come in Reaper",
     returnToStart:
       "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
     snap: "Snap: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead",
@@ -490,6 +491,7 @@ export const it = {
     clearLoop: "Togli il loop",
     toggleSnap: "Snap on/off",
     toggleFollow: "Follow on/off",
+    toggleContinuousScroll: "Scorrimento continuo on/off",
     addMarker: "Aggiungi marker",
     addBeat: "Aggiungi battuta",
     addSection: "Aggiungi sezione",

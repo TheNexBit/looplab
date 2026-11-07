@@ -13,7 +13,10 @@ const press = (key: string, mods: { ctrl?: boolean; shift?: boolean; alt?: boole
 
 describe("shortcuts registry", () => {
   it("never assigns the same combo twice", () => {
-    const combos = Object.values(shortcuts).map((combo) => combo.toLowerCase());
+    const combos = Object.values(shortcuts)
+      // "" is "no key" and can be shared by any number of commands
+      .filter((combo) => combo !== "")
+      .map((combo) => combo.toLowerCase());
     expect(new Set(combos).size).toBe(combos.length);
   });
 
