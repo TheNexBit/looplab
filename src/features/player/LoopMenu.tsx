@@ -1,6 +1,8 @@
 import { BookmarkPlus, ChevronDown, Download, Repeat, Trash2 } from "lucide-react";
 import { Popover } from "radix-ui";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
 import { floatingPanel } from "@/components/ui/menu";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -9,6 +11,7 @@ import { formatTime } from "@/lib/time";
 import { useLoopStore } from "@/stores/loop";
 import { usePracticeStore } from "@/stores/practice";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
+import { SETTING_CHOICES, useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { GAP, LEAD_IN } from "./limits";
 
@@ -19,6 +22,8 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
   const loop = useLoopStore();
   const region = loop.region();
   const repetitions = usePracticeStore((s) => s.repetitions);
+  const afterLoop = useSettingsStore((s) => s.afterLoop);
+  const [options, setOptions] = useState(false);
 
   return (
     <div className="flex items-center">
@@ -30,6 +35,11 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           disabled={disabled || !region}
           active={loop.enabled && region !== null}
           onClick={loop.toggle}
+          onContextMenu={(event) => {
+            // Right-click: the loop options, like the options of a DAW's keys
+            event.preventDefault();
+            setOptions(true);
+          }}
           aria-label={t.transport.loop}
           aria-pressed={loop.enabled}
           className="rounded-r-none"
@@ -37,7 +47,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           <Repeat className="size-4" />
         </Button>
       </Tooltip>
-      <Popover.Root>
+      <Popover.Root open={options} onOpenChange={setOptions}>
         <Tooltip label={t.transport.loopOptions}>
           <Popover.Trigger asChild>
             <Button
@@ -101,6 +111,18 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
                 className="justify-between"
               />
               <p className="text-xs text-fg-subtle">{t.transport.gapHint}</p>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm text-fg">{t.settings.afterLoop}</p>
+              <ChoiceKeys
+                label={t.settings.afterLoop}
+                value={afterLoop}
+                choices={SETTING_CHOICES.afterLoop.map(
+                  (choice) => [choice, t.settings.choices.afterLoop[choice]] as const,
+                )}
+                onChange={(next) => useSettingsStore.getState().update({ afterLoop: next })}
+              />
+              <p className="text-xs text-fg-subtle">{t.settings.afterLoopHint}</p>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <Button

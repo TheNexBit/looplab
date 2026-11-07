@@ -63,6 +63,8 @@ export interface Settings {
   followMode: FollowMode;
   /** What the detailed view shows when a track opens */
   openView: OpenView;
+  /** After dragging a new loop: the playhead stays, goes to the loop start, or plays from there */
+  afterLoop: AfterLoop;
 }
 
 /** The values of the settings that are a choice among a few, in menu order. */
@@ -73,6 +75,7 @@ export const SETTING_CHOICES = {
   doubleClick: ["none", "play"],
   followMode: ["center", "page"],
   openView: ["start", "whole"],
+  afterLoop: ["stay", "start", "play"],
 } as const;
 export type WaveStyle = (typeof SETTING_CHOICES.waveStyle)[number];
 export type Startup = (typeof SETTING_CHOICES.startup)[number];
@@ -80,6 +83,7 @@ export type WheelAction = (typeof SETTING_CHOICES.wheel)[number];
 export type DoubleClick = (typeof SETTING_CHOICES.doubleClick)[number];
 export type FollowMode = (typeof SETTING_CHOICES.followMode)[number];
 export type OpenView = (typeof SETTING_CHOICES.openView)[number];
+export type AfterLoop = (typeof SETTING_CHOICES.afterLoop)[number];
 type ChoiceSetting = keyof typeof SETTING_CHOICES;
 
 type NumericSetting = {
@@ -137,6 +141,8 @@ const DEFAULTS: Settings = {
   doubleClick: "none",
   followMode: "center",
   openView: "start",
+  // A loop is made to be played: start from its beginning, and stopping returns there
+  afterLoop: "start",
 };
 const KEY = "looplab.settings";
 

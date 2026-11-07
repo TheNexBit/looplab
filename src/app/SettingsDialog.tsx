@@ -127,6 +127,7 @@ const GENERAL: readonly (keyof Settings)[] = [
   "wheel",
   "wheelSpeed",
   "doubleClick",
+  "afterLoop",
   "seekStep",
   "fineSeekStep",
   "speedStep",
@@ -186,6 +187,7 @@ export function SettingsDialog() {
             <Choice setting="wheel" />
             <Amount setting="wheelSpeed" format={times} defaultValue={1} />
             <Choice setting="doubleClick" />
+            <Choice setting="afterLoop" />
           </Group>
           <Group title={s.steps}>
             <Amount setting="seekStep" format={seconds} defaultValue={5} />

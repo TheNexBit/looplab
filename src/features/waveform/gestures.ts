@@ -29,7 +29,8 @@ const WHEEL_BUTTON = 1;
  * - click anywhere: playhead there (with the magnet, it sticks to loop edges and markers);
  *   click on the loop bar: playhead at the loop start; click on a loop edge: playhead on it
  * - Shift+click: stretch the loop to that point
- * - drag on the waveform or the ruler: a new loop (even over the current one)
+ * - drag on the waveform or the ruler: a new loop (even over the current one); then the
+ *   playhead stays, goes to its start or plays from there ("afterLoop" setting)
  * - drag the loop bar in the ruler: move the loop; drag a loop edge: resize it
  * - wheel: zoom around the pointer; Shift+wheel: scroll (the other way round when the
  *   "wheel" setting says so; "wheelSpeed" makes both faster or slower)
@@ -103,6 +104,15 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
   const cursorFor = (event: PointerEvent) => {
     if (edgeUnder(event.clientX) !== null) return "ew-resize";
     return inRuler(event.clientY) && insideLoop(timeAt(event.clientX)) ? "grab" : "";
+  };
+
+  /** A loop was just dragged: what the "afterLoop" setting says (Reaper's "move edit cursor"). */
+  const afterNewLoop = (start: number) => {
+    const { afterLoop } = useSettingsStore.getState();
+    if (afterLoop === "stay") return;
+    const player = usePlayerStore.getState();
+    player.seek(start);
+    if (afterLoop === "play" && !player.playing) player.togglePlay();
   };
 
   let gesture: Gesture | null = null;
@@ -199,6 +209,7 @@ export function attachWaveformGestures(element: HTMLElement, rulerHeight: number
     if (gesture?.kind === "press" && gesture.onBrace && region) player.seek(region.start);
     else if (gesture?.kind === "press") player.seek(snapSeek(gesture.time));
     else if (gesture?.kind === "edge" && !gesture.moved) player.seek(gesture.edge);
+    else if (gesture?.kind === "select" && region) afterNewLoop(region.start);
     gesture = null;
     element.style.cursor = cursorFor(event);
   };

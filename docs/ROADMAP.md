@@ -311,6 +311,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   righello, colore proprio in ogni tema (`--color-cue`, mai l'accento: prima nel tema Fosforo spariva nella forma
   d'onda verde), modificabile in Colori su misura → "Punto di partenza".
 
+- **Dopo aver creato un loop** (trascinando sulla forma d'onda), come l'opzione di Reaper "sposta l'edit cursor
+  all'inizio della selezione": il playhead Resta, va All'inizio del loop (predefinito: fermando si torna lì) o
+  Suona subito da lì. Si sceglie in Impostazioni → Generale → Mouse e nel menu del Loop (▾ o tasto destro sul
+  tasto Loop).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

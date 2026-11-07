@@ -322,6 +322,9 @@ export const it = {
     wheelHint: "Cosa fa la rotella da sola; con Maiusc fa l'altra cosa",
     wheelSpeed: "Velocità della rotella",
     wheelSpeedHint: "Quanto zooma o scorre ogni scatto",
+    afterLoop: "Dopo aver creato un loop",
+    afterLoopHint:
+      "Quando trascini un loop sulla forma d'onda: il playhead resta, va all'inizio del loop (fermando torni lì) o parte subito da lì",
     doubleClick: "Doppio clic sulla forma d'onda",
     doubleClickHint:
       "Il clic sposta sempre il playhead; il doppio clic può anche far partire l'ascolto",
@@ -344,6 +347,7 @@ export const it = {
       followMode: { center: "Continuo", page: "A pagine" },
       wheel: { zoom: "Zoom", scroll: "Scorre" },
       doubleClick: { none: "Niente", play: "Suona da lì" },
+      afterLoop: { stay: "Resta", start: "All'inizio", play: "Suona" },
       waveStyle: { filled: "Piena", outline: "Contorno", half: "Metà" },
     } satisfies {
       [K in keyof typeof SETTING_CHOICES]: Record<(typeof SETTING_CHOICES)[K][number], string>;
