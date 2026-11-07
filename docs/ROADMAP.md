@@ -306,6 +306,11 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   "Continuous scrolling" di Reaper) nella palette e assegnabile a un tasto o pedale. Resta anche in
   Impostazioni → Generale.
 
+- **Punto di partenza ben visibile** (con "Torna al punto di partenza" acceso): linea tratteggiata a tutta altezza
+  come l'edit cursor di Reaper (il playhead resta la linea piena), bandierina più grande con bordo scuro nel
+  righello, colore proprio in ogni tema (`--color-cue`, mai l'accento: prima nel tema Fosforo spariva nella forma
+  d'onda verde), modificabile in Colori su misura → "Punto di partenza".
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

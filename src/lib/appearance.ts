@@ -5,7 +5,7 @@ import { applyTheme, refreshThemeColors, type ThemeId } from "./theme";
  * The colours one can change on top of a theme, like Reaper's theme tweaker. Each one also
  * sets the shades made from it (hover, soft background, glow), so a single pick is enough.
  */
-export const CUSTOM_COLORS = ["accent", "wave", "loop", "playhead", "lcd", "bar"] as const;
+export const CUSTOM_COLORS = ["accent", "wave", "loop", "playhead", "cue", "lcd", "bar"] as const;
 export type CustomColor = (typeof CUSTOM_COLORS)[number];
 export type CustomColors = Partial<Record<CustomColor, string>>;
 
@@ -25,6 +25,8 @@ function variablesOf(color: CustomColor, hex: string): Record<string, string> {
       return { "--color-loop": hex, "--color-loop-soft": withAlpha(hex, 0.08) };
     case "playhead":
       return { "--color-playhead": hex };
+    case "cue":
+      return { "--color-cue": hex };
     case "lcd":
       return {
         "--color-lcd-fg": hex,

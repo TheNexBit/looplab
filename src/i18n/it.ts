@@ -383,6 +383,7 @@ export const it = {
         wave: { name: "Forma d'onda", hint: "Grande e panoramica" },
         loop: { name: "Loop", hint: "Zona del loop e sua spia" },
         playhead: { name: "Playhead", hint: "Linea del punto di ascolto" },
+        cue: { name: "Punto di partenza", hint: "Dove torna fermando (linea tratteggiata)" },
         lcd: { name: "Display", hint: "Cifre di tempo e BPM" },
         bar: { name: "Griglia", hint: "Linee di battute e battiti" },
       } satisfies Record<CustomColor, { name: string; hint: string }>,

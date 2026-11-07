@@ -74,6 +74,9 @@
   --color-beat: currentColor;
   --color-bar: currentColor;
   --color-playhead: currentColor;
+  /* Start point that stopping returns to (Reaper's edit cursor): never the accent, so it
+     stands out from the waveform and the playhead in every theme */
+  --color-cue: currentColor;
   /* Note view keyboard */
   --color-key-white: currentColor;
   --color-key-black: currentColor;
@@ -148,6 +151,7 @@
   --color-beat: rgb(255 255 255 / 0.07);
   --color-bar: rgb(255 255 255 / 0.28);
   --color-playhead: #ffffff;
+  --color-cue: #4fd1ff;
   --color-key-white: #b9b4ab;
   --color-key-black: #1a1b1e;
 }
@@ -198,6 +202,7 @@
   --color-beat: rgb(255 255 255 / 0.07);
   --color-bar: rgb(255 255 255 / 0.28);
   --color-playhead: #ffffff;
+  --color-cue: #ff7a59;
   --color-key-white: #b3bbb5;
   --color-key-black: #171a18;
 }
@@ -248,6 +253,7 @@
   --color-beat: rgb(255 255 255 / 0.07);
   --color-bar: rgb(255 255 255 / 0.28);
   --color-playhead: #ffffff;
+  --color-cue: #ffb347;
   --color-key-white: #b4bcc8;
   --color-key-black: #171b22;
 }
@@ -299,6 +305,7 @@
   --color-beat: rgb(0 0 0 / 0.07);
   --color-bar: rgb(0 0 0 / 0.3);
   --color-playhead: #15171a;
+  --color-cue: #0a6fd6;
   --color-key-white: #fbfbf9;
   --color-key-black: #2a2c30;
 }
@@ -349,6 +356,7 @@
   --color-beat: rgb(255 255 255 / 0.14);
   --color-bar: rgb(255 255 255 / 0.5);
   --color-playhead: #ffffff;
+  --color-cue: #ff4fd8;
   --color-key-white: #f0f0f0;
   --color-key-black: #000000;
 }

@@ -44,6 +44,7 @@ const THEME_VARIABLE: Record<CustomColor, string> = {
   wave: "--color-wave",
   loop: "--color-loop",
   playhead: "--color-playhead",
+  cue: "--color-cue",
   lcd: "--color-lcd-fg",
   bar: "--color-bar",
 };

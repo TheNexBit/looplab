@@ -146,10 +146,29 @@ export function DetailView() {
         ref={cueRef}
         aria-hidden
         title={t.transport.cue}
-        className="pointer-events-none absolute left-0 will-change-transform"
-        style={{ top: RULER_CSS - 7 }}
+        className="pointer-events-none absolute top-0 bottom-0 left-0 will-change-transform"
       >
-        <div className="-translate-x-1/2 border-x-[5px] border-b-[7px] border-x-transparent border-b-accent" />
+        {/* Dashed full-height line, like Reaper's edit cursor: the playhead is the solid one */}
+        <div
+          className="absolute bottom-0 -left-px border-l-2 border-dashed border-cue opacity-80"
+          style={{ top: RULER_CSS }}
+        />
+        {/* Flag at the foot of the ruler, outlined so it stands out on any waveform */}
+        <svg
+          aria-hidden
+          width="14"
+          height="11"
+          viewBox="0 0 14 11"
+          className="absolute -translate-x-1/2 overflow-visible"
+          style={{ top: RULER_CSS - 10 }}
+        >
+          <path
+            d="M1 1 H13 L7 10 Z"
+            className="fill-cue stroke-edge"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
       <div
         ref={playheadRef}
