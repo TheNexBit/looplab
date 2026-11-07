@@ -5,7 +5,7 @@ import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
-import { METRONOME_UNITS, useMetronomeStore } from "@/stores/metronome";
+import { METRONOME_UNITS, shownSetup, useMetronomeStore } from "@/stores/metronome";
 import { BEATS_MAX, BEATS_MIN, MIXED_METERS } from "./beatGrid";
 import { COMMON_METERS, groupingChoices } from "./meterChoices";
 
@@ -22,9 +22,9 @@ const smallKey =
  * − / + for the pulses and the note value: nothing to type.
  */
 export function MeterMenu() {
-  const beats = useMetronomeStore((s) => s.beats);
-  const unit = useMetronomeStore((s) => s.unit);
-  const grouping = useMetronomeStore((s) => s.grouping);
+  const beats = useMetronomeStore((s) => shownSetup(s).beats);
+  const unit = useMetronomeStore((s) => shownSetup(s).unit);
+  const grouping = useMetronomeStore((s) => shownSetup(s).grouping);
   const setMeter = useMetronomeStore((s) => s.setMeter);
   const choices = groupingChoices(beats);
 

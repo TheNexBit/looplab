@@ -11,13 +11,15 @@ import {
   COUNT_IN_BARS,
   CROSS,
   currentPulses,
+  playedPart,
   SUBDIVISIONS,
+  shownSetup,
   useMetronomeStore,
 } from "@/stores/metronome";
 import { BeatStrip } from "./BeatStrip";
 import { SWING_MAX, SWING_STRAIGHT, SWING_TRIPLET } from "./beatGrid";
-import { ExercisesPanel } from "./ExercisesPanel";
 import { MeterMenu } from "./MeterMenu";
+import { MetronomeSide, SequenceBanner } from "./MetronomeSide";
 import { barAndPulse, formatElapsed } from "./meterChoices";
 import { toggleMetronomeRun } from "./metronomeEngine";
 import { TempoPanel } from "./TempoPanel";
@@ -118,15 +120,18 @@ function MetronomeTransport() {
   useAnimationFrame((now) => {
     const state = useMetronomeStore.getState();
     const pulses = currentPulses(now);
+    const { beats } = shownSetup(state);
+    const part = playedPart(state);
     if (barRef.current) {
       if (pulses === null) {
         barRef.current.textContent = m.ready;
       } else {
-        const { bar, pulse } = barAndPulse(pulses, state.beats);
+        const { bar, pulse } = barAndPulse(pulses, beats);
+        const ofBars = part ? `/${part.bars}` : "";
         barRef.current.textContent =
           pulses < 0
-            ? `${m.countingIn} ${pulse + 1}/${state.beats}`
-            : `${m.bar} ${bar} · ${pulse + 1}/${state.beats}`;
+            ? `${m.countingIn} ${pulse + 1}/${beats}`
+            : `${m.bar} ${bar}${ofBars} · ${pulse + 1}/${beats}`;
       }
     }
     if (timeRef.current) {
@@ -191,28 +196,42 @@ function MetronomeTransport() {
   );
 }
 
+/** The controls of the own setup: resting while a sequence plays its own parts. */
+function Editable({ children }: { children: ReactNode }) {
+  const locked = useMetronomeStore((s) => s.sequence !== null);
+  return <div className={locked ? "pointer-events-none opacity-50" : undefined}>{children}</div>;
+}
+
 /**
  * The metronome on its own, also without a track: tempo and bar on displays, the bar to
  * click, the rhythm keys, and its own transport at the foot. Space starts and stops it.
+ * Beside it the exercises, the songs and the sequences.
  */
 export function MetronomeView() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
         <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 overflow-y-auto px-6 py-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <TempoPanel />
-            <MeterMenu />
-          </div>
+          <SequenceBanner />
+          <Editable>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <TempoPanel />
+              <MeterMenu />
+            </div>
+          </Editable>
           <section className="space-y-2">
             <Tooltip label={m.accentsHint}>
               <h3 className="panel-label cursor-help">{m.accents}</h3>
             </Tooltip>
-            <BeatStrip />
+            <Editable>
+              <BeatStrip />
+            </Editable>
           </section>
-          <RhythmControls />
+          <Editable>
+            <RhythmControls />
+          </Editable>
         </div>
-        <ExercisesPanel />
+        <MetronomeSide />
       </div>
       <MetronomeTransport />
     </div>

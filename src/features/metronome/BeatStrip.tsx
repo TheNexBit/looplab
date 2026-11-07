@@ -3,7 +3,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
-import { currentPulses, useMetronomeStore } from "@/stores/metronome";
+import { currentPulses, shownSetup, useMetronomeStore } from "@/stores/metronome";
 import type { BeatState } from "./types";
 
 const m = t.metronome;
@@ -31,11 +31,11 @@ function feltBeats(beats: number, grouping: number[] | null): { first: number; s
  * show the subdivisions. Under it, the cross rhythm on a row of its own.
  */
 export function BeatStrip() {
-  const beats = useMetronomeStore((s) => s.beats);
-  const grouping = useMetronomeStore((s) => s.grouping);
-  const states = useMetronomeStore((s) => s.states);
-  const subdivision = useMetronomeStore((s) => s.subdivision);
-  const cross = useMetronomeStore((s) => s.cross);
+  const beats = useMetronomeStore((s) => shownSetup(s).beats);
+  const grouping = useMetronomeStore((s) => shownSetup(s).grouping);
+  const states = useMetronomeStore((s) => shownSetup(s).states);
+  const subdivision = useMetronomeStore((s) => shownSetup(s).subdivision);
+  const cross = useMetronomeStore((s) => shownSetup(s).cross);
   const cycleBeat = useMetronomeStore((s) => s.cycleBeat);
   const pulseRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const crossRefs = useRef<(HTMLSpanElement | null)[]>([]);

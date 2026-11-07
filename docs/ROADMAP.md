@@ -468,7 +468,14 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    suddivisione 2, 3 o 4, pennate giù e su con suoni propri, ritmi generati facile / medio / difficile, giro a
    memoria ogni N, click guida sulle pause in battere). Righe dal vivo: tempo attuale, click o silenzio, cella
    che suona. Impostazioni salvate su questo PC (`stores/metronomeExercises.ts`).
-5. Brani, scaletta di tempi, routine; sequenza di battute.
+5. ✅ **Brani e sequenze** (schede Brani e Sequenze accanto agli Esercizi). Un brano è battuta, tempo ed
+   esercizi con un nome (salva, ricarica, rinomina, elimina). Una sequenza unisce scaletta, routine e sequenza di
+   battute di MetroFlow: parti in fila, ognuna con battuta, tempo ed esercizi suoi per N battute e una nota su cosa
+   suonare; la battuta attuale o un brano si aggiungono come parti, si spostano, si allungano con − / +; durata
+   totale; «Da capo» la ripete. Il motore la suona da sé (`Sequence` in `metronome.rs`): il cambio cade sulla
+   stanghetta, alla fine si ferma da solo. Mentre suona, la schermata mostra la parte in corso (striscia in alto
+   con nome, parte N di M e la nota) e i comandi della battuta propria riposano fino a «Esci dalla sequenza».
+   Salvati su questo PC (`stores/metronomeLibrary.ts`).
 6. Tastiera della chitarra, voce che conta, lampeggio.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜

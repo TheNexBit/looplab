@@ -5,6 +5,12 @@
 //! current moment, keeping the place in the bar, so a speed trainer can change the tempo
 //! while it runs without a jump. Count-in bars are the bars before 0: they sound plainly,
 //! and the exercises (`exercises.rs`) only start at bar 0. Real-time safe.
+//!
+//! A sequence plays parts one after the other, each with its own bar, tempo and exercises
+//! for a number of bars: 4 bars of 7/8 at 160, then 2 of 5/4… The change lands on the bar
+//! line. Positions and bars are counted from the start of the part being played.
+
+use std::sync::Arc;
 
 use crate::click::{ClickSounds, ClickVoice};
 use crate::exercises::{Exercises, Strum};
@@ -39,6 +45,37 @@ impl Default for MetronomeSettings {
     }
 }
 
+/// One part of the metronome: a bar, its tempo and its exercises, for `bars` bars
+/// (0 = for ever, as when no sequence is playing).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Segment {
+    pub pulse_frames: f64,
+    pub bpm: f64,
+    pub pattern: BarPattern,
+    pub exercises: Exercises,
+    pub bars: u32,
+}
+
+impl Segment {
+    fn of(settings: &MetronomeSettings) -> Self {
+        Self {
+            pulse_frames: settings.pulse_frames.max(1.0),
+            bpm: settings.bpm,
+            pattern: settings.pattern,
+            exercises: settings.exercises,
+            bars: 0,
+        }
+    }
+}
+
+/// Parts played in order, then again from the first or to a stop. Built off the audio thread
+/// and shared, so replacing it never frees memory there.
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Sequence {
+    pub segments: Vec<Segment>,
+    pub repeat: bool,
+}
+
 /// What starts sounding in one frame.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 struct Frame {
@@ -52,7 +89,12 @@ const STRUM_ACCENT: f32 = 1.0;
 const STRUM_NOTE: f32 = 0.7;
 
 pub(crate) struct Metronome {
+    /// Count-in, volume and sounds; and the part played when no sequence is set
     settings: MetronomeSettings,
+    /// The part being played: from the settings, or from the sequence
+    part: Segment,
+    sequence: Option<Arc<Sequence>>,
+    segment: usize,
     running: bool,
     /// Frames played since start
     frame: u64,
@@ -72,7 +114,10 @@ impl Metronome {
         let settings = MetronomeSettings::default();
         Self {
             pulse_frames: settings.pulse_frames,
+            part: Segment::of(&settings),
             settings,
+            sequence: None,
+            segment: 0,
             running: false,
             frame: 0,
             base_pulses: 0.0,
@@ -87,17 +132,15 @@ impl Metronome {
         self.base_pulses + (frame - self.base_frame) as f64 / self.pulse_frames
     }
 
-    /// Frames per pulse in `bar`: the speed trainer's tempo there, or the set one.
+    /// Frames per pulse in `bar` of the part: the speed trainer's tempo there, or the set one.
     fn pulse_frames_in(&self, bar: i64) -> f64 {
-        match self.settings.exercises.trainer {
-            Some(trainer) if bar >= 0 && self.settings.bpm > 0.0 => {
-                self.settings.pulse_frames * self.settings.bpm / trainer.bpm_at(bar).max(1.0)
+        let part = &self.part;
+        match part.exercises.trainer {
+            // The count-in already goes at the trainer's first tempo
+            Some(trainer) if part.bpm > 0.0 => {
+                part.pulse_frames * part.bpm / trainer.bpm_at(bar.max(0)).max(1.0)
             }
-            Some(trainer) if self.settings.bpm > 0.0 => {
-                // The count-in already goes at the trainer's first tempo
-                self.settings.pulse_frames * self.settings.bpm / trainer.bpm_at(0).max(1.0)
-            }
-            _ => self.settings.pulse_frames,
+            _ => part.pulse_frames,
         }
     }
 
@@ -109,26 +152,79 @@ impl Metronome {
     }
 
     fn bar_now(&self) -> i64 {
-        (self.position() / f64::from(self.settings.pattern.pulses())).floor() as i64
+        (self.position() / f64::from(self.part.pattern.pulses())).floor() as i64
     }
 
-    /// New settings take over now; while running, the place in the bar is kept.
+    /// New settings take over now; while running, the place in the bar is kept. While a
+    /// sequence plays, only its count-in, volume and sounds change.
     pub fn set(&mut self, settings: MetronomeSettings) {
-        let settings = MetronomeSettings {
+        self.settings = MetronomeSettings {
             pulse_frames: settings.pulse_frames.max(1.0),
             ..settings
         };
-        let old_pulses = f64::from(self.settings.pattern.pulses());
+        if self.sequence.is_none() {
+            self.take_part(Segment::of(&self.settings));
+        }
+    }
+
+    /// `part` takes over now, keeping the place in the bar while running.
+    fn take_part(&mut self, part: Segment) {
+        let old_pulses = f64::from(self.part.pattern.pulses());
         let now = self.position();
-        self.settings = settings;
+        self.part = part;
         if self.running {
             let bar = (now / old_pulses).floor();
             let into_bar = now - bar * old_pulses;
-            let pulses = bar * f64::from(settings.pattern.pulses()) + into_bar;
+            let pulses = bar * f64::from(part.pattern.pulses()) + into_bar;
             self.rebase(pulses, self.pulse_frames_in(bar as i64));
         } else {
             self.pulse_frames = self.pulse_frames_in(0);
         }
+    }
+
+    /// Plays `sequence` from its first part (`None`: back to the settings' bar). Returns the
+    /// one it replaces, to be freed off the audio thread.
+    pub fn set_sequence(&mut self, sequence: Option<Arc<Sequence>>) -> Option<Arc<Sequence>> {
+        let old = std::mem::replace(&mut self.sequence, sequence);
+        self.segment = 0;
+        let part = self.first_part();
+        self.take_part(part);
+        old
+    }
+
+    fn first_part(&self) -> Segment {
+        self.sequence
+            .as_ref()
+            .and_then(|sequence| sequence.segments.first())
+            .copied()
+            .unwrap_or_else(|| Segment::of(&self.settings))
+    }
+
+    /// Moves to the next part of the sequence; false at the end of one that does not repeat.
+    fn next_part(&mut self) -> bool {
+        let Some(sequence) = &self.sequence else {
+            return true;
+        };
+        let mut next = self.segment + 1;
+        if next >= sequence.segments.len() {
+            if !sequence.repeat {
+                return false;
+            }
+            next = 0;
+        }
+        match sequence.segments.get(next) {
+            Some(part) => {
+                self.part = *part;
+                self.segment = next;
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// The part of the sequence being played (None without a sequence).
+    pub fn segment(&self) -> Option<u32> {
+        self.sequence.as_ref().map(|_| self.segment as u32)
     }
 
     /// Starts from the count-in (or bar 0), or stops.
@@ -136,8 +232,10 @@ impl Metronome {
         self.running = running;
         if running {
             self.frame = 0;
+            self.segment = 0;
+            self.part = self.first_part();
             let start =
-                -f64::from(self.settings.count_in_bars) * f64::from(self.settings.pattern.pulses());
+                -f64::from(self.settings.count_in_bars) * f64::from(self.part.pattern.pulses());
             self.rebase(start, self.pulse_frames_in(-1));
         }
     }
@@ -173,7 +271,7 @@ impl Metronome {
         } else {
             self.bar_now()
         };
-        let exercises = self.settings.exercises;
+        let exercises = self.part.exercises;
         if exercises.gap.is_some_and(|gap| gap.is_silent(bar)) {
             return Frame::default();
         }
@@ -181,7 +279,7 @@ impl Metronome {
         if hits.on_grid
             && let Some(rhythm) = exercises.rhythm
         {
-            let pattern = &self.settings.pattern;
+            let pattern = &self.part.pattern;
             let on_beat = pattern.starts_beat(hits.pulse_in_bar);
             frame.click = None;
             match rhythm.strum(
@@ -214,9 +312,24 @@ impl Metronome {
             return Frame::default();
         }
         let from = self.pulses_at(self.frame);
-        let to = self.pulses_at(self.frame + 1);
+        let mut to = self.pulses_at(self.frame + 1);
+        let mut hits = self.part.pattern.hits(from, to);
+        let downbeat = hits.on_grid && hits.pulse_in_bar == 0 && hits.sub == 0;
+        if downbeat && self.part.bars > 0 && hits.bar >= i64::from(self.part.bars) {
+            // The part is over: the next one starts on this very downbeat
+            let at = (hits.bar * i64::from(self.part.pattern.pulses())) as f64;
+            let early_frames = (from - at) * self.pulse_frames;
+            if !self.next_part() {
+                self.running = false;
+                return Frame::default();
+            }
+            self.pulse_frames = self.pulse_frames_in(0).max(1.0);
+            self.base_frame = self.frame;
+            self.base_pulses = early_frames / self.pulse_frames;
+            to = self.pulses_at(self.frame + 1);
+            hits = self.part.pattern.hits(self.pulses_at(self.frame), to);
+        }
         self.frame += 1;
-        let hits = self.settings.pattern.hits(from, to);
         // A new bar: the speed trainer's tempo for it takes over from the next frame
         if hits.on_grid && hits.pulse_in_bar == 0 && hits.sub == 0 {
             let pulse_frames = self.pulse_frames_in(hits.bar);
@@ -335,6 +448,50 @@ mod tests {
             exercises,
             ..settings(1_000.0, pulses)
         }
+    }
+
+    fn part(pulse_frames: f64, pulses: u32, bars: u32) -> Segment {
+        Segment {
+            pulse_frames,
+            bpm: 120.0,
+            pattern: BarPattern::regular(pulses),
+            exercises: Exercises::default(),
+            bars,
+        }
+    }
+
+    #[test]
+    fn a_sequence_changes_bar_and_tempo_on_the_bar_line() {
+        let mut metronome = started(settings(1_000.0, 4));
+        let old = metronome.set_sequence(Some(Arc::new(Sequence {
+            // 1 bar of 3 at 1,000 frames a pulse, then 1 bar of 2 at 500
+            segments: vec![part(1_000.0, 3, 1), part(500.0, 2, 1)],
+            repeat: false,
+        })));
+        assert!(old.is_none());
+        metronome.run(true);
+        assert_eq!(metronome.segment(), Some(0));
+        let clicks = onsets(&mut metronome, 6_000);
+        assert_eq!(clicks, [0, 1_000, 2_000, 3_000, 3_500]);
+        // It stops at the end of a sequence that does not repeat
+        assert!(!metronome.is_running());
+    }
+
+    #[test]
+    fn a_repeating_sequence_starts_again_and_can_be_dropped() {
+        let mut metronome = Metronome::new(48_000);
+        metronome.set(settings(1_000.0, 4));
+        metronome.set_sequence(Some(Arc::new(Sequence {
+            segments: vec![part(1_000.0, 1, 1), part(1_000.0, 1, 1)],
+            repeat: true,
+        })));
+        metronome.run(true);
+        onsets(&mut metronome, 2_500);
+        assert_eq!(metronome.segment(), Some(0));
+        assert!(metronome.is_running());
+        let old = metronome.set_sequence(None);
+        assert!(old.is_some());
+        assert_eq!(metronome.segment(), None);
     }
 
     #[test]

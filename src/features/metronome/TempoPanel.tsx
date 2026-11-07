@@ -5,7 +5,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { tapTempo } from "@/features/practice/tempo";
 import { t } from "@/i18n";
 import { useWheelSteps } from "@/lib/useWheelSteps";
-import { METRONOME_BPM, useMetronomeStore } from "@/stores/metronome";
+import { METRONOME_BPM, shownSetup, useMetronomeStore } from "@/stores/metronome";
 import { tempoMarking } from "./meterChoices";
 
 const m = t.metronome;
@@ -31,8 +31,8 @@ export function tapMetronome() {
  * quarter, how fast the pulses go (♪ = 320 in 7/8 at 160).
  */
 export function TempoPanel() {
-  const bpm = useMetronomeStore((s) => s.bpm);
-  const unit = useMetronomeStore((s) => s.unit);
+  const bpm = useMetronomeStore((s) => shownSetup(s).bpm);
+  const unit = useMetronomeStore((s) => shownSetup(s).unit);
   const ref = useRef<HTMLDivElement>(null);
   useWheelSteps(ref, (step) => nudgeBpm(step));
   const rounded = Math.round(bpm);

@@ -13,7 +13,7 @@ use crate::click::{ClickQueue, ClickSettings, ClickVoice};
 use crate::dsp::channels::Channels;
 use crate::dsp::eq::Eq;
 use crate::dsp::stretch::Stretch;
-use crate::engine::{Command, LoopSettings, MAX_SPEED, Shared};
+use crate::engine::{Command, Garbage, LoopSettings, MAX_SPEED, Shared};
 use crate::metronome::Metronome;
 use crate::pattern::ClickKind;
 use crate::pcm::{CHANNELS, Pcm};
@@ -170,7 +170,7 @@ struct Mark {
 
 pub(crate) struct Renderer {
     commands: rtrb::Consumer<Command>,
-    garbage: rtrb::Producer<Arc<Pcm>>,
+    garbage: rtrb::Producer<Garbage>,
     shared: Arc<Shared>,
     track: Option<Arc<Pcm>>,
     reader: Reader,
@@ -218,7 +218,7 @@ impl Renderer {
     pub fn new(
         sample_rate: u32,
         commands: rtrb::Consumer<Command>,
-        garbage: rtrb::Producer<Arc<Pcm>>,
+        garbage: rtrb::Producer<Garbage>,
         shared: Arc<Shared>,
     ) -> Self {
         let stretch = Stretch::new(sample_rate);
@@ -296,6 +296,10 @@ impl Renderer {
         self.shared
             .metronome_pulses
             .store(self.metronome.position().to_bits(), Ordering::Relaxed);
+        self.shared.metronome_segment.store(
+            self.metronome.segment().unwrap_or(u32::MAX),
+            Ordering::Relaxed,
+        );
     }
 
     fn track_frames(&self) -> Option<u64> {
@@ -312,7 +316,8 @@ impl Renderer {
             match command {
                 Command::SetTrack(pcm) => {
                     if let Some(old) = self.track.replace(pcm)
-                        && let Err(rtrb::PushError::Full(old)) = self.garbage.push(old)
+                        && let Err(rtrb::PushError::Full(old)) =
+                            self.garbage.push(Garbage::Track(old))
                     {
                         // Never free memory here: leaking is better than a glitch
                         std::mem::forget(old);
@@ -346,6 +351,15 @@ impl Renderer {
                 }
                 Command::SetMetronome(settings) => self.metronome.set(settings),
                 Command::RunMetronome(running) => self.metronome.run(running),
+                Command::SetSequence(sequence) => {
+                    if let Some(old) = self.metronome.set_sequence(sequence)
+                        && let Err(rtrb::PushError::Full(old)) =
+                            self.garbage.push(Garbage::Sequence(old))
+                    {
+                        // Never free memory here: leaking is better than a glitch
+                        std::mem::forget(old);
+                    }
+                }
                 Command::SetTone(settings) => self.tone.set(settings),
             }
         }

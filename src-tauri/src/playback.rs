@@ -28,6 +28,8 @@ pub struct PlaybackStatus {
     /// (negative during the count-in)
     pub metronome_running: bool,
     pub metronome_pulses: f64,
+    /// Part of the sequence being played (its position counts from the part's start)
+    pub metronome_segment: Option<u32>,
 }
 
 /// Emits the status while playing, and once after every change.
@@ -47,6 +49,7 @@ pub fn spawn_status_loop(app: AppHandle) {
                 device_lost: engine.is_lost(),
                 metronome_running: status.metronome_running,
                 metronome_pulses: status.metronome_pulses,
+                metronome_segment: status.metronome_segment,
             };
             if current.playing || current.metronome_running || last != Some(current) {
                 let _ = current.emit(&app);

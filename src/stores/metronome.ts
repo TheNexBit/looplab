@@ -14,6 +14,7 @@ import type { BeatState, TimeSignature } from "@/features/metronome/types";
 import type { PlaybackStatus } from "@/lib/bindings";
 import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
+import type { ExerciseSetup } from "./metronomeExercises";
 
 /** Tempo in quarter notes per minute, as everywhere in Looplab (and in Reaper, Ableton). */
 export const METRONOME_BPM = { min: 20, max: 400, step: 1, default: 120 } as const;
@@ -110,7 +111,13 @@ interface MetronomeState extends MetronomeSetup {
   /** When it was started (performance.now), for the elapsed time */
   startedAt: number;
   taps: number[];
+  /** A sequence being played: its parts in order; null: the metronome's own bar */
+  sequence: PlayedSequence | null;
+  /** Part of the sequence being played, as the engine reports it */
+  segment: number;
   setOpen: (open: boolean) => void;
+  /** Plays a sequence from its first part (null: back to the own bar) */
+  playSequence: (sequence: PlayedSequence | null) => void;
   setRunning: (running: boolean) => void;
   update: (patch: Partial<MetronomeSetup>) => void;
   /** New meter: the accents are kept where they still fit */
@@ -122,6 +129,25 @@ interface MetronomeState extends MetronomeSetup {
 }
 
 const MAX_TAPS = 8;
+/** Before this long after the start, an engine report of "stopped" is an old one. */
+const START_GRACE_MS = 500;
+
+/** A part of a sequence: a whole setup (bar, tempo, exercises) for some bars. */
+export interface PlayedPart {
+  name: string;
+  setup: MetronomeSetup;
+  exercises: ExerciseSetup;
+  bars: number;
+  /** What to play in this part ("riff della strofa", "scala di La minore") */
+  note: string;
+}
+
+export interface PlayedSequence {
+  id: string;
+  name: string;
+  parts: PlayedPart[];
+  repeat: boolean;
+}
 
 /** The metronome on its own: its bar and tempo (kept on this PC) and where it is. */
 export const useMetronomeStore = create<MetronomeState>((set, get) => {
@@ -149,13 +175,20 @@ export const useMetronomeStore = create<MetronomeState>((set, get) => {
     pulsesAt: 0,
     startedAt: 0,
     taps: [],
-    setOpen: (open) => set(open ? { open } : { open, running: false }),
+    sequence: null,
+    segment: 0,
+    setOpen: (open) => set(open ? { open } : { open, running: false, sequence: null }),
+    playSequence: (sequence) => {
+      set({ sequence, segment: 0, running: false });
+      if (sequence) get().setRunning(true);
+    },
     setRunning: (running) =>
       set({
         running,
         startedAt: performance.now(),
+        segment: 0,
         // Until the engine reports, the count-in is where it starts
-        pulses: running ? -get().countInBars * get().beats : 0,
+        pulses: running ? -get().countInBars * shownSetup(get()).beats : 0,
         pulsesAt: performance.now(),
       }),
     update: (patch) => {
@@ -175,8 +208,18 @@ export const useMetronomeStore = create<MetronomeState>((set, get) => {
     },
     addTap: (time) => set({ taps: [...get().taps, time].slice(-MAX_TAPS) }),
     applyStatus: (status) => {
-      if (!get().running) return;
-      set({ pulses: status.metronomePulses ?? get().pulses, pulsesAt: performance.now() });
+      const state = get();
+      if (!state.running) return;
+      // The engine stopped by itself: a sequence that does not repeat is over
+      if (!status.metronomeRunning && performance.now() - state.startedAt > START_GRACE_MS) {
+        set({ running: false });
+        return;
+      }
+      set({
+        pulses: status.metronomePulses ?? state.pulses,
+        pulsesAt: performance.now(),
+        segment: status.metronomeSegment ?? 0,
+      });
     },
   };
 });
@@ -186,11 +229,23 @@ export function pulsesPerSecond(setup: Pick<MetronomeSetup, "bpm" | "unit">): nu
   return (setup.bpm / 60) * (setup.unit / 4);
 }
 
+/** The part of the sequence being played, if one is. */
+export function playedPart(
+  state: Pick<MetronomeState, "sequence" | "segment">,
+): PlayedPart | undefined {
+  return state.sequence?.parts[state.segment] ?? state.sequence?.parts[0];
+}
+
+/** What the screen shows: the part of the sequence being played, or the own setup. */
+export function shownSetup(state: MetronomeState): MetronomeSetup {
+  return playedPart(state)?.setup ?? state;
+}
+
 /** Where the metronome is now, in pulses (between two reports it runs on at the tempo). */
 export function currentPulses(now = performance.now()): number | null {
   const state = useMetronomeStore.getState();
   if (!state.running) return null;
-  return state.pulses + ((now - state.pulsesAt) / 1000) * pulsesPerSecond(state);
+  return state.pulses + ((now - state.pulsesAt) / 1000) * pulsesPerSecond(shownSetup(state));
 }
 
 /** Felt beats in a bar of the current setup. */

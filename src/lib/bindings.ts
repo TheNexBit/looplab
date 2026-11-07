@@ -43,6 +43,11 @@ export const commands = {
 	setMetronome: (settings: MetronomeRequest_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("set_metronome", { settings })),
 	/**  Starts the metronome on its own from its count-in, or stops it. */
 	runMetronome: (running: boolean) => typedError<null, AppError>(__TAURI_INVOKE("run_metronome", { running })),
+	/**
+	 *  Plays a sequence on the metronome on its own, from its first part (null: back to the
+	 *  metronome's own bar). Start it with `run_metronome`.
+	 */
+	setSequence: (sequence: SequenceRequest_Deserialize | null) => typedError<null, AppError>(__TAURI_INVOKE("set_sequence", { sequence })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
@@ -95,7 +100,7 @@ export const commands = {
 export const events = {
 	mediaKey: makeEvent<MediaKey, MediaKey>("media-key"),
 	midiTrigger: makeEvent<MidiTrigger, MidiTrigger>("midi-trigger"),
-	playbackStatus: makeEvent<PlaybackStatus, PlaybackStatus>("playback-status"),
+	playbackStatus: makeEvent<PlaybackStatus_Serialize, PlaybackStatus_Deserialize>("playback-status"),
 	trackLoading: makeEvent<TrackLoading_Serialize, TrackLoading_Deserialize>("track-loading"),
 	videoWindowHidden: makeEvent<VideoWindowHidden, VideoWindowHidden>("video-window-hidden"),
 };
@@ -394,7 +399,30 @@ export type MidiTrigger = {
 	number: number,
 };
 
-export type PlaybackStatus = {
+/**  One part of a sequence: a bar, its tempo and exercises, for some bars. */
+export type PartRequest = PartRequest_Serialize | PartRequest_Deserialize;
+
+/**  One part of a sequence: a bar, its tempo and exercises, for some bars. */
+export type PartRequest_Deserialize = {
+	bpm: number | null,
+	bar: BarRequest,
+	exercises: ExercisesRequest_Deserialize,
+	/**  At least 1 */
+	bars: number,
+};
+
+/**  One part of a sequence: a bar, its tempo and exercises, for some bars. */
+export type PartRequest_Serialize = {
+	bpm: number | null,
+	bar: BarRequest,
+	exercises: ExercisesRequest_Serialize,
+	/**  At least 1 */
+	bars: number,
+};
+
+export type PlaybackStatus = PlaybackStatus_Serialize | PlaybackStatus_Deserialize;
+
+export type PlaybackStatus_Deserialize = {
 	/**  Seconds */
 	position: number | null,
 	playing: boolean,
@@ -408,6 +436,26 @@ export type PlaybackStatus = {
 	 */
 	metronomeRunning: boolean,
 	metronomePulses: number | null,
+	/**  Part of the sequence being played (its position counts from the part's start) */
+	metronomeSegment?: number | null,
+};
+
+export type PlaybackStatus_Serialize = {
+	/**  Seconds */
+	position: number | null,
+	playing: boolean,
+	/**  Loop repetitions started so far: grows by one at every wrap (the speed trainer counts them) */
+	loops: number,
+	/**  The output device failed: the track must be reopened */
+	deviceLost: boolean,
+	/**
+	 *  The metronome on its own: running, and where it is in pulses from bar 0
+	 *  (negative during the count-in)
+	 */
+	metronomeRunning: boolean,
+	metronomePulses: number | null,
+	/**  Part of the sequence being played (its position counts from the part's start) */
+	metronomeSegment: number | null,
 };
 
 /**  One step of the practice playlist: a saved loop played a number of times. */
@@ -620,6 +668,21 @@ export type Section_Serialize = {
 	color: number,
 	/**  The player's own words about it ("watch the bend at 0:42"), shown while it plays */
 	memo: string,
+};
+
+/**  Parts played in order, then again (`repeat`) or to a stop. */
+export type SequenceRequest = SequenceRequest_Serialize | SequenceRequest_Deserialize;
+
+/**  Parts played in order, then again (`repeat`) or to a stop. */
+export type SequenceRequest_Deserialize = {
+	parts: PartRequest_Deserialize[],
+	repeat: boolean,
+};
+
+/**  Parts played in order, then again (`repeat`) or to a stop. */
+export type SequenceRequest_Serialize = {
+	parts: PartRequest_Serialize[],
+	repeat: boolean,
 };
 
 /**  Sound and level (0..1) of each kind of click. */

@@ -41,6 +41,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::set_reference_tone,
             metronome::set_metronome,
             metronome::run_metronome,
+            metronome::set_sequence,
             library::load_project,
             library::save_project,
             library::recent_files,

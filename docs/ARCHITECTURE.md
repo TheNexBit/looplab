@@ -42,6 +42,12 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     cade esattamente sulla stanghetta); il count-in ne è escluso. Le pennate del ritmo hanno suoni propri
     (`ClickVoice::start_strum`). Lato interfaccia: `stores/metronomeExercises.ts` (stesse regole per le righe
     dal vivo) e `features/metronome/ExercisesPanel.tsx`.
+  - Sequenze: `Segment` (battuta, tempo, esercizi, battute) e `Sequence` in `metronome.rs`, mandata con
+    `set_sequence` come `Arc` e restituita al thread normale per essere liberata (`Garbage`). A fine parte la
+    successiva parte sul downbeat stesso; posizione e battute si contano dall'inizio della parte, e lo stato dice
+    quale parte suona (`metronome_segment`). Lato interfaccia: `stores/metronomeLibrary.ts` (brani e sequenze
+    salvati), `stores/metronome.ts` (`sequence`, `shownSetup`: la schermata mostra la parte in corso),
+    `LibraryPanels.tsx`, `MetronomeSide.tsx`.
   - `tone.rs`: nota di riferimento per accordarsi (`SetTone`, comando `set_reference_tone`): fondamentale
     più tre armoniche, dissolvenza di 30 ms all'accensione, allo spegnimento e al cambio di livello; si
     somma al click, quindi si sente sopra il brano e a brano fermo.

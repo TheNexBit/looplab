@@ -33,7 +33,7 @@ pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status
 pub use exercises::{Exercises, Gap, MAX_STEPS, Rhythm, RhythmStep, Trainer};
 pub use export::{ExportError, ExportSettings};
 pub use load::{LoadError, LoadEvent, LoadedTrack, OpenedTrack, SharedPeaks, load, open};
-pub use metronome::MetronomeSettings;
+pub use metronome::{MetronomeSettings, Segment, Sequence};
 pub use pattern::{BarPattern, BeatState, ClickKind};
 pub use pcm::Pcm;
 pub use peaks::Peaks;

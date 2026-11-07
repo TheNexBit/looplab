@@ -1,24 +1,47 @@
 import { clickSounds } from "@/features/player/syncEngine";
-import { commands, type MetronomeRequest } from "@/lib/bindings";
-import { useMetronomeStore } from "@/stores/metronome";
+import {
+  type BarRequest,
+  commands,
+  type MetronomeRequest,
+  type SequenceRequest,
+} from "@/lib/bindings";
+import { type MetronomeSetup, type PlayedSequence, useMetronomeStore } from "@/stores/metronome";
 import { exercisesRequest, useExercisesStore } from "@/stores/metronomeExercises";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
+
+/** The bar of a setup, in the engine's terms. */
+export function barRequest(setup: MetronomeSetup): BarRequest {
+  return {
+    beats: setup.beats,
+    unit: setup.unit,
+    grouping: setup.grouping ?? [],
+    states: setup.states,
+    subdivision: setup.subdivision,
+    swing: setup.swing,
+    cross: setup.cross,
+  };
+}
+
+/** A sequence in the engine's terms: every part with its bar, tempo and exercises. */
+export function sequenceRequest(sequence: PlayedSequence): SequenceRequest {
+  return {
+    repeat: sequence.repeat,
+    parts: sequence.parts.map((part) => ({
+      bpm: part.setup.bpm,
+      bar: barRequest(part.setup),
+      exercises: exercisesRequest(part.exercises, part.setup.beats, part.setup.subdivision),
+      bars: Math.max(1, part.bars),
+    })),
+  };
+}
 
 /** What the engine needs of the metronome store and the click sounds of the settings. */
 export function metronomeRequest(): MetronomeRequest {
   const m = useMetronomeStore.getState();
   return {
     bpm: m.bpm,
-    bar: {
-      beats: m.beats,
-      unit: m.unit,
-      grouping: m.grouping ?? [],
-      states: m.states,
-      subdivision: m.subdivision,
-      swing: m.swing,
-      cross: m.cross,
-    },
+    bar: barRequest(m),
     countInBars: m.countInBars,
     volume: m.volume,
     sounds: clickSounds(useSettingsStore.getState()),
@@ -43,6 +66,9 @@ export function syncMetronome(): () => void {
 
   const stopStore = useMetronomeStore.subscribe((state, previous) => {
     push();
+    if (state.sequence !== previous.sequence) {
+      void commands.setSequence(state.sequence ? sequenceRequest(state.sequence) : null);
+    }
     if (state.running === previous.running) return;
     if (state.running) {
       const player = usePlayerStore.getState();

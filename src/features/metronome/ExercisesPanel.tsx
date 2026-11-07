@@ -8,7 +8,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
-import { currentPulses, useMetronomeStore } from "@/stores/metronome";
+import { currentPulses, shownSetup, useMetronomeStore } from "@/stores/metronome";
 import {
   type ExerciseSetup,
   gapSilentAt,
@@ -95,7 +95,7 @@ function LiveLine({ render }: { render: (bar: number, setup: ExerciseSetup) => s
   useAnimationFrame(() => {
     if (!ref.current) return;
     const pulses = currentPulses();
-    const { beats } = useMetronomeStore.getState();
+    const { beats } = shownSetup(useMetronomeStore.getState());
     ref.current.textContent =
       pulses === null || pulses < 0
         ? " "
@@ -327,14 +327,14 @@ function subdivisionId(subdivision: number) {
   return subdivision === 3 ? "triplet" : subdivision === 4 ? "sixteenth" : "eighth";
 }
 
-/** The exercises of the metronome, beside the bar. Each one can be on with the others. */
+/** The exercises of the metronome. Each one can be on with the others. */
 export function ExercisesPanel() {
   return (
-    <aside className="flex w-80 shrink-0 flex-col gap-3 overflow-y-auto border-l border-edge bg-bg-from p-3">
+    <div className="flex flex-col gap-3">
       <TrainerExercise />
       <GapExercise />
       <MuteExercise />
       <RhythmExercise />
-    </aside>
+    </div>
   );
 }

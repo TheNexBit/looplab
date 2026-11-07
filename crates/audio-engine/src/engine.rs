@@ -5,7 +5,7 @@
 //! back through atomics. Replaced tracks are sent back to be freed outside the audio thread.
 
 use std::fmt;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
@@ -14,7 +14,7 @@ use cpal::{FromSample, SampleFormat, SizedSample, StreamConfig};
 use crate::click::ClickSettings;
 use crate::dsp::channels::ChannelMode;
 use crate::dsp::eq::EqSettings;
-use crate::metronome::MetronomeSettings;
+use crate::metronome::{MetronomeSettings, Sequence};
 use crate::pcm::Pcm;
 use crate::render::Renderer;
 use crate::tone::ToneSettings;
@@ -72,6 +72,14 @@ pub(crate) enum Command {
     SetMetronome(MetronomeSettings),
     /// …started from its count-in, or stopped
     RunMetronome(bool),
+    /// Parts played one after the other by the metronome on its own; None: back to its bar
+    SetSequence(Option<Arc<Sequence>>),
+}
+
+/// Memory the audio thread lets go of, freed by the next command sent from outside.
+pub(crate) enum Garbage {
+    Track(#[allow(dead_code)] Arc<Pcm>),
+    Sequence(#[allow(dead_code)] Arc<Sequence>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -86,6 +94,8 @@ pub(crate) struct Shared {
     /// The metronome on its own: running, and where (pulses from bar 0, as f64 bits)
     pub metronome_running: AtomicBool,
     pub metronome_pulses: AtomicU64,
+    /// Part of the sequence being played; u32::MAX without a sequence
+    pub metronome_segment: AtomicU32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -99,6 +109,8 @@ pub struct Status {
     /// (negative during the count-in)
     pub metronome_running: bool,
     pub metronome_pulses: f64,
+    /// Part of the sequence being played (positions are counted from its start)
+    pub metronome_segment: Option<u32>,
 }
 
 #[derive(Debug)]
@@ -128,7 +140,7 @@ pub struct Engine {
 /// Non-real-time side of the ring buffers.
 pub(crate) struct Control {
     pub commands: rtrb::Producer<Command>,
-    pub garbage: rtrb::Consumer<Arc<Pcm>>,
+    pub garbage: rtrb::Consumer<Garbage>,
 }
 
 impl Engine {
@@ -178,6 +190,10 @@ impl Engine {
             loops: self.shared.loops.load(Ordering::Relaxed),
             metronome_running: self.shared.metronome_running.load(Ordering::Relaxed),
             metronome_pulses: f64::from_bits(self.shared.metronome_pulses.load(Ordering::Relaxed)),
+            metronome_segment: match self.shared.metronome_segment.load(Ordering::Relaxed) {
+                u32::MAX => None,
+                segment => Some(segment),
+            },
         }
     }
 
@@ -233,6 +249,11 @@ impl Engine {
     /// The metronome on its own: bar, tempo and sounds (taking over at once while it runs).
     pub fn set_metronome(&self, settings: MetronomeSettings) {
         self.send(Command::SetMetronome(settings));
+    }
+
+    /// Plays `sequence` (its parts in order) on the metronome on its own; None: back to its bar.
+    pub fn set_sequence(&self, sequence: Option<Sequence>) {
+        self.send(Command::SetSequence(sequence.map(Arc::new)));
     }
 
     /// Starts the metronome on its own from its count-in, or stops it.

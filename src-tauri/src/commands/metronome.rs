@@ -3,7 +3,7 @@
 
 use audio_engine::{
     BarPattern, BeatState, ClickSound, ClickSounds, Exercises, Gap, MAX_STEPS, MetronomeSettings,
-    Rhythm, RhythmStep, Trainer,
+    Rhythm, RhythmStep, Segment, Sequence, Trainer,
 };
 use serde::Deserialize;
 use tauri::State;
@@ -178,23 +178,80 @@ pub fn set_metronome(
     settings: MetronomeRequest,
 ) -> Result<(), AppError> {
     let engine = state.engine()?;
-    let bpm = settings.bpm.clamp(1.0, 1_000.0);
-    let pattern = settings.bar.pattern();
-    let rhythm_bars = settings
-        .exercises
-        .rhythm
-        .as_ref()
-        .map_or(1, |r| r.bars.clamp(1, 2));
-    let cells = (pattern.pulses() * pattern.subdivision() * rhythm_bars) as usize;
+    let part = part(
+        settings.bpm,
+        &settings.bar,
+        &settings.exercises,
+        0,
+        engine.sample_rate(),
+    );
     engine.set_metronome(MetronomeSettings {
-        pulse_frames: settings.bar.pulse_seconds(bpm) * f64::from(engine.sample_rate()),
-        bpm,
-        pattern,
-        exercises: settings.exercises.exercises(cells),
+        pulse_frames: part.pulse_frames,
+        bpm: part.bpm,
+        pattern: part.pattern,
+        exercises: part.exercises,
         count_in_bars: settings.count_in_bars,
         volume: settings.volume.clamp(0.0, 1.0),
         sounds: settings.sounds.sounds(),
     });
+    Ok(())
+}
+
+/// A bar with its tempo and exercises, in the engine's terms, for `bars` bars (0 = for ever).
+fn part(bpm: f64, bar: &BarRequest, exercises: &ExercisesRequest, bars: u32, rate: u32) -> Segment {
+    let bpm = bpm.clamp(1.0, 1_000.0);
+    let pattern = bar.pattern();
+    let rhythm_bars = exercises.rhythm.as_ref().map_or(1, |r| r.bars.clamp(1, 2));
+    let cells = (pattern.pulses() * pattern.subdivision() * rhythm_bars) as usize;
+    Segment {
+        pulse_frames: bar.pulse_seconds(bpm) * f64::from(rate),
+        bpm,
+        pattern,
+        exercises: exercises.exercises(cells),
+        bars,
+    }
+}
+
+/// One part of a sequence: a bar, its tempo and exercises, for some bars.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PartRequest {
+    pub bpm: f64,
+    pub bar: BarRequest,
+    pub exercises: ExercisesRequest,
+    /// At least 1
+    pub bars: u32,
+}
+
+/// Parts played in order, then again (`repeat`) or to a stop.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SequenceRequest {
+    pub parts: Vec<PartRequest>,
+    pub repeat: bool,
+}
+
+/// Plays a sequence on the metronome on its own, from its first part (null: back to the
+/// metronome's own bar). Start it with `run_metronome`.
+#[tauri::command]
+#[specta::specta]
+pub fn set_sequence(
+    state: State<'_, AppState>,
+    sequence: Option<SequenceRequest>,
+) -> Result<(), AppError> {
+    let engine = state.engine()?;
+    let rate = engine.sample_rate();
+    engine.set_sequence(sequence.and_then(|sequence| {
+        let segments: Vec<Segment> = sequence
+            .parts
+            .iter()
+            .map(|p| part(p.bpm, &p.bar, &p.exercises, p.bars.max(1), rate))
+            .collect();
+        (!segments.is_empty()).then_some(Sequence {
+            segments,
+            repeat: sequence.repeat,
+        })
+    }));
     Ok(())
 }
 
