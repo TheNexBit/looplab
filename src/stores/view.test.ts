@@ -95,3 +95,15 @@ describe("opening a track", () => {
     expect(useViewStore.getState().span).toBe(30);
   });
 });
+
+describe("whole track on screen", () => {
+  it("shows the whole track, and goes back to the zoom it came from", () => {
+    const view = useViewStore.getState();
+    view.reset(300);
+    view.scrollTo(100);
+    useViewStore.getState().toggleWhole();
+    expect(useViewStore.getState().target).toEqual({ start: 0, span: 300 });
+    useViewStore.getState().toggleWhole();
+    expect(useViewStore.getState().target).toEqual({ start: 100, span: 30 });
+  });
+});

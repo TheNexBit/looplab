@@ -32,6 +32,10 @@ export function zoomWindow(
   return clampView({ start: anchor - fraction * span, span }, duration);
 }
 
+/** True when `view` shows the whole track (within a hair). */
+export const showsWhole = (view: ViewWindow, duration: number) =>
+  duration > 0 && view.start <= 1e-6 && view.span >= duration * 0.999;
+
 interface ViewState extends ViewWindow {
   duration: number;
   /** Where the zoom animation is heading */
@@ -42,6 +46,13 @@ interface ViewState extends ViewWindow {
    * (the on/off switch is the `followPlayhead` setting).
    */
   manualUntil: number;
+  /** The zoom before "whole track", so pressing it again goes back there */
+  beforeWhole: ViewWindow | null;
+  /**
+   * Whole track on screen, like Reaper's "zoom out project"; pressed again (while still
+   * showing the whole track) it glides back to the zoom it came from.
+   */
+  toggleWhole: () => void;
   /** A new track: the first 30 seconds, or the whole track with `whole` */
   reset: (duration: number, whole?: boolean) => void;
   /** The track length changed (it finished loading): keeps the zoom and position */
@@ -74,9 +85,19 @@ export const useViewStore = create<ViewState>((set, get) => {
     span: DEFAULT_SPAN,
     target: { start: 0, span: DEFAULT_SPAN },
     manualUntil: 0,
+    beforeWhole: null,
+    toggleWhole: () => {
+      const { target, duration, beforeWhole } = get();
+      if (duration <= 0) return;
+      if (showsWhole(target, duration) && beforeWhole) {
+        set({ target: clampView(beforeWhole, duration), beforeWhole: null });
+      } else {
+        set({ target: clampView({ start: 0, span: duration }, duration), beforeWhole: target });
+      }
+    },
     reset: (duration, whole = false) => {
       const view = clampView({ start: 0, span: whole ? duration : DEFAULT_SPAN }, duration);
-      set({ duration, ...view, target: view, manualUntil: 0 });
+      set({ duration, ...view, target: view, manualUntil: 0, beforeWhole: null });
     },
     setDuration: (duration) => {
       const before = get();

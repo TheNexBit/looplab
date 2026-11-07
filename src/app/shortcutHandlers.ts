@@ -58,6 +58,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   pitchDown: () => shiftPitch(-1),
   zoomIn: () => zoomAroundPlayhead(1 / KEYBOARD_ZOOM),
   zoomOut: () => zoomAroundPlayhead(KEYBOARD_ZOOM),
+  zoomToTrack: () => useViewStore.getState().toggleWhole(),
   commandPalette: () => useUiStore.getState().openDialog("palette"),
   openSettings: () => useUiStore.getState().openDialog("settings"),
   openFile: () => void pickAndOpenFile(),

@@ -33,6 +33,8 @@ export const shortcuts = {
   pitchDown: "Shift+ArrowDown",
   zoomIn: "Ctrl++",
   zoomOut: "Ctrl+-",
+  // Whole track on screen and back, like Reaper's zoom to project
+  zoomToTrack: "Z",
   commandPalette: "Ctrl+K",
   openSettings: "Ctrl+,",
   openFile: "Ctrl+O",

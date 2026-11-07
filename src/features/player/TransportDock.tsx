@@ -1,4 +1,4 @@
-import { LocateFixed, Magnet, Pause, Play, Undo2 } from "lucide-react";
+import { LocateFixed, Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
@@ -9,7 +9,7 @@ import { t } from "@/i18n";
 import { signed } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
-import { useViewStore } from "@/stores/view";
+import { showsWhole, useViewStore } from "@/stores/view";
 import { LoopMenu } from "./LoopMenu";
 import { CENTS, formatSpeed, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
@@ -32,6 +32,7 @@ export function TransportDock() {
   const snap = useSettingsStore((s) => s.snap);
   const returnToStart = useSettingsStore((s) => s.returnToStart);
   const follow = useSettingsStore((s) => s.followPlayhead);
+  const whole = useViewStore((s) => showsWhole(s.target, s.duration));
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
@@ -89,6 +90,23 @@ export function TransportDock() {
             <LocateFixed className="size-4" />
           </Button>
         </Tooltip>
+        {/* Below 1024 px the dock has no room for it: the Z key and the palette still do it */}
+        <div className="hidden lg:flex">
+          <Tooltip label={t.transport.wholeTrack} shortcut="zoomToTrack">
+            <Button
+              variant="hardware"
+              size="key"
+              led="amber"
+              active={hasTrack && whole}
+              disabled={!hasTrack}
+              onClick={() => useViewStore.getState().toggleWhole()}
+              aria-label={t.shortcuts.zoomToTrack}
+              aria-pressed={hasTrack && whole}
+            >
+              <MoveHorizontal className="size-4" />
+            </Button>
+          </Tooltip>
+        </div>
         <Tooltip label={t.transport.snap} shortcut="toggleSnap">
           <Button
             variant="hardware"

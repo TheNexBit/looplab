@@ -297,6 +297,10 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   sconosciuto) e Count-in / click; ogni voce dice cosa fa e mostra il suo tasto. Una voce spenta scrive
   perché (es. "Apri un brano per usarlo", "Prima imposta il BPM").
 
+- **Tutto il brano a schermo** (tasto ↔ con spia nella barra di trasporto, tasto Z, palette), come lo zoom al
+  progetto di Reaper: la forma d'onda grande mostra tutto il brano; premuto di nuovo torna allo zoom di prima.
+  La spia è accesa mentre si vede tutto. Sotto i 1024 px il tasto si nasconde (restano Z e la palette).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

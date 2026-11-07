@@ -469,6 +469,8 @@ export const it = {
     seconds: "s",
     cue: "Punto di partenza",
     position: "Posizione",
+    wholeTrack:
+      "Tutto il brano a schermo, come lo zoom al progetto di Reaper. Premi di nuovo per tornare allo zoom di prima.",
     follow: "Follow: la forma d'onda scorre con il playhead durante l'ascolto",
     returnToStart:
       "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
@@ -499,6 +501,7 @@ export const it = {
     pitchDown: "Pitch giù",
     zoomIn: "Zoom avanti",
     zoomOut: "Zoom indietro",
+    zoomToTrack: "Tutto il brano a schermo",
     commandPalette: "Cerca azioni",
     openSettings: "Impostazioni",
     openFile: "Apri file",
