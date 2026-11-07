@@ -11,6 +11,7 @@ import { syncProject } from "@/features/markers/projectSync";
 import { syncWithEngine } from "@/features/player/syncEngine";
 import { TransportDock } from "@/features/player/TransportDock";
 import { startDiary } from "@/features/practice/diaryRecorder";
+import { runPlaylist } from "@/features/practice/playlist";
 import { startTrainer } from "@/features/practice/trainer";
 import { startRemoteControl } from "@/features/remote/remoteControl";
 import { feedDetachedVideo } from "@/features/video/detach";
@@ -55,6 +56,7 @@ export function App() {
     const stopVideo = followTrackVideo();
     const stopDetached = feedDetachedVideo();
     const stopTrainer = startTrainer();
+    const stopPlaylist = runPlaylist();
     const stopRemote = startRemoteControl();
     const stopDiary = startDiary();
     return () => {
@@ -66,6 +68,7 @@ export function App() {
       stopVideo();
       stopDetached();
       stopTrainer();
+      stopPlaylist();
       stopRemote();
       stopDiary();
     };

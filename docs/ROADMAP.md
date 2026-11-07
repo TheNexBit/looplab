@@ -358,6 +358,25 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
     disegna; un disegno che va in errore finisce nel registro senza fermare gli altri;
   - tolte le letture dei formati vecchi di `recent.json` (solo percorsi) e del tema (`looplab.theme`).
 
+## 11. Scorciatoie per lo studio ✅
+
+Scelte dall'utente tra le idee proposte (le più piccole e usate in ogni sessione, più la scaletta).
+
+- **Riprendi dove eri**: il progetto ricorda la posizione del playhead (`position`, salvata quando si ferma, si
+  sposta da fermo o si chiude); riaprendo il brano il playhead torna lì e la vista lo mostra. Spegnibile in
+  Impostazioni → Generale ("Riprendi dove eri").
+- **Zoom sul loop** (Maiusc+Z): la forma d'onda mostra il loop con un po' di margine (`zoomTo`). Mentre suona dentro
+  un loop tutto visibile, il Follow non sposta la vista.
+- **Loop avanti / indietro di una frase** (Ctrl+→ / Ctrl+←, come in Ableton): il loop scorre della sua lunghezza e
+  riparte dal nuovo inizio. **Loop doppio / a metà** (Ctrl+↑ / Ctrl+↓) dallo stesso inizio.
+- **Accordature** (menu "Accordatura" accanto al Pitch, da 1280 px): il brano è in Mi♭, Re, Do♯ o Do e il Pitch lo
+  riporta in standard (+1…+4 st), così la chitarra accordata standard suona insieme.
+- **Tasti 1–9**: richiamano i loop salvati nel loro ordine; **Alt+1–9** mettono in loop le sezioni.
+- **Scaletta** (scheda Sezioni, sotto i Loop salvati): loop salvati in fila, ognuno ×N (− / + / rotella), ordine
+  con le frecce; Play la suona dall'inizio, passa da sola al passo successivo contando le ripetizioni del motore e
+  si ferma alla fine. Cambiare il loop a mano o aprire un altro brano la interrompe. Salvata nel progetto
+  (`playlist`); comando "Scaletta: avvia / ferma" assegnabile a un tasto o pedale.
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

@@ -100,6 +100,7 @@ const pane = "max-h-[calc(100vh-14rem)] overflow-y-auto";
 const GENERAL: readonly (keyof Settings)[] = [
   "startup",
   "openView",
+  "resumePosition",
   "followPlayhead",
   "followMode",
   "returnToStart",
@@ -158,6 +159,7 @@ export function SettingsDialog() {
           <SettingGroup rows title={s.behaviour}>
             <Choice setting="startup" />
             <Choice setting="openView" />
+            <Toggle setting="resumePosition" />
             <Toggle setting="followPlayhead" />
             <Choice setting="followMode" />
             <Toggle setting="returnToStart" />

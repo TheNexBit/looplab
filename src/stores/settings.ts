@@ -63,6 +63,8 @@ export interface Settings {
   followMode: FollowMode;
   /** What the detailed view shows when a track opens */
   openView: OpenView;
+  /** Reopening a track puts the playhead back where it was, like Reaper's saved edit cursor */
+  resumePosition: boolean;
   /** After dragging a new loop: the playhead stays, goes to the loop start, or plays from there */
   afterLoop: AfterLoop;
 }
@@ -114,6 +116,7 @@ const DEFAULTS: Settings = {
   followPlayhead: true,
   snap: true,
   returnToStart: true,
+  resumePosition: true,
   countIn: false,
   countInBars: 1,
   metronome: false,

@@ -315,6 +315,14 @@ export type PlaybackStatus = {
 	deviceLost: boolean,
 };
 
+/**  One step of the practice playlist: a saved loop played a number of times. */
+export type PlaylistStep = {
+	/**  Id of a `SavedLoop` */
+	loopId: string,
+	/**  Times it is played before the next step */
+	repeats: number,
+};
+
 /**
  *  Everything remembered about one track. Missing fields take their defaults,
  *  so files written by older versions still open.
@@ -357,6 +365,10 @@ export type Project_Deserialize = {
 	loop?: ProjectLoop_Deserialize,
 	/**  Loops saved by name */
 	loops?: SavedLoop[],
+	/**  Practice playlist: saved loops in order, each played a number of times */
+	playlist?: PlaylistStep[],
+	/**  Seconds: where the playhead was, so reopening the track goes back there */
+	position?: number | null,
 	/**  Tempo of the track in beats per minute; `None` until the user sets it */
 	bpm?: number | null,
 	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */
@@ -385,6 +397,10 @@ export type Project_Serialize = {
 	loop: ProjectLoop_Serialize,
 	/**  Loops saved by name */
 	loops: SavedLoop[],
+	/**  Practice playlist: saved loops in order, each played a number of times */
+	playlist: PlaylistStep[],
+	/**  Seconds: where the playhead was, so reopening the track goes back there */
+	position: number | null,
 	/**  Tempo of the track in beats per minute; `None` until the user sets it */
 	bpm: number | null,
 	/**  Seconds: a moment on the first beat of a bar, where the beat grid lines up */

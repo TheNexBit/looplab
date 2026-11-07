@@ -4,6 +4,7 @@ import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/
 import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
 import type { MarkerData, SectionData } from "@/stores/markers";
+import type { PlaylistStepData } from "@/stores/playlist";
 import type { SavedLoopData } from "@/stores/savedLoops";
 
 /** Project contents with every number guaranteed (JSON turns NaN into null). */
@@ -12,6 +13,9 @@ export interface ProjectData {
   sections: SectionData[];
   loop: LoopOptions & { start: number | null; end: number | null };
   loops: SavedLoopData[];
+  playlist: PlaylistStepData[];
+  /** Seconds: where the playhead was */
+  position: number;
   bpm: number | null;
   beatOffset: number | null;
   beatsPerBar: number;
@@ -41,6 +45,8 @@ export function fromFile(file: Project_Serialize): ProjectData {
     loops: file.loops
       .map((l) => ({ ...l, start: num(l.start, 0), end: num(l.end, 0) }))
       .filter((l) => l.end > l.start),
+    playlist: (file.playlist ?? []).filter((step) => step.repeats > 0),
+    position: Math.max(0, num(file.position, 0)),
     bpm: typeof file.bpm === "number" && file.bpm > 0 ? file.bpm : null,
     beatOffset: typeof file.beatOffset === "number" ? file.beatOffset : null,
     beatsPerBar: file.beatsPerBar > 0 ? file.beatsPerBar : BEATS_PER_BAR.default,

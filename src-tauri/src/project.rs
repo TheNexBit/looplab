@@ -62,6 +62,16 @@ pub struct SavedLoop {
     pub end: f64,
 }
 
+/// One step of the practice playlist: a saved loop played a number of times.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaylistStep {
+    /// Id of a `SavedLoop`
+    pub loop_id: String,
+    /// Times it is played before the next step
+    pub repeats: u32,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase", default)]
 pub struct ProjectLoop {
@@ -96,6 +106,10 @@ pub struct Project {
     pub loop_: ProjectLoop,
     /// Loops saved by name
     pub loops: Vec<SavedLoop>,
+    /// Practice playlist: saved loops in order, each played a number of times
+    pub playlist: Vec<PlaylistStep>,
+    /// Seconds: where the playhead was, so reopening the track goes back there
+    pub position: f64,
     /// Tempo of the track in beats per minute; `None` until the user sets it
     pub bpm: Option<f64>,
     /// Seconds: a moment on the first beat of a bar, where the beat grid lines up
@@ -119,6 +133,8 @@ impl Default for Project {
             sections: Vec::new(),
             loop_: ProjectLoop::default(),
             loops: Vec::new(),
+            playlist: Vec::new(),
+            position: 0.0,
             bpm: None,
             beat_offset: None,
             beats_per_bar: 4,
@@ -283,6 +299,11 @@ pub(crate) mod tests {
                 start: 3.0,
                 end: 9.0,
             }],
+            playlist: vec![PlaylistStep {
+                loop_id: "l1".into(),
+                repeats: 4,
+            }],
+            position: 42.5,
             bpm: Some(96.0),
             beat_offset: Some(0.42),
             beats_per_bar: 7,

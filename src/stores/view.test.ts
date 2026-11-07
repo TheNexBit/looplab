@@ -73,6 +73,11 @@ describe("following the playhead", () => {
     expect(useViewStore.getState().start).toBeLessThan(276);
   });
 
+  it("zooms to the loop with a little room on both sides", () => {
+    useViewStore.getState().zoomTo(100, 110);
+    expect(useViewStore.getState().target).toEqual({ start: 99, span: 12 });
+  });
+
   it("turns the page at the right edge in page mode, like Reaper", () => {
     useViewStore.getState().followPlayhead(20, "page");
     expect(useViewStore.getState().start).toBe(0); // still inside the page

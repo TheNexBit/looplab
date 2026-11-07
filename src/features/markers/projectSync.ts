@@ -4,10 +4,13 @@ import { useEqStore } from "@/stores/eq";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
-import { usePlayerStore } from "@/stores/player";
+import { currentPosition, usePlayerStore } from "@/stores/player";
+import { usePlaylistStore } from "@/stores/playlist";
 import { usePracticeStore } from "@/stores/practice";
 import { useRecentStore } from "@/stores/recent";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
+import { useSettingsStore } from "@/stores/settings";
+import { useViewStore } from "@/stores/view";
 import { fromFile, type ProjectData, toFile } from "./projectFile";
 
 /** Pause after the last change before writing, so a burst of edits is one save. */
@@ -23,6 +26,9 @@ function snapshot(): ProjectData {
     sections,
     loop: { start, end, enabled, leadIn, gap },
     loops: useSavedLoopsStore.getState().loops,
+    playlist: usePlaylistStore.getState().steps,
+    // Rounded: a position a hair different is not worth a save
+    position: Math.round(currentPosition() * 100) / 100,
     bpm: usePracticeStore.getState().bpm,
     beatOffset: usePracticeStore.getState().beatOffset,
     beatsPerBar: usePracticeStore.getState().beatsPerBar,
@@ -39,6 +45,7 @@ function apply(data: ProjectData) {
   useMarkersStore.getState().replace(data.markers, data.sections);
   useLoopStore.getState().restore(data.loop);
   useSavedLoopsStore.getState().replace(data.loops);
+  usePlaylistStore.getState().replace(data.playlist);
   usePracticeStore.getState().setBpm(data.bpm);
   usePracticeStore.getState().setBeatOffset(data.beatOffset);
   usePracticeStore.getState().setTimeSignature(data.beatsPerBar, data.beatUnit);
@@ -47,6 +54,18 @@ function apply(data: ProjectData) {
   player.setPitch(data.semitones, data.cents);
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
+  resume(data.position);
+}
+
+/** Back to where the playhead was when the track was last closed (unless near its end). */
+function resume(position: number) {
+  const duration = usePlayerStore.getState().track?.duration ?? 0;
+  if (!useSettingsStore.getState().resumePosition || position <= 0 || position > duration - 1) {
+    return;
+  }
+  usePlayerStore.getState().seek(position);
+  const view = useViewStore.getState();
+  if (position < view.start || position > view.start + view.span) view.centerOn(position);
 }
 
 let defaults: Promise<ProjectData> | null = null;
@@ -126,7 +145,10 @@ export function syncProject(): () => void {
       else if (
         state.speed !== previous.speed ||
         state.semitones !== previous.semitones ||
-        state.cents !== previous.cents
+        state.cents !== previous.cents ||
+        // Where the playhead stops is remembered (not every moment while it plays)
+        state.playing !== previous.playing ||
+        (!state.playing && state.anchorPosition !== previous.anchorPosition)
       ) {
         schedule();
       }
@@ -136,6 +158,9 @@ export function syncProject(): () => void {
     }),
     useLoopStore.subscribe(schedule),
     useSavedLoopsStore.subscribe(schedule),
+    usePlaylistStore.subscribe((state, previous) => {
+      if (state.steps !== previous.steps) schedule();
+    }),
     usePracticeStore.subscribe((state, previous) => {
       if (
         state.bpm !== previous.bpm ||

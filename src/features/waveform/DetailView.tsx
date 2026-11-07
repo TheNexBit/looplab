@@ -3,6 +3,7 @@ import { MarkerFlags } from "@/features/markers/MarkerFlags";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { useLoopStore } from "@/stores/loop";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { currentGrid, usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
@@ -13,6 +14,22 @@ import { LoopOverlay, placeLoopOverlay } from "./LoopOverlay";
 import { useCanvas } from "./useCanvas";
 
 const RULER_CSS = 20;
+
+/**
+ * Playing inside an active loop that is all on screen: following would only scroll the loop
+ * away (after a zoom to the loop, say), so the view stays put.
+ */
+function loopInSight(position: number, view: { start: number; span: number }): boolean {
+  const loop = useLoopStore.getState();
+  const region = loop.enabled ? loop.region() : null;
+  return (
+    region !== null &&
+    position >= region.start &&
+    position <= region.end &&
+    region.start >= view.start &&
+    region.end <= view.start + view.span
+  );
+}
 
 /**
  * Zoomable waveform with ruler, loop, markers, start point and playhead.
@@ -58,7 +75,9 @@ export function DetailView() {
     const position = currentPosition(player);
     const viewStore = useViewStore.getState();
     const { followPlayhead, followMode } = useSettingsStore.getState();
-    if (player.playing && followPlayhead) viewStore.followPlayhead(position, followMode);
+    if (player.playing && followPlayhead && !loopInSight(position, viewStore)) {
+      viewStore.followPlayhead(position, followMode);
+    }
     viewStore.step();
     const { start, span } = useViewStore.getState();
     const { width, height, dpr } = size.current;

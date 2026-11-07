@@ -81,6 +81,8 @@ interface ViewState extends ViewWindow {
   /** End of a hand drag: a stretched view glides back to the end of the track. */
   settle: () => void;
   centerOn: (time: number) => void;
+  /** Glides to show `start`–`end` with a little room on both sides (zoom to the loop). */
+  zoomTo: (start: number, end: number) => void;
   /** Follow again right away (after a seek or when playback starts). */
   resumeFollow: () => void;
   /**
@@ -163,6 +165,13 @@ export const useViewStore = create<ViewState>((set, get) => {
       const { start, span, duration } = get();
       set({
         target: clampView({ start, span }, duration),
+        manualUntil: performance.now() + MANUAL_PAUSE_MS,
+      });
+    },
+    zoomTo: (start, end) => {
+      const room = (end - start) * 0.1;
+      set({
+        target: clampView({ start: start - room, span: end - start + 2 * room }, get().duration),
         manualUntil: performance.now() + MANUAL_PAUSE_MS,
       });
     },

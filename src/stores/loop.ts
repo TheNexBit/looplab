@@ -25,6 +25,34 @@ export function normalizeRegion(a: number, b: number, duration: number): LoopReg
   return end - start >= MIN_LOOP ? { start, end } : null;
 }
 
+/**
+ * The loop moved by its own length, to the phrase before (`-1`) or after (`1`), kept inside
+ * the track; `null` when it cannot move that way.
+ */
+export function shiftedRegion(
+  region: LoopRegion,
+  direction: -1 | 1,
+  duration: number,
+): LoopRegion | null {
+  const length = region.end - region.start;
+  const start = clamp(region.start + direction * length, 0, Math.max(0, duration - length));
+  return Math.abs(start - region.start) < 1e-9 ? null : { start, end: start + length };
+}
+
+/** The loop made `factor` times as long from the same start, inside the track; `null` if unchanged. */
+export function resizedRegion(
+  region: LoopRegion,
+  factor: number,
+  duration: number,
+): LoopRegion | null {
+  const end = clamp(
+    region.start + (region.end - region.start) * factor,
+    region.start + MIN_LOOP,
+    duration,
+  );
+  return Math.abs(end - region.end) < 1e-9 ? null : { start: region.start, end };
+}
+
 /** Where each repetition begins: the loop start minus the lead-in. */
 export const restartAt = (region: LoopRegion, leadIn: number) => Math.max(0, region.start - leadIn);
 

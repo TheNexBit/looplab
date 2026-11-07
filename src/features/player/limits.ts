@@ -4,9 +4,19 @@
  */
 export const SPEED = { min: 0.25, max: 2, step: 0.01, default: 1 } as const;
 export const SPEED_PRESETS = [0.5, 0.75, 1] as const;
-/** A speed as people read it: 0.75 → "75%". */
 export const SEMITONES = { min: -12, max: 12, step: 1, default: 0 } as const;
 export const CENTS = { min: -50, max: 50, step: 1, default: 0 } as const;
+/**
+ * Tunings a track is often played in, with the semitones that bring it back to standard
+ * tuning (a song "down 1/2 step" in E♭ is raised by one), names in `t.transport.tunings`.
+ */
+export const TUNINGS = [
+  ["standard", 0],
+  ["eFlat", 1],
+  ["d", 2],
+  ["cSharp", 3],
+  ["c", 4],
+] as const;
 /** Seconds played before the loop start on every repetition. */
 export const LEAD_IN = { min: 0, max: 10, step: 0.5, default: 0 } as const;
 /** Seconds of silence between repetitions. */

@@ -1,6 +1,7 @@
 import { Repeat, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { InlineName } from "@/components/ui/InlineName";
+import { PlaylistPanel } from "@/features/practice/PlaylistPanel";
 import { t } from "@/i18n";
 import { formatTime } from "@/lib/time";
 import {
@@ -67,6 +68,7 @@ export function SectionList() {
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-2">
       <SavedLoopList />
+      <PlaylistPanel />
       <section>
         <h3 className="panel-label px-2 pb-1.5">{t.markers.sections}</h3>
         {sections.length === 0 ? (

@@ -14,6 +14,7 @@ import { FollowKey } from "./FollowKey";
 import { LoopMenu } from "./LoopMenu";
 import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
+import { TuningPicker } from "./TuningPicker";
 
 /** Recessed panel holding a group of keys or a fader. */
 const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
@@ -164,6 +165,7 @@ export function TransportDock() {
               />
             </span>
           </Tooltip>
+          <TuningPicker />
         </div>
       </div>
     </footer>

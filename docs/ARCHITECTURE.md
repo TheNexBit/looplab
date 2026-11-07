@@ -155,6 +155,8 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
   `Tooltip rightClick` (seconda riga "Tasto destro: …"); un tasto con opzioni nuovo usa `OptionsKey`
   (o `useOptions` + `OptionsPanel` se il pannello si apre anche da un altro tasto); altri elementi: `title` con
   `withRightClick`.
+- Scaletta: i passi in `stores/playlist.ts` (salvati nel progetto), chi la fa avanzare in
+  `features/practice/playlist.ts` (`runPlaylist`, avviato dall'app come il trainer, conta `player.loops`).
 - Trascinamenti col puntatore: `lib/followPointer.ts` (cattura, fine anche se il mouse viene preso da Windows).
 - Righe e gruppi delle Impostazioni: `app/SettingLayout.tsx`. Disegno a ogni frame: `useAnimationFrame`, un solo
   ciclo per tutta l'app.

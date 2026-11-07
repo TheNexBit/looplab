@@ -37,6 +37,13 @@ export const shortcuts = {
   zoomOut: "Ctrl+-",
   // Whole track on screen and back, like Reaper's zoom to project
   zoomToTrack: "Z",
+  zoomToLoop: "Shift+Z",
+  // The loop moves by its own length (the next phrase), like Ableton's Ctrl+arrows
+  loopShiftBack: "Ctrl+ArrowLeft",
+  loopShiftForward: "Ctrl+ArrowRight",
+  loopDouble: "Ctrl+ArrowUp",
+  loopHalve: "Ctrl+ArrowDown",
+  togglePlaylist: "",
   commandPalette: "Ctrl+K",
   openSettings: "Ctrl+,",
   openFile: "Ctrl+O",
@@ -50,6 +57,25 @@ export const shortcuts = {
   // Render, as in Reaper
   exportAudio: "Ctrl+Alt+R",
   toggleNotes: "N",
+  // Number keys: the saved loops, in their order; with Alt, the sections
+  recallLoop1: "1",
+  recallLoop2: "2",
+  recallLoop3: "3",
+  recallLoop4: "4",
+  recallLoop5: "5",
+  recallLoop6: "6",
+  recallLoop7: "7",
+  recallLoop8: "8",
+  recallLoop9: "9",
+  recallSection1: "Alt+1",
+  recallSection2: "Alt+2",
+  recallSection3: "Alt+3",
+  recallSection4: "Alt+4",
+  recallSection5: "Alt+5",
+  recallSection6: "Alt+6",
+  recallSection7: "Alt+7",
+  recallSection8: "Alt+8",
+  recallSection9: "Alt+9",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

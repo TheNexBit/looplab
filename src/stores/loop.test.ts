@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { advanceInLoop, loopWait, normalizeRegion, restartAt, useLoopStore } from "./loop";
+import {
+  advanceInLoop,
+  loopWait,
+  normalizeRegion,
+  resizedRegion,
+  restartAt,
+  shiftedRegion,
+  useLoopStore,
+} from "./loop";
 
 const options = { enabled: true, leadIn: 0, gap: 0 };
 
@@ -65,5 +73,27 @@ describe("loop store", () => {
   it("toggles only an existing loop", () => {
     useLoopStore.getState().toggle();
     expect(useLoopStore.getState().enabled).toBe(false);
+  });
+});
+
+describe("moving and resizing the loop", () => {
+  const phrase = { start: 10, end: 14 };
+
+  it("moves by its own length, to the next or the previous phrase", () => {
+    expect(shiftedRegion(phrase, 1, 60)).toEqual({ start: 14, end: 18 });
+    expect(shiftedRegion(phrase, -1, 60)).toEqual({ start: 6, end: 10 });
+  });
+
+  it("stops at the ends of the track, and says when it cannot move", () => {
+    expect(shiftedRegion({ start: 2, end: 6 }, -1, 60)).toEqual({ start: 0, end: 4 });
+    expect(shiftedRegion({ start: 0, end: 4 }, -1, 60)).toBeNull();
+    expect(shiftedRegion({ start: 55, end: 59 }, 1, 60)).toEqual({ start: 56, end: 60 });
+  });
+
+  it("doubles and halves from the same start, inside the track", () => {
+    expect(resizedRegion(phrase, 2, 60)).toEqual({ start: 10, end: 18 });
+    expect(resizedRegion(phrase, 0.5, 60)).toEqual({ start: 10, end: 12 });
+    expect(resizedRegion({ start: 50, end: 58 }, 2, 60)).toEqual({ start: 50, end: 60 });
+    expect(resizedRegion({ start: 50, end: 60 }, 2, 60)).toBeNull();
   });
 });
