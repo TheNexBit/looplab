@@ -48,7 +48,7 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   - `commands/waveform.rs`: `get_peaks` restituisce byte grezzi; tauri-specta non sa descriverli, quindi è
     registrato a parte in `main.rs` e avvolto a mano in `src/features/waveform/peaks.ts`.
   - `project.rs`: schema del `.looplab.json` (unica definizione; i tipi TS sono generati), lettura/scrittura
-    atomica, ripiego nella cartella dati. `recent.rs`: file recenti. `json_file.rs`: lettura e scrittura
+    atomica, ripiego nella cartella dati. `recent.rs`: file recenti (fino a 30, con ora di apertura e durata; `list` aggiunge loop, sezioni e velocità letti dal progetto di ogni brano). `json_file.rs`: lettura e scrittura
     atomica (file temporaneo + rinomina) dei file JSON dell'app, usata da progetti, recenti e finestre. I valori predefiniti vivono solo qui
     (`default_project`). EQ e canali usano direttamente i tipi di `audio-engine` (feature `typed`).
   - `media.rs`: FFmpeg facoltativo (estrazione audio, proxy H.264, codifica FLAC/MP3 degli export), cache in

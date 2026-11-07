@@ -1,67 +1,100 @@
-import { FolderOpen, Music } from "lucide-react";
+import { FolderOpen, Lightbulb, Music, Upload } from "lucide-react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
-import { type ShortcutId, shortcutLabel } from "@/lib/shortcuts";
+import { useRecentStore } from "@/stores/recent";
 import { formatsLabel } from "./formats";
 import { pickAndOpenFile } from "./pickFile";
-import { RecentList } from "./RecentList";
+import { RecentList, ResumeRow } from "./RecentList";
 
-const highlighted: ShortcutId[] = [
-  "playPause",
-  "seekBack",
-  "loopStart",
-  "loopEnd",
-  "loopToggle",
-  "addMarker",
-  "addSection",
-  "commandPalette",
-];
+/** One tip per start of the app, picked at random */
+const tip = t.recent.tips[Math.floor(Math.random() * t.recent.tips.length)];
 
-export function EmptyState({ hovering }: { hovering: boolean }) {
+function OpenButton() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-8 overflow-y-auto p-8">
+    <Button variant="primary" onClick={() => void pickAndOpenFile()}>
+      <FolderOpen className="size-4" />
+      {t.empty.openFile}
+      <Kbd shortcut="openFile" />
+    </Button>
+  );
+}
+
+/** First start, nothing opened yet: a big place to drop the first track. */
+function FirstDrop({ hovering }: { hovering: boolean }) {
+  return (
+    <div
+      className={cn(
+        "flex w-full flex-col items-center gap-4 rounded-panel border-2 border-dashed px-10 py-14 text-center transition-colors",
+        hovering ? "border-accent bg-accent-soft" : "border-border",
+      )}
+    >
       <div
         className={cn(
-          "flex w-full max-w-xl flex-col items-center gap-4 rounded-panel border-2 border-dashed px-10 py-14 text-center transition-colors",
-          hovering ? "border-accent bg-accent-soft" : "border-border",
+          "flex size-14 items-center justify-center rounded-panel bg-surface transition-colors",
+          hovering ? "text-accent" : "text-fg-muted",
         )}
       >
-        <div
-          className={cn(
-            "flex size-14 items-center justify-center rounded-panel bg-surface transition-colors",
-            hovering ? "text-accent" : "text-fg-muted",
-          )}
-        >
-          <Music className="size-7" />
-        </div>
-        <div className="space-y-1">
-          <h1 className="text-lg font-semibold">{hovering ? t.empty.dropNow : t.empty.title}</h1>
-          <p className="text-sm text-fg-subtle">{formatsLabel}</p>
-        </div>
-        <Button variant="primary" className="mt-2" onClick={() => void pickAndOpenFile()}>
-          <FolderOpen className="size-4" />
-          {t.empty.openFile}
-          <Kbd shortcut="openFile" />
-        </Button>
+        <Music className="size-7" />
       </div>
+      <div className="space-y-1">
+        <h1 className="text-lg font-semibold">{hovering ? t.empty.dropNow : t.empty.title}</h1>
+        <p className="text-sm text-fg-subtle">{formatsLabel}</p>
+      </div>
+      <OpenButton />
+    </div>
+  );
+}
 
-      <RecentList />
+/** A slim strip once there are recent tracks: files can be dropped anywhere in the window. */
+function DropStrip({ hovering }: { hovering: boolean }) {
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-3 rounded-panel border border-dashed px-3 py-2 transition-colors",
+        hovering ? "border-accent bg-accent-soft text-accent" : "border-border text-fg-subtle",
+      )}
+    >
+      <Upload className="size-4 shrink-0" aria-hidden />
+      <p className="min-w-0 flex-1 truncate text-xs" title={formatsLabel}>
+        {hovering ? t.empty.dropNow : t.recent.dropStrip}
+      </p>
+      <OpenButton />
+    </div>
+  );
+}
 
-      <section className="w-full max-w-xl">
-        <h2 className="mb-3 text-xs font-medium tracking-wide text-fg-subtle uppercase">
-          {t.empty.shortcutsTitle}
-        </h2>
-        <ul className="grid grid-cols-2 gap-x-8 gap-y-2">
-          {highlighted.map((id) => (
-            <li key={id} className="flex items-center justify-between text-sm text-fg-muted">
-              {shortcutLabel(id)}
-              <Kbd shortcut={id} />
-            </li>
-          ))}
-        </ul>
-      </section>
+/** Start screen: the recent tracks first, a way to open more, one tip. */
+export function EmptyState({ hovering }: { hovering: boolean }) {
+  const files = useRecentStore((s) => s.files);
+
+  useEffect(() => {
+    void useRecentStore.getState().refresh();
+  }, []);
+
+  const last = files[0]?.exists ? files[0] : undefined;
+  return (
+    <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4 px-6 pt-8 pb-10">
+      {files.length === 0 ? (
+        <div className="flex flex-1 items-center">
+          <FirstDrop hovering={hovering} />
+        </div>
+      ) : (
+        <>
+          {last && <ResumeRow file={last} />}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <RecentList />
+          </div>
+          <DropStrip hovering={hovering} />
+        </>
+      )}
+      <p className="flex shrink-0 items-center gap-1.5 text-[11px] text-fg-subtle">
+        <Lightbulb className="size-3 shrink-0" aria-hidden />
+        <span className="font-medium">{t.recent.tipLabel}</span>
+        <span className="truncate">{tip}</span>
+      </p>
     </div>
   );
 }

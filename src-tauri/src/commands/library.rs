@@ -83,8 +83,8 @@ pub fn forget_recent(app: AppHandle, track: String) -> Result<(), AppError> {
 }
 
 /// Called after a track opens successfully; a failure here must not fail the opening.
-pub fn remember(app: &AppHandle, track: &str) {
+pub fn remember(app: &AppHandle, track: &str, duration: f64) {
     if let Ok(data_dir) = paths::data_dir(app) {
-        let _ = recent::add(&data_dir, track);
+        let _ = recent::add(&data_dir, track, (duration > 0.0).then_some(duration));
     }
 }

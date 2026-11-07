@@ -316,6 +316,16 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   Suona subito da lì. Si sceglie in Impostazioni → Generale → Mouse e nel menu del Loop (▾ o tasto destro sul
   tasto Loop).
 
+- **Pagina iniziale nuova** (scelte dell'utente: i recenti sono la parte importante, il resto minimale):
+  - _Recenti_ come lista principale (fino a 30): icona audio/video, nome intero al passaggio del mouse, cosa c'è
+    nel progetto (loop salvati, sezioni, ultima velocità), durata, quando è stato aperto ("12 min fa", "ieri",
+    "mar", "12 ott"). Ricerca da 7 brani in su. Tasto destro: Apri, Mostra nella cartella, Togli dalla lista.
+    `recent.json` ora ricorda anche ora di apertura e durata (le liste vecchie si leggono ancora).
+  - _Riprendi_: una riga sottile in cima con l'ultimo brano.
+  - _Striscia per trascinare_ al posto del grande riquadro (il file si può lasciare ovunque nella finestra); il
+    riquadro grande resta solo al primo avvio, quando non ci sono recenti.
+  - _Lo sapevi?_: un suggerimento di una riga, diverso a ogni avvio. Tolte le scorciatoie fisse (sono in Ctrl+K).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

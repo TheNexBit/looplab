@@ -135,7 +135,7 @@ pub async fn open_file(
     state.set_peaks(opened.peaks);
     state.set_track(std::sync::Arc::clone(&opened.pcm));
     engine.set_track(opened.pcm);
-    super::library::remember(&app, &info.path);
+    super::library::remember(&app, &info.path, info.duration);
     Ok(info)
 }
 

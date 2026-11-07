@@ -33,7 +33,7 @@ export const commands = {
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
 	saveProject: (track: string, project: Project_Deserialize) => typedError<ProjectLocation, AppError>(__TAURI_INVOKE("save_project", { track, project })),
-	recentFiles: () => typedError<RecentFile[], AppError>(__TAURI_INVOKE("recent_files")),
+	recentFiles: () => typedError<RecentFile_Serialize[], AppError>(__TAURI_INVOKE("recent_files")),
 	forgetRecent: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_recent", { track })),
 	/**
 	 *  A project with every default, for tracks opened for the first time.
@@ -402,11 +402,38 @@ export type Project_Serialize = {
 	channels: ChannelMode,
 };
 
-export type RecentFile = {
+export type RecentFile = RecentFile_Serialize | RecentFile_Deserialize;
+
+export type RecentFile_Deserialize = {
 	path: string,
 	name: string,
 	/**  False when the file has been moved or deleted since */
 	exists: boolean,
+	/**  When it was last opened, in seconds since 1970 (unknown for lists of older versions) */
+	openedAt?: number | null,
+	/**  Length in seconds, as announced when it was last opened */
+	duration?: number | null,
+	/**  From the track's project, when it has one */
+	savedLoops: number,
+	sections: number,
+	/**  Last speed used (1 = original); `None` without a project */
+	speed?: number | null,
+};
+
+export type RecentFile_Serialize = {
+	path: string,
+	name: string,
+	/**  False when the file has been moved or deleted since */
+	exists: boolean,
+	/**  When it was last opened, in seconds since 1970 (unknown for lists of older versions) */
+	openedAt: number | null,
+	/**  Length in seconds, as announced when it was last opened */
+	duration: number | null,
+	/**  From the track's project, when it has one */
+	savedLoops: number,
+	sections: number,
+	/**  Last speed used (1 = original); `None` without a project */
+	speed: number | null,
 };
 
 /**  A loop kept under a name, to come back to it later. */
