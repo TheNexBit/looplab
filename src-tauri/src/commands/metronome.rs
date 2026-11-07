@@ -1,7 +1,10 @@
 //! The bar and the click sounds in the units of the UI, shared by the clicks over a track
 //! (`player::set_click`) and the metronome on its own (`set_metronome`, `run_metronome`).
 
-use audio_engine::{BarPattern, BeatState, ClickSound, ClickSounds, MetronomeSettings};
+use audio_engine::{
+    BarPattern, BeatState, ClickSound, ClickSounds, Exercises, Gap, MAX_STEPS, MetronomeSettings,
+    Rhythm, RhythmStep, Trainer,
+};
 use serde::Deserialize;
 use tauri::State;
 
@@ -73,7 +76,86 @@ impl SoundsRequest {
     }
 }
 
-/// The metronome on its own: tempo, bar, count-in, volume and sounds.
+/// Speed trainer: from one tempo to another, a step every few bars.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct TrainerRequest {
+    pub from_bpm: f64,
+    pub to_bpm: f64,
+    pub step_bpm: f64,
+    pub every_bars: u32,
+}
+
+/// Gap trainer: bars heard, then bars silent.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct GapRequest {
+    pub lead_bars: u32,
+    pub play_bars: u32,
+    pub silent_bars: u32,
+    pub grow: bool,
+}
+
+/// Rhythm to play: one cell per click of the grid, over one or two bars.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct RhythmRequest {
+    pub steps: Vec<RhythmStep>,
+    pub bars: u32,
+    /// After this many repetitions heard, one is silent; 0 = never
+    pub test_every: u32,
+    /// A quiet click on the beats that are rests
+    pub guide: bool,
+}
+
+/// The exercises, each off when absent.
+#[derive(Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ExercisesRequest {
+    pub trainer: Option<TrainerRequest>,
+    pub gap: Option<GapRequest>,
+    /// Share of the clicks silenced at random, 0..0.9
+    pub mute_chance: f32,
+    pub rhythm: Option<RhythmRequest>,
+}
+
+impl ExercisesRequest {
+    /// The engine's exercises; a rhythm whose cells do not fill `cells` is left out.
+    pub fn exercises(&self, cells: usize) -> Exercises {
+        let rhythm = self.rhythm.as_ref().and_then(|r| {
+            if r.steps.is_empty() || r.steps.len() != cells || cells > MAX_STEPS {
+                return None;
+            }
+            let mut steps = [RhythmStep::Rest; MAX_STEPS];
+            steps[..cells].copy_from_slice(&r.steps);
+            Some(Rhythm {
+                steps,
+                len: cells,
+                bars: r.bars.clamp(1, 2),
+                test_every: r.test_every,
+                guide: r.guide,
+            })
+        });
+        Exercises {
+            trainer: self.trainer.as_ref().map(|t| Trainer {
+                from_bpm: t.from_bpm.clamp(1.0, 1_000.0),
+                to_bpm: t.to_bpm.clamp(1.0, 1_000.0),
+                step_bpm: t.step_bpm.abs().max(0.1),
+                every_bars: t.every_bars.max(1),
+            }),
+            gap: self.gap.as_ref().map(|g| Gap {
+                lead_bars: g.lead_bars,
+                play_bars: g.play_bars.max(1),
+                silent_bars: g.silent_bars.max(1),
+                grow: g.grow,
+            }),
+            mute_chance: self.mute_chance.clamp(0.0, 0.9),
+            rhythm,
+        }
+    }
+}
+
+/// The metronome on its own: tempo, bar, count-in, volume, sounds and exercises.
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct MetronomeRequest {
@@ -84,6 +166,7 @@ pub struct MetronomeRequest {
     /// 0..1
     pub volume: f32,
     pub sounds: SoundsRequest,
+    pub exercises: ExercisesRequest,
 }
 
 /// Settings of the metronome on its own; while it runs they take over at once, keeping
@@ -96,9 +179,18 @@ pub fn set_metronome(
 ) -> Result<(), AppError> {
     let engine = state.engine()?;
     let bpm = settings.bpm.clamp(1.0, 1_000.0);
+    let pattern = settings.bar.pattern();
+    let rhythm_bars = settings
+        .exercises
+        .rhythm
+        .as_ref()
+        .map_or(1, |r| r.bars.clamp(1, 2));
+    let cells = (pattern.pulses() * pattern.subdivision() * rhythm_bars) as usize;
     engine.set_metronome(MetronomeSettings {
         pulse_frames: settings.bar.pulse_seconds(bpm) * f64::from(engine.sample_rate()),
-        pattern: settings.bar.pattern(),
+        bpm,
+        pattern,
+        exercises: settings.exercises.exercises(cells),
         count_in_bars: settings.count_in_bars,
         volume: settings.volume.clamp(0.0, 1.0),
         sounds: settings.sounds.sounds(),

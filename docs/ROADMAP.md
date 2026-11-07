@@ -458,10 +458,16 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    quarto), display della battuta con menu (metriche comuni, composte con nome, tutti i gruppi possibili, impulsi
    e valore con − / +), battuta cliccabile (forte → normale → muto, blocchi larghi quanto il gruppo, impulso che si
    accende, puntini delle suddivisioni, riga del poliritmo), suddivisione 1–6, swing 50–75 % (solo in 2 o 4),
-   poliritmo 2–16, trasporto suo (Spazio, count-in 0–4 battute, battuta e tempo trascorso, volume). Spazio, T e
-   + / − guidano il metronomo mentre è aperto; avviarlo mette in pausa il brano e viceversa. Impostazioni salvate
+   poliritmo 2–16, trasporto suo (Spazio, count-in 0–4 battute, battuta e tempo trascorso, volume). I tasti Spazio, T,
+   più e meno guidano il metronomo mentre è aperto; avviarlo mette in pausa il brano e viceversa. Impostazioni salvate
    su questo PC (`stores/metronome.ts`).
-4. Esercizi: speed trainer, gap trainer, click muti a caso, ritmo da suonare.
+4. ✅ **Esercizi** (pannello a destra, decisi nel motore battuta per battuta, `exercises.rs`; si possono
+   combinare): speed trainer (da / a / passo / ogni N battute, anche verso il basso; il cambio cade sulla
+   battuta), gap trainer (battute di click prima, suona / silenzio, silenzio che cresce), click muti a caso
+   (5–90 %, il count-in suona sempre), ritmo da suonare (griglia di pause / note / accenti su 1 o 2 battute in
+   suddivisione 2, 3 o 4, pennate giù e su con suoni propri, ritmi generati facile / medio / difficile, giro a
+   memoria ogni N, click guida sulle pause in battere). Righe dal vivo: tempo attuale, click o silenzio, cella
+   che suona. Impostazioni salvate su questo PC (`stores/metronomeExercises.ts`).
 5. Brani, scaletta di tempi, routine; sequenza di battute.
 6. Tastiera della chitarra, voce che conta, lampeggio.
 

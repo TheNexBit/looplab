@@ -158,6 +158,46 @@ export const it = {
     countingIn: "Count-in",
     elapsed: "Tempo trascorso",
     ready: "Pronto",
+    exercises: {
+      trainer: "Speed trainer",
+      trainerHint:
+        "Il tempo cambia da solo di un passo ogni tot battute, fino al tempo finale (anche verso il basso). Mentre è acceso comanda lui, non il display.",
+      from: "Da",
+      to: "A",
+      step: "Passo",
+      every: "Ogni",
+      trainerNow: (bpm: number, left: number) =>
+        `Ora ${bpm} BPM · prossimo cambio tra ${left} ${left === 1 ? "battuta" : "battute"}`,
+      trainerDone: (bpm: number) => `Tempo finale raggiunto: ${bpm} BPM`,
+      gap: "Gap trainer",
+      gapHint:
+        "Il click suona qualche battuta e poi tace per qualche battuta: continua a suonare nel silenzio e scopri se, quando torna, sei ancora a tempo.",
+      gapLead: "Prima (click)",
+      gapPlay: "Suona",
+      gapSilent: "Silenzio",
+      gapGrow: "Silenzio che cresce",
+      gapGrowHint: "Una battuta di silenzio in più a ogni giro, finché non cedi",
+      gapPlayNow: "Click: ascolta il tempo",
+      gapSilentNow: "Silenzio: tieni il tempo",
+      mute: "Click muti a caso",
+      muteHint:
+        "Una parte dei click sparisce a caso, senza preavviso: il tempo devi tenerlo tu. Il count-in suona sempre.",
+      muteChance: "Quanti",
+      rhythm: "Ritmo da suonare",
+      rhythmHint:
+        "Una griglia di pennate e pause sulla suddivisione: suonano solo le celle piene (↓ giù, ↑ su), il resto lo riempi tu. Clic su una cella: pausa → nota → accento.",
+      rhythmNeeds:
+        "Il ritmo si scrive con la suddivisione in 2, 3 o 4, e al massimo 128 celle (pochi impulsi per battuta).",
+      rhythmBars: "Lunghezza",
+      rhythmSteps: { rest: "pausa", note: "nota", accent: "accento" },
+      rhythmCell: (index: number, step: string) => `Cella ${index}: ${step} (clic per cambiare)`,
+      difficulties: { easy: "Facile", medium: "Medio", hard: "Difficile" },
+      clear: "Svuota la griglia",
+      rhythmTest: "Giro a memoria",
+      rhythmTestEvery: (n: number) => `dopo ${n}`,
+      rhythmGuide: "Click guida",
+      rhythmGuideHint: "Un click leggero sui battiti che nel ritmo sono pause, per non perdersi",
+    },
   },
   mini: {
     enter: "Finestra mini sempre in primo piano",

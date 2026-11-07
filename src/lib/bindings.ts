@@ -40,7 +40,7 @@ export const commands = {
 	 *  Settings of the metronome on its own; while it runs they take over at once, keeping
 	 *  the place in the bar. Starts the audio device if needed: no track is required.
 	 */
-	setMetronome: (settings: MetronomeRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_metronome", { settings })),
+	setMetronome: (settings: MetronomeRequest_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("set_metronome", { settings })),
 	/**  Starts the metronome on its own from its count-in, or stops it. */
 	runMetronome: (running: boolean) => typedError<null, AppError>(__TAURI_INVOKE("run_metronome", { running })),
 	/**  The saved project of a track, or `null` if it has none yet. */
@@ -238,6 +238,27 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 /**  The track is still loading in the background */
 "stillLoading" | "internal";
 
+/**  The exercises, each off when absent. */
+export type ExercisesRequest = ExercisesRequest_Serialize | ExercisesRequest_Deserialize;
+
+/**  The exercises, each off when absent. */
+export type ExercisesRequest_Deserialize = {
+	trainer?: TrainerRequest | null,
+	gap?: GapRequest | null,
+	/**  Share of the clicks silenced at random, 0..0.9 */
+	muteChance: number | null,
+	rhythm?: RhythmRequest | null,
+};
+
+/**  The exercises, each off when absent. */
+export type ExercisesRequest_Serialize = {
+	trainer: TrainerRequest | null,
+	gap: GapRequest | null,
+	/**  Share of the clicks silenced at random, 0..0.9 */
+	muteChance: number | null,
+	rhythm: RhythmRequest | null,
+};
+
 /**  File formats, like the render formats of a DAW. FLAC and MP3 need FFmpeg. */
 export type ExportFormat = "wav16" | "wav24" | "flac" | "mp3";
 
@@ -271,6 +292,14 @@ export type ExportRequest_Serialize = {
 	eq: EqSettings_Serialize,
 	channels: ChannelMode,
 	format: ExportFormat,
+};
+
+/**  Gap trainer: bars heard, then bars silent. */
+export type GapRequest = {
+	leadBars: number,
+	playBars: number,
+	silentBars: number,
+	grow: boolean,
 };
 
 export type LoadedProject = LoadedProject_Serialize | LoadedProject_Deserialize;
@@ -327,8 +356,11 @@ export type MediaKey = {
 
 export type MediaKeyKind = "playPause" | "next" | "previous";
 
-/**  The metronome on its own: tempo, bar, count-in, volume and sounds. */
-export type MetronomeRequest = {
+/**  The metronome on its own: tempo, bar, count-in, volume, sounds and exercises. */
+export type MetronomeRequest = MetronomeRequest_Serialize | MetronomeRequest_Deserialize;
+
+/**  The metronome on its own: tempo, bar, count-in, volume, sounds and exercises. */
+export type MetronomeRequest_Deserialize = {
 	/**  Quarter notes per minute */
 	bpm: number | null,
 	bar: BarRequest,
@@ -336,6 +368,19 @@ export type MetronomeRequest = {
 	/**  0..1 */
 	volume: number | null,
 	sounds: SoundsRequest,
+	exercises: ExercisesRequest_Deserialize,
+};
+
+/**  The metronome on its own: tempo, bar, count-in, volume, sounds and exercises. */
+export type MetronomeRequest_Serialize = {
+	/**  Quarter notes per minute */
+	bpm: number | null,
+	bar: BarRequest,
+	countInBars: number,
+	/**  0..1 */
+	volume: number | null,
+	sounds: SoundsRequest,
+	exercises: ExercisesRequest_Serialize,
 };
 
 export type MidiKind = "note" | "cc" | "program";
@@ -502,6 +547,19 @@ export type RecentFile_Serialize = {
 	speed: number | null,
 };
 
+/**  Rhythm to play: one cell per click of the grid, over one or two bars. */
+export type RhythmRequest = {
+	steps: RhythmStep[],
+	bars: number,
+	/**  After this many repetitions heard, one is silent; 0 = never */
+	testEvery: number,
+	/**  A quiet click on the beats that are rests */
+	guide: boolean,
+};
+
+/**  One cell of a rhythm pattern. */
+export type RhythmStep = "rest" | "note" | "accent";
+
 /**  A loop kept under a name, to come back to it later. */
 export type SavedLoop = SavedLoop_Serialize | SavedLoop_Deserialize;
 
@@ -623,6 +681,14 @@ export type TrackLoading_Serialize = {
 	duration: number | null,
 	/**  Set when loading stopped early: what was loaded stays playable */
 	error: ErrorKind | null,
+};
+
+/**  Speed trainer: from one tempo to another, a step every few bars. */
+export type TrainerRequest = {
+	fromBpm: number | null,
+	toBpm: number | null,
+	stepBpm: number | null,
+	everyBars: number,
 };
 
 /**  The detached video window was closed by the user (it is only hidden): dock the video again. */

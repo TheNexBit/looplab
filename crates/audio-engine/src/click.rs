@@ -301,7 +301,33 @@ impl ClickVoice {
 
     /// Starts `sound` at `level` (0..1), cutting the one still ringing.
     pub fn start(&mut self, (sound, level): (ClickSound, f32)) {
-        let recipe = sound.recipe();
+        self.start_recipe(sound.recipe(), level);
+    }
+
+    /// A strum of the rhythm trainer: down fuller and lower, up brighter and shorter, so the
+    /// hand's direction is heard. Always synthesised, never a chosen sound.
+    pub fn start_strum(&mut self, down: bool, level: f32) {
+        let recipe = if down {
+            Recipe {
+                tones: [(620.0, 0.75), (1_240.0, 0.2)],
+                tone_decay: 0.03,
+                noise: 0.35,
+                noise_decay: 0.006,
+                seconds: 0.12,
+            }
+        } else {
+            Recipe {
+                tones: [(960.0, 0.6), (1_920.0, 0.15)],
+                tone_decay: 0.018,
+                noise: 0.45,
+                noise_decay: 0.004,
+                seconds: 0.08,
+            }
+        };
+        self.start_recipe(recipe, level);
+    }
+
+    fn start_recipe(&mut self, recipe: Recipe, level: f32) {
         // Envelopes fall by a fixed factor per sample: no exp() in the audio thread
         let fall = |seconds: f32| (-1.0 / (seconds * self.sample_rate)).exp();
         for (index, (hz, amplitude)) in recipe.tones.into_iter().enumerate() {

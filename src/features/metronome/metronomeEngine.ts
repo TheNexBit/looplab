@@ -1,6 +1,7 @@
 import { clickSounds } from "@/features/player/syncEngine";
 import { commands, type MetronomeRequest } from "@/lib/bindings";
 import { useMetronomeStore } from "@/stores/metronome";
+import { exercisesRequest, useExercisesStore } from "@/stores/metronomeExercises";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -21,6 +22,7 @@ export function metronomeRequest(): MetronomeRequest {
     countInBars: m.countInBars,
     volume: m.volume,
     sounds: clickSounds(useSettingsStore.getState()),
+    exercises: exercisesRequest(useExercisesStore.getState(), m.beats, m.subdivision),
   };
 }
 
@@ -51,6 +53,7 @@ export function syncMetronome(): () => void {
     void commands.runMetronome(state.running);
   });
   const stopSettings = useSettingsStore.subscribe(() => push());
+  const stopExercises = useExercisesStore.subscribe(() => push());
   // …and playing the track stops the metronome
   const stopPlayer = usePlayerStore.subscribe((state, previous) => {
     if (state.playing && !previous.playing && useMetronomeStore.getState().running) {
@@ -60,6 +63,7 @@ export function syncMetronome(): () => void {
   return () => {
     stopStore();
     stopSettings();
+    stopExercises();
     stopPlayer();
   };
 }

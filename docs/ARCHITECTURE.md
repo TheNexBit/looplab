@@ -37,6 +37,11 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     sia `metronome.rs`: il metronomo da solo, con un orologio in frame d'uscita mescolato dopo lo stretch; un
     cambio di tempo o di battuta riparte dal punto in cui si è nella battuta. Il poliritmo ha una voce sua
     (`cross_voice`), perché suona insieme ai battiti.
+  - `exercises.rs` (da MetroFlow): speed trainer, gap trainer, click muti a caso, ritmo da suonare. Il
+    metronomo da solo li applica battuta per battuta nel thread audio (un cambio di tempo o una battuta muta
+    cade esattamente sulla stanghetta); il count-in ne è escluso. Le pennate del ritmo hanno suoni propri
+    (`ClickVoice::start_strum`). Lato interfaccia: `stores/metronomeExercises.ts` (stesse regole per le righe
+    dal vivo) e `features/metronome/ExercisesPanel.tsx`.
   - `tone.rs`: nota di riferimento per accordarsi (`SetTone`, comando `set_reference_tone`): fondamentale
     più tre armoniche, dissolvenza di 30 ms all'accensione, allo spegnimento e al cambio di livello; si
     somma al click, quindi si sente sopra il brano e a brano fermo.

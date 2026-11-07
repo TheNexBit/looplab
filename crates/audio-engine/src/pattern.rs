@@ -55,6 +55,11 @@ pub struct Hits {
     pub cross: bool,
     /// Bar of the main click (negative during a count-in)
     pub bar: i64,
+    /// Where the main click is: its pulse in the bar, and which click of the pulse (0 = on it)
+    pub pulse_in_bar: u32,
+    pub sub: u32,
+    /// True when a main click falls in this frame, even a muted one
+    pub on_grid: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -139,6 +144,18 @@ impl BarPattern {
         self.pulses
     }
 
+    pub fn subdivision(&self) -> u32 {
+        self.subdivision
+    }
+
+    /// Whether a pulse opens a felt beat (every pulse does without a grouping).
+    pub fn starts_beat(&self, pulse_in_bar: u32) -> bool {
+        self.starts_beat
+            .get(pulse_in_bar as usize)
+            .copied()
+            .unwrap_or(false)
+    }
+
     /// Where click `k` of a pulse falls, as a fraction of the pulse. Swing lengthens the
     /// first click of every pair and shortens the second; a pair keeps its length, and
     /// odd subdivisions (triplets) have no pairs to swing.
@@ -187,6 +204,9 @@ impl BarPattern {
                 if at >= from && at < to {
                     hits.main = self.kind(pulse, k);
                     hits.bar = pulse.div_euclid(pulses);
+                    hits.pulse_in_bar = pulse.rem_euclid(pulses) as u32;
+                    hits.sub = k;
+                    hits.on_grid = true;
                     break 'main;
                 }
             }
@@ -305,13 +325,10 @@ mod tests {
         assert_eq!((first.main, first.bar), (Some(Accent), -1));
         assert_eq!(pattern.hits(-2.0, -1.99).main, Some(Beat));
         // Bar 0 starts with the muted beat the player asked for
+        let first_bar = pattern.hits(0.0, 0.01);
         assert_eq!(
-            pattern.hits(0.0, 0.01),
-            Hits {
-                main: None,
-                cross: false,
-                bar: 0
-            }
+            (first_bar.main, first_bar.bar, first_bar.on_grid),
+            (None, 0, true)
         );
         assert_eq!(pattern.hits(4.0, 4.01).bar, 1);
     }

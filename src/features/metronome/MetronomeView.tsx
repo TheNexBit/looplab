@@ -16,6 +16,7 @@ import {
 } from "@/stores/metronome";
 import { BeatStrip } from "./BeatStrip";
 import { SWING_MAX, SWING_STRAIGHT, SWING_TRIPLET } from "./beatGrid";
+import { ExercisesPanel } from "./ExercisesPanel";
 import { MeterMenu } from "./MeterMenu";
 import { barAndPulse, formatElapsed } from "./meterChoices";
 import { toggleMetronomeRun } from "./metronomeEngine";
@@ -197,18 +198,21 @@ function MetronomeTransport() {
 export function MetronomeView() {
   return (
     <div className="flex h-full flex-col">
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 overflow-y-auto px-6 py-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <TempoPanel />
-          <MeterMenu />
+      <div className="flex min-h-0 flex-1">
+        <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 overflow-y-auto px-6 py-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <TempoPanel />
+            <MeterMenu />
+          </div>
+          <section className="space-y-2">
+            <Tooltip label={m.accentsHint}>
+              <h3 className="panel-label cursor-help">{m.accents}</h3>
+            </Tooltip>
+            <BeatStrip />
+          </section>
+          <RhythmControls />
         </div>
-        <section className="space-y-2">
-          <Tooltip label={m.accentsHint}>
-            <h3 className="panel-label cursor-help">{m.accents}</h3>
-          </Tooltip>
-          <BeatStrip />
-        </section>
-        <RhythmControls />
+        <ExercisesPanel />
       </div>
       <MetronomeTransport />
     </div>

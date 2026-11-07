@@ -50,6 +50,9 @@ impl LoopSettings {
     }
 }
 
+// The metronome's settings (its rhythm grid) make one variant large. Boxing it would free
+// memory on the audio thread; a few hundred bytes per ring-buffer slot cost nothing.
+#[allow(clippy::large_enum_variant)]
 pub(crate) enum Command {
     SetTrack(Arc<Pcm>),
     Play,
