@@ -30,11 +30,16 @@ export function FollowKey() {
     <Popover.Root open={options} onOpenChange={setOptions}>
       <Popover.Anchor asChild>
         <span>
-          <Tooltip label={t.transport.follow} shortcut="toggleFollow">
+          <Tooltip
+            label={t.transport.follow}
+            shortcut="toggleFollow"
+            rightClick={t.transport.followRightClick}
+          >
             <Button
               variant="hardware"
               size="key"
               led="amber"
+              options
               active={follow}
               onClick={() => setFollow(!follow)}
               onContextMenu={(event) => {

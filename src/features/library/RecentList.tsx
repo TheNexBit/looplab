@@ -2,6 +2,7 @@ import { FileAudio, FileVideo, FolderOpen, Play, Search, X } from "lucide-react"
 import { ContextMenu } from "radix-ui";
 import { type ReactNode, useState } from "react";
 import { menuContent, menuItem, menuSeparator } from "@/components/ui/menu";
+import { withRightClick } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { commands, type RecentFile } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
@@ -132,7 +133,10 @@ export function RecentList() {
                 <button
                   type="button"
                   disabled={!file.exists}
-                  title={file.exists ? file.path : `${r.missing}: ${file.path}`}
+                  title={withRightClick(
+                    file.exists ? file.path : `${r.missing}: ${file.path}`,
+                    r.rightClick,
+                  )}
                   onClick={() => open(file)}
                   className={cn(
                     "grid min-w-0 flex-1 grid-cols-[1rem_minmax(0,1fr)_auto_3.5rem_4.5rem] items-center gap-3 rounded-control px-2 py-1.5 text-left text-sm transition-colors",

@@ -329,6 +329,13 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
 - **Niente menu del browser col tasto destro** (Indietro, Aggiorna, Stampa, Esamina): restano solo i menu
   dell'app e Taglia/Copia/Incolla nei campi di testo. In sviluppo Maiusc + tasto destro lo riapre (per Esamina).
 
+- **Si vede dove c'è il tasto destro**:
+  - _Triangolino_ nell'angolo in basso a destra dei tasti con opzioni (Loop, Follow, Count-in), come i tasti di
+    Logic, Cubase e dell'hardware con un menu dietro un tasto (prop `options` di `Button`).
+  - _Seconda riga nel suggerimento_ "Tasto destro: …" con l'icona del mouse (prop `rightClick` di `Tooltip`), anche
+    sul display del Tempo; sui recenti, sulle sezioni e sulle bandierine dei marker la stessa riga è nel `title`
+    (`withRightClick`).
+
 ## Dopo la prima versione
 
 - **Separazione AI degli strumenti** (voce, batteria, basso, altro): da decidere con l'utente, serve scaricare un

@@ -197,7 +197,7 @@ function BpmDisplay() {
             </Popover.Trigger>
           </Tooltip>
           <div ref={ref} className="flex items-center gap-1">
-            <Tooltip label={p.bpmHint}>
+            <Tooltip label={p.bpmHint} rightClick={p.bpmRightClick}>
               <span>
                 <NumberField
                   label={p.bpm}
@@ -299,11 +299,16 @@ function CountInKey() {
     <Popover.Root open={options} onOpenChange={setOptions}>
       <Popover.Anchor asChild>
         <span>
-          <Tooltip label={p.countInKeyHint} shortcut="toggleCountIn">
+          <Tooltip
+            label={p.countInKeyHint}
+            shortcut="toggleCountIn"
+            rightClick={p.countInRightClick}
+          >
             <Button
               variant="hardware"
               size="key"
               led="amber"
+              options
               active={on}
               className="w-16"
               aria-label={`${p.countIn}: ${short}`}

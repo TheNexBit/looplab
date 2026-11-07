@@ -151,3 +151,5 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 - Impostazioni a scelta (stile della forma d'onda, rotella, avvio…): elenco unico `SETTING_CHOICES` in
   `stores/settings.ts`, nomi in `i18n` (`settings.choices`, controllati da TypeScript). Controlli delle
   impostazioni: `OnOffKey`, `Stepper` (− / + / rotella), `ChoiceKeys` in `components/ui/`.
+- Tasto destro: un controllo che lo usa lo dice sempre. Tasti: `Button options` (triangolino nell'angolo) e
+  `Tooltip rightClick` (seconda riga "Tasto destro: …"); altri elementi: `title` con `withRightClick`.

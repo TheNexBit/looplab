@@ -27,11 +27,16 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
 
   return (
     <div className="flex items-center">
-      <Tooltip label={t.transport.loop} shortcut="loopToggle">
+      <Tooltip
+        label={t.transport.loop}
+        shortcut="loopToggle"
+        rightClick={t.transport.loopRightClick}
+      >
         <Button
           variant="hardware"
           size="key"
           led="green"
+          options
           disabled={disabled || !region}
           active={loop.enabled && region !== null}
           onClick={loop.toggle}

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { withRightClick } from "@/components/ui/Tooltip";
 import { percentOfTrack, useTimeStrip } from "@/features/waveform/useTimeStrip";
 import { t } from "@/i18n";
 import { sectionColor, sectionRanges, useMarkersStore } from "@/stores/markers";
@@ -38,7 +39,10 @@ export function SectionLane() {
             <SectionMenu key={range.id} range={range}>
               <button
                 type="button"
-                title={`${range.name} — ${t.markers.loopSection}`}
+                title={withRightClick(
+                  `${range.name} — ${t.markers.loopSection}`,
+                  t.markers.sectionRightClick,
+                )}
                 onClick={() => loopSection(range)}
                 className="absolute top-0 bottom-0 flex items-center overflow-hidden rounded-[2px] border-t-2 border-r border-r-black px-1.5 text-left text-[10px] font-semibold tracking-[0.04em] text-fg uppercase transition-[filter] hover:brightness-125"
                 style={{

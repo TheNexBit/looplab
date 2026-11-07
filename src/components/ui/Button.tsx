@@ -11,6 +11,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean;
   /** Hardware keys only: a lamp under the icon, lit while `active` */
   led?: Led;
+  /** The right button opens options: a small triangle in the corner says so */
+  options?: boolean;
 }
 
 const variants: Record<Variant, string> = {
@@ -35,11 +37,25 @@ const lamps: Record<Led, string> = {
   green: "bg-loop shadow-[0_0_6px_var(--color-loop)]",
 };
 
+/**
+ * Triangle in the bottom-right corner of a key whose right button opens options, like the
+ * corner marks of Logic's and Cubase's buttons and of hardware with a menu behind a key.
+ */
+export function OptionsCorner() {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute right-[3px] bottom-[3px] size-[5px] bg-current opacity-60 [clip-path:polygon(100%_0,100%_100%,0_100%)]"
+    />
+  );
+}
+
 export function Button({
   variant = "ghost",
   size = "md",
   active = false,
   led,
+  options = false,
   className,
   type = "button",
   children,
@@ -49,7 +65,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-control font-medium transition-[color,background-color,filter]",
+        "relative inline-flex shrink-0 items-center justify-center rounded-control font-medium transition-[color,background-color,filter]",
         "disabled:pointer-events-none disabled:opacity-40",
         variants[variant],
         sizes[size],
@@ -66,6 +82,7 @@ export function Button({
           className={cn("h-[3px] w-3.5 rounded-full", active ? lamps[led] : "bg-led-off")}
         />
       )}
+      {options && <OptionsCorner />}
     </button>
   );
 }

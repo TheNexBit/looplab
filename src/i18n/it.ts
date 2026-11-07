@@ -8,6 +8,8 @@ export const it = {
   common: {
     on: "On",
     off: "Off",
+    /** Second line of the hover hint of controls with options on the right button */
+    rightClick: "Tasto destro",
   },
   app: {
     noFile: "Nessun file aperto",
@@ -140,15 +142,15 @@ export const it = {
     tempo: "Tempo",
     bpm: "BPM",
     bpmHint:
-      "Tempo del brano originale in quarti al minuto, come nei DAW (non cambia con la velocità). Clic per scriverlo, rotella o ↑ ↓ per cambiarlo; tasto destro per il menu.",
+      "Tempo del brano originale in quarti al minuto, come nei DAW (non cambia con la velocità). Clic per scriverlo, rotella o ↑ ↓ per cambiarlo.",
+    bpmRightClick: "tap, downbeat, griglia, count-in e click",
     noBpm: "—",
     tap: "Tap",
     tapHint:
       "Premi a tempo sui battiti della metrica, almeno due volte (in 7/8 sugli ottavi; anche col tasto T)",
     clearBpm: "Tempo sconosciuto",
     gridItem: "Griglia sulla forma d'onda",
-    tempoMenu:
-      "Menu del tempo: tap, downbeat, griglia, count-in, click (anche tasto destro sul display)",
+    tempoMenu: "Menu del tempo: tap, downbeat, griglia, count-in, click",
     tapTempo: "Tap tempo",
     tapMenuHint: "Premi a tempo sui battiti (anche col tasto): il BPM si calcola da solo",
     needsTrack: "Apri un brano per usarlo.",
@@ -170,8 +172,8 @@ export const it = {
     oneBar: "1 bar",
     bars: "bars",
     countInOn: "On",
-    countInKeyHint:
-      "Count-in on/off: battute contate prima del play e prima di ogni ripetizione. Tasto destro (o ▾ del Tempo): battute, volume e suoni.",
+    countInKeyHint: "Count-in on/off: battute contate prima del play e prima di ogni ripetizione",
+    countInRightClick: "battute, volume e suoni (anche nel ▾ del Tempo)",
     metronome: "Metronomo",
     metronomeHint: "Un click su ogni battito; il primo di ogni battuta è più acuto.",
     volume: "Volume",
@@ -223,6 +225,8 @@ export const it = {
     rename: "Rinomina",
     color: "Colore",
     remove: "Elimina",
+    markerRightClick: "elimina",
+    sectionRightClick: "loop, esporta, colore, elimina",
     savedInAppData:
       "La cartella del brano è protetta: il progetto è salvato nella cartella dell'app.",
   },
@@ -457,6 +461,7 @@ export const it = {
     noMatch: "Nessun brano con questo nome",
     open: "Apri",
     reveal: "Mostra nella cartella",
+    rightClick: "apri, mostra nella cartella, togli dalla lista",
     loops: "loop",
     sectionsShort: "sez.",
     video: "Video",
@@ -480,6 +485,7 @@ export const it = {
     pause: "Pausa",
     loop: "Loop",
     loopOptions: "Opzioni del loop",
+    loopRightClick: "pre-roll, gap, dopo il loop, rimuovi",
     noLoop: "Trascina sulla forma d'onda (o usa [ e ]) per creare un loop.",
     leadIn: "Pre-roll",
     leadInHint: "Secondi suonati prima del loop a ogni ripetizione",
@@ -497,8 +503,8 @@ export const it = {
     position: "Posizione",
     wholeTrack:
       "Tutto il brano a schermo, come lo zoom al progetto di Reaper. Premi di nuovo per tornare allo zoom di prima.",
-    follow:
-      "Follow: la forma d'onda segue il playhead durante l'ascolto. Tasto destro: scorrimento continuo o a pagine, come in Reaper",
+    follow: "Follow: la forma d'onda segue il playhead durante l'ascolto",
+    followRightClick: "scorrimento continuo o a pagine, come in Reaper",
     returnToStart:
       "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
     snap: "Snap: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead",

@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { ContextMenu } from "radix-ui";
 import type { RefObject } from "react";
 import { menuContent, menuItem } from "@/components/ui/menu";
+import { withRightClick } from "@/components/ui/Tooltip";
 import { percentOfTrack, useTimeStrip } from "@/features/waveform/useTimeStrip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
@@ -46,7 +47,10 @@ export function MarkerFlags({
                 <button
                   type="button"
                   data-no-seek
-                  title={beat ? `${t.markers.bar} ${label}` : t.markers.marker}
+                  title={withRightClick(
+                    beat ? `${t.markers.bar} ${label}` : t.markers.marker,
+                    t.markers.markerRightClick,
+                  )}
                   onPointerDown={(event) =>
                     dragAlongTime(
                       event,
