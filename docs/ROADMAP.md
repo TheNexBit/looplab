@@ -438,6 +438,21 @@ Le ultime idee proposte rimaste aperte, fatte in ordine su richiesta dell'utente
 - **Riga informazioni** (Impostazioni → Generale, spenta di serie), come la Info View di Ableton: in fondo alla
   finestra dice cosa c'è sotto il mouse, con scorciatoia e tasto destro.
 
+## M. Metronomo integrato (prova sul ramo `metronomo`) 🚧
+
+Copia di prova in `D:\sandbox\looplab-metronomo` (dati, porta 1422 e nome suoi: commit da togliere prima di
+unire a `main`). Si importa MetroFlow (`D:\projects\Metronome`, che resta intatto) invece di rifarlo: logica e
+interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, valido anche sopra i brani).
+
+1. ✅ **Logica pura** importata con test nuovi (MetroFlow non ne aveva): `features/metronome/` (battuta con gruppi
+   e accenti, swing, poliritmi, gap trainer, ritmo da suonare, metrica casuale, routine), `lib/music/` (note,
+   scale, accordi), `features/fretboard/` (manico e accordature). Ancora non usata dall'app.
+2. Motore in Rust: gruppi, accenti per battito, suddivisioni, swing, poliritmo (anche sopra i brani).
+3. Modalità Metronomo (mockup approvato come base): display, battuta cliccabile, trasporto.
+4. Esercizi: speed trainer, gap trainer, click muti a caso, ritmo da suonare.
+5. Brani, scaletta di tempi, routine; sequenza di battute.
+6. Tastiera della chitarra, voce che conta, lampeggio.
+
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 
 **Obiettivo (milestone):** su brani con tempi dispari e cambi continui di tempo e metrica (es. Dream Theater "The
