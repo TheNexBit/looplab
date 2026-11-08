@@ -6,6 +6,7 @@ import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useFretboardStore } from "@/stores/fretboard";
 import { currentPulses, shownSetup, useMetronomeStore } from "@/stores/metronome";
 import type { BeatState } from "./types";
+import { useBeats } from "./useBeats";
 
 const m = t.metronome;
 
@@ -49,7 +50,52 @@ export function BeatStrip() {
   // Shorter pads while the neck shares the screen
   const compact = useFretboardStore((s) => s.enabled);
   const pulseRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const padRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const lightRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const crossRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  // The pad being played lights up whole and fades out within its beat, with a halo, like
+  // the pads of a drum machine: an accent flashes white at the core, the count-in is blue
+  useBeats((kind, { pulse, seconds }) => {
+    const pad = padRefs.current[pulse];
+    const light = lightRefs.current[pulse];
+    if (!pad || !light) return;
+    const strong = kind === "accent";
+    const color = kind === "countIn" ? "var(--color-cue)" : "var(--color-accent)";
+    const duration = Math.min(750, Math.max(160, seconds * 900));
+    // Full light for the first stretch, then a long fade: a hit, not a blink
+    const hold = 0.18;
+    const easing = "cubic-bezier(0.25, 0.6, 0.35, 1)";
+    light.style.background = strong
+      ? `radial-gradient(circle at 50% 45%, white 0%, white 22%, color-mix(in srgb, ${color} 55%, white) 45%, ${color} 85%)`
+      : `radial-gradient(circle at 50% 45%, color-mix(in srgb, ${color} 45%, white) 0%, ${color} 70%)`;
+    light.animate(
+      [
+        { opacity: 1, offset: 0 },
+        { opacity: 1, offset: hold },
+        { opacity: 0, offset: 1 },
+      ],
+      { duration, easing },
+    );
+    pad.animate(
+      [
+        {
+          offset: 0,
+          color: "var(--color-on-accent)",
+          boxShadow: `0 0 ${strong ? 36 : 24}px ${strong ? 8 : 4}px ${color}`,
+          transform: `scale(${strong ? 1.06 : 1.035})`,
+        },
+        {
+          offset: hold,
+          color: "var(--color-on-accent)",
+          boxShadow: `0 0 ${strong ? 30 : 20}px ${strong ? 5 : 2}px ${color}`,
+          transform: "scale(1.01)",
+        },
+        { offset: 1, boxShadow: "0 0 0 0 transparent", transform: "scale(1)" },
+      ],
+      { duration, easing },
+    );
+  });
 
   // Light the pulse being heard, outside React: 60 fps without re-rendering
   useAnimationFrame(() => {
@@ -107,14 +153,24 @@ export function BeatStrip() {
                         />
                         {/* Pad */}
                         <span
+                          ref={(pad) => {
+                            padRefs.current[pulse] = pad;
+                          }}
                           className={cn(
-                            "flex flex-col items-center justify-center gap-1.5 rounded-control border font-mono text-lg tabular transition-[filter] duration-75 group-hover:brightness-110",
+                            "relative isolate flex flex-col items-center justify-center gap-1.5 rounded-control border font-mono text-lg tabular transition-[filter] duration-75 group-hover:brightness-110",
                             compact ? "h-14" : "h-20",
                             padLook[state],
                             inside > 0 && "opacity-75",
-                            "group-data-[lit=true]/pulse:brightness-125",
                           )}
                         >
+                          {/* The light that flashes on the beat and fades within it */}
+                          <span
+                            ref={(light) => {
+                              lightRefs.current[pulse] = light;
+                            }}
+                            aria-hidden
+                            className="pointer-events-none absolute -inset-px -z-10 rounded-[inherit] opacity-0"
+                          />
                           {pulse + 1}
                           <span aria-hidden className="flex h-2 items-end gap-0.5">
                             {inside === 0 &&

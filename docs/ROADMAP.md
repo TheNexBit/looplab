@@ -487,6 +487,9 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
      grande con spia. La battuta è una fila di pad da drum machine (spia sopra ogni impulso, blu nel count-in, tacche
      di livello forte / normale, puntini delle suddivisioni, gruppi staccati), sotto una plancia unica per
      suddivisione, swing e poliritmo.
+   - ✅ **Pad che si accendono** (dopo la prova: «puoi fare di meglio con l'illuminazione»): il pad che suona si
+     illumina tutto, resta pieno per il primo tratto e sfuma entro il battito, con un alone e un leggero
+     «colpo»; sull'accento il lampo è bianco al centro e più largo, nel count-in è blu (`BeatStrip.tsx`).
 6. ✅ **Lampeggio**: tasto ON/OFF con spia nel trasporto; lo schermo del metronomo lampeggia a ogni battito, più forte
    sugli accenti (`useBeats.ts`, condiviso con la manopola). Preferenza di questo PC, non dei brani.
 7. ✅ **Manico della chitarra** (tasto ON/OFF con spia nel trasporto; da MetroFlow, `features/fretboard/`,
