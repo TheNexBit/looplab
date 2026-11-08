@@ -12,6 +12,8 @@ import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
 export interface Settings {
+  /** Language of the whole app (read at start: changing it reloads the window) */
+  language: Language;
   /** Seconds moved by ← / → */
   seekStep: number;
   /** Seconds moved by Shift + ← / → */
@@ -97,6 +99,7 @@ export interface Settings {
 
 /** The values of the settings that are a choice among a few, in menu order. */
 export const SETTING_CHOICES = {
+  language: ["it", "en"],
   waveStyle: ["filled", "outline", "half"],
   startup: ["empty", "last"],
   wheel: ["zoom", "scroll"],
@@ -105,6 +108,7 @@ export const SETTING_CHOICES = {
   openView: ["start", "whole"],
   afterLoop: ["stay", "start", "play"],
 } as const;
+export type Language = (typeof SETTING_CHOICES.language)[number];
 export type WaveStyle = (typeof SETTING_CHOICES.waveStyle)[number];
 export type Startup = (typeof SETTING_CHOICES.startup)[number];
 export type WheelAction = (typeof SETTING_CHOICES.wheel)[number];
@@ -140,6 +144,7 @@ export const SETTING_LIMITS = {
 } as const satisfies Record<NumericSetting, { min: number; max: number; step: number }>;
 
 const DEFAULTS: Settings = {
+  language: "it",
   seekStep: 5,
   fineSeekStep: 1,
   speedStep: 0.05,

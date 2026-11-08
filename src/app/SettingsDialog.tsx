@@ -94,6 +94,31 @@ function Choice<K extends ChoiceSetting>({ setting }: { setting: K }) {
   );
 }
 
+/**
+ * The app's language. Every module reads its strings once at start, so the change takes
+ * effect by reloading the window (the settings are already saved when it reloads).
+ */
+function LanguageChoice() {
+  const value = useSettingsStore((state) => state.language);
+  const { label, hint } = text("language");
+  return (
+    <SettingRow label={label} hint={hint}>
+      <ChoiceKeys
+        label={label}
+        value={value}
+        choices={SETTING_CHOICES.language.map(
+          (choice) => [choice, s.choices.language[choice]] as const,
+        )}
+        onChange={(language) => {
+          if (language === value) return;
+          useSettingsStore.getState().update({ language });
+          window.location.reload();
+        }}
+      />
+    </SettingRow>
+  );
+}
+
 const pane = "max-h-[calc(100vh-14rem)] overflow-y-auto";
 
 /** What the "Default values" key of each tab puts back. */
@@ -159,6 +184,7 @@ export function SettingsDialog() {
         </Tabs.Content>
         <Tabs.Content value="general" className={`${pane} px-4 pb-4`}>
           <SettingGroup rows title={s.behaviour}>
+            <LanguageChoice />
             <Choice setting="startup" />
             <Choice setting="openView" />
             <Toggle setting="resumePosition" />

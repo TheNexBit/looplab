@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 /**
  * Reference notes to tune a guitar or a bass by ear: the open strings of each tuning, and
  * their pitch from the chosen A (440 Hz unless the record is slightly off).
@@ -32,11 +33,10 @@ export const REFERENCE_PITCH = { min: 415, max: 466, step: 1, default: 440 } as 
 /** MIDI number of that A (A4). */
 const A4 = 69;
 
-/** Italian note names, with flats as guitarists name lowered tunings (Mi♭, La♭…). */
-const NAMES = ["Do", "Re♭", "Re", "Mi♭", "Mi", "Fa", "Sol♭", "Sol", "La♭", "La", "Si♭", "Si"];
-
 export const noteHz = (midi: number, a4: number) => a4 * 2 ** ((midi - A4) / 12);
-export const italianName = (midi: number) => NAMES[((midi % 12) + 12) % 12] ?? "Do";
+/** The note's name in the app's language (Do Re Mi in Italian, letters in English). */
+export const italianName = (midi: number) =>
+  t.common.noteNames[((midi % 12) + 12) % 12] ?? t.common.noteNames[0] ?? "";
 
 /** Open strings of `instrument` in `tuning`, lowest first. */
 export function openStrings(instrument: Instrument, tuning: ReferenceTuning): number[] {

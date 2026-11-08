@@ -10,6 +10,12 @@ export const it = {
     off: "Off",
     /** Second line of the hover hint of controls with options on the right button */
     rightClick: "Tasto destro",
+    /** Numbers and dates are written the way of this language */
+    locale: "it-IT",
+    /** Note names in this language, with flats as guitarists name lowered tunings (Mi♭, La♭…) */
+    noteNames: ["Do", "Re♭", "Re", "Mi♭", "Mi", "Fa", "Sol♭", "Sol", "La♭", "La", "Si♭", "Si"],
+    /** The notes have names of their own beside the letters (Do Re Mi): shown under them */
+    solfege: true,
   },
   app: {
     noFile: "Nessun file aperto",
@@ -640,6 +646,8 @@ export const it = {
     behaviour: "Comportamento",
     mouse: "Mouse",
     steps: "Passi",
+    language: "Lingua / Language",
+    languageHint: "La lingua di tutta l'app: cambiandola, Looplab si ricarica subito",
     startup: "All'avvio",
     startupHint: "Cosa mostra Looplab quando lo apri",
     openView: "Vista all'apertura",
@@ -674,6 +682,7 @@ export const it = {
     cueShadeHint:
       "Mentre suona, una fascia leggera dal punto di partenza al playhead: il tratto che torna indietro quando fermi",
     choices: {
+      language: { it: "Italiano", en: "English" },
       startup: { empty: "Schermata vuota", last: "Ultimo brano" },
       openView: { start: "Primi 30 s", whole: "Tutto il brano" },
       followMode: { center: "Continuo", page: "A pagine" },

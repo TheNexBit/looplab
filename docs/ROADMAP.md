@@ -516,6 +516,13 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    importato quando è in uso. Nel motore ogni voce dei click legge da `ClickSamples` condivisi (tagliati,
    livellati, alla frequenza della scheda) senza toccare il thread audio; scegliere un suono non accende la
    scheda audio, il motore lo prende quando parte (anche dopo una scheda persa).
+10. ✅ **Voce in inglese e lingua dell'app.** La voce che conta parla inglese («one, two… and», Microsoft Zira;
+    predefinita) o italiano: si sceglie nel tasto destro di Voce (comando `set_voice_language`, entrambe le
+    lingue incorporate in `src-tauri/voice/en` e `it`; `09-genera-voce.cmd -Lingua it|en|tutte`). Impostazioni →
+    Generale → «Lingua / Language»: Italiano o English per tutta l'interfaccia (`i18n/en.ts`, controllata dal
+    compilatore chiave per chiave contro `it.ts`); la lingua si legge all'avvio e cambiandola la finestra si
+    ricarica subito. In inglese i nomi delle note sono lettere (C, D♭…) invece di Do Re Mi, e numeri e date
+    seguono il formato inglese.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

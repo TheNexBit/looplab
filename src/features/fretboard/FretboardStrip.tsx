@@ -110,7 +110,9 @@ function RootMenu() {
               )}
             >
               <span className="font-mono text-sm">{noteName(pc, accidental)}</span>
-              <span className="text-[10px] opacity-70">{italianName(pc)}</span>
+              {t.common.solfege && (
+                <span className="text-[10px] opacity-70">{italianName(pc)}</span>
+              )}
             </DropdownMenu.Item>
           ))}
         </div>
