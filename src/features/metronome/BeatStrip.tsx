@@ -3,6 +3,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { useFretboardStore } from "@/stores/fretboard";
 import { currentPulses, shownSetup, useMetronomeStore } from "@/stores/metronome";
 import type { BeatState } from "./types";
 
@@ -45,6 +46,8 @@ export function BeatStrip() {
   const subdivision = useMetronomeStore((s) => shownSetup(s).subdivision);
   const cross = useMetronomeStore((s) => shownSetup(s).cross);
   const cycleBeat = useMetronomeStore((s) => s.cycleBeat);
+  // Shorter pads while the neck shares the screen
+  const compact = useFretboardStore((s) => s.enabled);
   const pulseRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const crossRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
@@ -105,7 +108,8 @@ export function BeatStrip() {
                         {/* Pad */}
                         <span
                           className={cn(
-                            "flex h-20 flex-col items-center justify-center gap-1.5 rounded-control border font-mono text-lg tabular transition-[filter] duration-75 group-hover:brightness-110",
+                            "flex flex-col items-center justify-center gap-1.5 rounded-control border font-mono text-lg tabular transition-[filter] duration-75 group-hover:brightness-110",
+                            compact ? "h-14" : "h-20",
                             padLook[state],
                             inside > 0 && "opacity-75",
                             "group-data-[lit=true]/pulse:brightness-125",

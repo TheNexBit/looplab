@@ -489,8 +489,14 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
      suddivisione, swing e poliritmo.
 6. ✅ **Lampeggio**: tasto ON/OFF con spia nel trasporto; lo schermo del metronomo lampeggia a ogni battito, più forte
    sugli accenti (`useBeats.ts`, condiviso con la manopola). Preferenza di questo PC, non dei brani.
-7. Tastiera della chitarra (logica già importata in `features/fretboard/`) e voce che conta (MetroFlow non l'aveva:
-   servono campioni «uno, due, tre…» da scegliere).
+7. ✅ **Manico della chitarra** (tasto ON/OFF con spia nel trasporto; da MetroFlow, `features/fretboard/`,
+   `stores/fretboard.ts`). Sotto la plancia, il manico acceso con una scala o un accordo: gradi (R, ♭3, 5…) o
+   nomi delle note, tonica in ambra, corda più acuta in alto, 12 / 15 / 22 / 24 tasti. Barra di selettori come nei
+   DAW, niente da digitare: tonica (menu o rotella, nome anche in italiano), scala o accordo (19 scale e 25
+   accordi con nomi italiani), accordatura (11 preset, da 4 a 8 corde; ogni corda si accorda di un semitono con
+   rotella o − / + sul suo nome e l'accordatura diventa «Personalizzata»), posizione da 4–6 tasti (il resto resta
+   tenue; la rotella la sposta), ♯ / ♭. Col manico acceso manopola e pad si accorciano. Salvato su questo PC.
+8. Voce che conta («uno, due, tre…»): MetroFlow non l'aveva, servono campioni da scegliere.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

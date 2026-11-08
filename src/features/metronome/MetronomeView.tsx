@@ -1,12 +1,15 @@
-import { Play, Square, Sun } from "lucide-react";
+import { Guitar, Play, Square, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Stepper } from "@/components/ui/Stepper";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { FretboardStrip } from "@/features/fretboard/FretboardStrip";
 import { t } from "@/i18n";
+import { cn } from "@/lib/cn";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { useFretboardStore } from "@/stores/fretboard";
 import {
   COUNT_IN_BARS,
   CROSS,
@@ -187,6 +190,7 @@ function MetronomeTransport() {
         />
       </Control>
       <FlashKey />
+      <NeckKey />
       <div className="lcd flex h-10 items-center gap-4 rounded-panel px-3 font-mono text-sm tabular">
         <span ref={barRef} className="min-w-36 text-lcd-fg lcd-glow" />
         <Tooltip label={m.elapsed}>
@@ -232,6 +236,27 @@ function FlashKey() {
   );
 }
 
+/** ON / OFF key with a lamp: the guitar neck under the metronome. */
+function NeckKey() {
+  const enabled = useFretboardStore((s) => s.enabled);
+  const setEnabled = useFretboardStore((s) => s.setEnabled);
+  return (
+    <Tooltip label={m.neck.toggleHint}>
+      <Button
+        variant="hardware"
+        size="lg-key"
+        active={enabled}
+        led="amber"
+        onClick={() => setEnabled(!enabled)}
+        aria-label={m.neck.title}
+        aria-pressed={enabled}
+      >
+        <Guitar className="size-4" />
+      </Button>
+    </Tooltip>
+  );
+}
+
 /** The whole metronome lights up on every beat when the flash is on. */
 function ScreenFlash() {
   const flash = useMetronomeStore((s) => s.flash);
@@ -267,35 +292,47 @@ function Editable({ children }: { children: ReactNode }) {
  * Beside it the exercises, the songs and the sequences.
  */
 export function MetronomeView() {
+  // With the neck shown the dial gives up some height, so both fit without scrolling
+  const neck = useFretboardStore((s) => s.enabled);
   return (
     <div className="flex h-full flex-col">
       <div className="relative flex min-h-0 flex-1">
         <ScreenFlash />
-        <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center gap-5 overflow-y-auto px-6 py-5">
-          <SequenceBanner />
-          <Editable>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
-              <div className="justify-self-end">
-                <MeterMenu />
-              </div>
-              <TempoDial />
-              <div className="justify-self-start">
-                <TapKey />
-              </div>
-            </div>
-          </Editable>
-          <section className="space-y-2">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="panel-label">{m.accents}</h3>
-              <span className="text-[11px] text-fg-subtle">{m.accentsHint}</span>
-            </div>
+        {/* Centred with auto margins, not justify-center: when it does not fit, it scrolls
+            from the top instead of cutting the dial off above */}
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto px-6 py-5">
+          <div
+            className={cn(
+              "mx-auto my-auto flex w-full max-w-4xl flex-col",
+              neck ? "gap-3.5" : "gap-5",
+            )}
+          >
+            <SequenceBanner />
             <Editable>
-              <BeatStrip />
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
+                <div className="justify-self-end">
+                  <MeterMenu />
+                </div>
+                <TempoDial compact={neck} />
+                <div className="justify-self-start">
+                  <TapKey />
+                </div>
+              </div>
             </Editable>
-          </section>
-          <Editable>
-            <RhythmControls />
-          </Editable>
+            <section className="space-y-2">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="panel-label">{m.accents}</h3>
+                <span className="text-[11px] text-fg-subtle">{m.accentsHint}</span>
+              </div>
+              <Editable>
+                <BeatStrip />
+              </Editable>
+            </section>
+            <Editable>
+              <RhythmControls />
+            </Editable>
+            <FretboardStrip />
+          </div>
         </div>
         <MetronomeSide />
       </div>

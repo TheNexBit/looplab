@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
+import { cn } from "@/lib/cn";
 import { useWheelSteps } from "@/lib/useWheelSteps";
 import {
   METRONOME_BPM,
@@ -152,7 +153,7 @@ function Shoulder({ arc, sign }: { arc: [number, number]; sign: 1 | -1 }) {
  * for 120. Every beat breathes the arc and an accent lights the whole ring, so the click is
  * seen out of the corner of an eye. Its label (or the right button) opens what the BPM count.
  */
-export function TempoDial() {
+export function TempoDial({ compact = false }: { compact?: boolean }) {
   const bpm = useMetronomeStore((s) => shownSetup(s).bpm);
   const unit = useMetronomeStore((s) => shownSetup(s).unit);
   const tempoBase = useMetronomeStore((s) => shownSetup(s).tempoBase);
@@ -230,7 +231,10 @@ export function TempoDial() {
             event.stopPropagation();
             nudgeBpm(by);
           }}
-          className="relative aspect-square w-[min(340px,46vh)] shrink-0 rounded-full outline-none focus-visible:ring-1 focus-visible:ring-accent"
+          className={cn(
+            "relative aspect-square shrink-0 rounded-full outline-none focus-visible:ring-1 focus-visible:ring-accent",
+            compact ? "w-[min(240px,26vh)]" : "w-[min(340px,46vh)]",
+          )}
         >
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
