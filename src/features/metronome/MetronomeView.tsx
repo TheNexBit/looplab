@@ -24,7 +24,7 @@ import { barAndPulse, formatElapsed } from "./meterChoices";
 import { toggleMetronomeRun } from "./metronomeEngine";
 import { TempoDial } from "./TempoDial";
 import { TapKey } from "./TempoPanel";
-import { restartAnimation, useBeats } from "./useBeats";
+import { useBeats } from "./useBeats";
 
 const m = t.metronome;
 const SUBDIVISION_LABELS: Record<number, string> = {
@@ -238,7 +238,13 @@ function ScreenFlash() {
   const ref = useRef<HTMLDivElement>(null);
   useBeats((kind) => {
     if (!flash) return;
-    restartAnimation(ref.current, kind === "accent" ? "screen-flash-accent" : "screen-flash");
+    // Started from code on every beat: a CSS class left over from the last beat would keep
+    // the animation from starting again (it flashed only once)
+    const accent = kind === "accent";
+    ref.current?.animate([{ opacity: accent ? 0.28 : 0.1 }, { opacity: 0 }], {
+      duration: accent ? 220 : 160,
+      easing: "ease-out",
+    });
   });
   return (
     <div
