@@ -5,6 +5,7 @@ import { currentPosition, trackDuration } from "@/stores/player";
 import { currentGrid } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
+import { snapSuspended } from "./snapHold";
 
 /** How close, in CSS pixels, the pointer must come to a point for the magnet to catch it. */
 const SNAP_PX = 10;
@@ -34,7 +35,8 @@ export interface SnapExclude {
 }
 
 /**
- * With the magnet on, moves `time` onto the nearest marker, bar, section edge,
+ * With the magnet on (and Shift not held: Shift suspends it, as in Reaper), moves `time`
+ * onto the nearest marker, bar, section edge,
  * loop edge, playhead, beat of the grid or track edge, if one is within `SNAP_PX` on screen
  * (like Reaper's snapping to the time selection).
  * `area` is the element whose width shows the visible time span.
@@ -44,7 +46,7 @@ export function snapTime(
   area: HTMLElement | null,
   exclude: SnapExclude = {},
 ): number {
-  if (!useSettingsStore.getState().snap || !area) return time;
+  if (!useSettingsStore.getState().snap || snapSuspended() || !area) return time;
   const { span } = useViewStore.getState();
   const secondsPerPixel = span / Math.max(1, area.getBoundingClientRect().width);
   const { markers, sections } = useMarkersStore.getState();

@@ -641,7 +641,8 @@ export const it = {
     resumePosition: "Riprendi dove eri",
     resumePositionHint: "Riaprendo un brano il playhead torna dove l'avevi lasciato",
     snap: "Snap",
-    snapHint: "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G)",
+    snapHint:
+      "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G). Tieni premuto Maiusc per sospenderlo e spostare liberamente, come in Reaper",
     reset: "Valori predefiniti",
     waveform: "Forma d'onda",
     behaviour: "Comportamento",
@@ -859,7 +860,7 @@ export const it = {
     followRightClick: "scorrimento continuo o a pagine, come in Reaper",
     returnToStart:
       "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
-    snap: "Snap: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead",
+    snap: "Snap: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead. Maiusc tenuto premuto lo sospende, come in Reaper",
   },
   shortcuts: {
     playPause: "Play / pausa",

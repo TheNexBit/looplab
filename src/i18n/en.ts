@@ -636,7 +636,8 @@ export const en = {
     resumePosition: "Resume where you were",
     resumePositionHint: "Reopening a track brings the playhead back to where you left it",
     snap: "Snap",
-    snapHint: "While dragging, loops, markers and sections snap to nearby points (G key)",
+    snapHint:
+      "While dragging, loops, markers and sections snap to nearby points (G key). Hold Shift to suspend it and move freely, as in Reaper",
     reset: "Default values",
     waveform: "Waveform",
     behaviour: "Behaviour",
@@ -859,7 +860,7 @@ export const en = {
     followRightClick: "continuous or page-by-page scrolling, as in Reaper",
     returnToStart:
       "Return to start point: stopping playback, the playhead goes back to where you started it or where you clicked",
-    snap: "Snap: loops, markers and sections snap to markers, bars, sections and the playhead",
+    snap: "Snap: loops, markers and sections snap to markers, bars, sections and the playhead. Holding Shift suspends it, as in Reaper",
   },
   shortcuts: {
     playPause: "Play / pause",

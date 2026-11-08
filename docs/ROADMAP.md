@@ -532,6 +532,11 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     clic). Stessi tempi e stesso aspetto, ma il tooltip è trasparente ai clic (anche il riquadro di Radix che lo
     posiziona, regola in `theme.css`) e non trattiene il mouse: sparisce appena il mouse lascia il tasto
     (`disableHoverableContent`). Vale per tutta l'app.
+13. ✅ **Maiusc sospende lo snap, come in Reaper.** Finché Maiusc è premuto la calamita non aggancia: loop (nuovo,
+    spostato, bordi, Maiusc+clic che lo allunga), marker, sezioni e playhead seguono il mouse pixel per pixel
+    (la precisione dipende dallo zoom); rilasciato Maiusc lo snap torna. Il tasto Snap e G restano com'erano;
+    mentre Maiusc lo sospende durante un trascinamento la spia del tasto Snap si spegne. Stato tenuto per tutta
+    la finestra (`features/markers/snapHold.ts`), azzerato quando la finestra perde il fuoco.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

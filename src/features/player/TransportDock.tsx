@@ -4,6 +4,7 @@ import { Chip } from "@/components/ui/Chip";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
 import { formatPercent, signed } from "@/lib/format";
@@ -32,6 +33,8 @@ export function TransportDock() {
   const cents = usePlayerStore((s) => s.cents);
   const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
   const snap = useSettingsStore((s) => s.snap);
+  // While Shift suspends it during a drag, the magnet's lamp goes out
+  const suspended = useSnapHoldStore((s) => s.shift && s.pressing);
   const returnToStart = useSettingsStore((s) => s.returnToStart);
   const whole = useViewStore((s) => showsWhole(s.target, s.duration));
   const playLabel = playing ? t.transport.pause : t.transport.play;
@@ -98,7 +101,7 @@ export function TransportDock() {
             variant="hardware"
             size="key"
             led="amber"
-            active={snap}
+            active={snap && !suspended}
             onClick={() => useSettingsStore.getState().update({ snap: !snap })}
             aria-label={t.shortcuts.toggleSnap}
             aria-pressed={snap}

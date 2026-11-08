@@ -8,6 +8,7 @@ import { LoadingState } from "@/features/library/LoadingState";
 import { openDroppedFiles, openLastTrack } from "@/features/library/pickFile";
 import { useFileDrop } from "@/features/library/useFileDrop";
 import { syncProject } from "@/features/markers/projectSync";
+import { watchSnapHold } from "@/features/markers/snapHold";
 import { MetronomeView } from "@/features/metronome/MetronomeView";
 import { syncMetronome } from "@/features/metronome/metronomeEngine";
 import { syncWithEngine } from "@/features/player/syncEngine";
@@ -70,6 +71,8 @@ export function App() {
     const stopRemote = startRemoteControl();
     const stopDiary = startDiary();
     const stopMetronome = syncMetronome();
+    // Shift held suspends the magnet while dragging, as in Reaper
+    const stopSnapHold = watchSnapHold();
     return () => {
       void unlisten.then((stop) => stop());
       void unlistenLoading.then((stop) => stop());
@@ -83,6 +86,7 @@ export function App() {
       stopRemote();
       stopDiary();
       stopMetronome();
+      stopSnapHold();
     };
   }, []);
 
