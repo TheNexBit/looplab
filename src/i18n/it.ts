@@ -158,6 +158,9 @@ export const it = {
     crossRow: (n: number, beats: number) => `${n} contro ${beats}`,
     countIn: "Count-in",
     countInHint: "Battute contate prima di partire",
+    flash: "Lampeggio",
+    flashHint:
+      "Lo schermo lampeggia a ogni battito, più forte sugli accenti: il tempo si vede con la coda dell'occhio",
     countInOff: "No",
     bars: (n: number) => (n === 1 ? "1 battuta" : `${n} battute`),
     volume: "Volume",

@@ -479,7 +479,18 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    - ✅ **Cosa contano i BPM** (clic su «BPM» nel display Tempo o tasto destro): quarti come nei DAW
      (predefinito: 4/8 a 120 va il doppio di 4/4 a 120) o impulsi della battuta (4/8 a 120 = 120 ottavi).
      Ogni brano e parte tiene la sua scelta (`tempoBase`, `pulseTempo` nel motore).
-6. Tastiera della chitarra, voce che conta, lampeggio.
+   - ✅ **Grafica nuova** (dopo la prova del passo 3: «la grafica va migliorata molto»). Al centro la manopola del
+     tempo di MetroFlow (`TempoDial.tsx`, `dialGeometry.ts`): scala 20–400 su un anello aperto in basso che si riempie
+     fino al tempo, numero su un display rotondo, − / + nella sua apertura (tenuti premuti scorrono), trascinamento
+     attorno all'anello (più fine lontano dal centro), rotella, frecce, doppio clic = 120; a ogni battito l'arco
+     «respira» e sull'accento si accende tutto l'anello. A sinistra il display della battuta, a destra il tasto Tap
+     grande con spia. La battuta è una fila di pad da drum machine (spia sopra ogni impulso, blu nel count-in, tacche
+     di livello forte / normale, puntini delle suddivisioni, gruppi staccati), sotto una plancia unica per
+     suddivisione, swing e poliritmo.
+6. ✅ **Lampeggio**: tasto ON/OFF con spia nel trasporto; lo schermo del metronomo lampeggia a ogni battito, più forte
+   sugli accenti (`useBeats.ts`, condiviso con la manopola). Preferenza di questo PC, non dei brani.
+7. Tastiera della chitarra (logica già importata in `features/fretboard/`) e voce che conta (MetroFlow non l'aveva:
+   servono campioni «uno, due, tre…» da scegliere).
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

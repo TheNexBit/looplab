@@ -63,6 +63,8 @@ const DEFAULTS: MetronomeSetup = {
   volume: 0.8,
 };
 const KEY = "looplab.metronome";
+/** The screen flash is a preference of this PC, not part of a song */
+const FLASH_KEY = "looplab.metronome.flash";
 
 /** The setup's own time signature, in MetroFlow's terms. */
 export const signatureOf = (setup: Pick<MetronomeSetup, "beats" | "unit" | "grouping">) =>
@@ -122,6 +124,9 @@ interface MetronomeState extends MetronomeSetup {
   sequence: PlayedSequence | null;
   /** Part of the sequence being played, as the engine reports it */
   segment: number;
+  /** The screen flashes on every beat (stronger on the accents) */
+  flash: boolean;
+  setFlash: (flash: boolean) => void;
   setOpen: (open: boolean) => void;
   /** Plays a sequence from its first part (null: back to the own bar) */
   playSequence: (sequence: PlayedSequence | null) => void;
@@ -185,6 +190,11 @@ export const useMetronomeStore = create<MetronomeState>((set, get) => {
     taps: [],
     sequence: null,
     segment: 0,
+    flash: readStored(FLASH_KEY) === true,
+    setFlash: (flash) => {
+      set({ flash });
+      writeStored(FLASH_KEY, flash);
+    },
     setOpen: (open) => set(open ? { open } : { open, running: false, sequence: null }),
     playSequence: (sequence) => {
       set({ sequence, segment: 0, running: false });

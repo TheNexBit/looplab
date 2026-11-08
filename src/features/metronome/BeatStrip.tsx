@@ -8,14 +8,21 @@ import type { BeatState } from "./types";
 
 const m = t.metronome;
 
-const cellLook: Record<BeatState, string> = {
-  accent: "border-edge bg-accent text-on-accent font-semibold",
+/** Look of a pad by the state of its felt beat. */
+const padLook: Record<BeatState, string> = {
+  accent: "border-transparent bg-accent text-on-accent font-semibold",
   normal: "hw text-fg",
-  muted: "border-dashed border-border bg-well text-fg-subtle",
+  muted: "border-dashed border-border bg-transparent text-fg-subtle",
 };
 
+/** Level marks under the number: how loud the beat is, like a drum machine's velocity. */
+const LEVEL: Record<BeatState, number> = { accent: 3, normal: 2, muted: 0 };
+
 /** The felt beats of the bar: each one with the pulses it spans (one each without a grouping). */
-function feltBeats(beats: number, grouping: number[] | null): { first: number; size: number }[] {
+export function feltBeatSpans(
+  beats: number,
+  grouping: number[] | null,
+): { first: number; size: number }[] {
   const sizes = grouping ?? Array.from({ length: beats }, () => 1);
   let first = 0;
   return sizes.map((size) => {
@@ -26,9 +33,10 @@ function feltBeats(beats: number, grouping: number[] | null): { first: number; s
 }
 
 /**
- * The bar as it is played: one block per felt beat, as wide as its pulses (a 2+2+3 bar looks
- * as uneven as it feels), a click cycles its state. The pulse being heard lights up; dots
- * show the subdivisions. Under it, the cross rhythm on a row of its own.
+ * The bar as a row of pads, like the steps of a drum machine: one group per felt beat, as
+ * wide as its pulses (a 2+2+3 bar looks as uneven as it feels); a click on a group cycles
+ * forte → normale → muto. A lamp over each pulse lights while it plays (blue in the
+ * count-in); dots show the subdivisions. Under it, the cross rhythm on a lane of its own.
  */
 export function BeatStrip() {
   const beats = useMetronomeStore((s) => shownSetup(s).beats);
@@ -58,9 +66,9 @@ export function BeatStrip() {
   });
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        {feltBeats(beats, grouping).map(({ first, size }, beat) => {
+    <div className="well space-y-3 rounded-panel p-3">
+      <div className="flex gap-3">
+        {feltBeatSpans(beats, grouping).map(({ first, size }, beat) => {
           const state = states[beat] ?? "normal";
           return (
             <Tooltip key={first} label={m.beatKey(beat + 1, m.beatStates[state])}>
@@ -68,13 +76,11 @@ export function BeatStrip() {
                 type="button"
                 onClick={() => cycleBeat(beat)}
                 style={{ flexGrow: size, flexBasis: 0 }}
-                className={cn(
-                  "grid min-w-0 gap-1 rounded-control border p-1 transition-[filter] hover:brightness-110",
-                  cellLook[state],
-                )}
+                className="group grid min-w-0"
+                aria-label={m.beatKey(beat + 1, m.beatStates[state])}
               >
                 <span
-                  className="grid gap-1"
+                  className="grid gap-1.5"
                   style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
                 >
                   {Array.from({ length: size }, (_, inside) => {
@@ -85,28 +91,53 @@ export function BeatStrip() {
                         ref={(cell) => {
                           pulseRefs.current[pulse] = cell;
                         }}
-                        className={cn(
-                          "flex h-12 flex-col items-center justify-center gap-1 rounded-[3px] font-mono text-sm tabular transition-[background-color,box-shadow] duration-75",
-                          inside > 0 && "opacity-70",
-                          "data-[lit=true]:bg-white/25 data-[lit=true]:shadow-[0_0_10px_var(--color-accent)]",
-                          "data-[lit=true]:data-[count-in=true]:bg-cue/30",
-                        )}
+                        className="group/pulse flex min-w-0 flex-col gap-1.5"
                       >
-                        {pulse + 1}
-                        {subdivision > 1 && (
-                          <span aria-hidden className="flex gap-0.5">
-                            {Array.from({ length: subdivision }, (_, dot) => (
+                        {/* Lamp */}
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "h-1.5 rounded-full bg-led-off transition-[background-color,box-shadow] duration-75",
+                            "group-data-[lit=true]/pulse:bg-accent group-data-[lit=true]/pulse:shadow-[0_0_8px_var(--color-accent)]",
+                            "group-data-[count-in=true]/pulse:group-data-[lit=true]/pulse:bg-cue group-data-[count-in=true]/pulse:group-data-[lit=true]/pulse:shadow-[0_0_8px_var(--color-cue)]",
+                          )}
+                        />
+                        {/* Pad */}
+                        <span
+                          className={cn(
+                            "flex h-20 flex-col items-center justify-center gap-1.5 rounded-control border font-mono text-lg tabular transition-[filter] duration-75 group-hover:brightness-110",
+                            padLook[state],
+                            inside > 0 && "opacity-75",
+                            "group-data-[lit=true]/pulse:brightness-125",
+                          )}
+                        >
+                          {pulse + 1}
+                          <span aria-hidden className="flex h-2 items-end gap-0.5">
+                            {inside === 0 &&
+                              Array.from({ length: LEVEL[state] }, (_, level) => (
+                                <span
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: one mark per level, in order
+                                  key={level}
+                                  className="w-1 rounded-[1px] bg-current opacity-70"
+                                  style={{ height: `${(level + 1) * 33}%` }}
+                                />
+                              ))}
+                          </span>
+                        </span>
+                        {/* Subdivisions */}
+                        <span aria-hidden className="flex h-1.5 justify-center gap-1">
+                          {subdivision > 1 &&
+                            Array.from({ length: subdivision }, (_, dot) => (
                               <span
                                 // biome-ignore lint/suspicious/noArrayIndexKey: one dot per click, in order
                                 key={dot}
                                 className={cn(
-                                  "size-1 rounded-full bg-current",
+                                  "size-1.5 rounded-full bg-fg-subtle",
                                   dot > 0 && "opacity-40",
                                 )}
                               />
                             ))}
-                          </span>
-                        )}
+                        </span>
                       </span>
                     );
                   })}
