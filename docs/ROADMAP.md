@@ -528,6 +528,10 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     terzine «1 trip let», quintine «1 e and a da», sestine «1 trip let and trip let» (scelto dall'utente tra
     trip-let, and-a e la-li; oltre il sei «and»). Sei sillabe registrate per lingua (`Syllable` in `voice.rs`);
     la voce italiana dice gli stessi suoni scritti all'italiana (e, i, a, da, tri, let).
+12. ✅ **Tooltip che non intralciano** (dopo la prova: il tooltip finiva sopra un altro tasto e si prendeva il
+    clic). Stessi tempi e stesso aspetto, ma il tooltip è trasparente ai clic (anche il riquadro di Radix che lo
+    posiziona, regola in `theme.css`) e non trattiene il mouse: sparisce appena il mouse lascia il tasto
+    (`disableHoverableContent`). Vale per tutta l'app.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

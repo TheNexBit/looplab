@@ -5,8 +5,13 @@ import { t } from "@/i18n";
 import type { ShortcutId } from "@/lib/shortcuts";
 import { Kbd } from "./Kbd";
 
+/**
+ * Hints never get in the way: the mouse cannot rest on them (they close as soon as it leaves
+ * the control, `disableHoverableContent`) and clicks go through them to the key underneath
+ * (`data-hint`, see theme.css). Timing is unchanged: 0.4 s, then at once between controls.
+ */
 export const TooltipProvider = ({ children }: { children: ReactNode }) => (
-  <RadixTooltip.Provider delayDuration={400} skipDelayDuration={200}>
+  <RadixTooltip.Provider delayDuration={400} skipDelayDuration={200} disableHoverableContent>
     {children}
   </RadixTooltip.Provider>
 );
@@ -41,8 +46,9 @@ export function Tooltip({ label, shortcut, rightClick, children }: TooltipProps)
       </RadixTooltip.Trigger>
       <RadixTooltip.Portal>
         <RadixTooltip.Content
+          data-hint
           sideOffset={6}
-          className="z-50 flex max-w-80 flex-col gap-1 rounded-control border border-edge bg-bg-from px-2.5 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.6)]"
+          className="pointer-events-none z-50 flex max-w-80 flex-col gap-1 rounded-control border border-edge bg-bg-from px-2.5 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.6)]"
         >
           <span className="flex items-center gap-2">
             {label}

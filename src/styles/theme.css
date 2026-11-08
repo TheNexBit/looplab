@@ -481,3 +481,9 @@
 .dial-strike {
   animation: dial-strike 200ms cubic-bezier(0.16, 0.84, 0.28, 1);
 }
+
+/* Hover hints let clicks through to what is under them: Radix wraps the hint in a positioned
+   box of its own, which would catch the click even with the hint itself click-through */
+[data-radix-popper-content-wrapper]:has(> [data-hint]) {
+  pointer-events: none;
+}
