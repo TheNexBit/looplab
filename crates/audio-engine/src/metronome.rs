@@ -12,7 +12,7 @@
 
 use std::sync::Arc;
 
-use crate::click::{ClickSounds, ClickVoice};
+use crate::click::{ClickSamples, ClickSounds, ClickVoice};
 use crate::exercises::{Exercises, Strum};
 use crate::pattern::{BarPattern, ClickKind, Hits};
 use crate::voice::{CountVoice, SpokenWord, VoiceBank, Word};
@@ -134,6 +134,15 @@ impl Metronome {
             cross: ClickVoice::new(sample_rate),
             voice: SpokenWord::new(),
         }
+    }
+
+    /// New imported click sounds; the old ones (one per voice) are handed back to be freed
+    /// elsewhere.
+    pub fn set_click_samples(&mut self, samples: Arc<ClickSamples>) -> [Arc<ClickSamples>; 2] {
+        [
+            self.main.set_samples(Arc::clone(&samples)),
+            self.cross.set_samples(samples),
+        ]
     }
 
     /// New words for the counting voice; the old ones are handed back to be freed elsewhere.
@@ -368,13 +377,14 @@ impl Metronome {
     pub fn next(&mut self) -> f32 {
         let frame = self.advance();
         if let Some(kind) = frame.click {
-            self.main.start(self.settings.sounds.of(kind));
+            self.main.start_kind(kind, self.settings.sounds.of(kind));
         }
         if let Some((down, level)) = frame.strum {
             self.main.start_strum(down, level);
         }
         if frame.cross {
-            self.cross.start(self.settings.sounds.of(ClickKind::Cross));
+            self.cross
+                .start_kind(ClickKind::Cross, self.settings.sounds.of(ClickKind::Cross));
         }
         let voice = self.settings.voice;
         if voice.on

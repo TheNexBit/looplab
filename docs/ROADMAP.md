@@ -507,6 +507,15 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    battito, sopra i click, senza toccare il thread audio. Oltre ~180 BPM i numeri lunghi si accorciano (la parola
    dopo taglia quella prima). **Da verificare prima di distribuire l'app:** la licenza d'uso delle frasi registrate
    con le voci di Windows; in alternativa si registrano campioni propri con lo stesso script.
+9. ✅ **Suoni e suoni importati** (scheda «Suoni» accanto a Esercizi, Brani, Sequenze; da MetroFlow, che aveva gli
+   slot dei suoni). Per accento, battito, suddivisione e poliritmo: suono (8 interni o uno importato, da menu; si
+   sente appena scelto), tasto Ascolta e volume. «Importa un suono…» prende un file audio qualsiasi (WAV, MP3,
+   FLAC, OGG, M4A…): ne fa un click dal primo suono, al massimo 2 secondi, sfumato in fondo, e lo tiene nei dati
+   dell'app (cartella `suoni`, `commands/click_sounds.rs`); sotto, l'elenco degli importati con Elimina (chi lo
+   usava torna al suono interno). Gli stessi suoni valgono sopra i brani: la scheda Pratica mostra quello
+   importato quando è in uso. Nel motore ogni voce dei click legge da `ClickSamples` condivisi (tagliati,
+   livellati, alla frequenza della scheda) senza toccare il thread audio; scegliere un suono non accende la
+   scheda audio, il motore lo prende quando parte (anche dopo una scheda persa).
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

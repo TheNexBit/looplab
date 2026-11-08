@@ -19,7 +19,7 @@ function sender<T>(send: (value: T) => unknown) {
 
 /** Clicks follow the beat grid; without a first beat set, it starts at the loop, else at
  *  the first bar marker, else at 0. */
-function clickSettings() {
+export function clickSettings() {
   const settings = useSettingsStore.getState();
   const region = useLoopStore.getState().region();
   const { bpm, beatOffset, beatsPerBar, beatUnit } = usePracticeStore.getState();

@@ -8,8 +8,10 @@
 //! rhythm each pick theirs. The shape of the bar is a `BarPattern`.
 
 use std::f32::consts::TAU;
+use std::sync::Arc;
 
 use crate::pattern::{BarPattern, ClickKind, Hits};
+use crate::voice::{prepare, read_wav};
 
 /// Tempo grid and click options, in frames of the track.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -264,6 +266,64 @@ struct Recipe {
     seconds: f32,
 }
 
+/// Longest imported sound kept, in seconds: a click, not a loop.
+pub const MAX_SAMPLE_SECONDS: f32 = 2.0;
+
+/// Imported sounds used instead of the synthesised ones, one slot per kind of click (accent,
+/// beat, subdivision, cross rhythm); an empty slot keeps the chosen synthesised sound.
+/// Prepared off the audio thread: trimmed of silence, levelled, at the output rate.
+#[derive(Debug, Default, PartialEq)]
+pub struct ClickSamples {
+    slots: [Vec<f32>; 4],
+}
+
+const fn slot(kind: ClickKind) -> usize {
+    match kind {
+        ClickKind::Accent => 0,
+        ClickKind::Beat => 1,
+        ClickKind::Sub => 2,
+        ClickKind::Cross => 3,
+    }
+}
+
+impl ClickSamples {
+    /// From WAV files (16-bit PCM, as `import_sample` writes them): accent, beat,
+    /// subdivision, cross rhythm; None (or a file that cannot be read) keeps the synth.
+    pub fn from_wavs(wavs: [Option<&[u8]>; 4], sample_rate: u32) -> Self {
+        Self {
+            slots: wavs.map(|wav| {
+                wav.and_then(read_wav)
+                    .map(|(samples, rate)| prepare(&samples, rate, sample_rate))
+                    .unwrap_or_default()
+            }),
+        }
+    }
+
+    fn of(&self, kind: ClickKind) -> &[f32] {
+        &self.slots[slot(kind)]
+    }
+}
+
+/// An imported sound made into a click: mono, from its first sound, at most
+/// `MAX_SAMPLE_SECONDS`, faded out at the end. `stereo` is interleaved left / right.
+pub fn click_from_stereo(stereo: &[f32], sample_rate: u32) -> Vec<f32> {
+    let mono: Vec<f32> = stereo
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|[l, r]| (l + r) * 0.5)
+        .collect();
+    let start = mono.iter().position(|s| s.abs() > 0.02).unwrap_or(0);
+    let max = (MAX_SAMPLE_SECONDS * sample_rate as f32) as usize;
+    let mut click: Vec<f32> = mono[start..].iter().take(max).copied().collect();
+    let fade = (sample_rate as usize / 100).min(click.len());
+    let length = click.len();
+    for i in 0..fade {
+        click[length - 1 - i] *= i as f32 / fade as f32;
+    }
+    click
+}
+
 /// One click being played: real-time safe (no allocation, no locks).
 pub(crate) struct ClickVoice {
     sample_rate: f32,
@@ -279,6 +339,9 @@ pub(crate) struct ClickVoice {
     /// xorshift state and the previous sample, for the high-passed noise
     seed: u32,
     previous: f32,
+    /// Imported sounds, and the one being played: its kind and where it is
+    samples: Arc<ClickSamples>,
+    sample: Option<(ClickKind, usize)>,
 }
 
 impl ClickVoice {
@@ -296,6 +359,25 @@ impl ClickVoice {
             noise_fall: 0.0,
             seed: 0x9E37_79B9,
             previous: 0.0,
+            samples: Arc::new(ClickSamples::default()),
+            sample: None,
+        }
+    }
+
+    /// New imported sounds; the old ones are handed back, to be freed off the audio thread.
+    pub fn set_samples(&mut self, samples: Arc<ClickSamples>) -> Arc<ClickSamples> {
+        self.sample = None;
+        std::mem::replace(&mut self.samples, samples)
+    }
+
+    /// Starts the click of `kind`: its imported sound if there is one, else `sound`.
+    pub fn start_kind(&mut self, kind: ClickKind, (sound, level): (ClickSound, f32)) {
+        if self.samples.of(kind).is_empty() {
+            self.start((sound, level));
+        } else {
+            self.left = 0;
+            self.level = level.clamp(0.0, 1.0);
+            self.sample = Some((kind, 0));
         }
     }
 
@@ -328,6 +410,7 @@ impl ClickVoice {
     }
 
     fn start_recipe(&mut self, recipe: Recipe, level: f32) {
+        self.sample = None;
         // Envelopes fall by a fixed factor per sample: no exp() in the audio thread
         let fall = |seconds: f32| (-1.0 / (seconds * self.sample_rate)).exp();
         for (index, (hz, amplitude)) in recipe.tones.into_iter().enumerate() {
@@ -345,11 +428,24 @@ impl ClickVoice {
 
     pub fn stop(&mut self) {
         self.left = 0;
+        self.sample = None;
     }
 
     /// Next sample of the click (0 when silent).
     #[inline]
     pub fn next(&mut self, volume: f32) -> f32 {
+        if let Some((kind, at)) = self.sample {
+            return match self.samples.of(kind).get(at) {
+                Some(&sample) => {
+                    self.sample = Some((kind, at + 1));
+                    sample * self.level * volume
+                }
+                None => {
+                    self.sample = None;
+                    0.0
+                }
+            };
+        }
         if self.left == 0 {
             return 0.0;
         }
@@ -478,6 +574,40 @@ mod tests {
         assert_eq!(settings.sound(Accent), (ClickSound::Cowbell, 0.8));
         assert_eq!(settings.sound(Beat), (ClickSound::HiHat, 0.4));
         assert_eq!(settings.sound(Cross), ClickSounds::default().cross);
+    }
+
+    #[test]
+    fn an_imported_sound_replaces_its_kind_only() {
+        let mut voice = ClickVoice::new(48_000);
+        let samples = ClickSamples {
+            slots: [vec![0.5; 100], Vec::new(), Vec::new(), Vec::new()],
+        };
+        let _ = voice.set_samples(Arc::new(samples));
+        // The accent plays the imported sound, at its level, then falls silent
+        voice.start_kind(Accent, (ClickSound::Clave, 0.5));
+        let heard: Vec<f32> = (0..150).map(|_| voice.next(1.0)).collect();
+        assert!(heard[..100].iter().all(|&s| (s - 0.25).abs() < 1e-6));
+        assert!(heard[100..].iter().all(|&s| s == 0.0));
+        // A beat has no imported sound: the synthesised one
+        voice.start_kind(Beat, (ClickSound::Clave, 1.0));
+        let synth: Vec<f32> = (0..200).map(|_| voice.next(1.0)).collect();
+        assert!(
+            synth
+                .iter()
+                .any(|&s| (s - 0.5).abs() > 0.01 && s.abs() > 0.1)
+        );
+    }
+
+    #[test]
+    fn an_imported_file_is_made_a_click() {
+        // 0.5 s of silence, then 3 s of sound, stereo: from the first sound, at most 2 s
+        let rate = 1_000;
+        let mut stereo = vec![0.0; rate];
+        stereo.extend(vec![0.4; rate * 6]);
+        let click = click_from_stereo(&stereo, rate as u32);
+        assert_eq!(click.len(), 2 * rate);
+        assert!((click[0] - 0.4).abs() < 1e-6, "starts on the sound");
+        assert!(click[click.len() - 1].abs() < 0.01, "faded out");
     }
 
     #[test]

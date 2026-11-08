@@ -5,6 +5,7 @@ import {
   type MetronomeRequest,
   type SequenceRequest,
 } from "@/lib/bindings";
+import { syncClickSamples } from "@/stores/clickSounds";
 import { type MetronomeSetup, type PlayedSequence, useMetronomeStore } from "@/stores/metronome";
 import { exercisesRequest, useExercisesStore } from "@/stores/metronomeExercises";
 import { usePlayerStore } from "@/stores/player";
@@ -82,6 +83,8 @@ export function syncMetronome(): () => void {
   });
   const stopSettings = useSettingsStore.subscribe(() => push());
   const stopExercises = useExercisesStore.subscribe(() => push());
+  // Imported click sounds, for the metronome and the clicks over the tracks alike
+  const stopSamples = syncClickSamples();
   // …and playing the track stops the metronome
   const stopPlayer = usePlayerStore.subscribe((state, previous) => {
     if (state.playing && !previous.playing && useMetronomeStore.getState().running) {
@@ -92,6 +95,7 @@ export function syncMetronome(): () => void {
     stopStore();
     stopSettings();
     stopExercises();
+    stopSamples();
     stopPlayer();
   };
 }

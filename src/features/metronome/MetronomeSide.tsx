@@ -6,15 +6,17 @@ import { t } from "@/i18n";
 import { playedPart, useMetronomeStore } from "@/stores/metronome";
 import { ExercisesPanel } from "./ExercisesPanel";
 import { SequencesPanel, SongsPanel, setupSummary } from "./LibraryPanels";
+import { SoundsPanel } from "./SoundsPanel";
 
 const m = t.metronome;
 
-/** Beside the bar: the exercises, the saved songs and the sequences, one tab each. */
+/** Beside the bar: the exercises, the saved songs, the sequences and the sounds, one tab each. */
 export function MetronomeSide() {
   const tabs = [
     ["exercises", m.tabs.exercises, <ExercisesPanel key="exercises" />],
     ["songs", m.tabs.songs, <SongsPanel key="songs" />],
     ["sequences", m.tabs.sequences, <SequencesPanel key="sequences" />],
+    ["sounds", m.tabs.sounds, <SoundsPanel key="sounds" />],
   ] as const;
   return (
     <aside className="flex w-80 shrink-0 flex-col border-l border-edge bg-bg-from">

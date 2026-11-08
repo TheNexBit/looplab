@@ -1,5 +1,6 @@
 //! State shared by all commands.
 
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -23,6 +24,8 @@ pub struct AppState {
     pub export_cancel: AtomicBool,
     /// FFT set up for the note view, reused between calls (with the rate it was made for)
     analyzer: Mutex<Option<(u32, Analyzer)>>,
+    /// Imported sound of each kind of click (accent, beat, subdivision, cross), if any
+    click_samples: Mutex<[Option<PathBuf>; 4]>,
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -41,8 +44,24 @@ impl AppState {
         let started = Arc::new(Engine::start()?);
         // The counting voice's words, at the rate of this device
         started.set_voice(crate::voice::bank(started.sample_rate()));
+        // …and the imported click sounds, also after the device was lost and restarted
+        let samples = lock(&self.click_samples).clone();
+        if samples.iter().any(Option::is_some) {
+            started.set_click_samples(crate::commands::load_click_samples(
+                &samples,
+                started.sample_rate(),
+            ));
+        }
         *engine = Some(Arc::clone(&started));
         Ok(started)
+    }
+
+    pub fn set_click_sample_paths(&self, paths: [Option<PathBuf>; 4]) {
+        *lock(&self.click_samples) = paths;
+    }
+
+    pub fn click_sample_paths(&self) -> [Option<PathBuf>; 4] {
+        lock(&self.click_samples).clone()
     }
 
     /// The engine only if it is already running: never starts the audio device.

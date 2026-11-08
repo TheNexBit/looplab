@@ -98,7 +98,7 @@ impl VoiceBank {
 }
 
 /// Reads a 16-bit PCM WAV into mono samples and its rate; None if it is not one.
-fn read_wav(bytes: &[u8]) -> Option<(Vec<f32>, u32)> {
+pub(crate) fn read_wav(bytes: &[u8]) -> Option<(Vec<f32>, u32)> {
     if bytes.len() < 12 || &bytes[0..4] != b"RIFF" || &bytes[8..12] != b"WAVE" {
         return None;
     }
@@ -152,7 +152,7 @@ fn read_wav(bytes: &[u8]) -> Option<(Vec<f32>, u32)> {
 }
 
 /// Trims the silences, levels the peak, resamples to `to_rate` and fades the ends.
-fn prepare(samples: &[f32], from_rate: u32, to_rate: u32) -> Vec<f32> {
+pub(crate) fn prepare(samples: &[f32], from_rate: u32, to_rate: u32) -> Vec<f32> {
     let loud = |s: &f32| s.abs() > SILENCE;
     let (Some(first), Some(last)) = (
         samples.iter().position(loud),

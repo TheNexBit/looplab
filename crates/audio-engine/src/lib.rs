@@ -27,7 +27,9 @@ pub mod tone;
 pub mod voice;
 pub mod wav;
 
-pub use click::{ClickSettings, ClickSound, ClickSounds};
+pub use click::{
+    ClickSamples, ClickSettings, ClickSound, ClickSounds, MAX_SAMPLE_SECONDS, click_from_stereo,
+};
 pub use dsp::channels::ChannelMode;
 pub use dsp::eq::{BANDS, Band, BandKind, EqSettings};
 pub use engine::{Engine, EngineError, LoopSettings, MAX_SPEED, MIN_SPEED, Status};

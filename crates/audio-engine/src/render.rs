@@ -341,13 +341,23 @@ impl Renderer {
                 Command::SetEq(settings) => self.eq.set(settings),
                 Command::SetChannelMode(mode) => self.channels.set(mode),
                 Command::SetClick(settings) => self.click = settings,
-                Command::PreviewClick(accent) => {
-                    let kind = if accent {
-                        ClickKind::Accent
-                    } else {
-                        ClickKind::Beat
-                    };
-                    self.voice.start(self.click.sound(kind));
+                Command::PreviewClick(kind) => {
+                    self.voice.start_kind(kind, self.click.sound(kind));
+                }
+                Command::SetClickSamples(samples) => {
+                    let olds = [
+                        self.voice.set_samples(Arc::clone(&samples)),
+                        self.cross_voice.set_samples(Arc::clone(&samples)),
+                    ];
+                    let [main, cross] = self.metronome.set_click_samples(samples);
+                    for old in olds.into_iter().chain([main, cross]) {
+                        if let Err(rtrb::PushError::Full(old)) =
+                            self.garbage.push(Garbage::Samples(old))
+                        {
+                            // Never free memory here: leaking is better than a glitch
+                            std::mem::forget(old);
+                        }
+                    }
                 }
                 Command::SetMetronome(settings) => self.metronome.set(settings),
                 Command::RunMetronome(running) => self.metronome.run(running),
@@ -432,7 +442,7 @@ impl Renderer {
             } else {
                 &mut self.voice
             };
-            voice.start(self.click.sound(kind));
+            voice.start_kind(kind, self.click.sound(kind));
         }
         let extra = self.extra();
         [
@@ -969,7 +979,7 @@ mod tests {
             ..ClickSettings::default()
         }));
         assert_eq!(loudness(&h.render(0.05)), 0.0, "paused: silence");
-        h.send(Command::PreviewClick(true));
+        h.send(Command::PreviewClick(ClickKind::Accent));
         assert!(loudness(&h.render(0.05)) > 0.01, "the tried click is heard");
         assert!(!h.playing(), "and playback does not start");
     }

@@ -11,10 +11,11 @@ use std::sync::{Arc, Mutex};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, SampleFormat, SizedSample, StreamConfig};
 
-use crate::click::ClickSettings;
+use crate::click::{ClickSamples, ClickSettings};
 use crate::dsp::channels::ChannelMode;
 use crate::dsp::eq::EqSettings;
 use crate::metronome::{MetronomeSettings, Sequence};
+use crate::pattern::ClickKind;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
 use crate::tone::ToneSettings;
@@ -65,8 +66,10 @@ pub(crate) enum Command {
     SetEq(EqSettings),
     SetChannelMode(ChannelMode),
     SetClick(ClickSettings),
-    /// Plays one click now, to hear the chosen sound (also while paused)
-    PreviewClick(bool),
+    /// Plays one click of a kind now, to hear its sound (also while paused)
+    PreviewClick(ClickKind),
+    /// Imported sounds used instead of the synthesised ones
+    SetClickSamples(Arc<ClickSamples>),
     /// Reference note to tune by ear, heard also while paused
     SetTone(ToneSettings),
     /// The metronome on its own (no track): its bar, tempo and sounds…
@@ -84,6 +87,7 @@ pub(crate) enum Garbage {
     Track(#[allow(dead_code)] Arc<Pcm>),
     Sequence(#[allow(dead_code)] Arc<Sequence>),
     Voice(#[allow(dead_code)] Arc<VoiceBank>),
+    Samples(#[allow(dead_code)] Arc<ClickSamples>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -247,7 +251,22 @@ impl Engine {
 
     /// Plays one accented (`true`) or ordinary click at once, with the current click settings.
     pub fn preview_click(&self, accent: bool) {
-        self.send(Command::PreviewClick(accent));
+        self.preview_kind(if accent {
+            ClickKind::Accent
+        } else {
+            ClickKind::Beat
+        });
+    }
+
+    /// Plays one click of `kind` at once (accent, beat, subdivision, cross rhythm).
+    pub fn preview_kind(&self, kind: ClickKind) {
+        self.send(Command::PreviewClick(kind));
+    }
+
+    /// Imported sounds for the clicks, in place of the synthesised ones (prepared off the
+    /// audio thread); empty slots keep the synthesised sound.
+    pub fn set_click_samples(&self, samples: ClickSamples) {
+        self.send(Command::SetClickSamples(Arc::new(samples)));
     }
 
     /// The metronome on its own: bar, tempo and sounds (taking over at once while it runs).

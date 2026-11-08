@@ -17,10 +17,12 @@ const p = t.practice;
 function SoundRow({ accent }: { accent: boolean }) {
   const sound = useSettingsStore((s) => (accent ? s.accentSound : s.beatSound));
   const level = useSettingsStore((s) => (accent ? s.accentLevel : s.beatLevel));
+  // An imported sound (chosen in the metronome's Sounds tab) plays instead of the built-in one
+  const custom = useSettingsStore((s) => (accent ? s.accentCustom : s.beatCustom));
   const update = useSettingsStore((s) => s.update);
   const label = accent ? p.accent : p.otherBeats;
   const choose = (next: ClickSound) => {
-    update(accent ? { accentSound: next } : { beatSound: next });
+    update(accent ? { accentSound: next, accentCustom: "" } : { beatSound: next, beatCustom: "" });
     // Hearing the choice right away is how sound menus of DAWs feel
     void tryClick(accent);
   };
@@ -35,9 +37,9 @@ function SoundRow({ accent }: { accent: boolean }) {
             <Button
               variant="hardware"
               className="flex-1 justify-between"
-              aria-label={`${label}: ${p.sounds[sound]}`}
+              aria-label={`${label}: ${custom || p.sounds[sound]}`}
             >
-              {p.sounds[sound]}
+              <span className="truncate">{custom || p.sounds[sound]}</span>
               <ChevronDown className="size-3.5" />
             </Button>
           </DropdownMenu.Trigger>
@@ -49,7 +51,9 @@ function SoundRow({ accent }: { accent: boolean }) {
               >
                 {CLICK_SOUNDS.map((option) => (
                   <DropdownMenu.RadioItem key={option} value={option} className={menuItem}>
-                    <span className="w-3 text-accent">{option === sound ? "●" : ""}</span>
+                    <span className="w-3 text-accent">
+                      {!custom && option === sound ? "●" : ""}
+                    </span>
                     {p.sounds[option]}
                   </DropdownMenu.RadioItem>
                 ))}

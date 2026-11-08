@@ -48,6 +48,20 @@ export const commands = {
 	 *  metronome's own bar). Start it with `run_metronome`.
 	 */
 	setSequence: (sequence: SequenceRequest_Deserialize | null) => typedError<null, AppError>(__TAURI_INVOKE("set_sequence", { sequence })),
+	/**  The imported sounds, by name. */
+	listClickSounds: () => typedError<CustomSound[], AppError>(__TAURI_INVOKE("list_click_sounds")),
+	/**  Makes `path` (any audio file Looplab opens) an imported sound, named after the file. */
+	importClickSound: (path: string) => typedError<CustomSound, AppError>(__TAURI_INVOKE("import_click_sound", { path })),
+	/**  Deletes an imported sound (the kinds of click using it go back to their synthesised one). */
+	deleteClickSound: (id: string) => typedError<null, AppError>(__TAURI_INVOKE("delete_click_sound", { id })),
+	/**
+	 *  The imported sound each kind of click uses — accent, beat, subdivision, cross rhythm —
+	 *  or None for its synthesised sound. Kept, so an engine started (or restarted) later gets
+	 *  them too: choosing a sound never starts the audio device by itself.
+	 */
+	setClickSamples: (slots: [(string | null), (string | null), (string | null), (string | null)]) => typedError<null, AppError>(__TAURI_INVOKE("set_click_samples", { slots })),
+	/**  Plays one click of a kind now, with its current sound, to hear it. */
+	previewSound: (slot: SoundSlot) => typedError<null, AppError>(__TAURI_INVOKE("preview_sound", { slot })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track and says where it went. */
@@ -223,6 +237,11 @@ export type CountVoice = {
 	subdivisions: boolean,
 	/**  0..1, on top of the metronome volume */
 	level: number | null,
+};
+
+/**  An imported sound: its file name without extension is both its id and its name. */
+export type CustomSound = {
+	id: string,
 };
 
 /**  Practice of one track on one day. */
@@ -703,6 +722,9 @@ export type SequenceRequest_Serialize = {
 	parts: PartRequest_Serialize[],
 	repeat: boolean,
 };
+
+/**  Which kind of click: accent, beat, subdivision or cross rhythm. */
+export type SoundSlot = "accent" | "beat" | "sub" | "cross";
 
 /**  Sound and level (0..1) of each kind of click. */
 export type SoundsRequest = {

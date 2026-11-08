@@ -2,6 +2,7 @@
 //! Their TypeScript types are generated into `src/lib/bindings.ts` by tauri-specta.
 
 mod app;
+mod click_sounds;
 mod data;
 mod error;
 mod export;
@@ -13,6 +14,7 @@ mod spectrum;
 mod video;
 pub mod waveform;
 
+pub use click_sounds::load_samples as load_click_samples;
 pub use error::{AppError, ErrorKind};
 use std::path::PathBuf;
 
@@ -42,6 +44,11 @@ pub fn builder() -> Builder<tauri::Wry> {
             metronome::set_metronome,
             metronome::run_metronome,
             metronome::set_sequence,
+            click_sounds::list_click_sounds,
+            click_sounds::import_click_sound,
+            click_sounds::delete_click_sound,
+            click_sounds::set_click_samples,
+            click_sounds::preview_sound,
             library::load_project,
             library::save_project,
             library::recent_files,

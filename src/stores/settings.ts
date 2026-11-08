@@ -42,6 +42,11 @@ export interface Settings {
   subLevel: number;
   crossSound: ClickSound;
   crossLevel: number;
+  /** Imported sound used instead of the synthesised one for each kind ("" = none) */
+  accentCustom: string;
+  beatCustom: string;
+  subCustom: string;
+  crossCustom: string;
   /** Speed trainer: the loop starts at `trainerFrom` and speeds up by `trainerStep`… */
   trainer: boolean;
   trainerFrom: number;
@@ -156,6 +161,10 @@ const DEFAULTS: Settings = {
   subLevel: 0.45,
   crossSound: "cowbell",
   crossLevel: 0.7,
+  accentCustom: "",
+  beatCustom: "",
+  subCustom: "",
+  crossCustom: "",
   trainer: false,
   trainerFrom: 0.6,
   trainerTo: 1,
