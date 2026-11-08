@@ -15,7 +15,7 @@ use std::sync::Arc;
 use crate::click::{ClickSamples, ClickSounds, ClickVoice};
 use crate::exercises::{Exercises, Strum};
 use crate::pattern::{BarPattern, ClickKind, Hits};
-use crate::voice::{CountVoice, SpokenWord, VoiceBank, Word};
+use crate::voice::{CountVoice, SpokenWord, Syllable, VoiceBank, Word};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MetronomeSettings {
@@ -366,7 +366,7 @@ impl Metronome {
             frame.word = Some(if hits.sub == 0 {
                 Word::Number(hits.pulse_in_bar + 1)
             } else {
-                Word::And
+                Word::Syllable(Syllable::of(hits.sub, self.part.pattern.subdivision()))
             });
         }
         frame
@@ -389,7 +389,7 @@ impl Metronome {
         let voice = self.settings.voice;
         if voice.on
             && let Some(word) = frame.word
-            && (word != Word::And || voice.subdivisions)
+            && (matches!(word, Word::Number(_)) || voice.subdivisions)
         {
             self.voice.say(word, voice.level);
         }
@@ -468,15 +468,24 @@ mod tests {
         // The count-in is counted too, then bar 0 from "uno" again
         let said = words(&mut metronome, 6 * 1_000);
         let n = Word::Number;
+        let and = Word::Syllable(Syllable::And);
         assert_eq!(said, vec![n(1), n(2), n(3), n(1), n(2), n(3)]);
 
         let mut eighths = started(MetronomeSettings {
             pattern: BarPattern::new(2, &[], &[], 2, 0.5, 0),
             ..settings(1_000.0, 2)
         });
+        assert_eq!(words(&mut eighths, 2 * 1_000), vec![n(1), and, n(2), and]);
+
+        // Sixteenths: "one e and a"
+        let mut sixteenths = started(MetronomeSettings {
+            pattern: BarPattern::new(1, &[], &[], 4, 0.5, 0),
+            ..settings(1_000.0, 1)
+        });
+        let s = Word::Syllable;
         assert_eq!(
-            words(&mut eighths, 2 * 1_000),
-            vec![n(1), Word::And, n(2), Word::And]
+            words(&mut sixteenths, 1_000),
+            vec![n(1), s(Syllable::E), and, s(Syllable::A)]
         );
     }
 

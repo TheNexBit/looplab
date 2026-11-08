@@ -266,7 +266,8 @@ export const en = {
     voiceHint: "A voice counts the pulses: «one, two, three…», in the count-in too",
     voiceRight: "subdivisions counted, language and volume of the voice",
     voiceSubdivisions: "Count the subdivisions too",
-    voiceSubdivisionsHint: "«one and two and…»: the «and» on every click between two pulses",
+    voiceSubdivisionsHint:
+      "As in American counting: eighths «1 and», sixteenths «1 e and a», triplets «1 trip let», quintuplets «1 e and a da», sextuplets «1 trip let and trip let»",
     voiceLevel: "Voice volume",
     voiceLanguage: "Voice language",
     flash: "Flash",

@@ -1,6 +1,9 @@
 # Genera i campioni della voce che conta del metronomo con le voci di Windows:
-#   it  "uno" ... "sedici" ed "e"   (Microsoft Elsa)  -> src-tauri\voice\it
-#   en  "one" ... "sixteen" e "and" (Microsoft Zira)  -> src-tauri\voice\en
+#   it  "uno" ... "sedici" e le sillabe   (Microsoft Elsa)  -> src-tauri\voice\it
+#   en  "one" ... "sixteen" e le sillabe  (Microsoft Zira)  -> src-tauri\voice\en
+# Sillabe delle suddivisioni, come nel conteggio americano: ottavi "1 and", sedicesimi
+# "1 e and a", terzine "1 trip let", quintine "1 e and a da", sestine "1 trip let and trip let".
+# La voce italiana dice gli stessi suoni scritti all'italiana (e, i, a, da, tri, let).
 # WAV 48 kHz, 16 bit, mono. Silenzi e volume li sistema il motore quando li carica.
 # Va lanciato solo per rifare i campioni; quelli nel progetto bastano per compilare.
 #   -Lingua it | en | tutte (predefinito)
@@ -14,7 +17,7 @@ $languages = [ordered]@{
   it = @{
     Culture = 'it-IT'
     Words = [ordered]@{
-      'e' = 'e'
+      'and' = 'e'; 'e' = 'i'; 'a' = 'a'; 'da' = 'da'; 'trip' = 'tri'; 'let' = 'let'
       '01' = 'uno'; '02' = 'due'; '03' = 'tre'; '04' = 'quattro'
       '05' = 'cinque'; '06' = 'sei'; '07' = 'sette'; '08' = 'otto'
       '09' = 'nove'; '10' = 'dieci'; '11' = 'undici'; '12' = 'dodici'
@@ -24,7 +27,7 @@ $languages = [ordered]@{
   en = @{
     Culture = 'en-US'
     Words = [ordered]@{
-      'e' = 'and'
+      'and' = 'and'; 'e' = 'ee'; 'a' = 'uh'; 'da' = 'da'; 'trip' = 'trip'; 'let' = 'let'
       '01' = 'one'; '02' = 'two'; '03' = 'three'; '04' = 'four'
       '05' = 'five'; '06' = 'six'; '07' = 'seven'; '08' = 'eight'
       '09' = 'nine'; '10' = 'ten'; '11' = 'eleven'; '12' = 'twelve'

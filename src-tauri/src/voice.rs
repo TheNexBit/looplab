@@ -14,11 +14,18 @@ pub enum VoiceLanguage {
     En,
 }
 
-/// One language's words: "and", then the numbers from one.
+/// One language's words: the syllables (in the order of `Syllable::ALL`), then the numbers.
 macro_rules! words {
     ($lang:literal) => {
         (
-            include_bytes!(concat!("../voice/", $lang, "/e.wav")).as_slice(),
+            [
+                include_bytes!(concat!("../voice/", $lang, "/and.wav")).as_slice(),
+                include_bytes!(concat!("../voice/", $lang, "/e.wav")).as_slice(),
+                include_bytes!(concat!("../voice/", $lang, "/a.wav")).as_slice(),
+                include_bytes!(concat!("../voice/", $lang, "/da.wav")).as_slice(),
+                include_bytes!(concat!("../voice/", $lang, "/trip.wav")).as_slice(),
+                include_bytes!(concat!("../voice/", $lang, "/let.wav")).as_slice(),
+            ],
             [
                 include_bytes!(concat!("../voice/", $lang, "/01.wav")).as_slice(),
                 include_bytes!(concat!("../voice/", $lang, "/02.wav")).as_slice(),
@@ -41,16 +48,18 @@ macro_rules! words {
     };
 }
 
-const ITALIAN: (&[u8], [&[u8]; 16]) = words!("it");
-const ENGLISH: (&[u8], [&[u8]; 16]) = words!("en");
+type Words = ([&'static [u8]; 6], [&'static [u8]; 16]);
+
+const ITALIAN: Words = words!("it");
+const ENGLISH: Words = words!("en");
 
 /// The words of `language`, ready for an engine running at `sample_rate`.
 pub fn bank(language: VoiceLanguage, sample_rate: u32) -> VoiceBank {
-    let (and, numbers) = match language {
+    let (syllables, numbers) = match language {
         VoiceLanguage::It => ITALIAN,
         VoiceLanguage::En => ENGLISH,
     };
-    VoiceBank::from_wavs(and, &numbers, sample_rate)
+    VoiceBank::from_wavs(syllables, &numbers, sample_rate)
 }
 
 #[cfg(test)]

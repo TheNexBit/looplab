@@ -33,12 +33,59 @@ impl Default for CountVoice {
     }
 }
 
-/// The word said on a click: a number for a pulse, "e" for a subdivision.
+/// The syllables said between the numbers, as in American counting: eighths "1 and",
+/// sixteenths "1 e and a", triplets "1 trip let", quintuplets "1 e and a da", sextuplets
+/// "1 trip let and trip let".
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Syllable {
+    And,
+    E,
+    A,
+    Da,
+    Trip,
+    Let,
+}
+
+impl Syllable {
+    /// In the order of `VoiceBank::from_wavs`.
+    pub const ALL: [Self; 6] = [Self::And, Self::E, Self::A, Self::Da, Self::Trip, Self::Let];
+
+    /// The syllable of click `sub` (1 = the first after the number) of a pulse split in
+    /// `of` clicks. Splits beyond six fall back to "and" on every click.
+    pub fn of(sub: u32, of: u32) -> Self {
+        use Syllable::{A, And, Da, E, Let, Trip};
+        let pattern: &[Syllable] = match of {
+            2 => &[And],
+            3 => &[Trip, Let],
+            4 => &[E, And, A],
+            5 => &[E, And, A, Da],
+            6 => &[Trip, Let, And, Trip, Let],
+            _ => &[],
+        };
+        pattern
+            .get(sub.saturating_sub(1) as usize)
+            .copied()
+            .unwrap_or(And)
+    }
+
+    const fn index(self) -> usize {
+        match self {
+            Self::And => 0,
+            Self::E => 1,
+            Self::A => 2,
+            Self::Da => 3,
+            Self::Trip => 4,
+            Self::Let => 5,
+        }
+    }
+}
+
+/// The word said on a click: a number for a pulse, a syllable for a subdivision.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Word {
-    /// 1 = "uno" … (past the last recorded number it starts again from "uno")
+    /// 1 = "one" … (past the last recorded number it starts again from "one")
     Number(u32),
-    And,
+    Syllable(Syllable),
 }
 
 /// Peak every word is levelled to, so "e" is as loud as "quattordici".
@@ -48,24 +95,25 @@ const SILENCE: f32 = 0.02;
 /// Fade at both ends of a trimmed word, in seconds: no click where it was cut.
 const FADE: f32 = 0.004;
 
-/// The recorded words at the output rate: "e" and the numbers from "uno".
+/// The recorded words at the output rate: the syllables and the numbers from "one".
 #[derive(Debug, Default, PartialEq)]
 pub struct VoiceBank {
-    and: Vec<f32>,
+    syllables: [Vec<f32>; 6],
     numbers: Vec<Vec<f32>>,
 }
 
 impl VoiceBank {
-    /// Builds the bank from WAV files (16-bit PCM, any rate, mono or stereo): `and` is "e",
-    /// `numbers` start from "uno". Words that cannot be read stay silent.
-    pub fn from_wavs(and: &[u8], numbers: &[&[u8]], sample_rate: u32) -> Self {
+    /// Builds the bank from WAV files (16-bit PCM, any rate, mono or stereo): `syllables` in
+    /// the order of `Syllable::ALL`, `numbers` from "one". Words that cannot be read stay
+    /// silent.
+    pub fn from_wavs(syllables: [&[u8]; 6], numbers: &[&[u8]], sample_rate: u32) -> Self {
         let prepare = |bytes: &[u8]| {
             read_wav(bytes)
                 .map(|(samples, rate)| prepare(&samples, rate, sample_rate))
                 .unwrap_or_default()
         };
         Self {
-            and: prepare(and),
+            syllables: syllables.map(prepare),
             numbers: numbers.iter().map(|bytes| prepare(bytes)).collect(),
         }
     }
@@ -75,19 +123,19 @@ impl VoiceBank {
         self.numbers.len()
     }
 
-    /// Length in samples of the shortest word, "e" included (0 if one is missing).
+    /// Length in samples of the shortest word, syllables included (0 if one is missing).
     pub fn shortest(&self) -> usize {
         self.numbers
             .iter()
+            .chain(&self.syllables)
             .map(Vec::len)
-            .chain([self.and.len()])
             .min()
             .unwrap_or(0)
     }
 
     fn samples(&self, word: Word) -> &[f32] {
         match word {
-            Word::And => &self.and,
+            Word::Syllable(syllable) => &self.syllables[syllable.index()],
             Word::Number(n) if !self.numbers.is_empty() => {
                 let count = self.numbers.len() as u32;
                 &self.numbers[((n.max(1) - 1) % count) as usize]
@@ -201,7 +249,7 @@ impl SpokenWord {
     pub fn new() -> Self {
         Self {
             bank: Arc::new(VoiceBank::default()),
-            word: Word::And,
+            word: Word::Number(1),
             at: 0,
             level: 0.0,
             playing: false,
@@ -278,27 +326,45 @@ mod tests {
         samples
     }
 
+    const AND: Word = Word::Syllable(Syllable::And);
+
+    #[test]
+    fn subdivisions_are_counted_as_in_american_counting() {
+        use Syllable::{A, And, Da, E, Let, Trip};
+        let said = |of: u32| (1..of).map(|sub| Syllable::of(sub, of)).collect::<Vec<_>>();
+        assert_eq!(said(2), [And], "1 and");
+        assert_eq!(said(3), [Trip, Let], "1 trip let");
+        assert_eq!(said(4), [E, And, A], "1 e and a");
+        assert_eq!(said(5), [E, And, A, Da], "1 e and a da");
+        assert_eq!(
+            said(6),
+            [Trip, Let, And, Trip, Let],
+            "1 trip let and trip let"
+        );
+        assert_eq!(said(8), [And; 7], "beyond six: and");
+    }
+
     #[test]
     fn words_are_trimmed_levelled_and_resampled() {
         let one = wav(&word(4_800, 8_000), 48_000);
         let and = wav(&word(2_400, 30_000), 48_000);
-        let bank = VoiceBank::from_wavs(&and, &[&one], 24_000);
+        let bank = VoiceBank::from_wavs([&and; 6], &[&one], 24_000);
         // Silences gone, half the samples at half the rate
         assert_eq!(bank.samples(Word::Number(1)).len(), 2_400);
-        assert_eq!(bank.samples(Word::And).len(), 1_200);
+        assert_eq!(bank.samples(AND).len(), 1_200);
         // Both levelled to the same peak, however loud they were recorded
         let peak = |s: &[f32]| s.iter().fold(0.0_f32, |m, v| m.max(v.abs()));
         assert!((peak(bank.samples(Word::Number(1))) - PEAK).abs() < 0.01);
-        assert!((peak(bank.samples(Word::And)) - PEAK).abs() < 0.01);
+        assert!((peak(bank.samples(AND)) - PEAK).abs() < 0.01);
         // Faded ends: no click where it was cut
-        assert_eq!(bank.samples(Word::And)[0], 0.0);
+        assert_eq!(bank.samples(AND)[0], 0.0);
     }
 
     #[test]
     fn numbers_past_the_last_start_again_and_bad_files_are_silent() {
         let one = wav(&word(100, 9_000), 48_000);
         let two = wav(&word(200, 9_000), 48_000);
-        let bank = VoiceBank::from_wavs(b"not a wav", &[&one, &two], 48_000);
+        let bank = VoiceBank::from_wavs([b"not a wav"; 6], &[&one, &two], 48_000);
         assert_eq!(
             bank.samples(Word::Number(3)).len(),
             bank.samples(Word::Number(1)).len()
@@ -307,14 +373,14 @@ mod tests {
             bank.samples(Word::Number(4)).len(),
             bank.samples(Word::Number(2)).len()
         );
-        assert!(bank.samples(Word::And).is_empty());
+        assert!(bank.samples(AND).is_empty());
     }
 
     #[test]
     fn a_word_plays_once_then_falls_silent() {
         let one = wav(&word(100, 9_000), 48_000);
         let mut voice = SpokenWord::new();
-        let _ = voice.set_bank(Arc::new(VoiceBank::from_wavs(&[], &[&one], 48_000)));
+        let _ = voice.set_bank(Arc::new(VoiceBank::from_wavs([&[]; 6], &[&one], 48_000)));
         assert_eq!(voice.next(1.0), 0.0, "silent until a word is said");
         voice.say(Word::Number(1), 1.0);
         let heard: Vec<f32> = (0..300).map(|_| voice.next(1.0)).collect();

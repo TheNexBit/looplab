@@ -269,7 +269,8 @@ export const it = {
     voiceHint: "Una voce conta gli impulsi: «uno, due, tre…», anche nel count-in",
     voiceRight: "suddivisioni contate e volume della voce",
     voiceSubdivisions: "Conta anche le suddivisioni",
-    voiceSubdivisionsHint: "«uno e due e…»: la «e» su ogni click tra un impulso e l'altro",
+    voiceSubdivisionsHint:
+      "Come nel conteggio americano: ottavi «1 and», sedicesimi «1 e and a», terzine «1 trip let», quintine «1 e and a da», sestine «1 trip let and trip let»",
     voiceLevel: "Volume della voce",
     voiceLanguage: "Lingua della voce",
     flash: "Lampeggio",

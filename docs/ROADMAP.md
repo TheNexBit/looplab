@@ -523,6 +523,11 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     compilatore chiave per chiave contro `it.ts`); la lingua si legge all'avvio e cambiandola la finestra si
     ricarica subito. In inglese i nomi delle note sono lettere (C, D♭…) invece di Do Re Mi, e numeri e date
     seguono il formato inglese.
+11. ✅ **Conteggio delle suddivisioni come nello standard americano** (dopo la prova: «la voce non si adegua agli
+    standard del counting»). Al posto della sola «and» su ogni click: ottavi «1 and», sedicesimi «1 e and a»,
+    terzine «1 trip let», quintine «1 e and a da», sestine «1 trip let and trip let» (scelto dall'utente tra
+    trip-let, and-a e la-li; oltre il sei «and»). Sei sillabe registrate per lingua (`Syllable` in `voice.rs`);
+    la voce italiana dice gli stessi suoni scritti all'italiana (e, i, a, da, tri, let).
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 
