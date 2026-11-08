@@ -15,10 +15,11 @@ import { formatElapsed } from "./meterChoices";
 
 const l = t.metronome.library;
 
-/** "7/8 (2+2+3) · 160": a setup at a glance. */
+/** "7/8 (2+2+3) · 160" (quarters) or "7/8 (2+2+3) · 160/8" (pulses): a setup at a glance. */
 export function setupSummary(setup: MetronomeSetup): string {
   const grouping = setup.grouping ? ` (${setup.grouping.join("+")})` : "";
-  return `${setup.beats}/${setup.unit}${grouping} · ${Math.round(setup.bpm)}`;
+  const pulses = setup.tempoBase === "pulse" && setup.unit !== 4 ? `/${setup.unit}` : "";
+  return `${setup.beats}/${setup.unit}${grouping} · ${Math.round(setup.bpm)}${pulses}`;
 }
 
 const iconKey = "size-6";

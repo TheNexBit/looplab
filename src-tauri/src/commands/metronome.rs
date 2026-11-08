@@ -29,6 +29,9 @@ pub struct BarRequest {
     pub swing: f32,
     /// Cross pulses over the bar (3 against 4…); 0 = off
     pub cross: u32,
+    /// true: the BPM count the pulses (eighths in 4/8, as many metronomes do); false: the
+    /// BPM count quarter notes, as in DAWs
+    pub pulse_tempo: bool,
 }
 
 impl BarRequest {
@@ -43,10 +46,14 @@ impl BarRequest {
         )
     }
 
-    /// Seconds per pulse at `bpm` quarter notes per minute, as in DAWs (an eighth in 7/8
-    /// lasts half a quarter).
+    /// Seconds per pulse at `bpm`: quarter notes per minute, as in DAWs (an eighth in 7/8
+    /// lasts half a quarter), or pulses per minute when `pulse_tempo` is on.
     pub fn pulse_seconds(&self, bpm: f64) -> f64 {
-        60.0 / bpm * 4.0 / f64::from(self.unit.max(1))
+        if self.pulse_tempo {
+            60.0 / bpm
+        } else {
+            60.0 / bpm * 4.0 / f64::from(self.unit.max(1))
+        }
     }
 }
 
@@ -269,7 +276,7 @@ mod tests {
 
     #[test]
     fn a_pulse_is_the_note_value_of_the_numerator() {
-        let bar = |unit| BarRequest {
+        let bar = |unit, pulse_tempo| BarRequest {
             beats: 7,
             unit,
             grouping: vec![2, 2, 3],
@@ -277,10 +284,14 @@ mod tests {
             subdivision: 1,
             swing: 0.5,
             cross: 0,
+            pulse_tempo,
         };
         // 120 quarters a minute: a quarter is 0.5 s, an eighth 0.25 s
-        assert!((bar(4).pulse_seconds(120.0) - 0.5).abs() < 1e-12);
-        assert!((bar(8).pulse_seconds(120.0) - 0.25).abs() < 1e-12);
-        assert_eq!(bar(8).pattern().pulses(), 7);
+        assert!((bar(4, false).pulse_seconds(120.0) - 0.5).abs() < 1e-12);
+        assert!((bar(8, false).pulse_seconds(120.0) - 0.25).abs() < 1e-12);
+        assert_eq!(bar(8, false).pattern().pulses(), 7);
+        // 120 pulses a minute: an eighth in 7/8 lasts 0.5 s, as a quarter in 4/4
+        assert!((bar(8, true).pulse_seconds(120.0) - 0.5).abs() < 1e-12);
+        assert!((bar(4, true).pulse_seconds(120.0) - 0.5).abs() < 1e-12);
     }
 }

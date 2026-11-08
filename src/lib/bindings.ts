@@ -150,6 +150,11 @@ export type BarRequest = {
 	swing: number | null,
 	/**  Cross pulses over the bar (3 against 4…); 0 = off */
 	cross: number,
+	/**
+	 *  true: the BPM count the pulses (eighths in 4/8, as many metronomes do); false: the
+	 *  BPM count quarter notes, as in DAWs
+	 */
+	pulseTempo: boolean,
 };
 
 /**  What one felt beat does. A muted beat silences its subdivisions too, but keeps its place. */

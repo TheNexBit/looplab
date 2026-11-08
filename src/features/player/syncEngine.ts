@@ -42,6 +42,7 @@ function clickSettings() {
       subdivision: 1,
       swing: 0.5,
       cross: 0,
+      pulseTempo: false,
     },
     volume: settings.clickVolume,
     sounds: clickSounds(settings),

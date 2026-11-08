@@ -20,6 +20,7 @@ export function barRequest(setup: MetronomeSetup): BarRequest {
     subdivision: setup.subdivision,
     swing: setup.swing,
     cross: setup.cross,
+    pulseTempo: setup.tempoBase === "pulse",
   };
 }
 

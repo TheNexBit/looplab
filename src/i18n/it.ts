@@ -116,8 +116,15 @@ export const it = {
     stop: "Ferma",
     tempo: "Tempo",
     tempoHint:
-      "Quarti al minuto, come in tutto Looplab: − / +, rotella o frecce ↑ ↓; doppio clic per 120",
+      "Battiti al minuto: − / +, rotella o frecce ↑ ↓; doppio clic per 120. Clic su «BPM» per scegliere cosa contano",
     pulseRate: (note: string, rate: number) => `${note} = ${rate}`,
+    tempoBase: "I BPM contano",
+    tempoBaseRight: "cosa contano i BPM (quarti o impulsi della battuta)",
+    tempoBaseNames: { quarter: "Quarti (come nei DAW)", pulse: "Impulsi della battuta" },
+    tempoBaseHints: {
+      quarter: "4/8 a 120 va il doppio di 4/4 a 120, come in Ableton e in Looplab",
+      pulse: "4/8 a 120 batte 120 ottavi al minuto, come 4/4 a 120",
+    },
     tap: "Tap",
     tapHint: "Premi a tempo sugli impulsi della battuta (gli ottavi in 7/8), anche col tasto T",
     meter: "Battuta",

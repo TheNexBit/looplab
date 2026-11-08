@@ -476,6 +476,9 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    stanghetta, alla fine si ferma da solo. Mentre suona, la schermata mostra la parte in corso (striscia in alto
    con nome, parte N di M e la nota) e i comandi della battuta propria riposano fino a «Esci dalla sequenza».
    Salvati su questo PC (`stores/metronomeLibrary.ts`).
+   - ✅ **Cosa contano i BPM** (clic su «BPM» nel display Tempo o tasto destro): quarti come nei DAW
+     (predefinito: 4/8 a 120 va il doppio di 4/4 a 120) o impulsi della battuta (4/8 a 120 = 120 ottavi).
+     Ogni brano e parte tiene la sua scelta (`tempoBase`, `pulseTempo` nel motore).
 6. Tastiera della chitarra, voce che conta, lampeggio.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜

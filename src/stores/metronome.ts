@@ -16,8 +16,11 @@ import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 import type { ExerciseSetup } from "./metronomeExercises";
 
-/** Tempo in quarter notes per minute, as everywhere in Looplab (and in Reaper, Ableton). */
+/** Tempo per minute: quarter notes by default, as everywhere in Looplab (and in Ableton). */
 export const METRONOME_BPM = { min: 20, max: 400, step: 1, default: 120 } as const;
+/** What the BPM count: quarter notes (as in DAWs) or the pulses of the bar (♪ in 4/8). */
+export const TEMPO_BASES = ["quarter", "pulse"] as const;
+export type TempoBase = (typeof TEMPO_BASES)[number];
 /** Note values a pulse can be: 2/x … 16/x. */
 export const METRONOME_UNITS = [2, 4, 8, 16] as const;
 export type MetronomeUnit = (typeof METRONOME_UNITS)[number];
@@ -29,6 +32,8 @@ export const COUNT_IN_BARS = { min: 0, max: 4 } as const;
 /** The bar, the tempo and the sounds' volume: what is kept between sessions. */
 export interface MetronomeSetup {
   bpm: number;
+  /** What `bpm` counts; songs and parts keep their own, so they always sound the same */
+  tempoBase: TempoBase;
   beats: number;
   unit: MetronomeUnit;
   /** Pulses grouped into felt beats (7/8 as 2+2+3); null: every pulse is a beat */
@@ -46,6 +51,7 @@ export interface MetronomeSetup {
 
 const DEFAULTS: MetronomeSetup = {
   bpm: METRONOME_BPM.default,
+  tempoBase: "quarter",
   beats: 4,
   unit: 4,
   grouping: null,
@@ -82,6 +88,7 @@ export function sanitizeSetup(value: Partial<MetronomeSetup>): MetronomeSetup {
   const cross = Math.round(number(value.cross, 0, 0, CROSS.max));
   return {
     bpm: number(value.bpm, DEFAULTS.bpm, METRONOME_BPM.min, METRONOME_BPM.max),
+    tempoBase: value.tempoBase === "pulse" ? "pulse" : "quarter",
     beats,
     unit,
     grouping,
@@ -152,10 +159,11 @@ export interface PlayedSequence {
 /** The metronome on its own: its bar and tempo (kept on this PC) and where it is. */
 export const useMetronomeStore = create<MetronomeState>((set, get) => {
   const save = () => {
-    const { bpm, beats, unit, grouping, states, subdivision, swing, cross, countInBars, volume } =
-      get();
+    const { bpm, tempoBase, beats, unit, grouping, states, subdivision, swing, cross } = get();
+    const { countInBars, volume } = get();
     writeStored(KEY, {
       bpm,
+      tempoBase,
       beats,
       unit,
       grouping,
@@ -224,9 +232,21 @@ export const useMetronomeStore = create<MetronomeState>((set, get) => {
   };
 });
 
-/** Pulses per second at the current tempo (a pulse is the note value of the numerator). */
-export function pulsesPerSecond(setup: Pick<MetronomeSetup, "bpm" | "unit">): number {
-  return (setup.bpm / 60) * (setup.unit / 4);
+type Tempo = Pick<MetronomeSetup, "bpm" | "unit" | "tempoBase">;
+
+/** Pulses per minute at the setup's tempo (a pulse is the note value of the numerator). */
+export function pulsesPerMinute(setup: Tempo): number {
+  return setup.tempoBase === "pulse" ? setup.bpm : (setup.bpm * setup.unit) / 4;
+}
+
+/** Quarter notes per minute at the setup's tempo. */
+export function quartersPerMinute(setup: Tempo): number {
+  return setup.tempoBase === "pulse" ? (setup.bpm * 4) / setup.unit : setup.bpm;
+}
+
+/** Pulses per second at the current tempo. */
+export function pulsesPerSecond(setup: Tempo): number {
+  return pulsesPerMinute(setup) / 60;
 }
 
 /** The part of the sequence being played, if one is. */
