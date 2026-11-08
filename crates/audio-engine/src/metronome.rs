@@ -15,6 +15,7 @@ use std::sync::Arc;
 use crate::click::{ClickSounds, ClickVoice};
 use crate::exercises::{Exercises, Strum};
 use crate::pattern::{BarPattern, ClickKind, Hits};
+use crate::voice::{CountVoice, SpokenWord, VoiceBank, Word};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MetronomeSettings {
@@ -29,6 +30,8 @@ pub struct MetronomeSettings {
     pub volume: f32,
     pub sounds: ClickSounds,
     pub exercises: Exercises,
+    /// "uno, due, tre…" spoken on the pulses
+    pub voice: CountVoice,
 }
 
 impl Default for MetronomeSettings {
@@ -41,6 +44,7 @@ impl Default for MetronomeSettings {
             volume: 0.8,
             sounds: ClickSounds::default(),
             exercises: Exercises::default(),
+            voice: CountVoice::default(),
         }
     }
 }
@@ -82,6 +86,8 @@ struct Frame {
     click: Option<ClickKind>,
     strum: Option<(bool, f32)>,
     cross: bool,
+    /// What the counting voice says here: only where something on the grid sounds
+    word: Option<Word>,
 }
 
 /// Levels of the strums of the rhythm trainer.
@@ -107,6 +113,7 @@ pub(crate) struct Metronome {
     seed: u32,
     main: ClickVoice,
     cross: ClickVoice,
+    voice: SpokenWord,
 }
 
 impl Metronome {
@@ -125,7 +132,13 @@ impl Metronome {
             seed: 0x2545_F491,
             main: ClickVoice::new(sample_rate),
             cross: ClickVoice::new(sample_rate),
+            voice: SpokenWord::new(),
         }
+    }
+
+    /// New words for the counting voice; the old ones are handed back to be freed elsewhere.
+    pub fn set_voice_bank(&mut self, bank: Arc<VoiceBank>) -> Arc<VoiceBank> {
+        self.voice.set_bank(bank)
     }
 
     fn pulses_at(&self, frame: u64) -> f64 {
@@ -230,6 +243,7 @@ impl Metronome {
     /// Starts from the count-in (or bar 0), or stops.
     pub fn run(&mut self, running: bool) {
         self.running = running;
+        self.voice.stop();
         if running {
             self.frame = 0;
             self.segment = 0;
@@ -262,6 +276,7 @@ impl Metronome {
             click: hits.main,
             strum: None,
             cross: hits.cross,
+            word: None,
         };
         if !hits.on_grid && !hits.cross || hits.bar < 0 && hits.on_grid {
             return plain;
@@ -337,7 +352,15 @@ impl Metronome {
                 self.rebase(to, pulse_frames);
             }
         }
-        self.exercise(hits)
+        let mut frame = self.exercise(hits);
+        if hits.on_grid && (frame.click.is_some() || frame.strum.is_some()) {
+            frame.word = Some(if hits.sub == 0 {
+                Word::Number(hits.pulse_in_bar + 1)
+            } else {
+                Word::And
+            });
+        }
+        frame
     }
 
     /// Next sample of the clicks (0 when stopped and silent).
@@ -353,8 +376,15 @@ impl Metronome {
         if frame.cross {
             self.cross.start(self.settings.sounds.of(ClickKind::Cross));
         }
+        let voice = self.settings.voice;
+        if voice.on
+            && let Some(word) = frame.word
+            && (word != Word::And || voice.subdivisions)
+        {
+            self.voice.say(word, voice.level);
+        }
         let volume = self.settings.volume;
-        self.main.next(volume) + self.cross.next(volume)
+        self.main.next(volume) + self.cross.next(volume) + self.voice.next(volume)
     }
 }
 
@@ -410,6 +440,47 @@ mod tests {
         );
         metronome.run(false);
         assert!(onsets(&mut metronome, 10_000).is_empty());
+    }
+
+    /// Every word the voice would say over `frames` frames.
+    fn words(metronome: &mut Metronome, frames: usize) -> Vec<Word> {
+        (0..frames)
+            .filter_map(|_| metronome.advance().word)
+            .collect()
+    }
+
+    #[test]
+    fn the_voice_counts_the_pulses_and_the_subdivisions() {
+        let mut metronome = started(MetronomeSettings {
+            count_in_bars: 1,
+            ..settings(1_000.0, 3)
+        });
+        // The count-in is counted too, then bar 0 from "uno" again
+        let said = words(&mut metronome, 6 * 1_000);
+        let n = Word::Number;
+        assert_eq!(said, vec![n(1), n(2), n(3), n(1), n(2), n(3)]);
+
+        let mut eighths = started(MetronomeSettings {
+            pattern: BarPattern::new(2, &[], &[], 2, 0.5, 0),
+            ..settings(1_000.0, 2)
+        });
+        assert_eq!(
+            words(&mut eighths, 2 * 1_000),
+            vec![n(1), Word::And, n(2), Word::And]
+        );
+    }
+
+    #[test]
+    fn a_muted_beat_is_not_counted() {
+        use crate::pattern::BeatState::{Accent, Muted, Normal};
+        let mut metronome = started(MetronomeSettings {
+            pattern: BarPattern::new(3, &[], &[Accent, Muted, Normal], 1, 0.5, 0),
+            ..settings(1_000.0, 3)
+        });
+        assert_eq!(
+            words(&mut metronome, 3 * 1_000),
+            vec![Word::Number(1), Word::Number(3)]
+        );
     }
 
     #[test]

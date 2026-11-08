@@ -2,8 +2,8 @@
 //! (`player::set_click`) and the metronome on its own (`set_metronome`, `run_metronome`).
 
 use audio_engine::{
-    BarPattern, BeatState, ClickSound, ClickSounds, Exercises, Gap, MAX_STEPS, MetronomeSettings,
-    Rhythm, RhythmStep, Segment, Sequence, Trainer,
+    BarPattern, BeatState, ClickSound, ClickSounds, CountVoice, Exercises, Gap, MAX_STEPS,
+    MetronomeSettings, Rhythm, RhythmStep, Segment, Sequence, Trainer,
 };
 use serde::Deserialize;
 use tauri::State;
@@ -174,6 +174,8 @@ pub struct MetronomeRequest {
     pub volume: f32,
     pub sounds: SoundsRequest,
     pub exercises: ExercisesRequest,
+    /// "uno, due, tre…" spoken on the pulses
+    pub voice: CountVoice,
 }
 
 /// Settings of the metronome on its own; while it runs they take over at once, keeping
@@ -200,6 +202,10 @@ pub fn set_metronome(
         count_in_bars: settings.count_in_bars,
         volume: settings.volume.clamp(0.0, 1.0),
         sounds: settings.sounds.sounds(),
+        voice: CountVoice {
+            level: settings.voice.level.clamp(0.0, 1.0),
+            ..settings.voice
+        },
     });
     Ok(())
 }

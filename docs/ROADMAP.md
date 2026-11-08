@@ -496,7 +496,14 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
    accordi con nomi italiani), accordatura (11 preset, da 4 a 8 corde; ogni corda si accorda di un semitono con
    rotella o − / + sul suo nome e l'accordatura diventa «Personalizzata»), posizione da 4–6 tasti (il resto resta
    tenue; la rotella la sposta), ♯ / ♭. Col manico acceso manopola e pad si accorciano. Salvato su questo PC.
-8. Voce che conta («uno, due, tre…»): MetroFlow non l'aveva, servono campioni da scegliere.
+8. ✅ **Voce che conta** (tasto ON/OFF con spia nel trasporto; tasto destro: «e» sulle suddivisioni e volume).
+   «uno, due, tre…» sugli impulsi, anche nel count-in; tace dove tace il click (battito muto, gap trainer, click
+   muti a caso); oltre il sedici ricomincia da «uno». Campioni registrati con la voce italiana di Windows
+   (Microsoft Elsa) da `scripts 9-genera-voce.cmd`, incorporati nell'app (`src-tauri/voice/it`); il motore li
+   taglia dai silenzi, li porta allo stesso volume e alla frequenza della scheda (`voice.rs`) e li dice sul
+   battito, sopra i click, senza toccare il thread audio. Oltre ~180 BPM i numeri lunghi si accorciano (la parola
+   dopo taglia quella prima). **Da verificare prima di distribuire l'app:** la licenza d'uso delle frasi registrate
+   con le voci di Windows; in alternativa si registrano campioni propri con lo stesso script.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

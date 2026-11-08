@@ -215,6 +215,16 @@ export type ClickSound =
 /**  Side stick on a snare rim */
 "stick" | "hiHat" | "clave";
 
+/**  How the voice counts, chosen in the metronome. */
+export type CountVoice = {
+	/**  The pulses are counted aloud */
+	on: boolean,
+	/**  "e" on the subdivisions too (uno e due e…) */
+	subdivisions: boolean,
+	/**  0..1, on top of the metronome volume */
+	level: number | null,
+};
+
 /**  Practice of one track on one day. */
 export type DiaryEntry = {
 	/**  Local date, "2026-11-06" */
@@ -379,6 +389,8 @@ export type MetronomeRequest_Deserialize = {
 	volume: number | null,
 	sounds: SoundsRequest,
 	exercises: ExercisesRequest_Deserialize,
+	/**  "uno, due, tre…" spoken on the pulses */
+	voice: CountVoice,
 };
 
 /**  The metronome on its own: tempo, bar, count-in, volume, sounds and exercises. */
@@ -391,6 +403,8 @@ export type MetronomeRequest_Serialize = {
 	volume: number | null,
 	sounds: SoundsRequest,
 	exercises: ExercisesRequest_Serialize,
+	/**  "uno, due, tre…" spoken on the pulses */
+	voice: CountVoice,
 };
 
 export type MidiKind = "note" | "cc" | "program";

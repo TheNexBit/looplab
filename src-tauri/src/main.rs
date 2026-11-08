@@ -15,6 +15,7 @@ mod playback;
 mod project;
 mod recent;
 mod state;
+mod voice;
 mod window;
 mod window_state;
 

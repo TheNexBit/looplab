@@ -39,6 +39,8 @@ impl AppState {
             return Ok(Arc::clone(running));
         }
         let started = Arc::new(Engine::start()?);
+        // The counting voice's words, at the rate of this device
+        started.set_voice(crate::voice::bank(started.sample_rate()));
         *engine = Some(Arc::clone(&started));
         Ok(started)
     }

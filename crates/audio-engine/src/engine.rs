@@ -18,6 +18,7 @@ use crate::metronome::{MetronomeSettings, Sequence};
 use crate::pcm::Pcm;
 use crate::render::Renderer;
 use crate::tone::ToneSettings;
+use crate::voice::VoiceBank;
 
 /// Speeds the playback chain is sized for. The UI may offer a narrower range.
 pub const MIN_SPEED: f32 = 0.25;
@@ -74,12 +75,15 @@ pub(crate) enum Command {
     RunMetronome(bool),
     /// Parts played one after the other by the metronome on its own; None: back to its bar
     SetSequence(Option<Arc<Sequence>>),
+    /// The words of the metronome's counting voice
+    SetVoice(Arc<VoiceBank>),
 }
 
 /// Memory the audio thread lets go of, freed by the next command sent from outside.
 pub(crate) enum Garbage {
     Track(#[allow(dead_code)] Arc<Pcm>),
     Sequence(#[allow(dead_code)] Arc<Sequence>),
+    Voice(#[allow(dead_code)] Arc<VoiceBank>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -254,6 +258,11 @@ impl Engine {
     /// Plays `sequence` (its parts in order) on the metronome on its own; None: back to its bar.
     pub fn set_sequence(&self, sequence: Option<Sequence>) {
         self.send(Command::SetSequence(sequence.map(Arc::new)));
+    }
+
+    /// The recorded words of the metronome's counting voice (prepared off the audio thread).
+    pub fn set_voice(&self, bank: VoiceBank) {
+        self.send(Command::SetVoice(Arc::new(bank)));
     }
 
     /// Starts the metronome on its own from its count-in, or stops it.

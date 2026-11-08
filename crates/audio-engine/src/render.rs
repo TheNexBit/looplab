@@ -361,6 +361,14 @@ impl Renderer {
                     }
                 }
                 Command::SetTone(settings) => self.tone.set(settings),
+                Command::SetVoice(bank) => {
+                    let old = self.metronome.set_voice_bank(bank);
+                    if let Err(rtrb::PushError::Full(old)) = self.garbage.push(Garbage::Voice(old))
+                    {
+                        // Never free memory here: leaking is better than a glitch
+                        std::mem::forget(old);
+                    }
+                }
             }
         }
     }

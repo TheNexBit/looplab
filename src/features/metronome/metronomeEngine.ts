@@ -47,6 +47,7 @@ export function metronomeRequest(): MetronomeRequest {
     volume: m.volume,
     sounds: clickSounds(useSettingsStore.getState()),
     exercises: exercisesRequest(useExercisesStore.getState(), m.beats, m.subdivision),
+    voice: m.voice,
   };
 }
 

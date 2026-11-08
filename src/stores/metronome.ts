@@ -65,6 +65,31 @@ const DEFAULTS: MetronomeSetup = {
 const KEY = "looplab.metronome";
 /** The screen flash is a preference of this PC, not part of a song */
 const FLASH_KEY = "looplab.metronome.flash";
+/** The counting voice too: a habit of whoever practises, not part of a song */
+const VOICE_KEY = "looplab.metronome.voice";
+
+/** "uno, due, tre…" on the pulses, "e" on the subdivisions if asked. */
+export interface CountVoiceSetup {
+  on: boolean;
+  subdivisions: boolean;
+  /** 0..1 */
+  level: number;
+}
+
+const VOICE_DEFAULTS: CountVoiceSetup = { on: false, subdivisions: false, level: 0.9 };
+
+function loadVoice(): CountVoiceSetup {
+  const stored = readStored(VOICE_KEY) as Partial<CountVoiceSetup> | undefined;
+  if (!stored || typeof stored !== "object") return VOICE_DEFAULTS;
+  return {
+    on: stored.on === true,
+    subdivisions: stored.subdivisions === true,
+    level:
+      typeof stored.level === "number" && Number.isFinite(stored.level)
+        ? clamp(stored.level, 0, 1)
+        : VOICE_DEFAULTS.level,
+  };
+}
 
 /** The setup's own time signature, in MetroFlow's terms. */
 export const signatureOf = (setup: Pick<MetronomeSetup, "beats" | "unit" | "grouping">) =>
@@ -127,6 +152,8 @@ interface MetronomeState extends MetronomeSetup {
   /** The screen flashes on every beat (stronger on the accents) */
   flash: boolean;
   setFlash: (flash: boolean) => void;
+  voice: CountVoiceSetup;
+  setVoice: (patch: Partial<CountVoiceSetup>) => void;
   setOpen: (open: boolean) => void;
   /** Plays a sequence from its first part (null: back to the own bar) */
   playSequence: (sequence: PlayedSequence | null) => void;
@@ -194,6 +221,13 @@ export const useMetronomeStore = create<MetronomeState>((set, get) => {
     setFlash: (flash) => {
       set({ flash });
       writeStored(FLASH_KEY, flash);
+    },
+    voice: loadVoice(),
+    setVoice: (patch) => {
+      const voice = { ...get().voice, ...patch };
+      voice.level = clamp(voice.level, 0, 1);
+      set({ voice });
+      writeStored(VOICE_KEY, voice);
     },
     setOpen: (open) => set(open ? { open } : { open, running: false, sequence: null }),
     playSequence: (sequence) => {

@@ -24,6 +24,7 @@ pub mod resample;
 pub mod spectrum;
 pub mod time;
 pub mod tone;
+pub mod voice;
 pub mod wav;
 
 pub use click::{ClickSettings, ClickSound, ClickSounds};
@@ -38,6 +39,7 @@ pub use pattern::{BarPattern, BeatState, ClickKind};
 pub use pcm::Pcm;
 pub use peaks::Peaks;
 pub use tone::ToneSettings;
+pub use voice::{CountVoice, VoiceBank};
 pub use wav::BitDepth;
 
 /// Engine version, shown in the UI to prove the Rust ↔ UI link works.

@@ -259,6 +259,12 @@ export const it = {
         custom: "Personalizzata",
       } as Record<string, string>,
     },
+    voice: "Voce",
+    voiceHint: "Una voce conta gli impulsi: «uno, due, tre…», anche nel count-in",
+    voiceRight: "suddivisioni contate e volume della voce",
+    voiceSubdivisions: "Conta anche le suddivisioni",
+    voiceSubdivisionsHint: "«uno e due e…»: la «e» su ogni click tra un impulso e l'altro",
+    voiceLevel: "Volume della voce",
     flash: "Lampeggio",
     flashHint:
       "Lo schermo lampeggia a ogni battito, più forte sugli accenti: il tempo si vede con la coda dell'occhio",

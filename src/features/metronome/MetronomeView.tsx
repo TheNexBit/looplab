@@ -1,8 +1,9 @@
-import { Guitar, Play, Square, Sun } from "lucide-react";
+import { Guitar, Play, Speech, Square, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { OptionsKey } from "@/components/ui/OptionsKey";
 import { Stepper } from "@/components/ui/Stepper";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { FretboardStrip } from "@/features/fretboard/FretboardStrip";
@@ -191,6 +192,7 @@ function MetronomeTransport() {
       </Control>
       <FlashKey />
       <NeckKey />
+      <VoiceKey />
       <div className="lcd flex h-10 items-center gap-4 rounded-panel px-3 font-mono text-sm tabular">
         <span ref={barRef} className="min-w-36 text-lcd-fg lcd-glow" />
         <Tooltip label={m.elapsed}>
@@ -233,6 +235,59 @@ function FlashKey() {
         <Sun className="size-4" />
       </Button>
     </Tooltip>
+  );
+}
+
+/**
+ * ON / OFF key with a lamp: the counting voice. The right button opens its options (the "e"
+ * on the subdivisions, its volume), like the keys of a DAW.
+ */
+function VoiceKey() {
+  const voice = useMetronomeStore((s) => s.voice);
+  const setVoice = useMetronomeStore((s) => s.setVoice);
+  return (
+    <OptionsKey
+      label={m.voiceHint}
+      rightClick={m.voiceRight}
+      size="lg-key"
+      active={voice.on}
+      led="amber"
+      onClick={() => setVoice({ on: !voice.on })}
+      aria-label={m.voice}
+      aria-pressed={voice.on}
+      panelClassName="w-72 space-y-3 p-3"
+      panel={
+        <>
+          <div className="flex items-center justify-between gap-3">
+            <Tooltip label={m.voiceSubdivisionsHint}>
+              <span className="text-xs text-fg">{m.voiceSubdivisions}</span>
+            </Tooltip>
+            <Chip
+              active={voice.subdivisions}
+              onClick={() => setVoice({ subdivisions: !voice.subdivisions })}
+              aria-pressed={voice.subdivisions}
+            >
+              {voice.subdivisions ? "ON" : "OFF"}
+            </Chip>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-fg">{m.voiceLevel}</span>
+            <Stepper
+              label={m.voiceLevel}
+              value={voice.level}
+              min={0}
+              max={1}
+              step={0.05}
+              defaultValue={0.9}
+              onChange={(level) => setVoice({ level })}
+              format={(value) => `${Math.round(value * 100)}%`}
+            />
+          </div>
+        </>
+      }
+    >
+      <Speech className="size-4" />
+    </OptionsKey>
   );
 }
 
