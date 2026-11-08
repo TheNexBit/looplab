@@ -48,7 +48,7 @@ export function metronomeRequest(): MetronomeRequest {
     volume: m.volume,
     sounds: clickSounds(useSettingsStore.getState()),
     exercises: exercisesRequest(useExercisesStore.getState(), m.beats, m.subdivision),
-    voice: m.voice,
+    voice: { on: m.voice.on, subdivisions: m.voice.subdivisions, level: m.voice.level },
   };
 }
 
@@ -59,6 +59,9 @@ export function metronomeRequest(): MetronomeRequest {
  */
 export function syncMetronome(): () => void {
   let last = "";
+  // The voice's language changes its words, sent apart from the settings
+  let language = useMetronomeStore.getState().voice.language;
+  void commands.setVoiceLanguage(language);
   const push = (force = false) => {
     const request = metronomeRequest();
     const key = JSON.stringify(request);
@@ -69,6 +72,10 @@ export function syncMetronome(): () => void {
 
   const stopStore = useMetronomeStore.subscribe((state, previous) => {
     push();
+    if (state.voice.language !== language) {
+      language = state.voice.language;
+      void commands.setVoiceLanguage(language);
+    }
     if (state.sequence !== previous.sequence) {
       void commands.setSequence(state.sequence ? sequenceRequest(state.sequence) : null);
     }

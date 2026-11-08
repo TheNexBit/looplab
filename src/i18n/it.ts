@@ -265,6 +265,7 @@ export const it = {
     voiceSubdivisions: "Conta anche le suddivisioni",
     voiceSubdivisionsHint: "«uno e due e…»: la «e» su ogni click tra un impulso e l'altro",
     voiceLevel: "Volume della voce",
+    voiceLanguage: "Lingua della voce",
     flash: "Lampeggio",
     flashHint:
       "Lo schermo lampeggia a ogni battito, più forte sugli accenti: il tempo si vede con la coda dell'occhio",

@@ -8,6 +8,7 @@ use audio_engine::spectrum::Analyzer;
 use audio_engine::{Engine, Pcm, SharedPeaks};
 
 use crate::commands::AppError;
+use crate::voice::VoiceLanguage;
 
 #[derive(Default)]
 pub struct AppState {
@@ -26,6 +27,8 @@ pub struct AppState {
     analyzer: Mutex<Option<(u32, Analyzer)>>,
     /// Imported sound of each kind of click (accent, beat, subdivision, cross), if any
     click_samples: Mutex<[Option<PathBuf>; 4]>,
+    /// Language of the metronome's counting voice
+    voice_language: Mutex<VoiceLanguage>,
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -43,7 +46,8 @@ impl AppState {
         }
         let started = Arc::new(Engine::start()?);
         // The counting voice's words, at the rate of this device
-        started.set_voice(crate::voice::bank(started.sample_rate()));
+        let language = *lock(&self.voice_language);
+        started.set_voice(crate::voice::bank(language, started.sample_rate()));
         // …and the imported click sounds, also after the device was lost and restarted
         let samples = lock(&self.click_samples).clone();
         if samples.iter().any(Option::is_some) {
@@ -58,6 +62,10 @@ impl AppState {
 
     pub fn set_click_sample_paths(&self, paths: [Option<PathBuf>; 4]) {
         *lock(&self.click_samples) = paths;
+    }
+
+    pub fn set_voice_language(&self, language: VoiceLanguage) {
+        *lock(&self.voice_language) = language;
     }
 
     pub fn click_sample_paths(&self) -> [Option<PathBuf>; 4] {

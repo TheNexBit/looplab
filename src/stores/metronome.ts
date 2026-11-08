@@ -11,7 +11,7 @@ import {
   SWING_STRAIGHT,
 } from "@/features/metronome/beatGrid";
 import type { BeatState, TimeSignature } from "@/features/metronome/types";
-import type { PlaybackStatus } from "@/lib/bindings";
+import type { PlaybackStatus, VoiceLanguage } from "@/lib/bindings";
 import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 import type { ExerciseSetup } from "./metronomeExercises";
@@ -74,9 +74,16 @@ export interface CountVoiceSetup {
   subdivisions: boolean;
   /** 0..1 */
   level: number;
+  /** "one, two…" or "uno, due…" */
+  language: VoiceLanguage;
 }
 
-const VOICE_DEFAULTS: CountVoiceSetup = { on: false, subdivisions: false, level: 0.9 };
+const VOICE_DEFAULTS: CountVoiceSetup = {
+  on: false,
+  subdivisions: false,
+  level: 0.9,
+  language: "en",
+};
 
 function loadVoice(): CountVoiceSetup {
   const stored = readStored(VOICE_KEY) as Partial<CountVoiceSetup> | undefined;
@@ -88,6 +95,7 @@ function loadVoice(): CountVoiceSetup {
       typeof stored.level === "number" && Number.isFinite(stored.level)
         ? clamp(stored.level, 0, 1)
         : VOICE_DEFAULTS.level,
+    language: stored.language === "it" ? "it" : "en",
   };
 }
 

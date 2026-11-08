@@ -10,6 +10,7 @@ use tauri::State;
 
 use super::AppError;
 use crate::state::AppState;
+use crate::voice::VoiceLanguage;
 
 /// The shape of a bar, as MetroFlow describes it.
 #[derive(Deserialize, specta::Type)]
@@ -274,6 +275,17 @@ pub fn set_sequence(
 pub fn run_metronome(state: State<'_, AppState>, running: bool) -> Result<(), AppError> {
     state.engine()?.run_metronome(running);
     Ok(())
+}
+
+/// The language the counting voice speaks: the words change at once if the engine runs, and
+/// an engine started later takes them (choosing never starts the audio device by itself).
+#[tauri::command]
+#[specta::specta]
+pub fn set_voice_language(state: State<'_, AppState>, language: VoiceLanguage) {
+    state.set_voice_language(language);
+    if let Some(engine) = state.running_engine() {
+        engine.set_voice(crate::voice::bank(language, engine.sample_rate()));
+    }
 }
 
 #[cfg(test)]

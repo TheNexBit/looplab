@@ -271,6 +271,20 @@ function VoiceKey() {
             </Chip>
           </div>
           <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-fg">{m.voiceLanguage}</span>
+            <span className="flex gap-1">
+              {(["en", "it"] as const).map((language) => (
+                <Chip
+                  key={language}
+                  active={voice.language === language}
+                  onClick={() => setVoice({ language })}
+                >
+                  {language === "en" ? "English" : "Italiano"}
+                </Chip>
+              ))}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
             <span className="text-xs text-fg">{m.voiceLevel}</span>
             <Stepper
               label={m.voiceLevel}

@@ -48,6 +48,11 @@ export const commands = {
 	 *  metronome's own bar). Start it with `run_metronome`.
 	 */
 	setSequence: (sequence: SequenceRequest_Deserialize | null) => typedError<null, AppError>(__TAURI_INVOKE("set_sequence", { sequence })),
+	/**
+	 *  The language the counting voice speaks: the words change at once if the engine runs, and
+	 *  an engine started later takes them (choosing never starts the audio device by itself).
+	 */
+	setVoiceLanguage: (language: VoiceLanguage) => __TAURI_INVOKE<void>("set_voice_language", { language }),
 	/**  The imported sounds, by name. */
 	listClickSounds: () => typedError<CustomSound[], AppError>(__TAURI_INVOKE("list_click_sounds")),
 	/**  Makes `path` (any audio file Looplab opens) an imported sound, named after the file. */
@@ -797,6 +802,9 @@ export type TrainerRequest = {
 
 /**  The detached video window was closed by the user (it is only hidden): dock the video again. */
 export type VideoWindowHidden = null;
+
+/**  The language the voice counts in. */
+export type VoiceLanguage = "it" | "en";
 
 /* Tauri Specta runtime */
 async function typedError<T, E>(result: Promise<T>): Promise<{ status: "ok"; data: T } | { status: "error"; error: E }> {

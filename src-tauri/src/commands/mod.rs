@@ -44,6 +44,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             metronome::set_metronome,
             metronome::run_metronome,
             metronome::set_sequence,
+            metronome::set_voice_language,
             click_sounds::list_click_sounds,
             click_sounds::import_click_sound,
             click_sounds::delete_click_sound,
