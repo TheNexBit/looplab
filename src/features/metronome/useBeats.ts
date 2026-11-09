@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { currentPulses, pulsesPerSecond, shownSetup, useMetronomeStore } from "@/stores/metronome";
-import { feltBeatSpans } from "./BeatStrip";
+import { feltBeatSpans } from "./beatGrid";
 
 /** What a pulse that just started is: a count-in click, an accent, a beat; muted pulses are skipped. */
 export type BeatKind = "countIn" | "accent" | "beat";

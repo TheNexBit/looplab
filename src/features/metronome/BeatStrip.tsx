@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useFretboardStore } from "@/stores/fretboard";
 import { currentPulses, shownSetup, useMetronomeStore } from "@/stores/metronome";
+import { feltBeatSpans } from "./beatGrid";
 import type { BeatState } from "./types";
 import { useBeats } from "./useBeats";
 
@@ -19,20 +20,6 @@ const padLook: Record<BeatState, string> = {
 
 /** Level marks under the number: how loud the beat is, like a drum machine's velocity. */
 const LEVEL: Record<BeatState, number> = { accent: 3, normal: 2, muted: 0 };
-
-/** The felt beats of the bar: each one with the pulses it spans (one each without a grouping). */
-export function feltBeatSpans(
-  beats: number,
-  grouping: number[] | null,
-): { first: number; size: number }[] {
-  const sizes = grouping ?? Array.from({ length: beats }, () => 1);
-  let first = 0;
-  return sizes.map((size) => {
-    const beat = { first, size };
-    first += size;
-    return beat;
-  });
-}
 
 /**
  * The bar as a row of pads, like the steps of a drum machine: one group per felt beat, as

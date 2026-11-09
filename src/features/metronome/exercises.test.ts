@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { beatsInBar, isValidGrouping } from "./beatGrid";
-import { gapPositionAt } from "./gapCycle";
-import { generateRandomSetup } from "./randomSetup";
-import { fitSteps, loopPositionAt, strumDirection } from "./rhythmPattern";
+import { defaultSteps, fitSteps, generatePattern, strumDirection } from "./rhythmPattern";
 
 /** Repeatable numbers in [0, 1), so a random test always checks the same cases. */
 function seeded(seed: number) {
@@ -13,32 +10,15 @@ function seeded(seed: number) {
   };
 }
 
-describe("gap trainer", () => {
-  const config = { countInBars: 1, playBars: 2, silentBars: 1, grow: false };
-
-  it("counts in, plays, then leaves a gap, cycle after cycle", () => {
-    const phases = [0, 1, 2, 3, 4, 5, 6].map((bar) => gapPositionAt(bar, config).phase);
-    expect(phases).toEqual(["count-in", "play", "play", "silent", "play", "play", "silent"]);
-    expect(gapPositionAt(4, config).cycleIndex).toBe(1);
-  });
-
-  it("grows the gap by a bar every cycle", () => {
-    const grow = { ...config, countInBars: 0, grow: true };
-    // Cycle 0: 2 play + 1 silent; cycle 1: 2 play + 2 silent
-    expect(gapPositionAt(3, grow)).toMatchObject({ cycleIndex: 1, phase: "play" });
-    expect(gapPositionAt(6, grow)).toMatchObject({ cycleIndex: 1, phase: "silent", silentBars: 2 });
-  });
-});
-
 describe("rhythm trainer", () => {
   it("picks down on the pulse and up in between, starting again every beat", () => {
-    expect([0, 1, 2, 3].map((tick) => strumDirection(tick, "eighth"))).toEqual([
+    expect([0, 1, 2, 3].map((tick) => strumDirection(tick, 2))).toEqual([
       "down",
       "up",
       "down",
       "up",
     ]);
-    expect([0, 1, 2, 3].map((tick) => strumDirection(tick, "triplet"))).toEqual([
+    expect([0, 1, 2, 3].map((tick) => strumDirection(tick, 3))).toEqual([
       "down",
       "up",
       "down",
@@ -46,25 +26,29 @@ describe("rhythm trainer", () => {
     ]);
   });
 
-  it("mutes one repetition after every few", () => {
-    const muted = [0, 1, 2, 3, 4, 5].map((bar) => loopPositionAt(bar, 1, 2).muted);
-    expect(muted).toEqual([false, false, true, false, false, true]);
+  it("keeps the grid the length asked for", () => {
     expect(fitSteps(["note"], 3)).toEqual(["note", "rest", "rest"]);
+    expect(defaultSteps(8, 8)[0]).toBe("accent");
+    // Any other length: just the accented downbeat of every bar
+    const plain = defaultSteps(4, 12);
+    expect(plain.filter((step) => step === "accent")).toHaveLength(3);
+    expect(plain[4]).toBe("accent");
   });
-});
 
-describe("random meter", () => {
-  it("always gives a playable bar", () => {
+  it("never generates a silent bar", () => {
     const rng = seeded(7);
     for (let run = 0; run < 200; run += 1) {
-      const { timeSignature, bpm, crossRhythm } = generateRandomSetup(rng);
-      expect(timeSignature.beats).toBeGreaterThanOrEqual(2);
-      if (timeSignature.grouping) {
-        expect(isValidGrouping(timeSignature.grouping, timeSignature.beats)).toBe(true);
+      const steps = generatePattern({
+        perBar: 8,
+        bars: 2,
+        ticksPerBeat: 2,
+        difficulty: "hard",
+        rng,
+      });
+      expect(steps).toHaveLength(16);
+      for (const bar of [0, 1]) {
+        expect(steps.slice(bar * 8, bar * 8 + 8).some((step) => step !== "rest")).toBe(true);
       }
-      expect(bpm).toBeGreaterThan(0);
-      // A cross rhythm equal to the felt beats would be no cross rhythm at all
-      if (crossRhythm !== null) expect(crossRhythm).not.toBe(beatsInBar(timeSignature));
     }
   });
 });

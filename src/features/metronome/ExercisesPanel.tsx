@@ -255,7 +255,7 @@ function RhythmExercise() {
           >
             {shown.map((step, index) => {
               const tick = index % perBar;
-              const down = strumDirection(tick, subdivisionId(subdivision)) === "down";
+              const down = strumDirection(tick, subdivision) === "down";
               return (
                 <button
                   // biome-ignore lint/suspicious/noArrayIndexKey: one cell per click of the grid
@@ -320,11 +320,6 @@ function RhythmExercise() {
       )}
     </Exercise>
   );
-}
-
-/** MetroFlow's names of the subdivisions the rhythm is written in. */
-function subdivisionId(subdivision: number) {
-  return subdivision === 3 ? "triplet" : subdivision === 4 ? "sixteenth" : "eighth";
 }
 
 /** The exercises of the metronome. Each one can be on with the others. */

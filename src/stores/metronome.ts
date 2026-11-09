@@ -2,7 +2,6 @@ import { create } from "zustand";
 import {
   BEATS_MAX,
   BEATS_MIN,
-  beatsInBar,
   defaultPattern,
   fitPattern,
   isValidGrouping,
@@ -10,7 +9,7 @@ import {
   SWING_MAX,
   SWING_STRAIGHT,
 } from "@/features/metronome/beatGrid";
-import type { BeatState, TimeSignature } from "@/features/metronome/types";
+import type { BeatState } from "@/features/metronome/types";
 import type { PlaybackStatus, VoiceLanguage } from "@/lib/bindings";
 import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
@@ -98,10 +97,6 @@ function loadVoice(): CountVoiceSetup {
     language: stored.language === "it" ? "it" : "en",
   };
 }
-
-/** The setup's own time signature, in MetroFlow's terms. */
-export const signatureOf = (setup: Pick<MetronomeSetup, "beats" | "unit" | "grouping">) =>
-  ({ beats: setup.beats, unit: setup.unit, grouping: setup.grouping }) as TimeSignature;
 
 const isState = (value: unknown): value is BeatState =>
   value === "accent" || value === "normal" || value === "muted";
@@ -319,6 +314,3 @@ export function currentPulses(now = performance.now()): number | null {
   if (!state.running) return null;
   return state.pulses + ((now - state.pulsesAt) / 1000) * pulsesPerSecond(shownSetup(state));
 }
-
-/** Felt beats in a bar of the current setup. */
-export const feltBeats = (setup: MetronomeSetup) => beatsInBar(signatureOf(setup));
