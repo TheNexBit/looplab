@@ -13,7 +13,7 @@ import { Group } from "./Group";
 import {
   A_NOTE,
   INSTRUMENTS,
-  italianName,
+  localNoteName,
   noteHz,
   openStrings,
   REFERENCE_TUNING_IDS,
@@ -118,7 +118,7 @@ export function ReferenceGroup() {
             key={index}
             label={p.stringKey(
               strings.length - index,
-              italianName(note),
+              localNoteName(note),
               octave(note),
               hzText(noteHz(note, a4)),
             )}
@@ -129,7 +129,7 @@ export function ReferenceGroup() {
               onClick={() => toggle(note)}
               className="min-w-9"
             >
-              {italianName(note)}
+              {localNoteName(note)}
             </Chip>
           </Tooltip>
         ))}

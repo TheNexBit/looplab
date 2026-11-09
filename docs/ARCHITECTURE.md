@@ -184,7 +184,12 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 - Metronomo da solo: `stores/metronome.ts` (battuta, tempo, posizione riportata dal motore e proseguita a tempo
   tra un rapporto e l'altro: `currentPulses`), `features/metronome/metronomeEngine.ts` (`syncMetronome`, avviato
   dall'app: manda ogni cambio al motore, avvio e arresto; brano e metronomo non suonano insieme), schermata
-  `MetronomeView.tsx` (+ `TempoPanel`, `MeterMenu`, `BeatStrip`), scelte pure in `meterChoices.ts`.
+  `MetronomeView.tsx` (+ `TempoDial`, `MeterMenu`, `BeatStrip`, barra in basso `MetronomeTransport`; tasti e
+  menu del tempo in `TempoControls`), scelte pure in `meterChoices.ts`, battuta e gruppi in `beatGrid.ts`
+  (`feltBeatSpans` è l'unico punto che divide la battuta in battiti), battiti per l'animazione in `useBeats`.
+  Suoni dei click: una riga per tipo (`ClickSoundRow`), usata dalla scheda Suoni e dalla scheda Pratica;
+  suoni importati in `stores/clickSounds.ts` e `commands/click_sounds.rs`. Voce che conta: `voice.rs` nel
+  motore, parole incorporate da `src-tauri/src/voice.rs`.
 - Riga informazioni (`app/InfoBar.tsx`, opzione `infoBar`): legge gli attributi `data-info*` che `Tooltip`
   mette sul suo elemento, altrimenti `title` o `aria-label` dell'elemento sotto il puntatore. Un testo nuovo
   in un `Tooltip` compare quindi da solo anche lì.

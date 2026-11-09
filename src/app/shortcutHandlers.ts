@@ -1,7 +1,7 @@
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { loopSection } from "@/features/markers/sectionActions";
 import { toggleMetronomeRun } from "@/features/metronome/metronomeEngine";
-import { nudgeBpm, tapMetronome } from "@/features/metronome/TempoPanel";
+import { nudgeBpm, tapMetronome } from "@/features/metronome/TempoControls";
 import { setFollow } from "@/features/player/FollowKey";
 import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/actions";
 import { togglePlaylist } from "@/features/practice/playlist";

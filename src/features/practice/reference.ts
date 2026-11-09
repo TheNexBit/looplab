@@ -35,7 +35,7 @@ const A4 = 69;
 
 export const noteHz = (midi: number, a4: number) => a4 * 2 ** ((midi - A4) / 12);
 /** The note's name in the app's language (Do Re Mi in Italian, letters in English). */
-export const italianName = (midi: number) =>
+export const localNoteName = (midi: number) =>
   t.common.noteNames[((midi % 12) + 12) % 12] ?? t.common.noteNames[0] ?? "";
 
 /** Open strings of `instrument` in `tuning`, lowest first. */

@@ -537,6 +537,14 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     (la precisione dipende dallo zoom); rilasciato Maiusc lo snap torna. Il tasto Snap e G restano com'erano;
     mentre Maiusc lo sospende durante un trascinamento la spia del tasto Snap si spegne. Stato tenuto per tutta
     la finestra (`features/markers/snapHold.ts`), azzerato quando la finestra perde il fuoco.
+14. ✅ **Pulizia del codice** (report approvato dall'utente, tutti i 9 punti). Tolta la logica di MetroFlow che il
+    motore Rust ha sostituito (`gapCycle`, `randomSetup`, `routinePlan`, `routineTypes`, `constants`, i tipi del
+    vecchio motore Web Audio, le funzioni di tempo inutilizzate di `beatGrid` e `rhythmPattern`: circa 900 righe);
+    un solo calcolo dei gruppi della battuta (`feltBeatSpans`); una sola riga del suono (`ClickSoundRow`) anche
+    nella scheda Pratica, che ora mostra i suoni importati, e via il vecchio ascolto di prova (`preview_click`);
+    uno stile unico per i tasti − / + (`smallKey`); campioni della voce tagliati già in registrazione
+    (−2,6 MB sull'exe); barra in basso del metronomo in `MetronomeTransport.tsx`, `TempoPanel` → `TempoControls`,
+    `italianName` → `localNoteName`.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

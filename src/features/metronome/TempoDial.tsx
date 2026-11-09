@@ -35,7 +35,7 @@ import {
   TICKS,
 } from "./dialGeometry";
 import { tempoMarking } from "./meterChoices";
-import { NOTE, nudgeBpm, TempoBaseItems } from "./TempoPanel";
+import { NOTE, nudgeBpm, TempoBaseItems } from "./TempoControls";
 import { restartAnimation, useBeats } from "./useBeats";
 
 const m = t.metronome;

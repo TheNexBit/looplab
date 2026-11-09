@@ -4,7 +4,7 @@ import { type ReactNode, useRef } from "react";
 import { Chip } from "@/components/ui/Chip";
 import { menuContent, menuItem, menuLabel, menuSeparator, smallKey } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { italianName } from "@/features/practice/reference";
+import { localNoteName } from "@/features/practice/reference";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { CHORDS, findChord, noteName, ROOT_CHOICES, resolveShape, SCALES } from "@/lib/music";
@@ -109,7 +109,7 @@ function RootMenu() {
             >
               <span className="font-mono text-sm">{noteName(pc, accidental)}</span>
               {t.common.solfege && (
-                <span className="text-[10px] opacity-70">{italianName(pc)}</span>
+                <span className="text-[10px] opacity-70">{localNoteName(pc)}</span>
               )}
             </DropdownMenu.Item>
           ))}

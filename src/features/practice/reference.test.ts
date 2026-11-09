@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { A_NOTE, italianName, noteHz, openStrings } from "./reference";
+import { A_NOTE, localNoteName, noteHz, openStrings } from "./reference";
 
 describe("reference notes", () => {
   it("tunes from the chosen A", () => {
@@ -10,7 +10,7 @@ describe("reference notes", () => {
   });
 
   it("gives the open strings of each tuning, lowest first", () => {
-    expect(openStrings("guitar", "standard").map(italianName)).toEqual([
+    expect(openStrings("guitar", "standard").map(localNoteName)).toEqual([
       "Mi",
       "La",
       "Re",
@@ -18,7 +18,7 @@ describe("reference notes", () => {
       "Si",
       "Mi",
     ]);
-    expect(openStrings("guitar", "eFlat").map(italianName)).toEqual([
+    expect(openStrings("guitar", "eFlat").map(localNoteName)).toEqual([
       "Mi♭",
       "La♭",
       "Re♭",
