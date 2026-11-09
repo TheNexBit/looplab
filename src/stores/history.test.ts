@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useHistoryStore } from "./history";
 import { useLoopStore } from "./loop";
 import { useMarkersStore } from "./markers";
+import { usePracticeStore } from "./practice";
 import { useSavedLoopsStore } from "./savedLoops";
 
 describe("undo / redo", () => {
@@ -61,5 +62,23 @@ describe("undo / redo", () => {
     useHistoryStore.getState().reset();
     useHistoryStore.getState().undo();
     expect(markerTimes()).toEqual([1]);
+  });
+
+  it("undoes a tempo marker dragged by mistake, the whole drag as one step", () => {
+    const practice = usePracticeStore.getState();
+    practice.setTempoMap([
+      { time: 0, bpm: 120, beatsPerBar: 4, beatUnit: 4 },
+      { time: 8, bpm: 90, beatsPerBar: 7, beatUnit: 8 },
+    ]);
+    vi.advanceTimersByTime(500);
+    for (const time of [8.5, 9, 9.5, 10]) {
+      usePracticeStore.getState().moveTempoMarker(1, time);
+      vi.advanceTimersByTime(50);
+    }
+    vi.advanceTimersByTime(500);
+    useHistoryStore.getState().undo();
+    expect(usePracticeStore.getState().tempoMap[1]?.time).toBe(8);
+    useHistoryStore.getState().redo();
+    expect(usePracticeStore.getState().tempoMap[1]?.time).toBe(10);
   });
 });

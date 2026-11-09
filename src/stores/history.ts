@@ -1,6 +1,8 @@
 import { create } from "zustand";
+import type { TempoMap } from "@/features/practice/tempo";
 import { useLoopStore } from "./loop";
 import { type MarkerData, type SectionData, useMarkersStore } from "./markers";
+import { usePracticeStore } from "./practice";
 import { type SavedLoopData, useSavedLoopsStore } from "./savedLoops";
 
 /** Changes closer together than this are one step (a drag is one step, not hundreds). */
@@ -13,6 +15,7 @@ export interface EditState {
   sections: SectionData[];
   loop: { start: number | null; end: number | null; enabled: boolean };
   savedLoops: SavedLoopData[];
+  tempoMap: TempoMap;
 }
 
 function capture(): EditState {
@@ -23,6 +26,7 @@ function capture(): EditState {
     sections,
     loop: { start, end, enabled },
     savedLoops: useSavedLoopsStore.getState().loops,
+    tempoMap: usePracticeStore.getState().tempoMap,
   };
 }
 
@@ -30,6 +34,7 @@ const same = (a: EditState, b: EditState) =>
   a.markers === b.markers &&
   a.sections === b.sections &&
   a.savedLoops === b.savedLoops &&
+  a.tempoMap === b.tempoMap &&
   a.loop.start === b.loop.start &&
   a.loop.end === b.loop.end &&
   a.loop.enabled === b.loop.enabled;
@@ -44,7 +49,7 @@ interface HistoryState {
 }
 
 /**
- * Undo / redo of markers, sections, the loop and saved loops. It watches those stores:
+ * Undo / redo of markers, sections, the loop, saved loops and the tempo map. It watches those stores:
  * the state before a burst of changes becomes one step once they settle.
  */
 export const useHistoryStore = create<HistoryState>((set, get) => {
@@ -78,6 +83,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => {
     useMarkersStore.getState().replace(state.markers, state.sections);
     useLoopStore.setState(state.loop);
     useSavedLoopsStore.getState().replace(state.savedLoops);
+    usePracticeStore.getState().setTempoMap(state.tempoMap);
     restoring = false;
     settled = state;
   };
@@ -85,6 +91,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => {
   useMarkersStore.subscribe(onChange);
   useLoopStore.subscribe(onChange);
   useSavedLoopsStore.subscribe(onChange);
+  // Only the map itself: the playhead moving the focus is no edit
+  usePracticeStore.subscribe((state, previous) => {
+    if (state.tempoMap !== previous.tempoMap) onChange();
+  });
 
   return {
     past: [],
