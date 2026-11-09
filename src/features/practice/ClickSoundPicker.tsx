@@ -1,103 +1,27 @@
-import { ChevronDown, Play } from "lucide-react";
-import { DropdownMenu } from "radix-ui";
-import { Button } from "@/components/ui/Button";
-import { menuContent, menuItem } from "@/components/ui/menu";
-import { parsePercent } from "@/components/ui/NumberField";
-import { Slider } from "@/components/ui/Slider";
+import { useState } from "react";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { tryClick } from "@/features/player/syncEngine";
+import { ClickSoundRow } from "@/features/metronome/ClickSoundRow";
 import { t } from "@/i18n";
-import type { ClickSound } from "@/lib/bindings";
-import { formatPercent } from "@/lib/format";
-import { CLICK_SOUNDS, SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
+import { SOUND_SLOTS } from "@/stores/clickSounds";
 
 const p = t.practice;
 
-/** One beat kind: its sound (menu), a key to hear it and its level. */
-function SoundRow({ accent }: { accent: boolean }) {
-  const sound = useSettingsStore((s) => (accent ? s.accentSound : s.beatSound));
-  const level = useSettingsStore((s) => (accent ? s.accentLevel : s.beatLevel));
-  // An imported sound (chosen in the metronome's Sounds tab) plays instead of the built-in one
-  const custom = useSettingsStore((s) => (accent ? s.accentCustom : s.beatCustom));
-  const update = useSettingsStore((s) => s.update);
-  const label = accent ? p.accent : p.otherBeats;
-  const choose = (next: ClickSound) => {
-    update(accent ? { accentSound: next, accentCustom: "" } : { beatSound: next, beatCustom: "" });
-    // Hearing the choice right away is how sound menus of DAWs feel
-    void tryClick(accent);
-  };
-  const limits = accent ? SETTING_LIMITS.accentLevel : SETTING_LIMITS.beatLevel;
-
-  return (
-    <div className="space-y-1">
-      <p className="text-xs text-fg-muted">{label}</p>
-      <div className="flex items-center gap-1">
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <Button
-              variant="hardware"
-              className="flex-1 justify-between"
-              aria-label={`${label}: ${custom || p.sounds[sound]}`}
-            >
-              <span className="truncate">{custom || p.sounds[sound]}</span>
-              <ChevronDown className="size-3.5" />
-            </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content side="top" align="start" sideOffset={4} className={menuContent}>
-              <DropdownMenu.RadioGroup
-                value={sound}
-                onValueChange={(value) => choose(value as ClickSound)}
-              >
-                {CLICK_SOUNDS.map((option) => (
-                  <DropdownMenu.RadioItem key={option} value={option} className={menuItem}>
-                    <span className="w-3 text-accent">
-                      {!custom && option === sound ? "●" : ""}
-                    </span>
-                    {p.sounds[option]}
-                  </DropdownMenu.RadioItem>
-                ))}
-              </DropdownMenu.RadioGroup>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
-        <Tooltip label={p.tryClick}>
-          <Button
-            variant="hardware"
-            size="icon"
-            onClick={() => void tryClick(accent)}
-            aria-label={`${p.tryClick}: ${label}`}
-          >
-            <Play className="size-3.5" />
-          </Button>
-        </Tooltip>
-      </div>
-      <Slider
-        label={p.level}
-        value={level}
-        defaultValue={1}
-        min={limits.min}
-        max={limits.max}
-        step={limits.step}
-        onChange={(value) => update(accent ? { accentLevel: value } : { beatLevel: value })}
-        format={formatPercent}
-        parse={parsePercent}
-        trackClassName="flex-1"
-        className="justify-between"
-      />
-    </div>
-  );
-}
-
-/** Metronome sounds, like Reaper's: one for the first beat of a bar, one for the others. */
+/**
+ * Metronome sounds, like Reaper's: one for the first beat of a bar, one for the others,
+ * built-in or imported (the same rows as the metronome's Sounds tab, where the subdivisions
+ * and the cross rhythm are too).
+ */
 export function ClickSoundPicker() {
+  const [failed, setFailed] = useState(false);
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <Tooltip label={p.soundHint}>
         <p className="panel-label cursor-help">{p.sound}</p>
       </Tooltip>
-      <SoundRow accent />
-      <SoundRow accent={false} />
+      {SOUND_SLOTS.filter(({ slot }) => slot === "accent" || slot === "beat").map((slot) => (
+        <ClickSoundRow key={slot.slot} slot={slot} onFailed={() => setFailed(true)} />
+      ))}
+      {failed && <p className="text-xs text-accent">{t.metronome.sounds.importFailed}</p>}
     </div>
   );
 }

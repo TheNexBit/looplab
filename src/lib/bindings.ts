@@ -27,13 +27,8 @@ export const commands = {
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
 	setClick: (settings: ClickRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_click", { settings })),
 	/**
-	 *  Plays one accented or ordinary click now, so the chosen sound can be heard (also paused).
-	 *  Starts the audio device if needed: trying a sound must work before any track is open.
-	 */
-	previewClick: (accent: boolean) => typedError<null, AppError>(__TAURI_INVOKE("preview_click", { accent })),
-	/**
 	 *  Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
-	 *  before any track is open (it starts the audio device like `preview_click`).
+	 *  before any track is open (it starts the audio device like `preview_sound`).
 	 */
 	setReferenceTone: (hz: number | null, level: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_reference_tone", { hz, level })),
 	/**

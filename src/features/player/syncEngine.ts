@@ -63,12 +63,6 @@ export function clickSounds(settings: Settings): SoundsRequest {
   };
 }
 
-/** Plays one click with the current sound settings, to try them (also while paused). */
-export async function tryClick(accent: boolean) {
-  await commands.setClick(clickSettings());
-  await commands.previewClick(accent);
-}
-
 /**
  * Keeps the engine in step with the loop, EQ, channel and click (tempo, metronome,
  * count-in) settings. Started once by the

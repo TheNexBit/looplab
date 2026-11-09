@@ -2,7 +2,7 @@ import { Check, ChevronDown, Minus, Plus } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { type ReactNode, useRef } from "react";
 import { Chip } from "@/components/ui/Chip";
-import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
+import { menuContent, menuItem, menuLabel, menuSeparator, smallKey } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { italianName } from "@/features/practice/reference";
 import { t } from "@/i18n";
@@ -17,8 +17,6 @@ const n = t.metronome.neck;
 
 const toolKey =
   "hw flex h-7 items-center gap-1.5 rounded-control px-2.5 text-xs text-fg hover:brightness-125 data-[state=open]:text-accent";
-const smallKey =
-  "hw inline-flex size-6 items-center justify-center rounded-control text-fg-muted hover:text-fg hover:brightness-125 disabled:opacity-40";
 
 /** Italian name of a scale or chord (the theory files keep MetroFlow's English ones). */
 export function shapeLabel(kind: "scale" | "chord", id: string, fallback: string): string {

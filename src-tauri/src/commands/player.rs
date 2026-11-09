@@ -248,17 +248,8 @@ pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(
     Ok(())
 }
 
-/// Plays one accented or ordinary click now, so the chosen sound can be heard (also paused).
-/// Starts the audio device if needed: trying a sound must work before any track is open.
-#[tauri::command]
-#[specta::specta]
-pub fn preview_click(state: State<'_, AppState>, accent: bool) -> Result<(), AppError> {
-    state.engine()?.preview_click(accent);
-    Ok(())
-}
-
 /// Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
-/// before any track is open (it starts the audio device like `preview_click`).
+/// before any track is open (it starts the audio device like `preview_sound`).
 #[tauri::command]
 #[specta::specta]
 pub fn set_reference_tone(state: State<'_, AppState>, hz: f32, level: f32) -> Result<(), AppError> {

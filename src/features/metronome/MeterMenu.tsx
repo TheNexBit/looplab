@@ -1,7 +1,7 @@
 import { Check, ChevronDown, Minus, Plus } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Chip } from "@/components/ui/Chip";
-import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
+import { menuContent, menuItem, menuLabel, menuSeparator, smallKey } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
@@ -12,9 +12,6 @@ import { COMMON_METERS, groupingChoices } from "./meterChoices";
 const m = t.metronome;
 const same = (a: number[] | null, b: number[] | null | undefined) =>
   (a ?? []).join("+") === (b ?? []).join("+");
-
-const smallKey =
-  "hw inline-flex size-6 items-center justify-center rounded-control text-fg-muted hover:text-fg hover:brightness-125 disabled:opacity-40";
 
 /**
  * The bar, on a display key: 7/8 and its grouping (2+2+3). The menu lists the common

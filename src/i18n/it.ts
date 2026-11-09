@@ -479,10 +479,6 @@ export const it = {
     sound: "Suono del metronomo",
     soundHint:
       "Come nelle impostazioni del metronomo di Reaper: un suono e un livello per il primo battito di ogni battuta e uno per gli altri. ▶ per sentirlo.",
-    accent: "Accento (1° battito)",
-    otherBeats: "Altri battiti",
-    level: "Livello",
-    tryClick: "Ascolta",
     sounds: {
       beepHigh: "Beep alto",
       beepLow: "Beep basso",

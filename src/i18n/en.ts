@@ -476,10 +476,6 @@ export const en = {
     sound: "Metronome sound",
     soundHint:
       "As in Reaper's metronome settings: a sound and a level for the first beat of each bar and one for the others. ▶ to hear it.",
-    accent: "Accent (1st beat)",
-    otherBeats: "Other beats",
-    level: "Level",
-    tryClick: "Listen",
     sounds: {
       beepHigh: "High beep",
       beepLow: "Low beep",

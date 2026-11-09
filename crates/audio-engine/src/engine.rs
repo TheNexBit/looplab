@@ -249,15 +249,6 @@ impl Engine {
         self.send(Command::SetClick(settings));
     }
 
-    /// Plays one accented (`true`) or ordinary click at once, with the current click settings.
-    pub fn preview_click(&self, accent: bool) {
-        self.preview_kind(if accent {
-            ClickKind::Accent
-        } else {
-            ClickKind::Beat
-        });
-    }
-
     /// Plays one click of `kind` at once (accent, beat, subdivision, cross rhythm).
     pub fn preview_kind(&self, kind: ClickKind) {
         self.send(Command::PreviewClick(kind));

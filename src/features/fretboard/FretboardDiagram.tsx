@@ -1,7 +1,7 @@
 import { Minus, Plus } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { useRef } from "react";
-import { menuContent, menuLabel } from "@/components/ui/menu";
+import { menuContent, menuLabel, smallKey } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
@@ -16,9 +16,6 @@ const n = t.metronome.neck;
 const OUT_OF_WINDOW = 0.22;
 /** Narrowest a fret is drawn, in rem: a neck too wide for the window scrolls instead. */
 const MIN_FRET = 1.5;
-
-const smallKey =
-  "hw inline-flex size-6 items-center justify-center rounded-control text-fg-muted hover:text-fg hover:brightness-125";
 
 /** The name of an open string: wheel or − / + in its menu retune it by a semitone. */
 function StringKey({

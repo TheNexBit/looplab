@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { cn } from "@/lib/cn";
 import { clamp } from "@/lib/time";
 import { useWheelSteps } from "@/lib/useWheelSteps";
+import { smallKey } from "./menu";
 
 interface StepperProps {
   label: string;
@@ -44,8 +45,6 @@ export function Stepper({
   };
   useWheelSteps(ref, move);
 
-  const key =
-    "hw inline-flex size-6 items-center justify-center rounded-control text-fg-muted transition-[color,filter] hover:text-fg hover:brightness-125 active:translate-y-px disabled:pointer-events-none disabled:opacity-40";
   return (
     <fieldset
       ref={ref}
@@ -57,7 +56,7 @@ export function Stepper({
         aria-label={`${label} −`}
         disabled={disabled || value <= min}
         onClick={() => move(-1)}
-        className={key}
+        className={smallKey}
       >
         <Minus className="size-3" />
       </button>
@@ -75,7 +74,7 @@ export function Stepper({
         aria-label={`${label} +`}
         disabled={disabled || value >= max}
         onClick={() => move(1)}
-        className={key}
+        className={smallKey}
       >
         <Plus className="size-3" />
       </button>
