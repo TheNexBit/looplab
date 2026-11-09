@@ -549,8 +549,9 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     corallo, loop dorato), Abisso (blu petrolio, acquamarina, loop corallo), Valvole (marrone da amplificatore,
     display arancio come le nixie, loop oliva), OLED (nero puro, accento rosso da registrazione), Carta (avorio
     e inchiostro, secondo tema chiaro). Dieci temi in tutto, ognuno con i colori su misura. Nuovo test di
-    leggibilità per ogni tema (contrasto WCAG di testo, display e tasti accesi); lo Studio chiaro ha il testo
-    dei tasti accesi a 3,3:1, sotto il 4,5 consigliato: lasciato com'è, da rivedere se serve.
+    leggibilità per ogni tema (contrasto WCAG di testo, display e tasti accesi, anche al passaggio del mouse).
+    Lo Studio chiaro aveva il testo dei tasti accesi a 3,3:1: arancione scurito (#d46f00 → #b05c00, ora 4,6:1)
+    e, come la Carta, al passaggio del mouse il tasto si scurisce invece di schiarirsi.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

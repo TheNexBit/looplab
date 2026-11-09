@@ -52,8 +52,8 @@ describe("theme palettes", () => {
     ["--color-fg-subtle", "--color-bg-from", 4.5],
     ["--color-lcd-fg", "--color-lcd", 4.5],
     ["--color-lcd-dim", "--color-lcd", 3],
-    // Studio light's lit keys sit at 3.3: the floor, not the goal
-    ["--color-on-accent", "--color-accent", 3],
+    ["--color-on-accent", "--color-accent", 4.5],
+    ["--color-on-accent", "--color-accent-hover", 4.5],
   ];
 
   it.each(THEMES)("%s keeps its text readable", (theme) => {

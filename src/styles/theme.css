@@ -259,11 +259,12 @@
 }
 
 /* Studio light: light grey panels for bright rooms, like the light themes of Ableton and
-   Logic; the displays stay dark, as on real hardware */
+   Logic; the displays stay dark, as on real hardware. The accent is a deep orange so the
+   text on lit keys stays readable (4.6:1); hovering darkens it, as light themes do */
 [data-theme="light"] {
-  --color-accent: #d46f00;
-  --color-accent-hover: #e67e0a;
-  --color-accent-soft: rgb(212 111 0 / 0.14);
+  --color-accent: #b05c00;
+  --color-accent-hover: #9e5200;
+  --color-accent-soft: rgb(176 92 0 / 0.14);
   --color-on-accent: #fffaf2;
   --color-loop: #0e8f5b;
   --color-loop-soft: rgb(14 143 91 / 0.1);
@@ -565,10 +566,11 @@
   --color-key-black: #000000;
 }
 
-/* Paper: warm ivory pages and dark ink for bright rooms, a teal accent; dark displays */
+/* Paper: warm ivory pages and dark ink for bright rooms, a teal accent (hovering darkens it,
+   so the text on lit keys stays readable); dark displays */
 [data-theme="paper"] {
   --color-accent: #0b7a75;
-  --color-accent-hover: #0e8f89;
+  --color-accent-hover: #096a66;
   --color-accent-soft: rgb(11 122 117 / 0.14);
   --color-on-accent: #f4fbfa;
   --color-loop: #b8551d;
