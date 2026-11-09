@@ -9,6 +9,10 @@ export type Dialog = "palette" | "settings" | "about" | "diary" | "export";
 /** Width of the side panel, in CSS pixels. */
 export const SIDE_PANEL_WIDTH = { min: 260, max: 560, default: 300 } as const;
 const WIDTH_KEY = "looplab.sidePanelWidth";
+/** Whether the side panel is open and which tab it shows: kept between sessions too */
+const OPEN_KEY = "looplab.sidePanelOpen";
+const TAB_KEY = "looplab.sidePanelTab";
+const TABS: readonly SidePanelTab[] = ["sections", "eq", "practice"];
 /** Width always left to the waveforms beside the panel. */
 const WAVEFORMS_MIN_WIDTH = 480;
 
@@ -17,6 +21,15 @@ function loadWidth(): number {
   return typeof stored === "number"
     ? clamp(stored, SIDE_PANEL_WIDTH.min, SIDE_PANEL_WIDTH.max)
     : SIDE_PANEL_WIDTH.default;
+}
+
+function loadOpen(): boolean {
+  return readStored(OPEN_KEY) !== false;
+}
+
+function loadTab(): SidePanelTab {
+  const stored = readStored(TAB_KEY);
+  return TABS.includes(stored as SidePanelTab) ? (stored as SidePanelTab) : "sections";
 }
 
 interface UiState {
@@ -37,16 +50,27 @@ interface UiState {
   openExport: (source?: ExportSource) => void;
 }
 
-/** Layout state of the shell: which panels and dialogs are open, which tab is active. */
-export const useUiStore = create<UiState>((set) => ({
-  sidePanelOpen: true,
+/**
+ * Layout state of the shell: which panels and dialogs are open, which tab is active. The side
+ * panel (open or closed, its tab and its width) comes back as it was left, like a DAW's layout.
+ */
+export const useUiStore = create<UiState>((set, get) => ({
+  sidePanelOpen: loadOpen(),
   sidePanelWidth: loadWidth(),
-  sidePanelTab: "sections",
+  sidePanelTab: loadTab(),
   dialog: null,
   exportSource: null,
   mini: false,
-  toggleSidePanel: () => set((state) => ({ sidePanelOpen: !state.sidePanelOpen })),
-  setSidePanelTab: (tab) => set({ sidePanelTab: tab, sidePanelOpen: true }),
+  toggleSidePanel: () => {
+    const sidePanelOpen = !get().sidePanelOpen;
+    set({ sidePanelOpen });
+    writeStored(OPEN_KEY, sidePanelOpen);
+  },
+  setSidePanelTab: (tab) => {
+    set({ sidePanelTab: tab, sidePanelOpen: true });
+    writeStored(TAB_KEY, tab);
+    writeStored(OPEN_KEY, true);
+  },
   setSidePanelWidth: (width) => {
     // Never so wide that the waveforms get squeezed out of a small window
     const room = Math.max(SIDE_PANEL_WIDTH.min, window.innerWidth - WAVEFORMS_MIN_WIDTH);

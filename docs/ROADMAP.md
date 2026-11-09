@@ -552,6 +552,9 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     leggibilità per ogni tema (contrasto WCAG di testo, display e tasti accesi, anche al passaggio del mouse).
     Lo Studio chiaro aveva il testo dei tasti accesi a 3,3:1: arancione scurito (#d46f00 → #b05c00, ora 4,6:1)
     e, come la Carta, al passaggio del mouse il tasto si scurisce invece di schiarirsi.
+16. ✅ **Il pannello laterale si ricorda com'era.** Aperto o chiuso e la scheda attiva (Sezioni, Pratica, EQ)
+    tornano come lasciati alla riapertura dell'app, come la larghezza già faceva (`stores/ui.ts`, chiavi
+    `looplab.sidePanelOpen` e `looplab.sidePanelTab`; test di un riavvio in `ui.test.ts`).
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 
