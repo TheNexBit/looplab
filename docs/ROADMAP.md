@@ -438,10 +438,10 @@ Le ultime idee proposte rimaste aperte, fatte in ordine su richiesta dell'utente
 - **Riga informazioni** (Impostazioni → Generale, spenta di serie), come la Info View di Ableton: in fondo alla
   finestra dice cosa c'è sotto il mouse, con scorciatoia e tasto destro.
 
-## M. Metronomo integrato (prova sul ramo `metronomo`) 🚧
+## M. Metronomo integrato ✅
 
-Copia di prova in `D:\sandbox\looplab-metronomo` (dati, porta 1422 e nome suoi: commit da togliere prima di
-unire a `main`). Si importa MetroFlow (`D:\projects\Metronome`, che resta intatto) invece di rifarlo: logica e
+Provato dall'utente in una copia a parte (ramo `metronomo`) e unito a `main` il 2026-11-09, tolto il commit
+che separava la copia di prova. Si importa MetroFlow (`D:\projects\Metronome`, che resta intatto) invece di rifarlo: logica e
 interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, valido anche sopra i brani).
 
 1. ✅ **Logica pura** importata con test nuovi (MetroFlow non ne aveva): `features/metronome/` (battuta con gruppi
@@ -502,7 +502,7 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
 8. ✅ **Voce che conta** (tasto ON/OFF con spia nel trasporto; tasto destro: «e» sulle suddivisioni e volume).
    «uno, due, tre…» sugli impulsi, anche nel count-in; tace dove tace il click (battito muto, gap trainer, click
    muti a caso); oltre il sedici ricomincia da «uno». Campioni registrati con la voce italiana di Windows
-   (Microsoft Elsa) da `scripts 9-genera-voce.cmd`, incorporati nell'app (`src-tauri/voice/it`); il motore li
+   (Microsoft Elsa) da `scripts\09-genera-voce.cmd`, incorporati nell'app (`src-tauri/voice/it`); il motore li
    taglia dai silenzi, li porta allo stesso volume e alla frequenza della scheda (`voice.rs`) e li dice sul
    battito, sopra i click, senza toccare il thread audio. Oltre ~180 BPM i numeri lunghi si accorciano (la parola
    dopo taglia quella prima). **Da verificare prima di distribuire l'app:** la licenza d'uso delle frasi registrate
