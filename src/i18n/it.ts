@@ -550,6 +550,10 @@ export const it = {
     color: "Colore",
     remove: "Elimina",
     markerRightClick: "elimina",
+    tempoMarker: "Marker di tempo",
+    tempoMarkerHint: "clic: vai lì (il display Tempo e la metrica lo cambiano) · trascina: sposta",
+    tempoRightClick: "elimina",
+    removeTempoMarker: "Elimina il marker di tempo",
     sectionRightClick: "loop, esporta, colore, elimina",
     savedInAppData:
       "La cartella del brano è protetta: il progetto è salvato nella cartella dell'app.",
@@ -894,6 +898,7 @@ export const it = {
     toggleFollow: "Follow on/off",
     toggleContinuousScroll: "Scorrimento continuo on/off",
     addMarker: "Aggiungi marker",
+    addTempoMarker: "Aggiungi marker di tempo",
     addBeat: "Aggiungi battuta",
     addSection: "Sezione: inizio / fine",
     sectionFromLoop: "Crea sezione dal loop",

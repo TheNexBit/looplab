@@ -3,6 +3,8 @@ import {
   BEAT_UNITS,
   BEATS_PER_BAR,
   BPM,
+  beatsBetween,
+  markerAt,
   markerIndexAt,
   sanitizeTempoMap,
   type TempoMap,
@@ -39,6 +41,15 @@ interface PracticeState {
   /** Moves the focused marker's first beat to `seconds` (where its bars line up) */
   setBeatOffset: (seconds: number | null) => void;
   setTimeSignature: (beatsPerBar: number, beatUnit: number) => void;
+  /**
+   * A new marker at the bar line nearest `time`, with the tempo and meter in force there, like
+   * Reaper's "insert tempo marker": then the display and the meter change it from there on.
+   * Returns false when there is no tempo yet or a marker is already there.
+   */
+  addTempoMarker: (time: number) => boolean;
+  /** Moves marker `index` to `time`, never past its neighbours */
+  moveTempoMarker: (index: number, time: number) => void;
+  removeTempoMarker: (index: number) => void;
   addTap: (time: number) => void;
   countRepetition: () => void;
   resetRepetitions: () => void;
@@ -149,6 +160,35 @@ export const usePracticeStore = create<PracticeState>((set, get) => {
     },
     setTimeSignature: (beatsPerBar, beatUnit) =>
       editFocused({ beatsPerBar: fitBeats(beatsPerBar), beatUnit: fitUnit(beatUnit) }),
+    addTempoMarker: (time) => {
+      const { tempoMap } = get();
+      const marker = markerAt(tempoMap, time);
+      if (!marker) return false;
+      // On the bar line nearest `time`, so the grid before it stays as it was
+      const bars = beatsBetween(time - 60, time + 60, tempoMap).filter((beat) => beat.bar);
+      const at = bars.reduce(
+        (best, beat) => (Math.abs(beat.time - time) < Math.abs(best - time) ? beat.time : best),
+        bars[0]?.time ?? time,
+      );
+      if (tempoMap.some((m) => Math.abs(m.time - at) < 0.01)) return false;
+      commit(sanitizeTempoMap([...tempoMap, { ...marker, time: at }]), at);
+      return true;
+    },
+    moveTempoMarker: (index, time) => {
+      const { tempoMap } = get();
+      const before = tempoMap[index - 1]?.time ?? -Infinity;
+      const after = tempoMap[index + 1]?.time ?? Infinity;
+      const marker = tempoMap[index];
+      if (!marker || time <= before + 0.01 || time >= after - 0.01) return;
+      const map = tempoMap.map((m, i) => (i === index ? { ...m, time } : m));
+      commit(map, time);
+    },
+    removeTempoMarker: (index) => {
+      const { tempoMap } = get();
+      if (!tempoMap[index]) return;
+      const map = tempoMap.filter((_, i) => i !== index);
+      commit(map, tempoMap[index]?.time ?? 0);
+    },
     addTap: (time) => set({ taps: [...get().taps, time].slice(-MAX_TAPS) }),
     countRepetition: () => set({ repetitions: get().repetitions + 1 }),
     resetRepetitions: () => set({ repetitions: 0 }),

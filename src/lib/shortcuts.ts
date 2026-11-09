@@ -25,6 +25,8 @@ export const shortcuts = {
   // Reaper's "Continuous scrolling" toggle: no key by default, assignable in the settings
   toggleContinuousScroll: "",
   addMarker: "M",
+  // Reaper's "insert tempo marker"
+  addTempoMarker: "Shift+C",
   addBeat: "B",
   // S opens a section, S again closes it (Esc drops it), like recording a region
   addSection: "S",

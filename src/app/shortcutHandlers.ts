@@ -18,6 +18,7 @@ import { neighbourPoint, sortedSections, useMarkersStore } from "@/stores/marker
 import { useMetronomeStore } from "@/stores/metronome";
 import { useNotesStore } from "@/stores/notes";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
+import { usePracticeStore } from "@/stores/practice";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
@@ -101,6 +102,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   toggleContinuousScroll: () =>
     settings().update({ followMode: settings().followMode === "center" ? "page" : "center" }),
   addMarker: () => hasTrack() && useMarkersStore.getState().addMarker("free", currentPosition()),
+  addTempoMarker: () => hasTrack() && usePracticeStore.getState().addTempoMarker(currentPosition()),
   addBeat: () => hasTrack() && useMarkersStore.getState().addMarker("beat", currentPosition()),
   addSection: () =>
     hasTrack() && useMarkersStore.getState().markSection(currentPosition(), trackDuration()),

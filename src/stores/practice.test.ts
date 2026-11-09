@@ -58,4 +58,21 @@ describe("tempo map of the open track", () => {
     expect(store().tempoMap).toEqual([]);
     expect(store().bpm).toBeNull();
   });
+
+  it("adds a marker on the nearest bar line with the tempo in force, then moves and removes it", () => {
+    // 120 BPM 4/4: bars every 2 s
+    store().setTempoMap([{ time: 0, bpm: 120, beatsPerBar: 4, beatUnit: 4 }]);
+    expect(store().addTempoMarker(6.3)).toBe(true);
+    expect(store().tempoMap.map((m) => m.time)).toEqual([0, 6]);
+    expect(store().tempoMap[1]?.bpm).toBe(120);
+    expect(store().addTempoMarker(6.1), "one is there already").toBe(false);
+    store().moveTempoMarker(1, 7);
+    expect(store().tempoMap[1]?.time).toBe(7);
+    store().moveTempoMarker(1, -1);
+    expect(store().tempoMap[1]?.time, "never before the previous one").toBe(7);
+    store().removeTempoMarker(1);
+    expect(store().tempoMap).toHaveLength(1);
+    store().setTempoMap([]);
+    expect(store().addTempoMarker(3), "no tempo yet").toBe(false);
+  });
 });
