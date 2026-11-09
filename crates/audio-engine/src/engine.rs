@@ -18,6 +18,7 @@ use crate::metronome::{MetronomeSettings, Sequence};
 use crate::pattern::ClickKind;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
+use crate::tempo_map::TempoMap;
 use crate::tone::ToneSettings;
 use crate::voice::VoiceBank;
 
@@ -70,6 +71,8 @@ pub(crate) enum Command {
     PreviewClick(ClickKind),
     /// Imported sounds used instead of the synthesised ones
     SetClickSamples(Arc<ClickSamples>),
+    /// Where tempo and meter change in the track: the clicks and count-ins follow it
+    SetTempoMap(Arc<TempoMap>),
     /// Reference note to tune by ear, heard also while paused
     SetTone(ToneSettings),
     /// The metronome on its own (no track): its bar, tempo and sounds…
@@ -88,6 +91,7 @@ pub(crate) enum Garbage {
     Sequence(#[allow(dead_code)] Arc<Sequence>),
     Voice(#[allow(dead_code)] Arc<VoiceBank>),
     Samples(#[allow(dead_code)] Arc<ClickSamples>),
+    TempoMap(#[allow(dead_code)] Arc<TempoMap>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -247,6 +251,11 @@ impl Engine {
     /// Tempo, metronome and count-in.
     pub fn set_click(&self, settings: ClickSettings) {
         self.send(Command::SetClick(settings));
+    }
+
+    /// The tempo map of the track (built off the audio thread): clicks and count-ins follow it.
+    pub fn set_tempo_map(&self, map: TempoMap) {
+        self.send(Command::SetTempoMap(Arc::new(map)));
     }
 
     /// Plays one click of `kind` at once (accent, beat, subdivision, cross rhythm).

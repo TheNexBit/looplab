@@ -6,7 +6,7 @@ import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useLoopStore } from "@/stores/loop";
 import { currentPosition, usePlayerStore } from "@/stores/player";
-import { currentGrid, usePracticeStore } from "@/stores/practice";
+import { currentTempoMap, usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 import { drawBeatGrid, drawRuler, drawWaveform } from "./draw";
@@ -102,7 +102,7 @@ export function DetailView() {
         label: themeColor("fg-muted"),
         grid: settings.rulerLines ? themeColor("grid") : undefined,
       });
-      const beats = settings.showGrid ? currentGrid() : null;
+      const beats = settings.showGrid ? currentTempoMap() : null;
       if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
       drawWaveform(ctx, peaks, view, themeColor("wave"), {
         style: settings.waveStyle,

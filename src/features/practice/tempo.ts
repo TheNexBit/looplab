@@ -45,11 +45,6 @@ export function tapTempo(taps: number[], speed: number): number | null {
   return Math.round((60_000 / interval / speed) * 10) / 10;
 }
 
-/** Seconds of a count-in of `bars` at the track's original speed (0 when off or without a tempo). */
-export function countInSeconds(bars: number, grid: BeatGrid | null): number {
-  return grid ? bars * grid.beatsPerBar * beatSeconds(grid) : 0;
-}
-
 export interface TrainerPlan {
   /** Speeds as fractions (0.7 = 70%) */
   from: number;
@@ -78,41 +73,127 @@ export function repetitionsToNextStep(plan: TrainerPlan, repetitions: number): n
 }
 
 /** Beats in a bar: the grid draws a stronger line, and the metronome a higher click, on the first. */
-export const BEATS_PER_BAR = { min: 1, max: 16, step: 1, default: 4 } as const;
+export const BEATS_PER_BAR = { min: 1, max: 32, step: 1, default: 4 } as const;
 
-export interface BeatGrid {
+/**
+ * A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and
+ * this meter, until the next marker. A track played to a click has one; a band that drifts or
+ * a prog song that keeps changing meter has many.
+ */
+export interface TempoMarker {
+  /** Seconds: the first beat of a bar */
+  time: number;
   /** Quarter notes per minute */
   bpm: number;
-  /** Seconds: a moment on the first beat of a bar */
-  offset: number;
   /** Time signature: beats in a bar over the note value of a beat (7/8 → 7 and 8) */
   beatsPerBar: number;
   beatUnit: number;
 }
 
-/** Seconds per beat: a quarter in x/4, an eighth in x/8. */
-export const beatSeconds = (grid: BeatGrid) => (60 / grid.bpm) * (4 / grid.beatUnit);
+/** Where tempo and meter change, sorted by time; empty while the tempo is unknown. */
+export type TempoMap = TempoMarker[];
 
-/** The beat of `grid` closest to `time`. */
-export function nearestBeat(time: number, grid: BeatGrid): number {
-  const length = beatSeconds(grid);
-  return grid.offset + Math.round((time - grid.offset) / length) * length;
+/** Seconds per beat of a marker: a quarter in x/4, an eighth in x/8. */
+export const beatSeconds = (marker: TempoMarker) => (60 / marker.bpm) * (4 / marker.beatUnit);
+
+/** Two markers closer than this (seconds) are one: the later one wins. */
+const SAME_TIME = 0.001;
+
+/** Sorted, without unusable markers and without two on the same moment. */
+export function sanitizeTempoMap(markers: readonly Partial<TempoMarker>[]): TempoMap {
+  const usable = markers
+    .filter(
+      (m): m is TempoMarker =>
+        typeof m.time === "number" &&
+        Number.isFinite(m.time) &&
+        typeof m.bpm === "number" &&
+        Number.isFinite(m.bpm) &&
+        m.bpm > 0 &&
+        typeof m.beatsPerBar === "number" &&
+        m.beatsPerBar >= 1 &&
+        typeof m.beatUnit === "number" &&
+        (BEAT_UNITS as readonly number[]).includes(m.beatUnit),
+    )
+    .map((m) => ({
+      time: m.time,
+      bpm: Math.min(BPM.max, Math.max(BPM.min, m.bpm)),
+      beatsPerBar: Math.round(Math.min(BEATS_PER_BAR.max, m.beatsPerBar)),
+      beatUnit: m.beatUnit,
+    }))
+    .sort((a, b) => a.time - b.time);
+  const kept: TempoMap = [];
+  for (const marker of usable) {
+    const last = kept.at(-1);
+    if (last && marker.time - last.time < SAME_TIME) kept[kept.length - 1] = marker;
+    else kept.push(marker);
+  }
+  return kept;
 }
 
-/** Every beat between `start` and `end` (seconds), each with whether it starts a bar. */
+/** Index of the marker in force at `time`; the first one before it starts (its grid extends back). */
+export function markerIndexAt(map: TempoMap, time: number): number {
+  let index = 0;
+  for (let i = 1; i < map.length; i++) {
+    if ((map[i]?.time ?? Infinity) <= time) index = i;
+    else break;
+  }
+  return index;
+}
+
+/** The marker in force at `time`, or null without a tempo. */
+export const markerAt = (map: TempoMap, time: number): TempoMarker | null =>
+  map[markerIndexAt(map, time)] ?? null;
+
+/**
+ * Seconds of a count-in of `bars` before `time`, in the tempo and meter in force there, at the
+ * track's original speed (0 when off or without a tempo).
+ */
+export function countInSeconds(bars: number, map: TempoMap, time = 0): number {
+  const marker = markerAt(map, time);
+  return marker ? bars * marker.beatsPerBar * beatSeconds(marker) : 0;
+}
+
+/**
+ * Every beat between `start` and `end` (seconds, both included), each with whether it starts a
+ * bar. Each marker rules until the next one, whose time is a first beat of its own; the first
+ * marker's grid also runs back before it.
+ */
 export function beatsBetween(
   start: number,
   end: number,
-  grid: BeatGrid,
+  map: TempoMap,
 ): { time: number; bar: boolean }[] {
-  const length = beatSeconds(grid);
-  const first = Math.ceil((start - grid.offset) / length);
-  const last = Math.floor((end - grid.offset) / length);
-  const beats = [];
-  for (let index = first; index <= last; index++) {
-    // Integer index: adding `length` repeatedly would drift
-    const bar = ((index % grid.beatsPerBar) + grid.beatsPerBar) % grid.beatsPerBar === 0;
-    beats.push({ time: grid.offset + index * length, bar });
-  }
+  const beats: { time: number; bar: boolean }[] = [];
+  map.forEach((marker, i) => {
+    const from = i === 0 ? start : Math.max(start, marker.time);
+    const next = map[i + 1]?.time;
+    if (next !== undefined && next <= start) return;
+    const length = beatSeconds(marker);
+    const first = Math.ceil((from - marker.time) / length - 1e-9);
+    for (let index = first; ; index++) {
+      // Integer index: adding `length` repeatedly would drift
+      const time = marker.time + index * length;
+      if (time > end || (next !== undefined && time >= next - SAME_TIME)) break;
+      const bar = ((index % marker.beatsPerBar) + marker.beatsPerBar) % marker.beatsPerBar === 0;
+      beats.push({ time, bar });
+    }
+  });
   return beats;
+}
+
+/** The beat of `map` closest to `time` (the time itself without a tempo). */
+export function nearestBeat(time: number, map: TempoMap): number {
+  const marker = markerAt(map, time);
+  if (!marker) return time;
+  const reach = Math.max(...map.map(beatSeconds));
+  let best = time;
+  let distance = Infinity;
+  for (const beat of beatsBetween(time - reach, time + reach, map)) {
+    const d = Math.abs(beat.time - time);
+    if (d < distance) {
+      best = beat.time;
+      distance = d;
+    }
+  }
+  return best;
 }

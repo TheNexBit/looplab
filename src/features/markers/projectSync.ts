@@ -29,10 +29,7 @@ function snapshot(): ProjectData {
     playlist: usePlaylistStore.getState().steps,
     // Rounded: a position a hair different is not worth a save
     position: Math.round(currentPosition() * 100) / 100,
-    bpm: usePracticeStore.getState().bpm,
-    beatOffset: usePracticeStore.getState().beatOffset,
-    beatsPerBar: usePracticeStore.getState().beatsPerBar,
-    beatUnit: usePracticeStore.getState().beatUnit,
+    ...tempoSnapshot(),
     speed,
     semitones,
     cents,
@@ -41,14 +38,31 @@ function snapshot(): ProjectData {
   };
 }
 
+/** The tempo map, and its first marker (or the draft) in the fields older versions read. */
+function tempoSnapshot() {
+  const practice = usePracticeStore.getState();
+  const first = practice.tempoMap[0];
+  return {
+    tempoMap: practice.tempoMap,
+    bpm: first?.bpm ?? null,
+    beatOffset: first?.time ?? practice.beatOffset,
+    beatsPerBar: first?.beatsPerBar ?? practice.beatsPerBar,
+    beatUnit: first?.beatUnit ?? practice.beatUnit,
+  };
+}
+
 function apply(data: ProjectData) {
   useMarkersStore.getState().replace(data.markers, data.sections);
   useLoopStore.getState().restore(data.loop);
   useSavedLoopsStore.getState().replace(data.loops);
   usePlaylistStore.getState().replace(data.playlist);
-  usePracticeStore.getState().setBpm(data.bpm);
-  usePracticeStore.getState().setBeatOffset(data.beatOffset);
-  usePracticeStore.getState().setTimeSignature(data.beatsPerBar, data.beatUnit);
+  const practice = usePracticeStore.getState();
+  practice.setTempoMap(data.tempoMap);
+  if (data.tempoMap.length === 0) {
+    // No tempo yet: keep the first beat and the meter picked before it, as a draft
+    practice.setBeatOffset(data.beatOffset);
+    practice.setTimeSignature(data.beatsPerBar, data.beatUnit);
+  }
   const player = usePlayerStore.getState();
   player.setSpeed(data.speed);
   player.setPitch(data.semitones, data.cents);
@@ -164,7 +178,7 @@ export function syncProject(): () => void {
     }),
     usePracticeStore.subscribe((state, previous) => {
       if (
-        state.bpm !== previous.bpm ||
+        state.tempoMap !== previous.tempoMap ||
         state.beatOffset !== previous.beatOffset ||
         state.beatsPerBar !== previous.beatsPerBar ||
         state.beatUnit !== previous.beatUnit

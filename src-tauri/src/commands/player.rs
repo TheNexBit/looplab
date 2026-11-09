@@ -1,13 +1,16 @@
 use std::path::{Path, PathBuf};
 
-use audio_engine::{ClickSettings, LoadError, LoopSettings, ToneSettings, time};
+use audio_engine::{
+    BarPattern, ClickSettings, LoadError, LoopSettings, TempoMap, TempoSegment, ToneSettings, time,
+};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tauri::ipc::Channel;
 
-use super::metronome::{BarRequest, SoundsRequest};
+use super::metronome::SoundsRequest;
 use super::{AppError, ErrorKind};
 use crate::media;
+use crate::project::TempoMarker;
 use crate::state::AppState;
 
 #[derive(Serialize, specta::Type)]
@@ -207,17 +210,12 @@ pub fn set_loop(state: State<'_, AppState>, settings: LoopRequest) -> Result<(),
     Ok(())
 }
 
-/// Tempo, metronome and count-in, in the units of the UI.
+/// Metronome and count-in over the track, in the units of the UI. Where the beats fall comes
+/// from the tempo map (`set_tempo_map`).
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ClickRequest {
-    /// Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown
-    pub bpm: f64,
-    /// Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar
-    pub bar: BarRequest,
-    /// Seconds: a moment that falls on the first beat of a bar
-    pub anchor: f64,
-    /// Beats counted in before playback and before every loop repetition
+    /// Bars counted in before playback and before every loop repetition
     pub count_in: u32,
     /// Click on every beat while playing
     pub metronome: bool,
@@ -230,22 +228,42 @@ pub struct ClickRequest {
 #[specta::specta]
 pub fn set_click(state: State<'_, AppState>, settings: ClickRequest) -> Result<(), AppError> {
     let engine = playing_engine(&state)?;
-    let rate = engine.sample_rate();
-    let beat = if settings.bpm > 0.0 {
-        time::seconds_to_frames(settings.bar.pulse_seconds(settings.bpm), rate)
-    } else {
-        0
-    };
     engine.set_click(ClickSettings {
-        beat,
-        anchor: time::seconds_to_frames(settings.anchor.max(0.0), rate),
         count_in: settings.count_in,
         metronome: settings.metronome,
-        pattern: settings.bar.pattern(),
         volume: settings.volume.clamp(0.0, 1.0),
         sounds: settings.sounds.sounds(),
     });
     Ok(())
+}
+
+/// The tempo map of the open track: the clicks over it and the count-ins follow its tempo and
+/// meter changes. Each marker rules until the next one; an empty map means no tempo (no clicks).
+#[tauri::command]
+#[specta::specta]
+pub fn set_tempo_map(
+    state: State<'_, AppState>,
+    markers: Vec<TempoMarker>,
+) -> Result<(), AppError> {
+    let engine = playing_engine(&state)?;
+    engine.set_tempo_map(tempo_map(&markers, engine.sample_rate()));
+    Ok(())
+}
+
+/// The markers in the engine's terms: frames, and frames per beat (a quarter in x/4, an eighth
+/// in x/8), kept fractional so a long stretch never drifts.
+fn tempo_map(markers: &[TempoMarker], rate: u32) -> TempoMap {
+    TempoMap::new(
+        markers
+            .iter()
+            .filter(|m| m.bpm > 0.0 && m.beat_unit > 0 && m.beats_per_bar > 0)
+            .map(|m| TempoSegment {
+                start: time::seconds_to_frames(m.time.max(0.0), rate),
+                beat_frames: 60.0 / m.bpm * 4.0 / f64::from(m.beat_unit) * f64::from(rate),
+                pattern: BarPattern::regular(m.beats_per_bar),
+            })
+            .collect(),
+    )
 }
 
 /// Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
@@ -278,4 +296,44 @@ fn file_name(path: &Path) -> String {
         || path.display().to_string(),
         |n| n.to_string_lossy().into_owned(),
     )
+}
+
+#[cfg(test)]
+mod tempo_tests {
+    use super::*;
+
+    #[test]
+    fn markers_become_segments_in_frames() {
+        let markers = [
+            TempoMarker {
+                time: 2.0,
+                bpm: 120.0,
+                beats_per_bar: 7,
+                beat_unit: 8,
+            },
+            TempoMarker {
+                time: 0.0,
+                bpm: 60.0,
+                beats_per_bar: 4,
+                beat_unit: 4,
+            },
+            TempoMarker {
+                time: 5.0,
+                bpm: 0.0,
+                beats_per_bar: 4,
+                beat_unit: 4,
+            },
+        ];
+        let map = tempo_map(&markers, 48_000);
+        let segments = map.segments();
+        assert_eq!(segments.len(), 2, "sorted, the one without a tempo dropped");
+        assert_eq!(segments[0].start, 0);
+        assert_eq!(segments[0].beat_frames, 48_000.0, "a quarter at 60");
+        assert_eq!(segments[1].start, 96_000);
+        assert_eq!(
+            segments[1].beat_frames, 12_000.0,
+            "an eighth at 120 quarters"
+        );
+        assert_eq!(segments[1].pattern.pulses(), 7);
+    }
 }

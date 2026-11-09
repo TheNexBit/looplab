@@ -104,6 +104,19 @@ impl Default for ProjectLoop {
     }
 }
 
+/// A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and
+/// this meter, until the next marker.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct TempoMarker {
+    /// Seconds
+    pub time: f64,
+    /// Quarter notes per minute
+    pub bpm: f64,
+    pub beats_per_bar: u32,
+    pub beat_unit: u32,
+}
+
 /// Everything remembered about one track. Missing fields take their defaults,
 /// so files written by older versions still open.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
@@ -128,6 +141,10 @@ pub struct Project {
     /// e.g. 7 and 8 for 7/8
     pub beats_per_bar: u32,
     pub beat_unit: u32,
+    /// Where tempo and meter change (the fields above repeat its first marker, so a project
+    /// still opens in versions that had a single tempo). Empty in older files: their single
+    /// tempo is then the map
+    pub tempo_map: Vec<TempoMarker>,
     pub speed: f64,
     pub semitones: i32,
     pub cents: i32,
@@ -149,6 +166,7 @@ impl Default for Project {
             beat_offset: None,
             beats_per_bar: 4,
             beat_unit: 4,
+            tempo_map: Vec::new(),
             speed: 1.0,
             semitones: 0,
             cents: 0,

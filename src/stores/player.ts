@@ -12,7 +12,7 @@ import {
 } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 import { advanceInLoop, loopWait, restartAt, useLoopStore } from "./loop";
-import { currentGrid } from "./practice";
+import { currentTempoMap } from "./practice";
 import { useSettingsStore } from "./settings";
 import { useViewStore } from "./view";
 
@@ -80,9 +80,13 @@ function predict(state: PlayerState): { position: number; wait: number } {
   const before = Math.max(0, -played);
   const elapsed = Math.max(0, played);
   const loop = useLoopStore.getState();
-  // The count-in before each repetition is heard as part of the gap
-  const options = { ...loop, gap: loop.gap + countInNow() };
   const region = loop.region();
+  // The count-in before each repetition is heard as part of the gap (in the meter where the
+  // loop restarts)
+  const options = {
+    ...loop,
+    gap: loop.gap + countInNow(region ? restartAt(region, loop.leadIn) : 0),
+  };
   return {
     position: clamp(advanceInLoop(state.anchorPosition, elapsed, region, options), 0, duration),
     wait: before > 0 ? before : loopWait(state.anchorPosition, elapsed, region, options),
@@ -109,10 +113,13 @@ export function playbackClock(state: PlayerState = usePlayerStore.getState()) {
   };
 }
 
-/** Seconds of count-in, at the track's original speed, with the current settings. */
-function countInNow(): number {
+/**
+ * Seconds of count-in before `from`, at the track's original speed, with the current settings:
+ * in the tempo and meter in force where playback starts.
+ */
+function countInNow(from = 0): number {
   const { countIn, countInBars } = useSettingsStore.getState();
-  return countInSeconds(countIn ? countInBars : 0, currentGrid());
+  return countInSeconds(countIn ? countInBars : 0, currentTempoMap() ?? [], from);
 }
 
 /** Length of the open track in seconds, 0 when none is open. */
@@ -227,7 +234,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
             : 0
           : position;
       // The engine counts in first: the playhead waits that long
-      anchor(from, true, countInNow());
+      anchor(from, true, countInNow(from));
       set({ cue: from });
       useViewStore.getState().resumeFollow();
       void commands.play().then(report);

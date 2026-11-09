@@ -27,6 +27,11 @@ export const commands = {
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
 	setClick: (settings: ClickRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_click", { settings })),
 	/**
+	 *  The tempo map of the open track: the clicks over it and the count-ins follow its tempo and
+	 *  meter changes. Each marker rules until the next one; an empty map means no tempo (no clicks).
+	 */
+	setTempoMap: (markers: TempoMarker[]) => typedError<null, AppError>(__TAURI_INVOKE("set_tempo_map", { markers })),
+	/**
 	 *  Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
 	 *  before any track is open (it starts the audio device like `preview_sound`).
 	 */
@@ -200,15 +205,12 @@ export type ChannelMode = "stereo" |
 /**  Left plus right: keeps the centre, the sides get quieter */
 "isolateCenter";
 
-/**  Tempo, metronome and count-in, in the units of the UI. */
+/**
+ *  Metronome and count-in over the track, in the units of the UI. Where the beats fall comes
+ *  from the tempo map (`set_tempo_map`).
+ */
 export type ClickRequest = {
-	/**  Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown */
-	bpm: number | null,
-	/**  Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar */
-	bar: BarRequest,
-	/**  Seconds: a moment that falls on the first beat of a bar */
-	anchor: number | null,
-	/**  Beats counted in before playback and before every loop repetition */
+	/**  Bars counted in before playback and before every loop repetition */
 	countIn: number,
 	/**  Click on every beat while playing */
 	metronome: boolean,
@@ -560,6 +562,12 @@ export type Project_Deserialize = {
 	 */
 	beatsPerBar?: number,
 	beatUnit?: number,
+	/**
+	 *  Where tempo and meter change (the fields above repeat its first marker, so a project
+	 *  still opens in versions that had a single tempo). Empty in older files: their single
+	 *  tempo is then the map
+	 */
+	tempoMap?: TempoMarker[],
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
@@ -592,6 +600,12 @@ export type Project_Serialize = {
 	 */
 	beatsPerBar: number,
 	beatUnit: number,
+	/**
+	 *  Where tempo and meter change (the fields above repeat its first marker, so a project
+	 *  still opens in versions that had a single tempo). Empty in older files: their single
+	 *  tempo is then the map
+	 */
+	tempoMap: TempoMarker[],
 	speed: number | null,
 	semitones: number,
 	cents: number,
@@ -745,6 +759,19 @@ export type SpectrumRequest = {
 	channels: ChannelMode,
 	/**  Pitch shift in semitones (fractions are cents), so the keys match what is heard */
 	semitones: number | null,
+};
+
+/**
+ *  A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and
+ *  this meter, until the next marker.
+ */
+export type TempoMarker = {
+	/**  Seconds */
+	time: number | null,
+	/**  Quarter notes per minute */
+	bpm: number | null,
+	beatsPerBar: number,
+	beatUnit: number,
 };
 
 export type TrackInfo = {

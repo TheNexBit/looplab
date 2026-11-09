@@ -88,13 +88,20 @@ pub fn render(
         lead_in: 0,
         gap: 0,
     };
+    // Exports carry no clicks: no metronome, and an empty tempo map
     let click = ClickSettings::default();
+    let tempo = crate::tempo_map::TempoMap::default();
     let mut clicks = ClickQueue::new();
     let mut reader = Reader::new(rate);
     reader.jump(start);
     let mut fed = 0_u64;
     let mut read = |reader: &mut Reader, fed: &mut u64, out: &mut [f32]| {
-        reader.read(Some(pcm), &region, &click, *fed, &mut clicks, out);
+        let rules = crate::render::Rules {
+            settings: &region,
+            click: &click,
+            tempo: &tempo,
+        };
+        reader.read(Some(pcm), rules, *fed, &mut clicks, out);
         *fed += (out.len() / CHANNELS) as u64;
     };
 

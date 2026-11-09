@@ -39,6 +39,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::set_pitch,
             player::set_loop,
             player::set_click,
+            player::set_tempo_map,
             player::set_reference_tone,
             metronome::set_metronome,
             metronome::run_metronome,
