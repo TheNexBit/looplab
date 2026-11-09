@@ -707,6 +707,26 @@ export const en = {
           name: "Light studio",
           description: "Light grey panels for bright rooms; dark displays.",
         },
+        sunset: {
+          name: "Sunset",
+          description: "Plum panels, a coral accent and a golden loop.",
+        },
+        abyss: {
+          name: "Abyss",
+          description: "Deep petrol blue, an aquamarine accent, a coral loop.",
+        },
+        tubes: {
+          name: "Tubes",
+          description: "Warm brown of a vintage amp, orange displays like nixie tubes.",
+        },
+        oled: {
+          name: "OLED",
+          description: "True black for OLED screens and dark rooms; a recording-red accent.",
+        },
+        paper: {
+          name: "Paper",
+          description: "Warm ivory and dark ink for bright rooms; a teal accent.",
+        },
         contrast: {
           name: "High contrast",
           description: "Black, white and yellow: readable from afar too.",

@@ -16,7 +16,18 @@ export type ThemeToken =
   | "on-accent";
 
 /** Colour themes; each id has a palette block `[data-theme="<id>"]` in `styles/theme.css`. */
-export const THEMES = ["rack", "phosphor", "night", "light", "contrast"] as const;
+export const THEMES = [
+  "rack",
+  "phosphor",
+  "night",
+  "sunset",
+  "abyss",
+  "tubes",
+  "oled",
+  "light",
+  "paper",
+  "contrast",
+] as const;
 export type ThemeId = (typeof THEMES)[number];
 export const DEFAULT_THEME: ThemeId = "rack";
 

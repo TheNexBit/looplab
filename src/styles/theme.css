@@ -361,6 +361,261 @@
   --color-key-black: #000000;
 }
 
+/* Sunset: dusk plum panels with a coral accent and a golden loop */
+[data-theme="sunset"] {
+  --color-accent: #ff7a6b;
+  --color-accent-hover: #ff958a;
+  --color-accent-soft: rgb(255 122 107 / 0.14);
+  --color-on-accent: #200807;
+  --color-loop: #ffc94d;
+  --color-loop-soft: rgb(255 201 77 / 0.08);
+  --color-led-off: #3f3343;
+  --color-lcd: #150c14;
+  --color-lcd-fg: #ff9a8a;
+  --color-lcd-dim: #b8716c;
+  --color-lcd-glow: rgb(255 130 110 / 0.45);
+  --color-readout: #ff9a8a;
+  --color-readout-dim: #b8716c;
+  --color-bg-from: #231a24;
+  --color-bg-to: #19121a;
+  --color-well: #110b12;
+  --color-surface: #221923;
+  --color-surface-hover: #33263a;
+  --color-raised-from: #352838;
+  --color-raised-to: #2a1f2c;
+  --color-topbar-from: #271d29;
+  --color-topbar-to: #1f1720;
+  --color-dock-from: #2d2230;
+  --color-dock-to: #211823;
+  --color-ruler-from: #2c2130;
+  --color-ruler-to: #231a25;
+  --color-stage: #150e16;
+  --color-field: #1d151e;
+  --color-thumb-from: #7a6779;
+  --color-thumb-to: #4a3c4b;
+  --color-fg: #f1e6ee;
+  --color-fg-muted: #c9b6c4;
+  --color-fg-subtle: #ab97a7;
+  --color-border: #3a2d3c;
+  --color-edge: #0c080c;
+  --color-sheen: rgb(255 255 255 / 0.07);
+  --color-shade: rgb(0 0 0 / 0.75);
+  --color-wave: #f0796a;
+  --color-wave-dim: #b05a52;
+  --color-grid: #2a1f2c;
+  --color-tick: #7c6a7a;
+  --color-beat: rgb(255 255 255 / 0.07);
+  --color-bar: rgb(255 255 255 / 0.28);
+  --color-playhead: #ffffff;
+  --color-cue: #5fd3e8;
+  --color-key-white: #c7b8c3;
+  --color-key-black: #1d151e;
+}
+
+/* Abyss: deep petrol-blue panels with an aquamarine accent and a coral loop */
+[data-theme="abyss"] {
+  --color-accent: #3fe0c5;
+  --color-accent-hover: #6aebd5;
+  --color-accent-soft: rgb(63 224 197 / 0.14);
+  --color-on-accent: #031512;
+  --color-loop: #ff8a65;
+  --color-loop-soft: rgb(255 138 101 / 0.08);
+  --color-led-off: #2c4045;
+  --color-lcd: #051214;
+  --color-lcd-fg: #64f0d8;
+  --color-lcd-dim: #3f9c8d;
+  --color-lcd-glow: rgb(80 240 210 / 0.45);
+  --color-readout: #64f0d8;
+  --color-readout-dim: #3f9c8d;
+  --color-bg-from: #14232a;
+  --color-bg-to: #0d181d;
+  --color-well: #081014;
+  --color-surface: #13222a;
+  --color-surface-hover: #1e3440;
+  --color-raised-from: #213642;
+  --color-raised-to: #192a33;
+  --color-topbar-from: #17282f;
+  --color-topbar-to: #112026;
+  --color-dock-from: #1b2d36;
+  --color-dock-to: #12212a;
+  --color-ruler-from: #1a2c35;
+  --color-ruler-to: #14232a;
+  --color-stage: #0a1418;
+  --color-field: #101d23;
+  --color-thumb-from: #5d7a83;
+  --color-thumb-to: #354c54;
+  --color-fg: #e2f1f2;
+  --color-fg-muted: #a9c3c7;
+  --color-fg-subtle: #8aa8ad;
+  --color-border: #233a44;
+  --color-edge: #050b0d;
+  --color-sheen: rgb(255 255 255 / 0.06);
+  --color-shade: rgb(0 0 0 / 0.75);
+  --color-wave: #34c9b1;
+  --color-wave-dim: #23887a;
+  --color-grid: #19303a;
+  --color-tick: #5f7d84;
+  --color-beat: rgb(255 255 255 / 0.07);
+  --color-bar: rgb(255 255 255 / 0.28);
+  --color-playhead: #ffffff;
+  --color-cue: #ffd166;
+  --color-key-white: #b2c8cb;
+  --color-key-black: #101d23;
+}
+
+/* Tubes: warm brown of a vintage amplifier, orange nixie-tube displays, olive loop */
+[data-theme="tubes"] {
+  --color-accent: #e8a24a;
+  --color-accent-hover: #f2b668;
+  --color-accent-soft: rgb(232 162 74 / 0.14);
+  --color-on-accent: #1c1004;
+  --color-loop: #9ccc65;
+  --color-loop-soft: rgb(156 204 101 / 0.08);
+  --color-led-off: #463a2f;
+  --color-lcd: #120a05;
+  --color-lcd-fg: #ff8c3a;
+  --color-lcd-dim: #b36a35;
+  --color-lcd-glow: rgb(255 120 40 / 0.55);
+  --color-readout: #ffa95e;
+  --color-readout-dim: #b88552;
+  --color-bg-from: #2a2119;
+  --color-bg-to: #1e1812;
+  --color-well: #140f0b;
+  --color-surface: #29201a;
+  --color-surface-hover: #3b2f25;
+  --color-raised-from: #3e3127;
+  --color-raised-to: #30261e;
+  --color-topbar-from: #2e241c;
+  --color-topbar-to: #251d16;
+  --color-dock-from: #34291f;
+  --color-dock-to: #261e17;
+  --color-ruler-from: #33281f;
+  --color-ruler-to: #2a2119;
+  --color-stage: #19130e;
+  --color-field: #221a14;
+  --color-thumb-from: #857260;
+  --color-thumb-to: #52443a;
+  --color-fg: #f1e7da;
+  --color-fg-muted: #cdbba6;
+  --color-fg-subtle: #af9c87;
+  --color-border: #3f3228;
+  --color-edge: #0d0906;
+  --color-sheen: rgb(255 240 220 / 0.07);
+  --color-shade: rgb(0 0 0 / 0.75);
+  --color-wave: #d9963f;
+  --color-wave-dim: #a26f30;
+  --color-grid: #30261e;
+  --color-tick: #857261;
+  --color-beat: rgb(255 240 220 / 0.07);
+  --color-bar: rgb(255 240 220 / 0.28);
+  --color-playhead: #fff5e6;
+  --color-cue: #7ec8e3;
+  --color-key-white: #cbbfae;
+  --color-key-black: #221a14;
+}
+
+/* OLED: true black for OLED screens and dark rooms, a recording-red accent, blue loop */
+[data-theme="oled"] {
+  --color-accent: #ff4d5a;
+  --color-accent-hover: #ff707a;
+  --color-accent-soft: rgb(255 77 90 / 0.16);
+  --color-on-accent: #1a0003;
+  --color-loop: #4fc3f7;
+  --color-loop-soft: rgb(79 195 247 / 0.1);
+  --color-led-off: #2a2a2a;
+  --color-lcd: #000000;
+  --color-lcd-fg: #ff6b75;
+  --color-lcd-dim: #b04a52;
+  --color-lcd-glow: rgb(255 80 90 / 0.45);
+  --color-readout: #ff6b75;
+  --color-readout-dim: #b04a52;
+  --color-bg-from: #050505;
+  --color-bg-to: #000000;
+  --color-well: #000000;
+  --color-surface: #070707;
+  --color-surface-hover: #1a1a1a;
+  --color-raised-from: #181818;
+  --color-raised-to: #0f0f0f;
+  --color-topbar-from: #060606;
+  --color-topbar-to: #000000;
+  --color-dock-from: #0a0a0a;
+  --color-dock-to: #000000;
+  --color-ruler-from: #0a0a0a;
+  --color-ruler-to: #030303;
+  --color-stage: #000000;
+  --color-field: #050505;
+  --color-thumb-from: #5c5c5c;
+  --color-thumb-to: #333333;
+  --color-fg: #ececec;
+  --color-fg-muted: #bdbdbd;
+  --color-fg-subtle: #9e9e9e;
+  --color-border: #262626;
+  --color-edge: #1c1c1c;
+  --color-sheen: rgb(255 255 255 / 0.06);
+  --color-shade: rgb(0 0 0 / 0.9);
+  --color-wave: #e84c57;
+  --color-wave-dim: #9e3740;
+  --color-grid: #161616;
+  --color-tick: #6b6b6b;
+  --color-beat: rgb(255 255 255 / 0.08);
+  --color-bar: rgb(255 255 255 / 0.3);
+  --color-playhead: #ffffff;
+  --color-cue: #ffd54f;
+  --color-key-white: #bdbdbd;
+  --color-key-black: #000000;
+}
+
+/* Paper: warm ivory pages and dark ink for bright rooms, a teal accent; dark displays */
+[data-theme="paper"] {
+  --color-accent: #0b7a75;
+  --color-accent-hover: #0e8f89;
+  --color-accent-soft: rgb(11 122 117 / 0.14);
+  --color-on-accent: #f4fbfa;
+  --color-loop: #b8551d;
+  --color-loop-soft: rgb(184 85 29 / 0.1);
+  --color-led-off: #c9bfae;
+  --color-lcd: #1f2420;
+  --color-lcd-fg: #7fe3d9;
+  --color-lcd-dim: #5aa39b;
+  --color-lcd-glow: rgb(110 230 215 / 0.4);
+  --color-readout: #0b6b66;
+  --color-readout-dim: #5d6f68;
+  --color-bg-from: #f1ebdf;
+  --color-bg-to: #e6dece;
+  --color-well: #fbf8f1;
+  --color-surface: #f1ebdf;
+  --color-surface-hover: #e2d9c6;
+  --color-raised-from: #fdfaf3;
+  --color-raised-to: #ebe3d3;
+  --color-topbar-from: #f5f0e6;
+  --color-topbar-to: #e9e2d4;
+  --color-dock-from: #f0e9dc;
+  --color-dock-to: #e0d7c5;
+  --color-ruler-from: #f3eee3;
+  --color-ruler-to: #e8e1d2;
+  --color-stage: #ddd4c1;
+  --color-field: #fbf8f1;
+  --color-thumb-from: #ffffff;
+  --color-thumb-to: #d8cfbd;
+  --color-fg: #2a2520;
+  --color-fg-muted: #4a4239;
+  --color-fg-subtle: #61584d;
+  --color-border: #cfc4b0;
+  --color-edge: #a99d88;
+  --color-sheen: rgb(255 255 255 / 0.8);
+  --color-shade: rgb(60 40 10 / 0.16);
+  --color-wave: #0b7a75;
+  --color-wave-dim: #5fa8a3;
+  --color-grid: #e6dfd0;
+  --color-tick: #7a7062;
+  --color-beat: rgb(60 40 10 / 0.07);
+  --color-bar: rgb(60 40 10 / 0.3);
+  --color-playhead: #1c1814;
+  --color-cue: #b3261e;
+  --color-key-white: #fffdf8;
+  --color-key-black: #2a2520;
+}
+
 @layer base {
   html,
   body,

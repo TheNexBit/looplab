@@ -545,6 +545,12 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     uno stile unico per i tasti − / + (`smallKey`); campioni della voce tagliati già in registrazione
     (−2,6 MB sull'exe); barra in basso del metronomo in `MetronomeTransport.tsx`, `TempoPanel` → `TempoControls`,
     `italianName` → `localNoteName`.
+15. ✅ **Cinque temi nuovi** (Impostazioni → Aspetto, anche dalla ricerca azioni): Tramonto (prugna, accento
+    corallo, loop dorato), Abisso (blu petrolio, acquamarina, loop corallo), Valvole (marrone da amplificatore,
+    display arancio come le nixie, loop oliva), OLED (nero puro, accento rosso da registrazione), Carta (avorio
+    e inchiostro, secondo tema chiaro). Dieci temi in tutto, ognuno con i colori su misura. Nuovo test di
+    leggibilità per ogni tema (contrasto WCAG di testo, display e tasti accesi); lo Studio chiaro ha il testo
+    dei tasti accesi a 3,3:1, sotto il 4,5 consigliato: lasciato com'è, da rivedere se serve.
 
 ## 17. Mappa del tempo e rilevamento automatico 🔜
 

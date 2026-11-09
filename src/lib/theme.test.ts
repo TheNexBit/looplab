@@ -28,4 +28,39 @@ describe("theme palettes", () => {
     expect([...colours.keys()].sort()).toEqual([...themed].sort());
     for (const value of colours.values()) expect(value).not.toBe("currentColor");
   });
+
+  /**
+   * WCAG contrast ratio of two #rrggbb colours: 1 (none) to 21 (black on white). Text needs
+   * 4.5 to be read comfortably, 7 is the strict level.
+   */
+  const contrast = (a: string, b: string) => {
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => {
+        const c = Number.parseInt(hex.slice(i, i + 2), 16) / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      }) as [number, number, number];
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  /** Pairs every theme must keep readable: [text, background, minimum ratio]. */
+  const readable: [string, string, number][] = [
+    ["--color-fg", "--color-bg-from", 7],
+    ["--color-fg-muted", "--color-bg-from", 4.5],
+    ["--color-fg-subtle", "--color-bg-from", 4.5],
+    ["--color-lcd-fg", "--color-lcd", 4.5],
+    ["--color-lcd-dim", "--color-lcd", 3],
+    // Studio light's lit keys sit at 3.3: the floor, not the goal
+    ["--color-on-accent", "--color-accent", 3],
+  ];
+
+  it.each(THEMES)("%s keeps its text readable", (theme) => {
+    const colours = palette(theme);
+    for (const [text, background, minimum] of readable) {
+      const ratio = contrast(colours.get(text) ?? "", colours.get(background) ?? "");
+      expect(ratio, `${text} on ${background}`).toBeGreaterThanOrEqual(minimum);
+    }
+  });
 });

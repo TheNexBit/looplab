@@ -713,6 +713,26 @@ export const it = {
           name: "Studio chiaro",
           description: "Pannelli grigio chiaro per stanze luminose; display scuri.",
         },
+        sunset: {
+          name: "Tramonto",
+          description: "Pannelli prugna, accento corallo e loop dorato.",
+        },
+        abyss: {
+          name: "Abisso",
+          description: "Blu petrolio profondo, accento acquamarina, loop corallo.",
+        },
+        tubes: {
+          name: "Valvole",
+          description: "Marrone caldo da amplificatore vintage, display arancio come le nixie.",
+        },
+        oled: {
+          name: "OLED",
+          description: "Nero puro per schermi OLED e stanze buie; accento rosso da registrazione.",
+        },
+        paper: {
+          name: "Carta",
+          description: "Avorio caldo e inchiostro scuro per stanze luminose; accento verde acqua.",
+        },
         contrast: {
           name: "Alto contrasto",
           description: "Nero, bianco e giallo: si legge anche da lontano.",
