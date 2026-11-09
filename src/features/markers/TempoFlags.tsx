@@ -42,7 +42,10 @@ export function TempoFlags({ area }: { area: RefObject<HTMLDivElement | null> })
         const label = `${Math.round(marker.bpm * 10) / 10} · ${marker.beatsPerBar}/${marker.beatUnit}`;
         const focused = index === focus;
         return (
-          <div key={marker.time}>
+          // By position in the map, not by time: a key that changed while dragging would
+          // re-create the flag under the pointer and drop the drag
+          // biome-ignore lint/suspicious/noArrayIndexKey: markers never reorder (they cannot pass each other)
+          <div key={index}>
             <div
               aria-hidden
               className="absolute top-0 bottom-0 w-px bg-lcd-fg/35"
