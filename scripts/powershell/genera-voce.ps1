@@ -36,6 +36,36 @@ $languages = [ordered]@{
   }
 }
 
+# Toglie il silenzio prima e dopo la parola (resta un margine di 15 ms), cosi' i campioni
+# incorporati nell'app pesano un quarto: il motore li rifinisce comunque quando li carica.
+function Remove-Silence([string]$Path) {
+  $bytes = [IO.File]::ReadAllBytes($Path)
+  $at = 12
+  while ($at + 8 -le $bytes.Length) {
+    $id = [Text.Encoding]::ASCII.GetString($bytes, $at, 4)
+    $size = [BitConverter]::ToInt32($bytes, $at + 4)
+    if ($id -eq 'data') { break }
+    $at += 8 + $size + ($size % 2)
+  }
+  $data = $at + 8
+  $count = [int]([Math]::Min($size, $bytes.Length - $data) / 2)
+  $loud = { param($i) [Math]::Abs([BitConverter]::ToInt16($bytes, $data + 2 * $i)) -gt 655 }
+  $first = 0
+  while ($first -lt $count -and -not (& $loud $first)) { $first++ }
+  $last = $count - 1
+  while ($last -gt $first -and -not (& $loud $last)) { $last-- }
+  $margin = 720 # 15 ms a 48 kHz
+  $from = [Math]::Max(0, $first - $margin)
+  $to = [Math]::Min($count - 1, $last + $margin)
+  $length = ($to - $from + 1) * 2
+  $out = New-Object byte[] ($data + $length)
+  [Array]::Copy($bytes, 0, $out, 0, $data)
+  [Array]::Copy($bytes, $data + 2 * $from, $out, $data, $length)
+  [BitConverter]::GetBytes([int]($out.Length - 8)).CopyTo($out, 4)
+  [BitConverter]::GetBytes([int]$length).CopyTo($out, $at + 4)
+  [IO.File]::WriteAllBytes($Path, $out)
+}
+
 $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
 # Veloce e asciutta: a 240 BPM ogni parola ha un quarto di secondo
 $synth.Rate = 3
@@ -57,6 +87,7 @@ foreach ($code in $languages.Keys) {
     $synth.SetOutputToWaveFile((Join-Path $out "$name.wav"), $format)
     $synth.Speak($language.Words[$name])
     $synth.SetOutputToNull()
+    Remove-Silence (Join-Path $out "$name.wav")
     Write-Host "  $code\$name.wav  ($($language.Words[$name]))"
   }
   Write-Host "Voce $code`: $($voice.VoiceInfo.Name) -> $out"
