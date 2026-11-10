@@ -627,13 +627,18 @@ il metro.
 
 **Passi:**
 
-1. Ambiente Python di riferimento con Demucs 4.1; separazione di prova e tempi su CPU.
-2. Esportazione ONNX della rete (senza STFT), prova con rten e confronto numero per numero con PyTorch.
-3. STFT/iSTFT, segmenti sovrapposti e ricomposizione come Demucs, in Rust; confronto con le tracce di riferimento.
-4. Separazione in background con avanzamento, tracce salvate nella cache (limite di spazio come per i brani).
-5. Motore: mix delle tracce con livello, Mute e Solo prima dello stretch.
-6. Interfaccia: "Separa strumenti", mixer delle tracce come nei DAW (fader, M, S, spie), salvato nel progetto.
-7. Prova finale dell'utente.
+1. ✅ Ambiente Python di riferimento con Demucs 4.1; separazione di prova e tempi su CPU (109 s per 4:43 con
+   PyTorch).
+2. ✅ Esportazione ONNX della rete (senza STFT), prova con rten e confronto numero per numero con PyTorch.
+3. ✅ STFT/iSTFT, segmenti sovrapposti e ricomposizione come Demucs, in Rust: 40 s di brano uguali a Demucs entro
+   1,1·10⁻⁵, separati in 8,7 s.
+4. ✅ Separazione in background con avanzamento e Annulla; tracce a 16 bit nella cache dei brani (circa 54 MB per
+   traccia ogni 5 minuti), scritte a pezzi senza tenere il brano in memoria sei volte.
+5. ✅ Motore: mix delle tracce con livello, Mute e Solo prima dello stretch; finché nulla è toccato si sente
+   l'originale.
+6. ✅ Interfaccia: scheda "Tracce" del pannello laterale, "Separa strumenti", sei canali (S, M, fader con rotella e
+   doppio clic), "Mix originale"; il mix è salvato nel progetto.
+7. 🔜 Prova dell'utente con `scripts\00-prova-strumenti.cmd` (copia con dati, porta 1423 e nome suoi).
 
 ## Dopo la prima versione
 
