@@ -105,3 +105,29 @@ fn whole_piece_matches_spect2frames() {
         );
     }
 }
+
+#[test]
+fn the_whole_chain_runs_from_samples_to_markers() {
+    let dir = std::env::var_os("BEAT_THIS_MODELS")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(r"D:\sandbox\tempo-ref\models"));
+    let path = dir.join("beat_this-final0.onnx");
+    if !path.exists() {
+        eprintln!("SKIPPED: no model at {}", path.display());
+        return;
+    }
+    let analyzer = beat_detect::Analyzer::new(&path).expect("loads");
+    let signal = golden("mixed.input.f32");
+    let mut last = 0.0;
+    let analysis = analyzer
+        .analyze(&signal, &beat_detect::Hints::default(), |p| last = p)
+        .expect("runs");
+    assert_eq!(last, 1.0);
+    assert!(!analysis.beats.is_empty());
+    assert!(
+        analysis
+            .markers
+            .iter()
+            .all(|m| m.bpm.is_finite() && m.bpm > 0.0)
+    );
+}
