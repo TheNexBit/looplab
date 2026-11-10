@@ -4,5 +4,8 @@
 //! Demucs itself.
 
 pub mod network;
+pub mod separate;
+pub mod spec;
 
 pub use network::{Network, NetworkError};
+pub use separate::{SAMPLE_RATE, SEGMENT, SOURCES, Separator};
