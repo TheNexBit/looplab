@@ -11,6 +11,7 @@ mod metronome;
 mod player;
 mod sound;
 mod spectrum;
+mod stems;
 mod tempo;
 mod video;
 pub mod waveform;
@@ -75,6 +76,10 @@ pub fn builder() -> Builder<tauri::Wry> {
             export::cancel_export,
             spectrum::spectrum,
             tempo::analyze_tempo,
+            stems::load_stems,
+            stems::separate_stems,
+            stems::cancel_stems,
+            stems::set_stem_levels,
         ])
         .events(collect_events![
             PlaybackStatus,

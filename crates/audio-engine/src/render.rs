@@ -17,6 +17,7 @@ use crate::engine::{Command, Garbage, LoopSettings, MAX_SPEED, Shared};
 use crate::metronome::Metronome;
 use crate::pattern::ClickKind;
 use crate::pcm::{CHANNELS, Pcm};
+use crate::stems::{INPUTS, Source, StemLevels, Stems};
 use crate::tempo_map::TempoMap;
 use crate::tone::ToneVoice;
 
@@ -102,7 +103,7 @@ impl Reader {
     /// Fills `out`; beats met on the way are queued with their input frame (`fed` + index).
     pub(crate) fn read(
         &mut self,
-        track: Option<&Pcm>,
+        source: &Source<'_>,
         rules: Rules<'_>,
         fed: u64,
         clicks: &mut ClickQueue,
@@ -113,10 +114,8 @@ impl Reader {
             click,
             tempo,
         } = rules;
-        let sample = |frame: u64| match track {
-            Some(pcm) if frame < pcm.frames() => pcm.frame(frame as usize),
-            _ => [0.0; CHANNELS],
-        };
+        let block = (out.len() / CHANNELS).max(1) as f32;
+        let sample = |frame: u64, index: usize| source.frame(frame, index as f32 / block);
         let splice = self.splice as f32;
 
         for (index, frame) in out.as_chunks_mut::<CHANNELS>().0.iter_mut().enumerate() {
@@ -125,7 +124,7 @@ impl Reader {
 
             if self.fade_out_left > 0 {
                 let weight = self.fade_out_left as f32 / splice;
-                for (m, s) in mixed.iter_mut().zip(sample(self.fade_out_from)) {
+                for (m, s) in mixed.iter_mut().zip(sample(self.fade_out_from, index)) {
                     *m += s * weight;
                 }
                 self.fade_out_from += 1;
@@ -169,7 +168,7 @@ impl Reader {
                 } else {
                     1.0
                 };
-                for (m, s) in mixed.iter_mut().zip(sample(self.position)) {
+                for (m, s) in mixed.iter_mut().zip(sample(self.position, index)) {
                     *m += s * weight;
                 }
                 self.position += 1;
@@ -209,6 +208,11 @@ pub(crate) struct Renderer {
     garbage: rtrb::Producer<Garbage>,
     shared: Arc<Shared>,
     track: Option<Arc<Pcm>>,
+    /// Separated tracks of the song, their levels, and the gains of the mix's inputs at
+    /// the end of the last block (each block glides from them)
+    stems: Option<Arc<Stems>>,
+    stem_levels: StemLevels,
+    stem_gains: [f32; INPUTS],
     reader: Reader,
     stretch: Stretch,
     eq: Eq,
@@ -276,6 +280,9 @@ impl Renderer {
             garbage,
             shared,
             track: None,
+            stems: None,
+            stem_levels: StemLevels::default(),
+            stem_gains: StemLevels::default().inputs(None),
             reader: Reader::new(sample_rate),
             stretch,
             eq: Eq::new(sample_rate),
@@ -346,6 +353,15 @@ impl Renderer {
         );
     }
 
+    /// Hands the separated tracks to the garbage queue (never freed on the audio thread).
+    fn drop_stems(&mut self) {
+        if let Some(old) = self.stems.take()
+            && let Err(rtrb::PushError::Full(old)) = self.garbage.push(Garbage::Stems(old))
+        {
+            std::mem::forget(old);
+        }
+    }
+
     fn track_frames(&self) -> Option<u64> {
         self.track.as_ref().map(|t| t.frames())
     }
@@ -366,11 +382,20 @@ impl Renderer {
                         // Never free memory here: leaking is better than a glitch
                         std::mem::forget(old);
                     }
+                    // The separated tracks were of the song before
+                    self.drop_stems();
+                    self.stem_levels = StemLevels::default();
+                    self.stem_gains = self.stem_levels.inputs(None);
                     self.playing = false;
                     self.gain = 0.0;
                     self.settings = LoopSettings::default();
                     self.jump(0);
                 }
+                Command::SetStems(stems) => {
+                    self.drop_stems();
+                    self.stems = stems;
+                }
+                Command::SetStemLevels(levels) => self.stem_levels = levels,
                 Command::Play => self.play(),
                 Command::Pause => {
                     self.playing = false;
@@ -532,13 +557,16 @@ impl Renderer {
             click: &self.click,
             tempo: &self.tempo,
         };
-        self.reader.read(
-            self.track.as_deref(),
-            rules,
-            self.fed,
-            &mut self.clicks,
-            input,
-        );
+        let to = self.stem_levels.inputs(self.stems.as_deref());
+        let source = Source {
+            track: self.track.as_deref(),
+            stems: self.stems.as_deref(),
+            from: self.stem_gains,
+            to,
+        };
+        self.reader
+            .read(&source, rules, self.fed, &mut self.clicks, input);
+        self.stem_gains = to;
         self.fed += frames as u64;
 
         self.stretch
@@ -573,13 +601,14 @@ impl Renderer {
             click: &self.click,
             tempo: &self.tempo,
         };
-        self.reader.read(
-            self.track.as_deref(),
-            rules,
-            self.fed,
-            &mut self.clicks,
-            input,
-        );
+        let source = Source {
+            track: self.track.as_deref(),
+            stems: self.stems.as_deref(),
+            from: self.stem_gains,
+            to: self.stem_gains,
+        };
+        self.reader
+            .read(&source, rules, self.fed, &mut self.clicks, input);
         self.fed += preroll as u64;
         self.stretch
             .seek(&self.input[..preroll * CHANNELS], f64::from(self.speed));
@@ -1046,7 +1075,7 @@ mod tests {
         reader.start_count_in(&click, &tempo);
         let mut silence = vec![0.0; 600 * CHANNELS];
         reader.read(
-            None,
+            &Source::track(None),
             Rules {
                 settings: &LoopSettings::default(),
                 click: &click,

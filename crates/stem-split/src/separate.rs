@@ -94,20 +94,45 @@ impl Separator {
         right: &[f32],
         mut progress: impl FnMut(f32),
     ) -> Result<Vec<[Vec<f32>; 2]>, NetworkError> {
+        let mut out: Vec<[Vec<f32>; 2]> = (0..self.sources)
+            .map(|_| [Vec::new(), Vec::new()])
+            .collect();
+        self.separate_into(
+            left,
+            right,
+            |p| {
+                progress(p);
+                true
+            },
+            |block| {
+                for (source, piece) in out.iter_mut().zip(block) {
+                    source[0].extend_from_slice(&piece[0]);
+                    source[1].extend_from_slice(&piece[1]);
+                }
+            },
+        )?;
+        Ok(out)
+    }
+
+    /// The same, a piece at a time: `sink` receives the next finished stretch of every
+    /// source (in order, back to back), so a long song never sits in memory six times.
+    /// `progress` gets the share done after each segment and stops the work by returning
+    /// false; the result says whether it ran to the end.
+    pub fn separate_into(
+        &self,
+        left: &[f32],
+        right: &[f32],
+        mut progress: impl FnMut(f32) -> bool,
+        mut sink: impl FnMut(&[[Vec<f32>; 2]]),
+    ) -> Result<bool, NetworkError> {
         let length = left.len();
         // Normalised by the mono mix's mean and (unbiased) deviation, as Demucs does
-        let mono: Vec<f64> = left
-            .iter()
-            .zip(right)
-            .map(|(l, r)| (f64::from(*l) + f64::from(*r)) / 2.0)
-            .collect();
-        let mean = mono.iter().sum::<f64>() / length.max(1) as f64;
+        let mono = |i: usize| (f64::from(left[i]) + f64::from(right[i])) / 2.0;
+        let mean = (0..length).map(mono).sum::<f64>() / length.max(1) as f64;
         let variance =
-            mono.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (length.max(2) - 1) as f64;
+            (0..length).map(|i| (mono(i) - mean).powi(2)).sum::<f64>() / (length.max(2) - 1) as f64;
         let std = variance.sqrt() + 1e-8;
-        let normal = |x: &f32| ((f64::from(*x) - mean) / std) as f32;
-        let left: Vec<f32> = left.iter().map(normal).collect();
-        let right: Vec<f32> = right.iter().map(normal).collect();
+        let normal = |x: f32| ((f64::from(x) - mean) / std) as f32;
 
         // Triangle weights, highest in the middle of a segment
         let half = SEGMENT / 2;
@@ -118,11 +143,14 @@ impl Separator {
         let stride = ((1.0 - OVERLAP) * SEGMENT as f64) as usize;
         let offsets: Vec<usize> = (0..length).step_by(stride).collect();
 
-        let mut out: Vec<[Vec<f32>; 2]> = (0..self.sources)
-            .map(|_| [vec![0.0; length], vec![0.0; length]])
+        // What the segments add up to, from `base` on (each segment starts at `base`)
+        let mut sum: Vec<[Vec<f32>; 2]> = (0..self.sources)
+            .map(|_| [vec![0.0; SEGMENT], vec![0.0; SEGMENT]])
             .collect();
-        let mut total = vec![0.0f32; length];
+        let mut total = vec![0.0f32; SEGMENT];
+        let mut base = 0;
         for (done, &offset) in offsets.iter().enumerate() {
+            debug_assert_eq!(offset, base);
             // The chunk, centred in a segment with the song around it (zeros past its ends)
             let chunk = SEGMENT.min(length - offset);
             let delta = SEGMENT - chunk;
@@ -132,36 +160,55 @@ impl Separator {
                     .map(|i| {
                         let at = start + i;
                         if at >= 0 && (at as usize) < length {
-                            signal[at as usize]
+                            normal(signal[at as usize])
                         } else {
                             0.0
                         }
                     })
                     .collect()
             };
-            let separated = self.segment(&take(&left), &take(&right))?;
-            // center_trim back to the chunk, then weighted into the song
+            let separated = self.segment(&take(left), &take(right))?;
+            // center_trim back to the chunk, then weighted into the sum
             let trim = delta / 2;
-            for (source, result) in out.iter_mut().zip(&separated) {
+            for (source, result) in sum.iter_mut().zip(&separated) {
                 for c in 0..2 {
                     let piece = &result[c][trim..trim + chunk];
                     for (i, value) in piece.iter().enumerate() {
-                        source[c][offset + i] += weight[i] * value;
+                        source[c][i] += weight[i] * value;
                     }
                 }
             }
             for (i, w) in weight[..chunk].iter().enumerate() {
-                total[offset + i] += w;
+                total[i] += w;
             }
-            progress((done + 1) as f32 / offsets.len() as f32);
-        }
-        for source in &mut out {
-            for channel in source.iter_mut() {
-                for (x, w) in channel.iter_mut().zip(&total) {
-                    *x = ((f64::from(*x / w)) * std + mean) as f32;
+            // Everything before the next segment is final
+            let next = offsets.get(done + 1).copied().unwrap_or(length);
+            let ready = next - base;
+            let block: Vec<[Vec<f32>; 2]> = sum
+                .iter()
+                .map(|source| {
+                    let out = |c: usize| -> Vec<f32> {
+                        (0..ready)
+                            .map(|i| (f64::from(source[c][i] / total[i]) * std + mean) as f32)
+                            .collect()
+                    };
+                    [out(0), out(1)]
+                })
+                .collect();
+            sink(&block);
+            for source in &mut sum {
+                for channel in source.iter_mut() {
+                    channel.drain(..ready);
+                    channel.resize(SEGMENT, 0.0);
                 }
             }
+            total.drain(..ready);
+            total.resize(SEGMENT, 0.0);
+            base = next;
+            if !progress((done + 1) as f32 / offsets.len() as f32) {
+                return Ok(false);
+            }
         }
-        Ok(out)
+        Ok(true)
     }
 }

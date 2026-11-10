@@ -5,6 +5,7 @@ import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { type Settings, useSettingsStore } from "@/stores/settings";
+import { stemGains, useStemsStore } from "@/stores/stems";
 
 /** How often the marker in force at the playhead is looked up (ms): cheap, and fast enough to see. */
 const FOCUS_MS = 100;
@@ -72,6 +73,22 @@ export function syncWithEngine(): () => void {
   const sendChannels = sender(commands.setChannelMode);
   const sendClick = sender(commands.setClick);
   const sendTrackVolume = sender(commands.setTrackVolume);
+  const sendStemLevels = sender(commands.setStemLevels);
+  const pushStems = (force = false) => {
+    const { names, channels } = useStemsStore.getState();
+    if (names) sendStemLevels(stemGains(names, channels), force);
+  };
+  /** The separated tracks of a song just opened, if it was separated before */
+  const loadStems = async (path: string) => {
+    useStemsStore.getState().setNames(null);
+    useStemsStore.getState().setPhase({ kind: "idle" });
+    const result = await commands.loadStems({ path });
+    if (usePlayerStore.getState().track?.path !== path) return;
+    if (result.status === "ok" && result.data) {
+      useStemsStore.getState().setNames(result.data.names);
+      pushStems(true);
+    }
+  };
   const pushTrackVolume = (force = false) =>
     sendTrackVolume(useSettingsStore.getState().trackVolume, force);
   const sendTempo = sender(commands.setTempoMap);
@@ -95,6 +112,7 @@ export function syncWithEngine(): () => void {
     sendClick(clickSettings(), force);
     pushTempo(force);
     pushTrackVolume(force);
+    pushStems(force);
     const eq = useEqStore.getState();
     if (eq.settings.bands.length > 0) sendEq(eqToRust(eq.settings), force);
     sendChannels(eq.channels, force);
@@ -111,8 +129,12 @@ export function syncWithEngine(): () => void {
       pushTrackVolume();
     }),
     useEqStore.subscribe(() => pushAll(false)),
+    useStemsStore.subscribe(() => pushStems()),
     usePlayerStore.subscribe((state, previous) => {
-      if (state.track && state.track !== previous.track) pushAll(true);
+      if (state.track && state.track !== previous.track) {
+        pushAll(true);
+        if (state.track.path !== previous.track?.path) void loadStems(state.track.path);
+      }
     }),
   ];
   // The tempo display and the meter edit the marker in force at the playhead: follow it

@@ -15,6 +15,7 @@ use crate::dsp::stretch::Stretch;
 use crate::engine::{LoopSettings, MAX_SPEED, MIN_SPEED};
 use crate::pcm::{CHANNELS, Pcm};
 use crate::render::{Reader, SPLICE_SECONDS};
+use crate::stems::Source;
 use crate::wav::{BitDepth, WavWriter};
 
 /// What to render, in frames of the track.
@@ -101,7 +102,7 @@ pub fn render(
             click: &click,
             tempo: &tempo,
         };
-        reader.read(Some(pcm), rules, *fed, &mut clicks, out);
+        reader.read(&Source::track(Some(pcm)), rules, *fed, &mut clicks, out);
         *fed += (out.len() / CHANNELS) as u64;
     };
 

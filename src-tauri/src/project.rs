@@ -154,6 +154,8 @@ pub struct Project {
     pub cents: i32,
     pub eq: EqSettings,
     pub channels: ChannelMode,
+    /// Levels, Mute and Solo of the separated tracks (empty until the song is separated)
+    pub stem_mix: Vec<StemChannel>,
 }
 
 impl Default for Project {
@@ -176,8 +178,21 @@ impl Default for Project {
             cents: 0,
             eq: EqSettings::default(),
             channels: ChannelMode::Stereo,
+            stem_mix: Vec::new(),
         }
     }
+}
+
+/// One separated track in the mixer: which one, its level and its keys.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct StemChannel {
+    /// "vocals", "drums", "bass", "guitar", "piano", "other"
+    pub name: String,
+    /// 0..1
+    pub level: f64,
+    pub mute: bool,
+    pub solo: bool,
 }
 
 /// Where a project file is kept.

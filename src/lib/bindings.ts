@@ -120,6 +120,24 @@ export const commands = {
 	 *  are flagged `auto`, except the kept ones.
 	 */
 	analyzeTempo: (request: TempoRequest_Deserialize, onProgress: Channel<number | null>) => typedError<TempoMarker_Serialize[], AppError>(__TAURI_INVOKE("analyze_tempo", { request, onProgress })),
+	/**
+	 *  The open song's separated tracks if they are in the cache: the engine gets them and
+	 *  the answer names them; None when the song has not been separated yet.
+	 */
+	loadStems: (request: StemsRequest) => typedError<StemsInfo | null, AppError>(__TAURI_INVOKE("load_stems", { request })),
+	/**
+	 *  Separates the open song (a minute or so for five minutes of music), saves the tracks in
+	 *  the cache and gives them to the engine. `on_progress` receives 0..1. Stops, with
+	 *  `Cancelled`, when another song is opened or `cancel_stems` is called.
+	 */
+	separateStems: (request: StemsRequest, onProgress: Channel<number | null>) => typedError<StemsInfo, AppError>(__TAURI_INVOKE("separate_stems", { request, onProgress })),
+	/**  Stops the separation in progress (it ends with `Cancelled`). */
+	cancelStems: () => __TAURI_INVOKE<void>("cancel_stems"),
+	/**
+	 *  Levels of the separated tracks, 0..1, in the order of `StemsInfo::names`, mute and solo
+	 *  already applied. All at 1 plays the original song.
+	 */
+	setStemLevels: (levels: (number | null)[]) => typedError<null, AppError>(__TAURI_INVOKE("set_stem_levels", { levels })),
 };
 
 /** Events */
@@ -286,7 +304,9 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 /**  The track is still loading in the background */
 "stillLoading" | 
 /**  The beat-tracking model is not installed (scripts/10-modello-tempo.cmd) */
-"tempoModelMissing" | "internal";
+"tempoModelMissing" | 
+/**  The stem separation model is not installed (scripts/11-modello-strumenti.cmd) */
+"stemModelMissing" | "internal";
 
 /**  The exercises, each off when absent. */
 export type ExercisesRequest = ExercisesRequest_Serialize | ExercisesRequest_Deserialize;
@@ -582,6 +602,8 @@ export type Project_Deserialize = {
 	cents?: number,
 	eq?: EqSettings_Deserialize,
 	channels?: ChannelMode,
+	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
+	stemMix?: StemChannel[],
 };
 
 /**
@@ -620,6 +642,8 @@ export type Project_Serialize = {
 	cents: number,
 	eq: EqSettings_Serialize,
 	channels: ChannelMode,
+	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
+	stemMix: StemChannel[],
 };
 
 export type RecentFile = RecentFile_Serialize | RecentFile_Deserialize;
@@ -768,6 +792,27 @@ export type SpectrumRequest = {
 	channels: ChannelMode,
 	/**  Pitch shift in semitones (fractions are cents), so the keys match what is heard */
 	semitones: number | null,
+};
+
+/**  One separated track in the mixer: which one, its level and its keys. */
+export type StemChannel = {
+	/**  "vocals", "drums", "bass", "guitar", "piano", "other" */
+	name: string,
+	/**  0..1 */
+	level: number | null,
+	mute: boolean,
+	solo: boolean,
+};
+
+/**  The separated tracks of the open song, in the order the levels are given. */
+export type StemsInfo = {
+	/**  "drums", "bass", "other", "vocals", "guitar", "piano" */
+	names: string[],
+};
+
+export type StemsRequest = {
+	/**  The open song's file (the cache is keyed on it) */
+	path: string,
 };
 
 /**

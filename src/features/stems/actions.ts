@@ -1,0 +1,37 @@
+import { Channel } from "@tauri-apps/api/core";
+import { commands } from "@/lib/bindings";
+import { usePlayerStore } from "@/stores/player";
+import { useStemsStore } from "@/stores/stems";
+
+/**
+ * Separates the open song (once: then its tracks come from the cache). Opening another
+ * song stops it; so does `cancelSeparation`.
+ */
+export async function separateStems() {
+  const stems = useStemsStore.getState();
+  const track = usePlayerStore.getState().track;
+  if (!track || stems.phase.kind === "running") return;
+  stems.setPhase({ kind: "running", progress: 0 });
+  const progress = new Channel<number | null>();
+  progress.onmessage = (value) => {
+    if (value !== null && useStemsStore.getState().phase.kind === "running") {
+      useStemsStore.getState().setPhase({ kind: "running", progress: value });
+    }
+  };
+  const result = await commands.separateStems({ path: track.path }, progress);
+  // Another song was opened meanwhile: its own state is already in place
+  if (usePlayerStore.getState().track?.path !== track.path) return;
+  const store = useStemsStore.getState();
+  if (result.status === "ok") {
+    store.setNames(result.data.names);
+    store.setPhase({ kind: "idle" });
+  } else if (result.error.kind === "cancelled") {
+    store.setPhase({ kind: "idle" });
+  } else {
+    store.setPhase({ kind: "error", error: result.error });
+  }
+}
+
+export function cancelSeparation() {
+  void commands.cancelStems();
+}

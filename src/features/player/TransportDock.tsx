@@ -1,8 +1,8 @@
 import { Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
-import { Slider as RadixSlider } from "radix-ui";
-import { useRef } from "react";
+
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { Fader } from "@/components/ui/Fader";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -10,10 +10,9 @@ import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
 import { formatPercent, signed } from "@/lib/format";
-import { clamp } from "@/lib/time";
-import { useWheelSteps } from "@/lib/useWheelSteps";
+
 import { usePlayerStore } from "@/stores/player";
-import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
+import { useSettingsStore } from "@/stores/settings";
 import { showsWhole, useViewStore } from "@/stores/view";
 import { FollowKey } from "./FollowKey";
 import { LoopMenu } from "./LoopMenu";
@@ -180,55 +179,6 @@ export function TransportDock() {
         </div>
       </div>
     </footer>
-  );
-}
-
-/** One upright fader of the mixer strip: drag, wheel (5% a notch), double-click to reset. */
-function Fader({
-  label,
-  short,
-  hint,
-  value,
-  current,
-  reset,
-  onChange,
-}: {
-  label: string;
-  short: string;
-  hint: string;
-  value: number;
-  /** The value now, read at each wheel notch (fast notches come before a re-render) */
-  current: () => number;
-  reset: number;
-  onChange: (value: number) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { min, max, step } = SETTING_LIMITS.trackVolume;
-  useWheelSteps(ref, (notch) =>
-    onChange(clamp(Math.round((current() + notch * step) * 100) / 100, min, max)),
-  );
-  return (
-    <Tooltip label={`${label} ${formatPercent(value)} — ${hint}`}>
-      <div ref={ref} className="flex flex-col items-center gap-1">
-        <RadixSlider.Root
-          orientation="vertical"
-          className="relative flex h-11 w-4 touch-none flex-col items-center"
-          value={[value]}
-          min={min}
-          max={max}
-          step={step}
-          onValueChange={([next]) => next !== undefined && onChange(next)}
-          onDoubleClick={() => onChange(reset)}
-          aria-label={label}
-        >
-          <RadixSlider.Track className="relative w-1 grow rounded-[2px] bg-well shadow-[inset_0_1px_1px_var(--color-shade),0_1px_0_var(--color-sheen)]">
-            <RadixSlider.Range className="absolute w-full rounded-[2px] bg-accent/70" />
-          </RadixSlider.Track>
-          <RadixSlider.Thumb className="hw block h-3 w-5 rounded-[2px] bg-[linear-gradient(var(--color-thumb-from),var(--color-thumb-to))] transition-[filter] hover:brightness-125" />
-        </RadixSlider.Root>
-        <span className="panel-label leading-none">{short}</span>
-      </div>
-    </Tooltip>
   );
 }
 

@@ -11,6 +11,7 @@ import { usePracticeStore } from "@/stores/practice";
 import { useRecentStore } from "@/stores/recent";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useSettingsStore } from "@/stores/settings";
+import { useStemsStore } from "@/stores/stems";
 import { useViewStore } from "@/stores/view";
 import { fromFile, type ProjectData, toFile } from "./projectFile";
 
@@ -36,6 +37,7 @@ function snapshot(): ProjectData {
     cents,
     eq,
     channels,
+    stemMix: useStemsStore.getState().channels,
   };
 }
 
@@ -69,6 +71,7 @@ function apply(data: ProjectData) {
   player.setPitch(data.semitones, data.cents);
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
+  useStemsStore.getState().replace(data.stemMix);
   resume(data.position);
 }
 
@@ -190,6 +193,9 @@ export function syncProject(): () => void {
     }),
     useEqStore.subscribe((state, previous) => {
       if (state.settings !== previous.settings || state.channels !== previous.channels) schedule();
+    }),
+    useStemsStore.subscribe((state, previous) => {
+      if (state.channels !== previous.channels) schedule();
     }),
   ];
   void projectDefaults();

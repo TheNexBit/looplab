@@ -56,7 +56,9 @@ export const it = {
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     tempoModelMissing:
-      "Manca il modello per analizzare il tempo: esegui scripts\x08-modello-tempo.cmd.",
+      "Manca il modello per analizzare il tempo: esegui scripts\\10-modello-tempo.cmd.",
+    stemModelMissing:
+      "Manca il modello per separare gli strumenti: esegui scripts\\11-modello-strumenti.cmd.",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",
@@ -65,7 +67,33 @@ export const it = {
     sections: "Sezioni",
     eq: "EQ",
     practice: "Pratica",
+    stems: "Tracce",
     resize: "Trascina per allargare o stringere il pannello (doppio clic: larghezza normale)",
+  },
+  stems: {
+    title: "Tracce separate",
+    intro:
+      "Separa il brano in voce, chitarra, basso, batteria, piano e altro, ognuna con il suo fader, Mute e Solo. Si fa una volta per brano (circa un minuto ogni 5 minuti di musica), poi le tracce restano in cache.",
+    separate: "Separa strumenti",
+    separateHint: "Calcola le tracce del brano aperto, una volta sola",
+    separating: "Separazione in corso",
+    cancel: "Annulla",
+    needsTrack: "Apri un brano per separarlo.",
+    reset: "Mix originale",
+    resetHint: "Tutte le tracce al 100%, niente Mute né Solo: si sente il brano originale",
+    mute: "Mute",
+    solo: "Solo",
+    levelHint: "Rotella: ±5%, doppio clic: 100%",
+    licence:
+      "Modello HTDemucs (Demucs v4): la licenza dei pesi non è chiara, solo per uso personale.",
+    names: {
+      vocals: "Voce",
+      guitar: "Chitarra",
+      bass: "Basso",
+      drums: "Batteria",
+      piano: "Piano",
+      other: "Altro",
+    } as Record<string, string>,
   },
   notes: {
     title: "Note",

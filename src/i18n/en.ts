@@ -53,7 +53,9 @@ export const en = {
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:
-      "The model for tempo analysis is missing: run scripts\x08-modello-tempo.cmd.",
+      "The model for tempo analysis is missing: run scripts\\10-modello-tempo.cmd.",
+    stemModelMissing:
+      "The model for separating instruments is missing: run scripts\\11-modello-strumenti.cmd.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
     internal: "Unexpected error.",
@@ -62,7 +64,33 @@ export const en = {
     sections: "Sections",
     eq: "EQ",
     practice: "Practice",
+    stems: "Tracks",
     resize: "Drag to widen or narrow the panel (double-click: normal width)",
+  },
+  stems: {
+    title: "Separated tracks",
+    intro:
+      "Splits the song into vocals, guitar, bass, drums, piano and the rest, each with its fader, Mute and Solo. Done once per song (about a minute for 5 minutes of music), then the tracks stay in the cache.",
+    separate: "Separate instruments",
+    separateHint: "Works out the tracks of the open song, once",
+    separating: "Separating",
+    cancel: "Cancel",
+    needsTrack: "Open a song to separate it.",
+    reset: "Original mix",
+    resetHint: "Every track at 100%, no Mute or Solo: the original song is heard",
+    mute: "Mute",
+    solo: "Solo",
+    levelHint: "Wheel: ±5%, double-click: 100%",
+    licence:
+      "HTDemucs model (Demucs v4): the licence of its weights is unclear, personal use only.",
+    names: {
+      vocals: "Vocals",
+      guitar: "Guitar",
+      bass: "Bass",
+      drums: "Drums",
+      piano: "Piano",
+      other: "Other",
+    } as Record<string, string>,
   },
   notes: {
     title: "Notes",

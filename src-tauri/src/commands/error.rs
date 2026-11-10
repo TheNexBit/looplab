@@ -26,6 +26,8 @@ pub enum ErrorKind {
     StillLoading,
     /// The beat-tracking model is not installed (scripts/10-modello-tempo.cmd)
     TempoModelMissing,
+    /// The stem separation model is not installed (scripts/11-modello-strumenti.cmd)
+    StemModelMissing,
     Internal,
 }
 
