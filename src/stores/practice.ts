@@ -9,6 +9,7 @@ import {
   sanitizeTempoMap,
   type TempoMap,
   type TempoMarker,
+  yours,
 } from "@/features/practice/tempo";
 import { clamp } from "@/lib/time";
 
@@ -50,6 +51,10 @@ interface PracticeState {
   /** Moves marker `index` to `time`, never past its neighbours */
   moveTempoMarker: (index: number, time: number) => void;
   removeTempoMarker: (index: number) => void;
+  /** The markers proposed by the analysis become the user's own */
+  confirmProposed: () => void;
+  /** Drops the markers proposed by the analysis */
+  removeProposed: () => void;
   addTap: (time: number) => void;
   countRepetition: () => void;
   resetRepetitions: () => void;
@@ -112,7 +117,7 @@ export const usePracticeStore = create<PracticeState>((set, get) => {
       return;
     }
     const map = state.tempoMap.map((marker, i) =>
-      i === state.focus ? { ...marker, ...patch } : marker,
+      i === state.focus ? { ...yours(marker), ...patch } : marker,
     );
     commit(sanitizeTempoMap(map), patch.time ?? current.time);
   };
@@ -171,7 +176,7 @@ export const usePracticeStore = create<PracticeState>((set, get) => {
         bars[0]?.time ?? time,
       );
       if (tempoMap.some((m) => Math.abs(m.time - at) < 0.01)) return false;
-      commit(sanitizeTempoMap([...tempoMap, { ...marker, time: at }]), at);
+      commit(sanitizeTempoMap([...tempoMap, { ...yours(marker), time: at }]), at);
       return true;
     },
     moveTempoMarker: (index, time) => {
@@ -180,7 +185,7 @@ export const usePracticeStore = create<PracticeState>((set, get) => {
       const after = tempoMap[index + 1]?.time ?? Infinity;
       const marker = tempoMap[index];
       if (!marker || time <= before + 0.01 || time >= after - 0.01) return;
-      const map = tempoMap.map((m, i) => (i === index ? { ...m, time } : m));
+      const map = tempoMap.map((m, i) => (i === index ? { ...yours(m), time } : m));
       commit(map, time);
     },
     removeTempoMarker: (index) => {
@@ -188,6 +193,19 @@ export const usePracticeStore = create<PracticeState>((set, get) => {
       if (!tempoMap[index]) return;
       const map = tempoMap.filter((_, i) => i !== index);
       commit(map, tempoMap[index]?.time ?? 0);
+    },
+    confirmProposed: () => {
+      const { tempoMap, focus } = get();
+      if (!tempoMap.some((m) => m.auto)) return;
+      commit(tempoMap.map(yours), tempoMap[focus]?.time ?? 0);
+    },
+    removeProposed: () => {
+      const { tempoMap, focus } = get();
+      if (!tempoMap.some((m) => m.auto)) return;
+      commit(
+        tempoMap.filter((m) => !m.auto),
+        tempoMap[focus]?.time ?? 0,
+      );
     },
     addTap: (time) => set({ taps: [...get().taps, time].slice(-MAX_TAPS) }),
     countRepetition: () => set({ repetitions: get().repetitions + 1 }),

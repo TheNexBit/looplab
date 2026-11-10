@@ -24,6 +24,8 @@ pub enum ErrorKind {
     ExportFailed,
     /// The track is still loading in the background
     StillLoading,
+    /// The beat-tracking model is not installed (scripts/10-modello-tempo.cmd)
+    TempoModelMissing,
     Internal,
 }
 

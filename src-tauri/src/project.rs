@@ -115,6 +115,10 @@ pub struct TempoMarker {
     pub bpm: f64,
     pub beats_per_bar: u32,
     pub beat_unit: u32,
+    /// Proposed by the tempo analysis and not touched since; a marker the user edits or adds
+    /// is theirs, and a new analysis keeps it
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub auto: bool,
 }
 
 /// Everything remembered about one track. Missing fields take their defaults,

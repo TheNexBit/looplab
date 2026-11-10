@@ -52,6 +52,8 @@ export const en = {
       "This track's .looplab.json file cannot be read or written: markers and sections are not saved.",
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
+    tempoModelMissing:
+      "The model for tempo analysis is missing: run scripts\x08-modello-tempo.cmd.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
     internal: "Unexpected error.",
@@ -454,6 +456,20 @@ export const en = {
     needsBpm: "Set the BPM first: type it in the display or use Tap tempo.",
     noBpmSet: "The BPM is not set yet.",
     clearBpmHint: "Remove the BPM: grid, metronome and count-in switch off",
+    analyze: "Analyse tempo",
+    analyzeHint:
+      "Finds the beats, tempo and meter changes of the track. Proposed markers are dashed: check them, Ctrl+Z undoes.",
+    analyzeAgainHint:
+      "Runs the analysis again: the markers you set or edited stay and guide the rest.",
+    analyzing: "Analysing",
+    analyzed: (count: number) =>
+      count === 1 ? "Found 1 tempo marker." : `Found ${count} tempo markers.`,
+    analyzedNothing: "No beats recognised in this track.",
+    confirmProposed: "Confirm the proposed markers",
+    confirmProposedHint: "They become yours: a new analysis will keep them.",
+    removeProposed: "Remove the proposed markers",
+    removeProposedHint: "Only the ones you set or edited remain.",
+    noProposed: "No proposed markers.",
     meter: "Meter",
     meterHint: "The track's meter: click to choose it, wheel to change the beats",
     meterBeats: "Beats per bar",
@@ -549,6 +565,7 @@ export const en = {
     markerRightClick: "delete",
     tempoMarker: "Tempo marker",
     tempoMarkerHint: "click: go there (the Tempo display and the meter change it) · drag: move",
+    tempoMarkerProposed: "proposed by the analysis: edit or confirm it to make it yours",
     tempoRightClick: "delete",
     removeTempoMarker: "Delete the tempo marker",
     sectionRightClick: "loop, export, colour, delete",

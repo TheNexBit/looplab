@@ -88,10 +88,20 @@ export interface TempoMarker {
   /** Time signature: beats in a bar over the note value of a beat (7/8 → 7 and 8) */
   beatsPerBar: number;
   beatUnit: number;
+  /** Proposed by the tempo analysis and untouched since: a new analysis may replace it */
+  auto?: boolean;
 }
 
 /** Where tempo and meter change, sorted by time; empty while the tempo is unknown. */
 export type TempoMap = TempoMarker[];
+
+/** The marker as the user's own: no longer "proposed" by the analysis. */
+export const yours = ({ time, bpm, beatsPerBar, beatUnit }: TempoMarker): TempoMarker => ({
+  time,
+  bpm,
+  beatsPerBar,
+  beatUnit,
+});
 
 /** Seconds per beat of a marker: a quarter in x/4, an eighth in x/8. */
 export const beatSeconds = (marker: TempoMarker) => (60 / marker.bpm) * (4 / marker.beatUnit);
@@ -119,6 +129,7 @@ export function sanitizeTempoMap(markers: readonly Partial<TempoMarker>[]): Temp
       bpm: Math.min(BPM.max, Math.max(BPM.min, m.bpm)),
       beatsPerBar: Math.round(Math.min(BEATS_PER_BAR.max, m.beatsPerBar)),
       beatUnit: m.beatUnit,
+      ...(m.auto ? { auto: true } : {}),
     }))
     .sort((a, b) => a.time - b.time);
   const kept: TempoMap = [];

@@ -8,6 +8,8 @@ target/
 src-tauri/gen/
 src-tauri/binaries/*
 !src-tauri/binaries/.gitkeep
+# The tempo model (83 MB): scripts/10-modello-tempo.cmd installs it
+src-tauri/models/
 
 # Secrets
 .env

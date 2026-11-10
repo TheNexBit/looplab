@@ -2327,6 +2327,7 @@ name = "looplab"
 version = "0.1.0"
 dependencies = [
  "audio-engine",
+ "beat-detect",
  "midir",
  "serde",
  "serde_json",

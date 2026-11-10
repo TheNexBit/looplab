@@ -48,7 +48,11 @@ export function TempoFlags({ area }: { area: RefObject<HTMLDivElement | null> })
           <div key={index}>
             <div
               aria-hidden
-              className="absolute top-0 bottom-0 w-px bg-lcd-fg/35"
+              className={
+                marker.auto
+                  ? "absolute top-0 bottom-0 w-0 border-l border-dashed border-lcd-fg/35"
+                  : "absolute top-0 bottom-0 w-px bg-lcd-fg/35"
+              }
               style={{ left }}
             />
             <ContextMenu.Root>
@@ -57,7 +61,7 @@ export function TempoFlags({ area }: { area: RefObject<HTMLDivElement | null> })
                   type="button"
                   data-no-seek
                   title={withRightClick(
-                    `${m.tempoMarker} ${label} — ${m.tempoMarkerHint}`,
+                    `${m.tempoMarker} ${label} — ${marker.auto ? `${m.tempoMarkerProposed} · ` : ""}${m.tempoMarkerHint}`,
                     m.tempoRightClick,
                   )}
                   onPointerDown={(event) =>
@@ -73,7 +77,7 @@ export function TempoFlags({ area }: { area: RefObject<HTMLDivElement | null> })
                   }
                   className={`lcd pointer-events-auto absolute bottom-1 h-4 -translate-x-1/2 cursor-grab rounded-[2px] px-1 font-mono text-[9px] leading-4 tabular whitespace-nowrap active:cursor-grabbing ${
                     focused ? "text-lcd-fg lcd-glow" : "text-lcd-dim"
-                  }`}
+                  } ${marker.auto ? "italic outline outline-1 outline-dashed outline-lcd-fg/40" : ""}`}
                   style={{ left }}
                 >
                   {label}

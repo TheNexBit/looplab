@@ -310,18 +310,21 @@ mod tempo_tests {
                 bpm: 120.0,
                 beats_per_bar: 7,
                 beat_unit: 8,
+                auto: false,
             },
             TempoMarker {
                 time: 0.0,
                 bpm: 60.0,
                 beats_per_bar: 4,
                 beat_unit: 4,
+                auto: false,
             },
             TempoMarker {
                 time: 5.0,
                 bpm: 0.0,
                 beats_per_bar: 4,
                 beat_unit: 4,
+                auto: false,
             },
         ];
         let map = tempo_map(&markers, 48_000);

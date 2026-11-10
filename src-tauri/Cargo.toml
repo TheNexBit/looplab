@@ -11,6 +11,8 @@ tauri-build = { version = "2.7.4", features = [] }
 
 [dependencies]
 audio-engine = { path = "../crates/audio-engine", features = ["typed"] }
+# Beat and tempo detection (Beat This! run with rten)
+beat-detect = { path = "../crates/beat-detect" }
 tauri = { version = "2.12.5", features = ["protocol-asset"] }
 tauri-plugin-single-instance = "2.5.5"
 serde = { version = "1.0.229", features = ["derive"] }

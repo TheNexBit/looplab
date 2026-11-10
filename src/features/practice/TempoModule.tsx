@@ -1,4 +1,14 @@
-import { ChevronDown, Crosshair, Grid3x3, Hand, Metronome, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Crosshair,
+  Eraser,
+  Grid3x3,
+  Hand,
+  Metronome,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { Popover } from "radix-ui";
 import { type ReactNode, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
@@ -21,6 +31,7 @@ import { setDownbeatHere, tapBeat } from "./actions";
 import { ClickSoundPicker } from "./ClickSoundPicker";
 import { TimeSignaturePicker } from "./TimeSignaturePicker";
 import { BPM, COUNT_IN_CHOICES } from "./tempo";
+import { analyzeTempo, useTempoAnalysisStore } from "./tempoAnalysis";
 
 const p = t.practice;
 
@@ -94,6 +105,66 @@ function MenuEntry({
   return closes ? <Popover.Close asChild>{entry}</Popover.Close> : entry;
 }
 
+/**
+ * "Analyse tempo" and, after it, confirming or dropping what it proposed. The menu stays open
+ * while it runs: the entry shows the progress, then the result.
+ */
+function AnalyzeEntries() {
+  const track = usePlayerStore((s) => s.track);
+  const phase = useTempoAnalysisStore((s) => s.phase);
+  const proposed = usePracticeStore((s) => s.tempoMap.some((m) => m.auto));
+  const yoursToo = usePracticeStore((s) => s.tempoMap.some((m) => !m.auto));
+  const running = phase.kind === "running";
+  const status =
+    phase.kind === "running"
+      ? `${p.analyzing}… ${Math.round(phase.progress * 100)}%`
+      : phase.kind === "done"
+        ? phase.found > 0
+          ? p.analyzed(phase.found)
+          : p.analyzedNothing
+        : phase.kind === "error"
+          ? t.errors[phase.error.kind]
+          : null;
+  return (
+    <>
+      <MenuEntry
+        icon={<Sparkles className="size-3.5" />}
+        label={p.analyze}
+        hint={status ?? (yoursToo ? p.analyzeAgainHint : p.analyzeHint)}
+        closes={false}
+        unavailable={
+          !track ? p.needsTrack : !track.complete ? t.errors.stillLoading : running ? status : null
+        }
+        onClick={() => void analyzeTempo()}
+      />
+      {running && (
+        <div className="mx-2 h-1 overflow-hidden rounded-full bg-led-off">
+          <div
+            className="h-full bg-accent transition-[width]"
+            style={{ width: `${Math.round(phase.progress * 100)}%` }}
+          />
+        </div>
+      )}
+      {proposed && !running && (
+        <>
+          <MenuEntry
+            icon={<Check className="size-3.5" />}
+            label={p.confirmProposed}
+            hint={p.confirmProposedHint}
+            onClick={() => usePracticeStore.getState().confirmProposed()}
+          />
+          <MenuEntry
+            icon={<Eraser className="size-3.5" />}
+            label={p.removeProposed}
+            hint={p.removeProposedHint}
+            onClick={() => usePracticeStore.getState().removeProposed()}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
 /** Everything about the tempo and the click, opened from the display. */
 function TempoMenu() {
   const bpm = usePracticeStore((s) => s.bpm);
@@ -119,6 +190,7 @@ function TempoMenu() {
           unavailable={!hasTrack ? p.needsTrack : bpm === null ? p.needsBpm : null}
           onClick={setDownbeatHere}
         />
+        <AnalyzeEntries />
         <MenuEntry
           icon={<Grid3x3 className="size-3.5" />}
           label={p.gridItem}

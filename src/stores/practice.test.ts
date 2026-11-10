@@ -76,3 +76,30 @@ describe("tempo map of the open track", () => {
     expect(store().addTempoMarker(3), "no tempo yet").toBe(false);
   });
 });
+
+describe("markers proposed by the tempo analysis", () => {
+  const proposed = [
+    { time: 0, bpm: 120, beatsPerBar: 4, beatUnit: 4, auto: true },
+    { time: 8, bpm: 140, beatsPerBar: 7, beatUnit: 8, auto: true },
+    { time: 14, bpm: 100, beatsPerBar: 4, beatUnit: 4 },
+  ];
+  beforeEach(() => store().setTempoMap(proposed));
+
+  it("stay flagged until the user touches them", () => {
+    expect(store().tempoMap.map((m) => m.auto ?? false)).toEqual([true, true, false]);
+    store().moveTempoMarker(1, 8.5);
+    expect(store().tempoMap[1]).toEqual({ time: 8.5, bpm: 140, beatsPerBar: 7, beatUnit: 8 });
+    store().focusAt(1);
+    store().setBpm(126);
+    expect(store().tempoMap[0]?.auto).toBeUndefined();
+  });
+
+  it("are confirmed or dropped all at once", () => {
+    store().removeProposed();
+    expect(store().tempoMap).toEqual([proposed[2]]);
+    store().setTempoMap(proposed);
+    store().confirmProposed();
+    expect(store().tempoMap.some((m) => m.auto)).toBe(false);
+    expect(store().tempoMap).toHaveLength(3);
+  });
+});

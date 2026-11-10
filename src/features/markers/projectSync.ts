@@ -1,4 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { resetTempoAnalysis } from "@/features/practice/tempoAnalysis";
 import { commands } from "@/lib/bindings";
 import { useEqStore } from "@/stores/eq";
 import { useHistoryStore } from "@/stores/history";
@@ -151,6 +152,7 @@ export function syncProject(): () => void {
     applying = false;
     // Undo never reaches back into the previous track
     useHistoryStore.getState().reset();
+    resetTempoAnalysis();
     void useRecentStore.getState().refresh();
   };
 
