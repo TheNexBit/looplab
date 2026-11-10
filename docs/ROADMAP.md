@@ -564,6 +564,7 @@ metronomo e corregge solo dove serve.
 
 **Fatto** (provato dall'utente su "The 12th Hour" di Marco Sfogli; chiusa il 10/11/2026 con l'accordo di
 perfezionarla durante lo sviluppo):
+
 - Mappa del tempo nel motore, nel progetto e nell'interfaccia: bandierine "120 · 7/8" sotto la forma d'onda (clic,
   trascina con snap, tasto destro elimina), Shift+C come in Reaper, Annulla/Ripeti. Prima del primo marker vale la
   sua griglia, anche per il click.
@@ -575,6 +576,7 @@ perfezionarla durante lo sviluppo):
 - Volume della traccia e del click a portata di mano (fader Trk/Clk nel trasporto).
 
 **Da perfezionare** (nel corso dello sviluppo):
+
 - Metrica nei brani prog: dove la batteria suona in 4 sotto un riff in 7, la rete segue la batteria (intro di "The
   12th Hour", che l'utente conta 1 2 3 1 2 3 4). Idee: un metro messo a mano che vale per tutta la sezione, il
   confronto con Explore This! (licenza dei pesi da chiarire), brani di riferimento annotati.
