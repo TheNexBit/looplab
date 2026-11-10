@@ -55,6 +55,8 @@ export const it = {
       "Il file .looplab.json di questo brano non si legge o non si scrive: marker e sezioni non vengono salvati.",
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
+    tempoModelMissing:
+      "Manca il modello per analizzare il tempo: esegui scripts\x08-modello-tempo.cmd.",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",
@@ -456,6 +458,20 @@ export const it = {
     needsBpm: "Prima imposta il BPM: scrivilo nel display o usa Tap tempo.",
     noBpmSet: "Il BPM non è ancora impostato.",
     clearBpmHint: "Togli il BPM: griglia, metronomo e count-in si spengono",
+    analyze: "Analizza tempo",
+    analyzeHint:
+      "Trova battiti, tempo e cambi di metrica del brano. I marker proposti appaiono tratteggiati: controllali, Ctrl+Z annulla.",
+    analyzeAgainHint:
+      "Rifà l'analisi: i marker che hai messo o modificato restano e guidano il resto.",
+    analyzing: "Analisi in corso",
+    analyzed: (count: number) =>
+      count === 1 ? "Trovato 1 marker di tempo." : `Trovati ${count} marker di tempo.`,
+    analyzedNothing: "Nessun battito riconosciuto in questo brano.",
+    confirmProposed: "Conferma i marker proposti",
+    confirmProposedHint: "Diventano tuoi: una nuova analisi li terrà.",
+    removeProposed: "Togli i marker proposti",
+    removeProposedHint: "Restano solo quelli che hai messo o modificato.",
+    noProposed: "Nessun marker proposto.",
     meter: "Metrica",
     meterHint: "Metrica del brano: clic per sceglierla, rotella per cambiare i battiti",
     meterBeats: "Battiti per battuta",
@@ -550,6 +566,11 @@ export const it = {
     color: "Colore",
     remove: "Elimina",
     markerRightClick: "elimina",
+    tempoMarker: "Marker di tempo",
+    tempoMarkerHint: "clic: vai lì (il display Tempo e la metrica lo cambiano) · trascina: sposta",
+    tempoMarkerProposed: "proposto dall'analisi: modificalo o confermalo per renderlo tuo",
+    tempoRightClick: "elimina",
+    removeTempoMarker: "Elimina il marker di tempo",
     sectionRightClick: "loop, esporta, colore, elimina",
     savedInAppData:
       "La cartella del brano è protetta: il progetto è salvato nella cartella dell'app.",
@@ -861,6 +882,13 @@ export const it = {
     gap: "Gap",
     gapHint: "Secondi di silenzio tra una ripetizione e l'altra",
     clearLoop: "Rimuovi loop",
+    trackVolume: "Traccia",
+    trackVolumeShort: "Trk",
+    trackVolumeHint:
+      "Volume del brano: abbassalo per sentire il click sopra un mix forte. Rotella: ±5%, doppio clic: 100%.",
+    clickVolumeShort: "Clk",
+    clickVolume: "Click",
+    clickVolumeHint: "Volume del click e del count-in. Rotella: ±5%, doppio clic: 60%.",
     speed: "Velocità",
     speedPreset: "Velocità",
     pitch: "Pitch",
@@ -894,6 +922,7 @@ export const it = {
     toggleFollow: "Follow on/off",
     toggleContinuousScroll: "Scorrimento continuo on/off",
     addMarker: "Aggiungi marker",
+    addTempoMarker: "Aggiungi marker di tempo",
     addBeat: "Aggiungi battuta",
     addSection: "Sezione: inizio / fine",
     sectionFromLoop: "Crea sezione dal loop",

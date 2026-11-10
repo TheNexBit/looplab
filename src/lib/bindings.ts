@@ -22,10 +22,17 @@ export const commands = {
 	seek: (seconds: number | null) => typedError<null, AppError>(__TAURI_INVOKE("seek", { seconds })),
 	/**  Playback speed without changing pitch: 1 is the original speed. */
 	setSpeed: (speed: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_speed", { speed })),
+	/**  Level of the track alone, 0..1: the clicks, the metronome and the reference note keep theirs. */
+	setTrackVolume: (volume: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_track_volume", { volume })),
 	/**  Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down). */
 	setPitch: (semitones: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pitch", { semitones })),
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),
 	setClick: (settings: ClickRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_click", { settings })),
+	/**
+	 *  The tempo map of the open track: the clicks over it and the count-ins follow its tempo and
+	 *  meter changes. Each marker rules until the next one; an empty map means no tempo (no clicks).
+	 */
+	setTempoMap: (markers: TempoMarker_Deserialize[]) => typedError<null, AppError>(__TAURI_INVOKE("set_tempo_map", { markers })),
 	/**
 	 *  Reference note to tune by ear: `hz` 0 stops it. Heard over the track and while paused, and
 	 *  before any track is open (it starts the audio device like `preview_sound`).
@@ -108,6 +115,11 @@ export const commands = {
 	cancelExport: () => __TAURI_INVOKE<void>("cancel_export"),
 	/**  Levels in dB at five points per semitone from A0 (MIDI 21) to C8 (MIDI 108). */
 	spectrum: (request: SpectrumRequest) => typedError<(number | null)[], AppError>(__TAURI_INVOKE("spectrum", { request })),
+	/**
+	 *  Finds the tempo map of the open track. `on_progress` receives 0..1. The markers it returns
+	 *  are flagged `auto`, except the kept ones.
+	 */
+	analyzeTempo: (request: TempoRequest_Deserialize, onProgress: Channel<number | null>) => typedError<TempoMarker_Serialize[], AppError>(__TAURI_INVOKE("analyze_tempo", { request, onProgress })),
 };
 
 /** Events */
@@ -200,15 +212,12 @@ export type ChannelMode = "stereo" |
 /**  Left plus right: keeps the centre, the sides get quieter */
 "isolateCenter";
 
-/**  Tempo, metronome and count-in, in the units of the UI. */
+/**
+ *  Metronome and count-in over the track, in the units of the UI. Where the beats fall comes
+ *  from the tempo map (`set_tempo_map`).
+ */
 export type ClickRequest = {
-	/**  Quarter notes per minute of the track at its original speed (as in DAWs); 0 when unknown */
-	bpm: number | null,
-	/**  Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar */
-	bar: BarRequest,
-	/**  Seconds: a moment that falls on the first beat of a bar */
-	anchor: number | null,
-	/**  Beats counted in before playback and before every loop repetition */
+	/**  Bars counted in before playback and before every loop repetition */
 	countIn: number,
 	/**  Click on every beat while playing */
 	metronome: boolean,
@@ -275,7 +284,9 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 /**  The user stopped it: not a problem, never shown as one */
 "cancelled" | "exportFailed" | 
 /**  The track is still loading in the background */
-"stillLoading" | "internal";
+"stillLoading" | 
+/**  The beat-tracking model is not installed (scripts/10-modello-tempo.cmd) */
+"tempoModelMissing" | "internal";
 
 /**  The exercises, each off when absent. */
 export type ExercisesRequest = ExercisesRequest_Serialize | ExercisesRequest_Deserialize;
@@ -560,6 +571,12 @@ export type Project_Deserialize = {
 	 */
 	beatsPerBar?: number,
 	beatUnit?: number,
+	/**
+	 *  Where tempo and meter change (the fields above repeat its first marker, so a project
+	 *  still opens in versions that had a single tempo). Empty in older files: their single
+	 *  tempo is then the map
+	 */
+	tempoMap?: TempoMarker_Deserialize[],
 	speed?: number | null,
 	semitones?: number,
 	cents?: number,
@@ -592,6 +609,12 @@ export type Project_Serialize = {
 	 */
 	beatsPerBar: number,
 	beatUnit: number,
+	/**
+	 *  Where tempo and meter change (the fields above repeat its first marker, so a project
+	 *  still opens in versions that had a single tempo). Empty in older files: their single
+	 *  tempo is then the map
+	 */
+	tempoMap: TempoMarker_Serialize[],
 	speed: number | null,
 	semitones: number,
 	cents: number,
@@ -745,6 +768,60 @@ export type SpectrumRequest = {
 	channels: ChannelMode,
 	/**  Pitch shift in semitones (fractions are cents), so the keys match what is heard */
 	semitones: number | null,
+};
+
+/**
+ *  A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and
+ *  this meter, until the next marker.
+ */
+export type TempoMarker = TempoMarker_Serialize | TempoMarker_Deserialize;
+
+/**
+ *  A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and
+ *  this meter, until the next marker.
+ */
+export type TempoMarker_Deserialize = {
+	/**  Seconds */
+	time: number | null,
+	/**  Quarter notes per minute */
+	bpm: number | null,
+	beatsPerBar: number,
+	beatUnit: number,
+	/**
+	 *  Proposed by the tempo analysis and not touched since; a marker the user edits or adds
+	 *  is theirs, and a new analysis keeps it
+	 */
+	auto?: boolean,
+};
+
+/**
+ *  A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and
+ *  this meter, until the next marker.
+ */
+export type TempoMarker_Serialize = {
+	/**  Seconds */
+	time: number | null,
+	/**  Quarter notes per minute */
+	bpm: number | null,
+	beatsPerBar: number,
+	beatUnit: number,
+	/**
+	 *  Proposed by the tempo analysis and not touched since; a marker the user edits or adds
+	 *  is theirs, and a new analysis keeps it
+	 */
+	auto?: boolean,
+};
+
+export type TempoRequest = TempoRequest_Serialize | TempoRequest_Deserialize;
+
+export type TempoRequest_Deserialize = {
+	/**  Markers the user set or edited: kept as they are, and their bar starts guide the rest */
+	keep: TempoMarker_Deserialize[],
+};
+
+export type TempoRequest_Serialize = {
+	/**  Markers the user set or edited: kept as they are, and their bar starts guide the rest */
+	keep: TempoMarker_Serialize[],
 };
 
 export type TrackInfo = {

@@ -1,5 +1,5 @@
 import { GAP, LEAD_IN, SPEED } from "@/features/player/limits";
-import { BEATS_PER_BAR } from "@/features/practice/tempo";
+import { BEATS_PER_BAR, sanitizeTempoMap, type TempoMap } from "@/features/practice/tempo";
 import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/bindings";
 import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
@@ -20,6 +20,8 @@ export interface ProjectData {
   beatOffset: number | null;
   beatsPerBar: number;
   beatUnit: number;
+  /** Where tempo and meter change; the four fields above repeat its first marker (or the draft) */
+  tempoMap: TempoMap;
   speed: number;
   semitones: number;
   cents: number;
@@ -61,12 +63,38 @@ export function fromFile(file: Project_Serialize, duration = 0): ProjectData {
     beatOffset: typeof file.beatOffset === "number" ? file.beatOffset : null,
     beatsPerBar: file.beatsPerBar > 0 ? file.beatsPerBar : BEATS_PER_BAR.default,
     beatUnit: file.beatUnit > 0 ? file.beatUnit : 4,
+    tempoMap: tempoMapOf(file),
     speed: num(file.speed, SPEED.default),
     semitones: file.semitones,
     cents: file.cents,
     eq: eqFromFile(file.eq),
     channels: file.channels,
   };
+}
+
+/**
+ * The tempo map of a file. Files from before tempo maps kept a single tempo: that is their map,
+ * one marker on their first beat.
+ */
+function tempoMapOf(file: Project_Serialize): TempoMap {
+  const saved = sanitizeTempoMap(
+    (file.tempoMap ?? []).map((m) => ({
+      time: m.time ?? Number.NaN,
+      bpm: m.bpm ?? Number.NaN,
+      beatsPerBar: m.beatsPerBar,
+      beatUnit: m.beatUnit,
+    })),
+  );
+  if (saved.length > 0) return saved;
+  if (typeof file.bpm !== "number" || file.bpm <= 0) return [];
+  return sanitizeTempoMap([
+    {
+      time: typeof file.beatOffset === "number" ? file.beatOffset : 0,
+      bpm: file.bpm,
+      beatsPerBar: file.beatsPerBar > 0 ? file.beatsPerBar : BEATS_PER_BAR.default,
+      beatUnit: file.beatUnit > 0 ? file.beatUnit : 4,
+    },
+  ]);
 }
 
 export function toFile(data: ProjectData): Project_Deserialize {

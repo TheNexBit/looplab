@@ -1,0 +1,15 @@
+[package]
+name = "beat-detect"
+description = "Looplab beat and downbeat detection: a pure-Rust port of Beat This! (CPJKU, MIT)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+realfft = "3.5.1"
+# Pure-Rust ONNX runtime: no native library to ship
+rten = { version = "0.28.0", default-features = false, features = ["onnx_format"] }
+
+[lints]
+workspace = true

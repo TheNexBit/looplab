@@ -17,18 +17,29 @@ use crate::engine::{Command, Garbage, LoopSettings, MAX_SPEED, Shared};
 use crate::metronome::Metronome;
 use crate::pattern::ClickKind;
 use crate::pcm::{CHANNELS, Pcm};
+use crate::tempo_map::TempoMap;
 use crate::tone::ToneVoice;
 
 /// Output frames produced per stretch call.
 const CHUNK: usize = 256;
 /// Fade of the output on play, pause and seek, so they never click.
 const FADE_SECONDS: f32 = 0.005;
+/// Share of the distance to the asked track level covered each frame.
+const TRACK_LEVEL_GLIDE: f32 = 0.002;
 /// Crossfade of the source where a loop wraps around.
 pub(crate) const SPLICE_SECONDS: f32 = 0.005;
 /// Share of the remaining speed change applied per chunk (~25 ms to settle at 48 kHz).
 const SPEED_SMOOTHING: f32 = 0.2;
 /// Chunks remembered to map what is heard back to a track position (covers the stretch latency).
 const HISTORY: usize = 128;
+
+/// What the reader follows while it reads: the loop, the click options and the tempo map.
+#[derive(Clone, Copy)]
+pub(crate) struct Rules<'a> {
+    pub settings: &'a LoopSettings,
+    pub click: &'a ClickSettings,
+    pub tempo: &'a TempoMap,
+}
 
 /// Reads the track frame by frame, wrapping around the loop with a short crossfade.
 pub(crate) struct Reader {
@@ -41,6 +52,9 @@ pub(crate) struct Reader {
     gap_left: u64,
     /// The last part of the current gap that is a count-in (clicks on its beats)
     count_in_span: u64,
+    /// Beat length and beats in a bar of the count-in under way
+    count_in_beat: f64,
+    count_in_pulses: u64,
     splice: usize,
     /// Loop repetitions started
     wraps: u64,
@@ -55,6 +69,8 @@ impl Reader {
             fade_in_left: 0,
             gap_left: 0,
             count_in_span: 0,
+            count_in_beat: 0.0,
+            count_in_pulses: 1,
             splice: ((SPLICE_SECONDS * sample_rate as f32) as usize).max(1),
             wraps: 0,
         }
@@ -69,21 +85,34 @@ impl Reader {
     }
 
     /// Silence with clicks before the next frame is read (count-in before playback starts).
-    fn start_count_in(&mut self, click: &ClickSettings) {
-        self.count_in_span = click.count_in_frames();
+    fn start_count_in(&mut self, click: &ClickSettings, tempo: &TempoMap) {
+        self.set_count_in(click, tempo, self.position);
         self.gap_left = self.count_in_span;
+    }
+
+    /// The count-in before `frame`: its length, in the tempo and meter in force there.
+    fn set_count_in(&mut self, click: &ClickSettings, tempo: &TempoMap, frame: u64) {
+        self.count_in_span = tempo.count_in_frames(frame, click.count_in);
+        if let Some(segment) = tempo.count_in_segment(frame) {
+            self.count_in_beat = segment.beat_frames;
+            self.count_in_pulses = u64::from(segment.pattern.pulses().max(1));
+        }
     }
 
     /// Fills `out`; beats met on the way are queued with their input frame (`fed` + index).
     pub(crate) fn read(
         &mut self,
         track: Option<&Pcm>,
-        settings: &LoopSettings,
-        click: &ClickSettings,
+        rules: Rules<'_>,
         fed: u64,
         clicks: &mut ClickQueue,
         out: &mut [f32],
     ) {
+        let Rules {
+            settings,
+            click,
+            tempo,
+        } = rules;
         let sample = |frame: u64| match track {
             Some(pcm) if frame < pcm.frames() => pcm.frame(frame as usize),
             _ => [0.0; CHANNELS],
@@ -106,11 +135,14 @@ impl Reader {
             if self.gap_left > 0 {
                 // The count-in is the end of the gap: one click per beat, the first of every
                 // bar accented (two bars of 4/4: beats 1 and 5), like the metronome
-                if self.gap_left <= self.count_in_span && click.beat > 0 {
+                if self.gap_left <= self.count_in_span && self.count_in_beat > 0.0 {
                     let into = self.count_in_span - self.gap_left;
-                    if into.is_multiple_of(click.beat) {
-                        let beat = into / click.beat;
-                        let kind = if beat.is_multiple_of(click.bar_length()) {
+                    // A beat starts where the beat count moves on (fractional beat lengths)
+                    let beat = (into as f64 / self.count_in_beat).floor() as u64;
+                    let starts = into == 0
+                        || ((into - 1) as f64 / self.count_in_beat).floor() as u64 != beat;
+                    if starts {
+                        let kind = if beat.is_multiple_of(self.count_in_pulses) {
                             ClickKind::Accent
                         } else {
                             ClickKind::Beat
@@ -120,7 +152,11 @@ impl Reader {
                 }
                 self.gap_left -= 1;
             } else {
-                let hits = click.hits_at(self.position);
+                let hits = if click.metronome {
+                    tempo.hits_at(self.position)
+                } else {
+                    crate::pattern::Hits::default()
+                };
                 if let Some(kind) = hits.main {
                     clicks.push(at, kind);
                 }
@@ -138,7 +174,7 @@ impl Reader {
                 }
                 self.position += 1;
                 if settings.is_active() && self.position == settings.end {
-                    self.wrap(settings, click);
+                    self.wrap(settings, click, tempo);
                 }
             }
 
@@ -148,11 +184,11 @@ impl Reader {
 
     /// Loop end reached: let the old audio fade out while the restart fades in
     /// (after the gap and the count-in).
-    fn wrap(&mut self, settings: &LoopSettings, click: &ClickSettings) {
+    fn wrap(&mut self, settings: &LoopSettings, click: &ClickSettings, tempo: &TempoMap) {
         self.fade_out_from = self.position;
         self.fade_out_left = self.splice;
         self.position = settings.restart_at();
-        self.count_in_span = click.count_in_frames();
+        self.set_count_in(click, tempo, self.position);
         self.gap_left = settings.gap + self.count_in_span;
         self.fade_in_left = self.splice;
         self.wraps += 1;
@@ -179,6 +215,8 @@ pub(crate) struct Renderer {
     channels: Channels,
     settings: LoopSettings,
     click: ClickSettings,
+    /// Where tempo and meter change in the track
+    tempo: Arc<TempoMap>,
     clicks: ClickQueue,
     voice: ClickVoice,
     /// The cross rhythm sounds together with the beats, so it has its own voice
@@ -200,6 +238,9 @@ pub(crate) struct Renderer {
     pending_seek: Option<u64>,
     gain: f32,
     gain_step: f32,
+    /// Level of the track asked for, and the one heard, which glides to it (no zipper noise)
+    track_volume: f32,
+    track_level: f32,
 
     speed: f32,
     target_speed: f32,
@@ -241,6 +282,7 @@ impl Renderer {
             channels: Channels::new(sample_rate),
             settings: LoopSettings::default(),
             click: ClickSettings::default(),
+            tempo: Arc::new(TempoMap::default()),
             clicks: ClickQueue::new(),
             voice: ClickVoice::new(sample_rate),
             cross_voice: ClickVoice::new(sample_rate),
@@ -254,6 +296,8 @@ impl Renderer {
             pending_seek: None,
             gain: 0.0,
             gain_step: 1.0 / (FADE_SECONDS * sample_rate as f32).max(1.0),
+            track_volume: 1.0,
+            track_level: 1.0,
             speed: 1.0,
             target_speed: 1.0,
             input_debt: 0.0,
@@ -340,7 +384,17 @@ impl Renderer {
                 Command::SetLoop(settings) => self.settings = settings,
                 Command::SetEq(settings) => self.eq.set(settings),
                 Command::SetChannelMode(mode) => self.channels.set(mode),
+                Command::SetTrackVolume(volume) => self.track_volume = volume,
                 Command::SetClick(settings) => self.click = settings,
+                Command::SetTempoMap(map) => {
+                    let old = std::mem::replace(&mut self.tempo, map);
+                    if let Err(rtrb::PushError::Full(old)) =
+                        self.garbage.push(Garbage::TempoMap(old))
+                    {
+                        // Never free memory here: leaking is better than a glitch
+                        std::mem::forget(old);
+                    }
+                }
                 Command::PreviewClick(kind) => {
                     self.voice.start_kind(kind, self.click.sound(kind));
                 }
@@ -398,8 +452,9 @@ impl Renderer {
             self.pending_seek = Some(restart);
         }
         // With a count-in, playback restarts from the same point after the counted beats
-        if self.click.count_in_frames() > 0 {
-            self.pending_seek = Some(self.pending_seek.unwrap_or_else(|| self.heard_position()));
+        let from = self.pending_seek.unwrap_or_else(|| self.heard_position());
+        if self.tempo.count_in_frames(from, self.click.count_in) > 0 {
+            self.pending_seek = Some(from);
             self.count_in_on_jump = true;
         }
         self.playing = true;
@@ -445,9 +500,12 @@ impl Renderer {
             voice.start_kind(kind, self.click.sound(kind));
         }
         let extra = self.extra();
+        // About 10 ms to settle at 48 kHz
+        self.track_level += (self.track_volume - self.track_level) * TRACK_LEVEL_GLIDE;
+        let gain = self.gain * self.track_level;
         [
-            self.output[i] * self.gain + extra,
-            self.output[i + 1] * self.gain + extra,
+            self.output[i] * gain + extra,
+            self.output[i + 1] * gain + extra,
         ]
     }
 
@@ -469,10 +527,14 @@ impl Renderer {
 
         self.remember();
         let input = &mut self.input[..frames * CHANNELS];
+        let rules = Rules {
+            settings: &self.settings,
+            click: &self.click,
+            tempo: &self.tempo,
+        };
         self.reader.read(
             self.track.as_deref(),
-            &self.settings,
-            &self.click,
+            rules,
             self.fed,
             &mut self.clicks,
             input,
@@ -493,7 +555,7 @@ impl Renderer {
         self.clicks.clear();
         self.voice.stop();
         if std::mem::take(&mut self.count_in_on_jump) {
-            self.reader.start_count_in(&self.click);
+            self.reader.start_count_in(&self.click, &self.tempo);
         }
         self.output_index = CHUNK;
         self.input_debt = 0.0;
@@ -506,10 +568,14 @@ impl Renderer {
             gap: self.reader.gap_left,
         });
         let input = &mut self.input[..preroll * CHANNELS];
+        let rules = Rules {
+            settings: &self.settings,
+            click: &self.click,
+            tempo: &self.tempo,
+        };
         self.reader.read(
             self.track.as_deref(),
-            &self.settings,
-            &self.click,
+            rules,
             self.fed,
             &mut self.clicks,
             input,
@@ -631,6 +697,15 @@ mod tests {
         }
     }
 
+    /// A tempo of 0.25 s a beat (240 BPM) from frame 0, in bars of `pulses`.
+    fn quarter_seconds(pulses: u32) -> TempoMap {
+        TempoMap::constant(
+            0,
+            (SECOND / 4) as f64,
+            crate::pattern::BarPattern::regular(pulses),
+        )
+    }
+
     fn loudness(samples: &[f32]) -> f32 {
         samples.iter().fold(0.0_f32, |m, s| m.max(s.abs()))
     }
@@ -644,6 +719,18 @@ mod tests {
         let mut h = Harness::new(2.0);
         assert_eq!(loudness(&h.render(0.2)), 0.0);
         assert_eq!(h.position(), 0);
+    }
+
+    #[test]
+    fn the_track_volume_glides_to_its_level() {
+        let mut h = Harness::new(3.0);
+        h.send(Command::Play);
+        let full = loudness(&h.render(0.5)[24_000..]);
+        h.send(Command::SetTrackVolume(0.25));
+        let quarter = loudness(&h.render(0.5)[24_000..]);
+        assert!((quarter / full - 0.25).abs() < 0.02, "{quarter} of {full}");
+        h.send(Command::SetTrackVolume(0.0));
+        assert!(loudness(&h.render(0.5)[24_000..]) < 1e-3, "muted");
     }
 
     #[test]
@@ -901,9 +988,10 @@ mod tests {
     #[test]
     fn count_in_before_play_holds_the_playhead_and_clicks() {
         let mut h = Harness::new(5.0);
+        // One bar of 4 at 0.25 s a beat
+        h.send(Command::SetTempoMap(Arc::new(quarter_seconds(4))));
         h.send(Command::SetClick(ClickSettings {
-            beat: SECOND / 4,
-            count_in: 4,
+            count_in: 1,
             volume: 1.0,
             ..ClickSettings::default()
         }));
@@ -926,9 +1014,10 @@ mod tests {
         h.send(Command::SetLoop(short_loop()));
         h.send(Command::Seek(SECOND));
         h.render(0.05);
+        // One bar of 2 at 0.25 s a beat
+        h.send(Command::SetTempoMap(Arc::new(quarter_seconds(2))));
         h.send(Command::SetClick(ClickSettings {
-            beat: SECOND / 4,
-            count_in: 2,
+            count_in: 1,
             volume: 1.0,
             ..ClickSettings::default()
         }));
@@ -947,20 +1036,22 @@ mod tests {
     fn count_in_accents_the_first_beat_of_every_bar() {
         // Two bars of 3/4: accents on beats 1 and 4
         let click = ClickSettings {
-            beat: 100,
-            count_in: 6,
-            pattern: crate::pattern::BarPattern::regular(3),
+            count_in: 2,
             volume: 1.0,
             ..ClickSettings::default()
         };
+        let tempo = TempoMap::constant(0, 100.0, crate::pattern::BarPattern::regular(3));
         let mut reader = Reader::new(48_000);
         let mut clicks = ClickQueue::new();
-        reader.start_count_in(&click);
+        reader.start_count_in(&click, &tempo);
         let mut silence = vec![0.0; 600 * CHANNELS];
         reader.read(
             None,
-            &LoopSettings::default(),
-            &click,
+            Rules {
+                settings: &LoopSettings::default(),
+                click: &click,
+                tempo: &tempo,
+            },
             0,
             &mut clicks,
             &mut silence,
@@ -991,8 +1082,12 @@ mod tests {
         let mut silent = Pcm::with_capacity(RATE, 4 * RATE as usize);
         silent.extend_from_f32(&vec![0.0; 8 * RATE as usize]);
         h.send(Command::SetTrack(Arc::new(silent)));
+        h.send(Command::SetTempoMap(Arc::new(TempoMap::constant(
+            0,
+            (SECOND / 2) as f64,
+            crate::pattern::BarPattern::regular(4),
+        ))));
         h.send(Command::SetClick(ClickSettings {
-            beat: SECOND / 2,
             metronome: true,
             volume: 0.8,
             ..ClickSettings::default()

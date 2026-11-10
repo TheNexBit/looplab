@@ -556,11 +556,35 @@ interfaccia si portano, solo il motore dei click passa in Rust (un motore solo, 
     tornano come lasciati alla riapertura dell'app, come la larghezza già faceva (`stores/ui.ts`, chiavi
     `looplab.sidePanelOpen` e `looplab.sidePanelTab`; test di un riavvio in `ui.test.ts`).
 
-## 17. Mappa del tempo e rilevamento automatico 🔜
+## 17. Mappa del tempo e rilevamento automatico ✅ (da perfezionare)
 
 **Obiettivo (milestone):** su brani con tempi dispari e cambi continui di tempo e metrica (es. Dream Theater "The
 Dance of Eternity", Tool "Schism") Looplab trova da solo tempo, battiti, battute e cambi; l'utente controlla col
-metronomo e corregge solo dove serve. Oggi c'è un solo tempo e una sola metrica per tutto il brano.
+metronomo e corregge solo dove serve.
+
+**Fatto** (provato dall'utente su "The 12th Hour" di Marco Sfogli; chiusa il 10/11/2026 con l'accordo di
+perfezionarla durante lo sviluppo):
+- Mappa del tempo nel motore, nel progetto e nell'interfaccia: bandierine "120 · 7/8" sotto la forma d'onda (clic,
+  trascina con snap, tasto destro elimina), Shift+C come in Reaper, Annulla/Ripeti. Prima del primo marker vale la
+  sua griglia, anche per il click.
+- "Analizza tempo" nel menu ▾ del Tempo: Beat This! (CPJKU, codice e pesi MIT) portato in Rust (crate
+  `beat-detect`: spettrogramma e rete con rten, identici a PyTorch), poi battiti con programmazione dinamica (un solo
+  livello di battito, nessun limite di BPM), battute con Viterbi (metri da 2 a 16, anche additivi 3+4, 2+2+3), BPM
+  sempre in quarti. I marker proposti sono tratteggiati: si confermano o si tolgono tutti insieme, e un marker
+  modificato diventa dell'utente e guida una nuova analisi.
+- Volume della traccia e del click a portata di mano (fader Trk/Clk nel trasporto).
+
+**Da perfezionare** (nel corso dello sviluppo):
+- Metrica nei brani prog: dove la batteria suona in 4 sotto un riff in 7, la rete segue la batteria (intro di "The
+  12th Hour", che l'utente conta 1 2 3 1 2 3 4). Idee: un metro messo a mano che vale per tutta la sezione, il
+  confronto con Explore This! (licenza dei pesi da chiarire), brani di riferimento annotati.
+- Tratti caotici (assoli): il tempo proposto oscilla di qualche BPM.
+- Come arriva il modello (83 MB) sui PC degli utenti: nell'installer o scaricato al primo uso. Per ora
+  `scripts\10-modello-tempo.cmd` lo copia in `src-tauri\models\`.
+- Fader Trk/Clk: da rifinire nell'aspetto (priorità bassa, detto dall'utente).
+- Il trasporto sfora sotto i 1100 px circa (era così anche prima).
+
+**Piano iniziale:**
 
 - **Mappa del tempo come in Reaper**: punti di tempo e metrica lungo il brano (es. 7/8 a 0:42, 5/4 a 1:10). Griglia,
   metronomo, conteggio, Snap, `,` e `.`, battute nella striscia seguono la mappa. I progetti vecchi diventano una

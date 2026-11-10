@@ -29,6 +29,8 @@ pub struct AppState {
     click_samples: Mutex<[Option<PathBuf>; 4]>,
     /// Language of the metronome's counting voice
     voice_language: Mutex<VoiceLanguage>,
+    /// The beat-tracking network, loaded at the first tempo analysis (it takes a moment)
+    tempo_analyzer: Mutex<Option<Arc<beat_detect::Analyzer>>>,
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -114,6 +116,20 @@ impl AppState {
 
     pub fn track(&self) -> Option<Arc<Pcm>> {
         lock(&self.track).clone()
+    }
+
+    /// The tempo analyzer, loading the model from `model` the first time.
+    pub fn tempo_analyzer(
+        &self,
+        model: &std::path::Path,
+    ) -> Result<Arc<beat_detect::Analyzer>, beat_detect::ModelError> {
+        let mut slot = lock(&self.tempo_analyzer);
+        if let Some(analyzer) = slot.as_ref() {
+            return Ok(Arc::clone(analyzer));
+        }
+        let analyzer = Arc::new(beat_detect::Analyzer::new(model)?);
+        *slot = Some(Arc::clone(&analyzer));
+        Ok(analyzer)
     }
 
     /// The note analyzer for `rate`, if one is ready; give it back with `keep_analyzer`.

@@ -10,22 +10,17 @@
 use std::f32::consts::TAU;
 use std::sync::Arc;
 
-use crate::pattern::{BarPattern, ClickKind, Hits};
+use crate::pattern::ClickKind;
 use crate::voice::{prepare, read_wav};
 
-/// Tempo grid and click options, in frames of the track.
+/// Click options over a track. Where the beats fall comes from its tempo map (`tempo_map.rs`).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ClickSettings {
-    /// Frames per beat; 0 when the tempo is unknown (no clicks at all)
-    pub beat: u64,
-    /// A frame that falls on a beat (the first beat of a bar)
-    pub anchor: u64,
-    /// Beats counted in before playback starts and before every loop repetition
+    /// Bars counted in before playback starts and before every loop repetition, in the meter
+    /// and tempo where playback starts
     pub count_in: u32,
     /// Click on every beat while the track plays
     pub metronome: bool,
-    /// Pulses, groups, accents, subdivisions, swing and cross rhythm of a bar
-    pub pattern: BarPattern,
     /// 0..1
     pub volume: f32,
     pub sounds: ClickSounds,
@@ -67,11 +62,8 @@ impl ClickSounds {
 impl Default for ClickSettings {
     fn default() -> Self {
         Self {
-            beat: 0,
-            anchor: 0,
             count_in: 0,
             metronome: false,
-            pattern: BarPattern::default(),
             volume: 0.0,
             sounds: ClickSounds::default(),
         }
@@ -82,26 +74,6 @@ impl ClickSettings {
     /// Sound and level of a kind of click.
     pub(crate) fn sound(&self, kind: ClickKind) -> (ClickSound, f32) {
         self.sounds.of(kind)
-    }
-
-    /// Length of the count-in, in track frames (0 when off or without a tempo).
-    pub fn count_in_frames(&self) -> u64 {
-        self.beat * u64::from(self.count_in)
-    }
-
-    /// Pulses in a bar.
-    pub(crate) fn bar_length(&self) -> u64 {
-        u64::from(self.pattern.pulses())
-    }
-
-    /// The clicks that start on track frame `position` (none before the anchor).
-    pub(crate) fn hits_at(&self, position: u64) -> Hits {
-        if !self.metronome || self.beat == 0 || position < self.anchor {
-            return Hits::default();
-        }
-        let beat = self.beat as f64;
-        let offset = (position - self.anchor) as f64;
-        self.pattern.hits(offset / beat, (offset + 1.0) / beat)
     }
 }
 
@@ -478,54 +450,6 @@ mod tests {
     use super::*;
 
     use crate::pattern::ClickKind::{Accent, Beat, Cross};
-
-    fn main_at(settings: &ClickSettings, position: u64) -> Option<ClickKind> {
-        settings.hits_at(position).main
-    }
-
-    #[test]
-    fn beats_fall_on_the_grid_with_the_bar_accented() {
-        let settings = ClickSettings {
-            beat: 100,
-            anchor: 50,
-            metronome: true,
-            ..ClickSettings::default()
-        };
-        assert_eq!(main_at(&settings, 50), Some(Accent));
-        assert_eq!(main_at(&settings, 150), Some(Beat));
-        assert_eq!(main_at(&settings, 450), Some(Accent));
-        assert_eq!(main_at(&settings, 151), None);
-        assert_eq!(main_at(&settings, 0), None, "nothing before the anchor");
-    }
-
-    #[test]
-    fn odd_meters_accent_every_bar() {
-        let seven = ClickSettings {
-            beat: 10,
-            metronome: true,
-            pattern: BarPattern::regular(7),
-            ..ClickSettings::default()
-        };
-        assert_eq!(main_at(&seven, 0), Some(Accent));
-        assert_eq!(main_at(&seven, 40), Some(Beat));
-        assert_eq!(main_at(&seven, 70), Some(Accent));
-    }
-
-    #[test]
-    fn no_tempo_or_metronome_off_means_no_beats() {
-        let off = ClickSettings {
-            beat: 100,
-            ..ClickSettings::default()
-        };
-        assert_eq!(main_at(&off, 0), None);
-        let no_tempo = ClickSettings {
-            metronome: true,
-            count_in: 4,
-            ..ClickSettings::default()
-        };
-        assert_eq!(main_at(&no_tempo, 0), None);
-        assert_eq!(no_tempo.count_in_frames(), 0);
-    }
 
     /// Every sample of one click of `sound` at `level`, full volume.
     fn play(sound: ClickSound, level: f32) -> Vec<f32> {

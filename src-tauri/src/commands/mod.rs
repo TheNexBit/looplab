@@ -11,6 +11,7 @@ mod metronome;
 mod player;
 mod sound;
 mod spectrum;
+mod tempo;
 mod video;
 pub mod waveform;
 
@@ -36,9 +37,11 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::pause,
             player::seek,
             player::set_speed,
+            player::set_track_volume,
             player::set_pitch,
             player::set_loop,
             player::set_click,
+            player::set_tempo_map,
             player::set_reference_tone,
             metronome::set_metronome,
             metronome::run_metronome,
@@ -71,6 +74,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             export::export_audio,
             export::cancel_export,
             spectrum::spectrum,
+            tempo::analyze_tempo,
         ])
         .events(collect_events![
             PlaybackStatus,

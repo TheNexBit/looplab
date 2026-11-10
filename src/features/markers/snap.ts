@@ -2,7 +2,7 @@ import { nearestBeat } from "@/features/practice/tempo";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, trackDuration } from "@/stores/player";
-import { currentGrid } from "@/stores/practice";
+import { currentTempoMap } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { useViewStore } from "@/stores/view";
 import { snapSuspended } from "./snapHold";
@@ -51,7 +51,7 @@ export function snapTime(
   const secondsPerPixel = span / Math.max(1, area.getBoundingClientRect().width);
   const { markers, sections } = useMarkersStore.getState();
   const region = exclude.loop ? null : useLoopStore.getState().region();
-  const grid = useSettingsStore.getState().showGrid ? currentGrid() : null;
+  const grid = useSettingsStore.getState().showGrid ? currentTempoMap() : null;
   const points = [
     0,
     trackDuration(),

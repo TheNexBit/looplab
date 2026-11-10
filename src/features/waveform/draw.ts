@@ -1,4 +1,4 @@
-import { type BeatGrid, beatSeconds, beatsBetween } from "@/features/practice/tempo";
+import { beatSeconds, beatsBetween, markerAt, type TempoMap } from "@/features/practice/tempo";
 import { clamp, formatTick } from "@/lib/time";
 import { type Peaks, pickLevel } from "./peaks";
 
@@ -137,15 +137,18 @@ const MIN_BEAT_GAP_CSS = 6;
 export function drawBeatGrid(
   ctx: CanvasRenderingContext2D,
   view: Viewport,
-  grid: BeatGrid,
+  grid: TempoMap,
   dpr: number,
   layer: "beats" | "bars",
   colors: { line: string; notch?: string },
 ) {
   const pixelsPerSecond = view.width / view.span;
-  const beatGap = beatSeconds(grid) * pixelsPerSecond;
+  // The tempo in force in the middle of the view decides whether beats or bars still fit
+  const marker = markerAt(grid, view.start + view.span / 2);
+  if (!marker) return;
+  const beatGap = beatSeconds(marker) * pixelsPerSecond;
   const minGap = MIN_BEAT_GAP_CSS * dpr;
-  if (layer === "beats" ? beatGap < minGap : beatGap * grid.beatsPerBar < minGap) return;
+  if (layer === "beats" ? beatGap < minGap : beatGap * marker.beatsPerBar < minGap) return;
   const top = view.top ?? 0;
   const width = Math.max(1, dpr);
   for (const { time, bar } of beatsBetween(Math.max(0, view.start), view.start + view.span, grid)) {

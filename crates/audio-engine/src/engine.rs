@@ -18,6 +18,7 @@ use crate::metronome::{MetronomeSettings, Sequence};
 use crate::pattern::ClickKind;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
+use crate::tempo_map::TempoMap;
 use crate::tone::ToneSettings;
 use crate::voice::VoiceBank;
 
@@ -65,11 +66,15 @@ pub(crate) enum Command {
     SetLoop(LoopSettings),
     SetEq(EqSettings),
     SetChannelMode(ChannelMode),
+    /// Level of the track alone (0..1), so the clicks can be heard over a loud mix
+    SetTrackVolume(f32),
     SetClick(ClickSettings),
     /// Plays one click of a kind now, to hear its sound (also while paused)
     PreviewClick(ClickKind),
     /// Imported sounds used instead of the synthesised ones
     SetClickSamples(Arc<ClickSamples>),
+    /// Where tempo and meter change in the track: the clicks and count-ins follow it
+    SetTempoMap(Arc<TempoMap>),
     /// Reference note to tune by ear, heard also while paused
     SetTone(ToneSettings),
     /// The metronome on its own (no track): its bar, tempo and sounds…
@@ -88,6 +93,7 @@ pub(crate) enum Garbage {
     Sequence(#[allow(dead_code)] Arc<Sequence>),
     Voice(#[allow(dead_code)] Arc<VoiceBank>),
     Samples(#[allow(dead_code)] Arc<ClickSamples>),
+    TempoMap(#[allow(dead_code)] Arc<TempoMap>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -244,9 +250,20 @@ impl Engine {
         self.send(Command::SetChannelMode(mode));
     }
 
+    /// Level of the track (0..1, clamped); the clicks, the metronome and the reference note
+    /// keep their own.
+    pub fn set_track_volume(&self, volume: f32) {
+        self.send(Command::SetTrackVolume(volume.clamp(0.0, 1.0)));
+    }
+
     /// Tempo, metronome and count-in.
     pub fn set_click(&self, settings: ClickSettings) {
         self.send(Command::SetClick(settings));
+    }
+
+    /// The tempo map of the track (built off the audio thread): clicks and count-ins follow it.
+    pub fn set_tempo_map(&self, map: TempoMap) {
+        self.send(Command::SetTempoMap(Arc::new(map)));
     }
 
     /// Plays one click of `kind` at once (accent, beat, subdivision, cross rhythm).

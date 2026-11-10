@@ -2,9 +2,12 @@ import { commands, type SoundsRequest } from "@/lib/bindings";
 import { eqToRust, useEqStore } from "@/stores/eq";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
-import { usePlayerStore } from "@/stores/player";
+import { currentPosition, usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { type Settings, useSettingsStore } from "@/stores/settings";
+
+/** How often the marker in force at the playhead is looked up (ms): cheap, and fast enough to see. */
+const FOCUS_MS = 100;
 
 /** Sends a value only when it differs from the last one sent (or when forced). */
 function sender<T>(send: (value: T) => unknown) {
@@ -17,33 +20,25 @@ function sender<T>(send: (value: T) => unknown) {
   };
 }
 
-/** Clicks follow the beat grid; without a first beat set, it starts at the loop, else at
- *  the first bar marker, else at 0. */
-export function clickSettings() {
-  const settings = useSettingsStore.getState();
+/**
+ * Where the first beat goes when a tempo is set before any first beat: the loop start, else
+ * the first bar marker, else 0 (what the grid did before it had a first beat of its own).
+ */
+export function firstBeatGuess(): number {
   const region = useLoopStore.getState().region();
-  const { bpm, beatOffset, beatsPerBar, beatUnit } = usePracticeStore.getState();
   const firstBar = useMarkersStore
     .getState()
     .markers.filter((m) => m.kind === "beat")
     .reduce<number | null>((first, m) => (first === null ? m.time : Math.min(first, m.time)), null);
+  return region?.start ?? firstBar ?? 0;
+}
+
+/** Metronome and count-in over the track; where the beats fall comes with the tempo map. */
+export function clickSettings() {
+  const settings = useSettingsStore.getState();
   return {
-    bpm: bpm ?? 0,
-    anchor: beatOffset ?? region?.start ?? firstBar ?? 0,
-    countIn: settings.countIn ? settings.countInBars * beatsPerBar : 0,
+    countIn: settings.countIn ? settings.countInBars : 0,
     metronome: settings.metronome,
-    // The plain bar of the track's meter: groups, accents and subdivisions come with the
-    // metronome mode
-    bar: {
-      beats: beatsPerBar,
-      unit: beatUnit,
-      grouping: [],
-      states: ["accent" as const],
-      subdivision: 1,
-      swing: 0.5,
-      cross: 0,
-      pulseTempo: false,
-    },
     volume: settings.clickVolume,
     sounds: clickSounds(settings),
   };
@@ -71,10 +66,16 @@ export function clickSounds(settings: Settings): SoundsRequest {
  * case the engine was restarted (e.g. after the audio device changed).
  */
 export function syncWithEngine(): () => void {
+  usePracticeStore.getState().setFirstBeatGuess(firstBeatGuess);
   const sendLoop = sender(commands.setLoop);
   const sendEq = sender(commands.setEq);
   const sendChannels = sender(commands.setChannelMode);
   const sendClick = sender(commands.setClick);
+  const sendTrackVolume = sender(commands.setTrackVolume);
+  const pushTrackVolume = (force = false) =>
+    sendTrackVolume(useSettingsStore.getState().trackVolume, force);
+  const sendTempo = sender(commands.setTempoMap);
+  const pushTempo = (force = false) => sendTempo(usePracticeStore.getState().tempoMap, force);
 
   const loopSettings = () => {
     const loop = useLoopStore.getState();
@@ -92,6 +93,8 @@ export function syncWithEngine(): () => void {
   const pushAll = (force: boolean) => {
     sendLoop(loopSettings(), force);
     sendClick(clickSettings(), force);
+    pushTempo(force);
+    pushTrackVolume(force);
     const eq = useEqStore.getState();
     if (eq.settings.bands.length > 0) sendEq(eqToRust(eq.settings), force);
     sendChannels(eq.channels, force);
@@ -102,15 +105,22 @@ export function syncWithEngine(): () => void {
       sendLoop(loopSettings());
       pushClick();
     }),
-    usePracticeStore.subscribe(pushClick),
-    useSettingsStore.subscribe(pushClick),
-    useMarkersStore.subscribe(pushClick),
+    usePracticeStore.subscribe(() => pushTempo()),
+    useSettingsStore.subscribe(() => {
+      pushClick();
+      pushTrackVolume();
+    }),
     useEqStore.subscribe(() => pushAll(false)),
     usePlayerStore.subscribe((state, previous) => {
       if (state.track && state.track !== previous.track) pushAll(true);
     }),
   ];
+  // The tempo display and the meter edit the marker in force at the playhead: follow it
+  const focus = window.setInterval(() => {
+    usePracticeStore.getState().focusAt(currentPosition());
+  }, FOCUS_MS);
   return () => {
+    window.clearInterval(focus);
     for (const stop of stops) stop();
   };
 }
