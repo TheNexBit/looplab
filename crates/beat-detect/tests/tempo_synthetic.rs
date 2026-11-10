@@ -2,7 +2,7 @@
 //! would output for pieces whose tempo map is known.
 
 use beat_detect::tempo::tempo_map;
-use beat_detect::{FPS, FrameLogits, Hints, Options, TempoMarker, peaks};
+use beat_detect::{FPS, FrameLogits, Hints, Options, TempoMarker};
 
 /// One bar: its beats and their length in seconds.
 #[derive(Clone, Copy)]
@@ -61,8 +61,7 @@ fn logits(score: &[(f64, bool)]) -> Vec<FrameLogits> {
 }
 
 fn analyse(score: &[(f64, bool)], hints: &Hints) -> Vec<TempoMarker> {
-    let beats = peaks::beats(&logits(score));
-    tempo_map(&beats, hints, &Options::default())
+    tempo_map(&logits(score), hints, &Options::default())
 }
 
 /// Every beat of the score lies on the grid of the markers, and every bar start on a

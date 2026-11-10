@@ -8,10 +8,12 @@
 //! turns its logits into beats as they do; [`tempo`] is Looplab's own: beats to tempo
 //! and meter markers, any meter, any tempo.
 
+pub mod meter;
 pub mod model;
 pub mod peaks;
 pub mod spectrogram;
 pub mod tempo;
+pub mod track;
 
 use std::path::Path;
 
@@ -19,6 +21,7 @@ pub use model::{BeatModel, FrameLogits, ModelError};
 pub use peaks::Beat;
 pub use spectrogram::{FPS, LogMelSpectrogram, N_MELS, SAMPLE_RATE};
 pub use tempo::{Hints, Options, TempoMarker};
+pub use track::Tracked;
 
 /// Everything needed to analyse pieces; build it once, it keeps the model loaded.
 pub struct Analyzer {
@@ -29,7 +32,7 @@ pub struct Analyzer {
 /// What an analysis found.
 #[derive(Debug, Clone)]
 pub struct Analysis {
-    pub beats: Vec<Beat>,
+    pub beats: Vec<Tracked>,
     pub markers: Vec<TempoMarker>,
 }
 
@@ -51,8 +54,7 @@ impl Analyzer {
     ) -> Result<Analysis, ModelError> {
         let spect = self.spectrogram.compute(signal);
         let logits = self.model.predict(&spect, progress)?;
-        let beats = peaks::beats(&logits);
-        let markers = tempo::tempo_map(&beats, hints, &Options::default());
+        let (beats, markers) = tempo::analyze(&logits, hints, &Options::default());
         Ok(Analysis { beats, markers })
     }
 }
