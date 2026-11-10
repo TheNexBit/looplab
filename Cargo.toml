@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["src-tauri", "crates/audio-engine"]
+members = ["src-tauri", "crates/audio-engine", "crates/beat-detect"]
 
 [workspace.package]
 version = "0.1.0"
@@ -22,6 +22,8 @@ debug = false
 opt-level = 0
 
 # DSP must be fast even in development, otherwise the audio crackles
+[profile.dev.package.beat-detect]
+opt-level = 2
 [profile.dev.package.audio-engine]
 opt-level = 2
 
