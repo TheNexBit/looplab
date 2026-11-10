@@ -1,0 +1,15 @@
+[package]
+name = "stem-split"
+description = "Looplab stem separation: HTDemucs (Demucs v4) run in pure Rust."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+realfft = "3.5.1"
+# Pure-Rust ONNX runtime, as for the beat tracker
+rten = { version = "0.28.0", default-features = false, features = ["onnx_format"] }
+
+[lints]
+workspace = true
