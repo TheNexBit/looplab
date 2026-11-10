@@ -603,10 +603,38 @@ perfezionarla durante lo sviluppo):
 - Aspettativa realistica: tempo e battiti giusti quasi sempre; metrica e inizio battuta nei cambi frequenti sono il
   caso più difficile per qualunque programma, quindi proposti e da confermare.
 
+## 18. Separazione degli strumenti 🔜
+
+Avviata il 10/11/2026 con il via dell'utente, in un worktree a parte (`D:\sandbox\looplab-stems`, ramo `stems`).
+
+**Obiettivo:** dal brano aperto, tracce separate di voce, batteria, basso, chitarra, piano e altro; ognuna con il suo
+fader, Mute e Solo, come le tracce di un DAW. Togli la chitarra e ci suoni sopra, tieni solo la batteria per capire
+il metro.
+
+**Scelte (consigliate, decise senza domande come da accordo):**
+
+- **Modello**: HTDemucs di Demucs v4.1 (Meta / Alexandre Défossez): codice MIT, il più documentato, versione a 4
+  tracce e a 6 (anche chitarra e piano). Portato in Rust come Beat This!: STFT in Rust, rete in ONNX con rten, niente
+  librerie native.
+- **Licenza dei pesi non chiara** (l'autore: addestrati anche su MUSDB, dati solo per ricerca; quelli a 6 tracce
+  probabilmente non commerciali). Va bene per sviluppo e uso personale; **prima di pubblicare** va chiarita o il
+  modello sostituito. Per questo il modello è un file a parte, intercambiabile.
+- **Una volta per brano, poi in cache**: la separazione su processore richiede qualche minuto; le tracce finiscono
+  nella cache come l'audio decodificato e la volta dopo si aprono subito. Mai in tempo reale.
+- **Nella catena prima dello stretch**: velocità, tonalità, EQ, loop valgono sul mix delle tracce scelte.
+- Solo processore (nessuna scheda video da richiedere); modello installato da script come quello del tempo, il
+  download su richiesta si decide con la pubblicazione.
+
+**Passi:**
+
+1. Ambiente Python di riferimento con Demucs 4.1; separazione di prova e tempi su CPU.
+2. Esportazione ONNX della rete (senza STFT), prova con rten e confronto numero per numero con PyTorch.
+3. STFT/iSTFT, segmenti sovrapposti e ricomposizione come Demucs, in Rust; confronto con le tracce di riferimento.
+4. Separazione in background con avanzamento, tracce salvate nella cache (limite di spazio come per i brani).
+5. Motore: mix delle tracce con livello, Mute e Solo prima dello stretch.
+6. Interfaccia: "Separa strumenti", mixer delle tracce come nei DAW (fader, M, S, spie), salvato nel progetto.
+7. Prova finale dell'utente.
+
 ## Dopo la prima versione
 
-- **Separazione AI degli strumenti** (voce, batteria, basso, altro) — **rimandata dall'utente a un secondo
-  momento**, non iniziare senza il suo via. Previsto: modello tipo HTDemucs (~300 MB) con ONNX Runtime, scaricati
-  solo su richiesta; nella catena prima dello stretch. Da decidere insieme: tracce calcolate una volta per brano e
-  salvate in cache (consigliato) o in tempo reale; processore o scheda video; comandi livello/Mute/Solo per
-  traccia; limite di spazio della cache; posizione in `dati\` nella versione portable.
+- (vuoto per ora)
