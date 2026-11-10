@@ -56,7 +56,7 @@ export const it = {
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     tempoModelMissing:
-      "Manca il modello per analizzare il tempo: esegui scripts\x08-modello-tempo.cmd.",
+      "Manca il modello per analizzare il tempo: esegui scripts\\10-modello-tempo.cmd.",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",

@@ -53,7 +53,7 @@ export const en = {
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:
-      "The model for tempo analysis is missing: run scripts\x08-modello-tempo.cmd.",
+      "The model for tempo analysis is missing: run scripts\\10-modello-tempo.cmd.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
     internal: "Unexpected error.",
