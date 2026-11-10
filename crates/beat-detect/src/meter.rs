@@ -50,6 +50,62 @@ fn meter_cost(n: usize, level: Level) -> f32 {
     }
 }
 
+/// Extra cost of each group after the first in an additive bar (3+4 has two groups).
+const GROUP_COST: f32 = 0.4;
+/// Cost of keeping the length of the bar but changing how it is grouped (3+4 → 4+3).
+const REGROUP_COST: f32 = 3.0;
+/// Additive bars are tried up to this length, in up to this many groups of 2, 3 or 4.
+const MAX_ADDITIVE: usize = 12;
+const MAX_GROUPS: usize = 3;
+
+/// A kind of bar: its length and, for an additive bar, where its groups start. On the
+/// first beat of a later group the activation may be high without cost: the network
+/// often hears the "1" of every group (1 2 3 1 2 3 4).
+struct Template {
+    beats: usize,
+    group_start: Vec<bool>,
+    cost: f32,
+}
+
+/// Every bar the analysis may choose: each length plain, and the additive groupings.
+fn templates(level: Level) -> Vec<Template> {
+    let mut out: Vec<Template> = (MIN_BEATS..=MAX_BEATS)
+        .map(|n| Template {
+            beats: n,
+            group_start: (0..n).map(|k| k == 0).collect(),
+            cost: meter_cost(n, level),
+        })
+        .collect();
+    // Groupings: sequences of 2, 3 and 4 adding up to at most MAX_ADDITIVE
+    let mut stack: Vec<Vec<usize>> = vec![vec![2], vec![3], vec![4]];
+    while let Some(groups) = stack.pop() {
+        let n: usize = groups.iter().sum();
+        if groups.len() >= 2 {
+            let mut group_start = vec![false; n];
+            let mut at = 0;
+            for g in &groups {
+                group_start[at] = true;
+                at += g;
+            }
+            out.push(Template {
+                beats: n,
+                group_start,
+                cost: meter_cost(n, level) + GROUP_COST * (groups.len() - 1) as f32,
+            });
+        }
+        if groups.len() < MAX_GROUPS {
+            for g in [2, 3, 4] {
+                if n + g <= MAX_ADDITIVE {
+                    let mut longer = groups.clone();
+                    longer.push(g);
+                    stack.push(longer);
+                }
+            }
+        }
+    }
+    out
+}
+
 /// Beat index of every bar start, given the downbeat probability of each beat. A `true`
 /// in `forced` makes that beat a bar start for sure (the user said so).
 pub fn bar_starts(down: &[f32], forced: &[bool], level: Level) -> Vec<usize> {
@@ -57,63 +113,89 @@ pub fn bar_starts(down: &[f32], forced: &[bool], level: Level) -> Vec<usize> {
     if beats == 0 {
         return Vec::new();
     }
-    // States: (n, k) for every meter n and beat k of the bar, laid out one meter after
-    // the other
-    let mut offsets = Vec::new();
+    let templates = templates(level);
+    // States: (template, k) for every kind of bar and beat k in it, one after the other
+    let mut offsets = Vec::with_capacity(templates.len());
     let mut states = 0;
-    for n in MIN_BEATS..=MAX_BEATS {
+    for t in &templates {
         offsets.push(states);
-        states += n;
+        states += t.beats;
     }
-    let index = |n: usize, k: usize| offsets[n - MIN_BEATS] + k;
-    let emission = |i: usize, k: usize| -> f32 {
+    let last = |t: usize| offsets[t] + templates[t].beats - 1;
+    let emission = |i: usize, t: usize, k: usize| -> f32 {
         if forced.get(i).copied().unwrap_or(false) {
             return if k == 0 { 0.0 } else { f32::NEG_INFINITY };
         }
         let p = down[i].clamp(FLOOR, 1.0 - FLOOR);
-        if k == 0 { p.ln() } else { (1.0 - p).ln() }
+        if k == 0 {
+            p.ln()
+        } else if templates[t].group_start[k] {
+            p.max(1.0 - p).ln()
+        } else {
+            (1.0 - p).ln()
+        }
+    };
+    // Cost of going from a bar of template `a` to one of template `b`
+    let switch = |a: usize, b: usize| {
+        if a == b {
+            0.0
+        } else if templates[a].beats == templates[b].beats {
+            REGROUP_COST
+        } else {
+            CHANGE_COST
+        }
     };
 
     let mut score = vec![f32::NEG_INFINITY; states];
     // The piece may start anywhere in a bar (a pickup)
-    for n in MIN_BEATS..=MAX_BEATS {
-        for k in 0..n {
-            score[index(n, k)] = emission(0, k) - meter_cost(n, level);
+    for (t, template) in templates.iter().enumerate() {
+        for k in 0..template.beats {
+            score[offsets[t] + k] = emission(0, t, k) - template.cost;
         }
     }
     let mut back = vec![0u16; beats * states];
     let mut next = vec![f32::NEG_INFINITY; states];
     for i in 1..beats {
         next.fill(f32::NEG_INFINITY);
-        // The two best ways to have just finished a bar, with their meters: a new bar of
-        // another meter comes from the best one that is not its own
-        let (mut first, mut second) = ((f32::NEG_INFINITY, 0usize), (f32::NEG_INFINITY, 0usize));
-        for n in MIN_BEATS..=MAX_BEATS {
-            let s = score[index(n, n - 1)];
-            if s > first.0 {
-                second = first;
-                first = (s, n);
-            } else if s > second.0 {
-                second = (s, n);
+        // The bars that could just have finished: the best of all, and the two best of
+        // each length (a regrouping costs less than a change of length)
+        let ending = |t: usize| score[last(t)];
+        let best_end = (0..templates.len())
+            .max_by(|&a, &b| ending(a).total_cmp(&ending(b)))
+            .unwrap_or(0);
+        let mut by_length = vec![(usize::MAX, usize::MAX); MAX_BEATS + 1];
+        for (t, template) in templates.iter().enumerate() {
+            let slot = &mut by_length[template.beats];
+            if slot.0 == usize::MAX || ending(t) > ending(slot.0) {
+                slot.1 = slot.0;
+                slot.0 = t;
+            } else if slot.1 == usize::MAX || ending(t) > ending(slot.1) {
+                slot.1 = t;
             }
         }
-        for n in MIN_BEATS..=MAX_BEATS {
+        for (t, template) in templates.iter().enumerate() {
+            let base = offsets[t];
             // Beat k > 0: only from beat k - 1 of the same bar
-            for k in 1..n {
-                let from = index(n, k - 1);
-                next[index(n, k)] = score[from] + emission(i, k);
-                back[i * states + index(n, k)] = from as u16;
+            for k in 1..template.beats {
+                next[base + k] = score[base + k - 1] + emission(i, t, k);
+                back[i * states + base + k] = (base + k - 1) as u16;
             }
-            // A new bar of n beats: after a bar of n (free) or of another meter (a change)
-            let same = (score[index(n, n - 1)], n);
-            let other = if first.1 == n { second } else { first };
-            let (best, from) = if other.0 - CHANGE_COST > same.0 {
-                (other.0 - CHANGE_COST, other.1)
-            } else {
-                same
-            };
-            next[index(n, 0)] = best - meter_cost(n, level) + emission(i, 0);
-            back[i * states + index(n, 0)] = index(from, from - 1) as u16;
+            // A new bar: after one of the same template (free), another grouping of the
+            // same length, or the best bar of all
+            let (first, second) = by_length[template.beats];
+            let regroup = if first == t { second } else { first };
+            let mut choice = (ending(t), t);
+            for from in [regroup, best_end] {
+                if from != usize::MAX && from != t {
+                    let candidate = ending(from) - switch(from, t);
+                    if candidate > choice.0 {
+                        choice = (candidate, from);
+                    }
+                }
+            }
+            let (best, from) = (choice.0, last(choice.1));
+            next[base] = best - template.cost + emission(i, t, 0);
+            back[i * states + base] = from as u16;
         }
         std::mem::swap(&mut score, &mut next);
     }
@@ -129,10 +211,8 @@ pub fn bar_starts(down: &[f32], forced: &[bool], level: Level) -> Vec<usize> {
             state = usize::from(back[i * states + state]);
         }
     }
-    let is_start = |state: usize| offsets.contains(&state);
-    (0..beats).filter(|&i| is_start(path[i])).collect()
+    (0..beats).filter(|&i| offsets.contains(&path[i])).collect()
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -173,6 +253,18 @@ mod tests {
         let starts = bar_starts(&down, &[], Level::Quarters);
         assert!(
             lengths(&starts, down.len()).iter().all(|&n| n == 4),
+            "{starts:?}"
+        );
+    }
+
+    #[test]
+    fn a_seven_counted_three_plus_four_is_one_bar() {
+        // 1 2 3 1 2 3 4: the network hears both "1"s almost as strongly
+        let pattern = [0.9, 0.05, 0.05, 0.7, 0.05, 0.05, 0.05];
+        let down: Vec<f32> = (0..7 * 12).map(|i| pattern[i % 7]).collect();
+        let starts = bar_starts(&down, &[], Level::Quarters);
+        assert!(
+            lengths(&starts, down.len()).iter().all(|&n| n == 7),
             "{starts:?}"
         );
     }
