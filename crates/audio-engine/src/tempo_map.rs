@@ -71,13 +71,19 @@ impl TempoMap {
         self.segment_at(frame).or_else(|| self.segments.first())
     }
 
-    /// The clicks that start on track frame `position` (none before the first segment).
+    /// The clicks that start on track frame `position`. Before the first segment its grid runs
+    /// back to the start of the track, as in Reaper and as the waveform grid shows it.
     /// Real-time safe: a binary search, no allocation.
     pub(crate) fn hits_at(&self, position: u64) -> Hits {
-        let Some(segment) = self.segment_at(position) else {
+        let Some(segment) = self.segment_at(position).or_else(|| self.segments.first()) else {
             return Hits::default();
         };
-        let offset = (position - segment.start) as f64;
+        let mut offset = position as f64 - segment.start as f64;
+        if offset < 0.0 {
+            // Whole bars earlier, so the pattern (accents, cross pulses) sees a bar like any other
+            let bar = f64::from(segment.pattern.pulses()) * segment.beat_frames;
+            offset += (-offset / bar).ceil() * bar;
+        }
         segment.pattern.hits(
             offset / segment.beat_frames,
             (offset + 1.0) / segment.beat_frames,
@@ -117,9 +123,20 @@ mod tests {
     fn a_constant_tempo_clicks_from_its_anchor() {
         let map = TempoMap::constant(50, 100.0, BarPattern::regular(4));
         let heard = clicks(&map, 500);
-        assert_eq!(heard[0], (50, Accent), "nothing before the anchor");
+        assert_eq!(heard[0], (50, Accent));
         assert_eq!(heard[1], (150, Beat));
         assert_eq!(heard[4], (450, Accent), "a new bar every four beats");
+    }
+
+    #[test]
+    fn before_the_first_marker_its_grid_runs_back_to_the_start() {
+        // 4/4 at 100 frames a beat from frame 650: bar lines at 250 and 650 earlier, too
+        let map = TempoMap::constant(650, 100.0, BarPattern::regular(4));
+        let heard = clicks(&map, 700);
+        assert_eq!(heard[0], (50, Beat), "the last beat of the bar before 250");
+        assert_eq!(heard[2], (250, Accent));
+        assert_eq!(heard[6], (650, Accent));
+        assert_eq!(heard.len(), 7);
     }
 
     #[test]
