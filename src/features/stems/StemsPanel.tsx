@@ -14,7 +14,10 @@ const s = t.stems;
 
 /** One channel strip: Solo and Mute keys over the fader, as on a desk. */
 function Strip({ name }: { name: string }) {
-  const channel = useStemsStore((state) => channelOf(state.channels, name));
+  // The stored list, not a channel made up in the selector: a fresh object at every call
+  // would look like a change each time and re-render forever
+  const channels = useStemsStore((state) => state.channels);
+  const channel = channelOf(channels, name);
   const soloing = useStemsStore((state) => state.channels.some((c) => c.solo));
   const store = useStemsStore.getState;
   const label = s.names[name] ?? name;
