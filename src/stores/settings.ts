@@ -32,6 +32,8 @@ export interface Settings {
   countInBars: number;
   /** Click on every beat while playing */
   metronome: boolean;
+  /** Volume of the track alone, 0..1: lower it to hear the clicks over a loud mix */
+  trackVolume: number;
   /** Volume of the clicks, 0..1 */
   clickVolume: number;
   /** Sound and level (0..1) of the first beat of a bar, and of the other beats, like Reaper */
@@ -127,6 +129,7 @@ export const SETTING_LIMITS = {
   fineSeekStep: { min: 0.1, max: 5, step: 0.1 },
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
   countInBars: { min: 1, max: 4, step: 1 },
+  trackVolume: { min: 0, max: 1, step: 0.05 },
   clickVolume: { min: 0, max: 1, step: 0.05 },
   accentLevel: { min: 0, max: 1, step: 0.05 },
   beatLevel: { min: 0, max: 1, step: 0.05 },
@@ -155,6 +158,7 @@ const DEFAULTS: Settings = {
   countIn: false,
   countInBars: 1,
   metronome: false,
+  trackVolume: 1,
   clickVolume: 0.6,
   // The classic click: a high beep on the first beat, a lower one on the others
   accentSound: "beepHigh",

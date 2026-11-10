@@ -24,6 +24,8 @@ use crate::tone::ToneVoice;
 const CHUNK: usize = 256;
 /// Fade of the output on play, pause and seek, so they never click.
 const FADE_SECONDS: f32 = 0.005;
+/// Share of the distance to the asked track level covered each frame.
+const TRACK_LEVEL_GLIDE: f32 = 0.002;
 /// Crossfade of the source where a loop wraps around.
 pub(crate) const SPLICE_SECONDS: f32 = 0.005;
 /// Share of the remaining speed change applied per chunk (~25 ms to settle at 48 kHz).
@@ -236,6 +238,9 @@ pub(crate) struct Renderer {
     pending_seek: Option<u64>,
     gain: f32,
     gain_step: f32,
+    /// Level of the track asked for, and the one heard, which glides to it (no zipper noise)
+    track_volume: f32,
+    track_level: f32,
 
     speed: f32,
     target_speed: f32,
@@ -291,6 +296,8 @@ impl Renderer {
             pending_seek: None,
             gain: 0.0,
             gain_step: 1.0 / (FADE_SECONDS * sample_rate as f32).max(1.0),
+            track_volume: 1.0,
+            track_level: 1.0,
             speed: 1.0,
             target_speed: 1.0,
             input_debt: 0.0,
@@ -377,6 +384,7 @@ impl Renderer {
                 Command::SetLoop(settings) => self.settings = settings,
                 Command::SetEq(settings) => self.eq.set(settings),
                 Command::SetChannelMode(mode) => self.channels.set(mode),
+                Command::SetTrackVolume(volume) => self.track_volume = volume,
                 Command::SetClick(settings) => self.click = settings,
                 Command::SetTempoMap(map) => {
                     let old = std::mem::replace(&mut self.tempo, map);
@@ -492,9 +500,12 @@ impl Renderer {
             voice.start_kind(kind, self.click.sound(kind));
         }
         let extra = self.extra();
+        // About 10 ms to settle at 48 kHz
+        self.track_level += (self.track_volume - self.track_level) * TRACK_LEVEL_GLIDE;
+        let gain = self.gain * self.track_level;
         [
-            self.output[i] * self.gain + extra,
-            self.output[i + 1] * self.gain + extra,
+            self.output[i] * gain + extra,
+            self.output[i + 1] * gain + extra,
         ]
     }
 
@@ -708,6 +719,18 @@ mod tests {
         let mut h = Harness::new(2.0);
         assert_eq!(loudness(&h.render(0.2)), 0.0);
         assert_eq!(h.position(), 0);
+    }
+
+    #[test]
+    fn the_track_volume_glides_to_its_level() {
+        let mut h = Harness::new(3.0);
+        h.send(Command::Play);
+        let full = loudness(&h.render(0.5)[24_000..]);
+        h.send(Command::SetTrackVolume(0.25));
+        let quarter = loudness(&h.render(0.5)[24_000..]);
+        assert!((quarter / full - 0.25).abs() < 0.02, "{quarter} of {full}");
+        h.send(Command::SetTrackVolume(0.0));
+        assert!(loudness(&h.render(0.5)[24_000..]) < 1e-3, "muted");
     }
 
     #[test]

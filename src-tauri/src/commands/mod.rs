@@ -37,6 +37,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             player::pause,
             player::seek,
             player::set_speed,
+            player::set_track_volume,
             player::set_pitch,
             player::set_loop,
             player::set_click,

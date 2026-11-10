@@ -882,6 +882,13 @@ export const en = {
     gap: "Gap",
     gapHint: "Seconds of silence between one repeat and the next",
     clearLoop: "Remove loop",
+    trackVolume: "Track",
+    trackVolumeShort: "Trk",
+    trackVolumeHint:
+      "Volume of the track: lower it to hear the click over a loud mix. Wheel: ±5%, double-click: 100%.",
+    clickVolumeShort: "Clk",
+    clickVolume: "Click",
+    clickVolumeHint: "Volume of the click and the count-in. Wheel: ±5%, double-click: 60%.",
     speed: "Speed",
     speedPreset: "Speed",
     pitch: "Pitch",

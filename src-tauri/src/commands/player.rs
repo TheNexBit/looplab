@@ -174,6 +174,14 @@ pub fn set_speed(state: State<'_, AppState>, speed: f32) -> Result<(), AppError>
     Ok(())
 }
 
+/// Level of the track alone, 0..1: the clicks, the metronome and the reference note keep theirs.
+#[tauri::command]
+#[specta::specta]
+pub fn set_track_volume(state: State<'_, AppState>, volume: f32) -> Result<(), AppError> {
+    playing_engine(&state)?.set_track_volume(volume);
+    Ok(())
+}
+
 /// Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down).
 #[tauri::command]
 #[specta::specta]

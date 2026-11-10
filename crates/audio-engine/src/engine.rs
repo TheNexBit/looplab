@@ -66,6 +66,8 @@ pub(crate) enum Command {
     SetLoop(LoopSettings),
     SetEq(EqSettings),
     SetChannelMode(ChannelMode),
+    /// Level of the track alone (0..1), so the clicks can be heard over a loud mix
+    SetTrackVolume(f32),
     SetClick(ClickSettings),
     /// Plays one click of a kind now, to hear its sound (also while paused)
     PreviewClick(ClickKind),
@@ -246,6 +248,12 @@ impl Engine {
 
     pub fn set_channel_mode(&self, mode: ChannelMode) {
         self.send(Command::SetChannelMode(mode));
+    }
+
+    /// Level of the track (0..1, clamped); the clicks, the metronome and the reference note
+    /// keep their own.
+    pub fn set_track_volume(&self, volume: f32) {
+        self.send(Command::SetTrackVolume(volume.clamp(0.0, 1.0)));
     }
 
     /// Tempo, metronome and count-in.

@@ -22,6 +22,8 @@ export const commands = {
 	seek: (seconds: number | null) => typedError<null, AppError>(__TAURI_INVOKE("seek", { seconds })),
 	/**  Playback speed without changing pitch: 1 is the original speed. */
 	setSpeed: (speed: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_speed", { speed })),
+	/**  Level of the track alone, 0..1: the clicks, the metronome and the reference note keep theirs. */
+	setTrackVolume: (volume: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_track_volume", { volume })),
 	/**  Pitch shift in semitones; the fractional part is cents (e.g. -0.25 = 25 cents down). */
 	setPitch: (semitones: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pitch", { semitones })),
 	setLoop: (settings: LoopRequest) => typedError<null, AppError>(__TAURI_INVOKE("set_loop", { settings })),

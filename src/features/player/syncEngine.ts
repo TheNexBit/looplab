@@ -71,6 +71,9 @@ export function syncWithEngine(): () => void {
   const sendEq = sender(commands.setEq);
   const sendChannels = sender(commands.setChannelMode);
   const sendClick = sender(commands.setClick);
+  const sendTrackVolume = sender(commands.setTrackVolume);
+  const pushTrackVolume = (force = false) =>
+    sendTrackVolume(useSettingsStore.getState().trackVolume, force);
   const sendTempo = sender(commands.setTempoMap);
   const pushTempo = (force = false) => sendTempo(usePracticeStore.getState().tempoMap, force);
 
@@ -91,6 +94,7 @@ export function syncWithEngine(): () => void {
     sendLoop(loopSettings(), force);
     sendClick(clickSettings(), force);
     pushTempo(force);
+    pushTrackVolume(force);
     const eq = useEqStore.getState();
     if (eq.settings.bands.length > 0) sendEq(eqToRust(eq.settings), force);
     sendChannels(eq.channels, force);
@@ -102,7 +106,10 @@ export function syncWithEngine(): () => void {
       pushClick();
     }),
     usePracticeStore.subscribe(() => pushTempo()),
-    useSettingsStore.subscribe(pushClick),
+    useSettingsStore.subscribe(() => {
+      pushClick();
+      pushTrackVolume();
+    }),
     useEqStore.subscribe(() => pushAll(false)),
     usePlayerStore.subscribe((state, previous) => {
       if (state.track && state.track !== previous.track) pushAll(true);

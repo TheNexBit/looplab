@@ -882,6 +882,13 @@ export const it = {
     gap: "Gap",
     gapHint: "Secondi di silenzio tra una ripetizione e l'altra",
     clearLoop: "Rimuovi loop",
+    trackVolume: "Traccia",
+    trackVolumeShort: "Trk",
+    trackVolumeHint:
+      "Volume del brano: abbassalo per sentire il click sopra un mix forte. Rotella: ±5%, doppio clic: 100%.",
+    clickVolumeShort: "Clk",
+    clickVolume: "Click",
+    clickVolumeHint: "Volume del click e del count-in. Rotella: ±5%, doppio clic: 60%.",
     speed: "Velocità",
     speedPreset: "Velocità",
     pitch: "Pitch",

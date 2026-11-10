@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Music2 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Chip } from "@/components/ui/Chip";
 import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
@@ -28,7 +28,9 @@ export function TuningPicker() {
             aria-label={tr.tuning}
             className="hidden h-[22px] items-center gap-0.5 px-1.5 text-[10px] xl:inline-flex"
           >
-            {tr.tuning}
+            {/* The name only in wide windows: elsewhere a note icon, the tooltip names it */}
+            <Music2 className="size-3 2xl:hidden" />
+            <span className="hidden 2xl:inline">{tr.tuning}</span>
             <ChevronDown className="size-3" />
           </Chip>
         </DropdownMenu.Trigger>
