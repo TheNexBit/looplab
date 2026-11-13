@@ -85,7 +85,7 @@ pub fn set_mini(window: &WebviewWindow, on: bool) -> tauri::Result<()> {
 }
 
 pub fn create_main(app: &AppHandle) -> tauri::Result<WebviewWindow> {
-    let window = builder(app, MAIN, "Looplab · prova archivio")?
+    let window = builder(app, MAIN, "Looplab · prova strumenti")?
         .inner_size(1280.0, 800.0)
         .min_inner_size(MAIN_MIN.0, MAIN_MIN.1)
         .center()

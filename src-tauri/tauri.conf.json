@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Looplab",
   "version": "../package.json",
-  "identifier": "com.thenexbit.looplab.archivio",
+  "identifier": "com.thenexbit.looplab.strumenti",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1423",
