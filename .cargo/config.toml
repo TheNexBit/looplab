@@ -2,4 +2,4 @@
 # Never set target-dir: builds use the shared CARGO_TARGET_DIR on the Dev Drive.
 [env]
 # Development builds write every app file (settings, caches, WebView2 data) here, never in C:\ AppData
-LOOPLAB_DEV_DATA_DIR = "D:\\.cache\\looplab\\dev-data-strumenti"
+LOOPLAB_DEV_DATA_DIR = "D:\\.cache\\looplab\\dev-data"
