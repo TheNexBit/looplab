@@ -603,7 +603,7 @@ perfezionarla durante lo sviluppo):
 - Aspettativa realistica: tempo e battiti giusti quasi sempre; metrica e inizio battuta nei cambi frequenti sono il
   caso più difficile per qualunque programma, quindi proposti e da confermare.
 
-## 18. Separazione degli strumenti 🔜
+## 18. Separazione degli strumenti ✅
 
 Avviata il 10/11/2026 con il via dell'utente, in un worktree a parte (`D:\sandbox\looplab-stems`, ramo `stems`).
 
@@ -638,9 +638,11 @@ il metro.
    l'originale.
 6. ✅ Interfaccia: scheda "Tracce" del pannello laterale, "Separa strumenti", sei canali (S, M, fader con rotella e
    doppio clic), "Mix originale"; il mix è salvato nel progetto.
-7. 🔜 Prova dell'utente: insieme alla fase 19, con `scripts\00-prova-archivio.cmd`.
+7. ✅ Provata dall'utente il 13/11/2026 (Mute e Solo, mix e originale, tracce ricaricate dalla cache, mix salvato
+   nel progetto). Unita in `main` insieme alla fase 19. Resta aperto: l'export usa il brano originale, non il mix
+   delle tracce.
 
-## 19. Archivio unico e backup 🚧
+## 19. Archivio unico e backup ✅
 
 Avviata il 13/11/2026 con il via dell'utente, in un worktree a parte (`D:\sandbox\looplab-archivio`, ramo
 `archivio`, nato da `stems`: contiene anche la fase 18).
@@ -679,10 +681,8 @@ nulla, e sa sempre dove sono i backup.
 4. ✅ Backup automatici a rotazione, seconda destinazione, ripristino, recupero dell'archivio danneggiato.
 5. ✅ Interfaccia: Impostazioni → Dati, sezioni Libreria, Backup (Backup ora, Apri cartella, Ripristina) e
    Seconda copia.
-6. 🔜 Prova dell'utente insieme alla fase 18 con `scripts\00-prova-archivio.cmd` (dati copiati da quelli della prova
-   "strumenti", porta 1423; i `.looplab.json` accanto ai brani qui vengono solo copiati). Per unire in `main`:
-   annullare i commit della copia di prova (`1b45767` e quello "Trial copy" del ramo `archivio`), poi
-   `git merge --no-ff archivio`, test, rimozione dei worktree `looplab-stems` e `looplab-archivio`.
+6. ✅ Provata dall'utente il 13/11/2026 insieme alla fase 18, in una copia di prova con i suoi dati: import dei
+   vecchi file, Backup ora, Ripristina, backup di sicurezza e seconda copia funzionano. Unita in `main`.
 
 **Note:** non ci sono ancora copie installate da altri; chi aveva usato una build di rilascio perderebbe solo le
 preferenze dell'interfaccia (il profilo WebView cambia cartella), non progetti, recenti e diario.
