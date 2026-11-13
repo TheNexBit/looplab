@@ -21,7 +21,7 @@ use crate::{json_file, log, project, recent};
 
 /// When false, project files beside the tracks are only copied, never moved (the trial copies
 /// set it, so the tracks' folders stay as the other copies expect them).
-const MOVE_FILES_BESIDE_TRACKS: bool = true;
+const MOVE_FILES_BESIDE_TRACKS: bool = false;
 /// Set once the data folder's old files were imported.
 const IMPORTED: &str = "legacy_imported";
 const OLD_EXTENSION: &str = "looplab.json";
