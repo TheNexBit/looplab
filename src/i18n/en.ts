@@ -1,5 +1,5 @@
 import type { CornersId, CustomColor, FontId, OverviewHeight } from "@/lib/appearance";
-import type { CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
+import type { BackupKind, CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
 import type { SETTING_CHOICES } from "@/stores/settings";
 
@@ -49,7 +49,10 @@ export const en = {
       "This file needs FFmpeg, which is not installed: run scripts\\05-fetch-ffmpeg.cmd.",
     ffmpegFailed: "FFmpeg could not convert the file.",
     projectFile:
-      "This track's .looplab.json file cannot be read or written: markers and sections are not saved.",
+      "This track's project cannot be read (maybe written by a newer Looplab): markers and sections are not saved.",
+    library:
+      "The library (libreria.db) cannot be read or written: your work is not saved. See Settings → Data.",
+    backup: "The backup failed: check the free space and the backup folder.",
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:
@@ -597,7 +600,6 @@ export const en = {
     tempoRightClick: "delete",
     removeTempoMarker: "Delete the tempo marker",
     sectionRightClick: "loop, export, colour, delete",
-    savedInAppData: "The track's folder is protected: the project is saved in the app's folder.",
   },
   eq: {
     title: "Equaliser",
@@ -827,7 +829,7 @@ export const en = {
       cache: "FFmpeg conversions",
       cacheHint: (limit: string) =>
         `Tracks already read (they reopen at once; ${limit} at most, the oldest go by themselves), extracted audio and videos made compatible. If they are needed again, Looplab makes them again by itself; the open track stays.`,
-      portable: "Portable version: the data lives in the «dati» folder next to Looplab.exe.",
+      portable: "Portable version: data and backups live in the «dati» folder next to Looplab.exe.",
       kinds: {
         decoded: "Tracks ready to play",
         audio: "Extracted audio",
@@ -839,6 +841,35 @@ export const en = {
       log: "Error log",
       logHint: "What went wrong and when. If you report a problem, attach the looplab.log file.",
       showLog: "Show the file",
+      archive: "Library",
+      archiveHint:
+        "All your work in one file: track projects, diary, recent tracks and settings. Imported click sounds sit beside it, in the «suoni» folder.",
+      showLibrary: "Show the file",
+      backups: "Backups",
+      backupsHint:
+        "An automatic one every day you use Looplab; the last 7 days, 4 weeks and 12 months are kept. Those made by hand stay forever. The cache is not needed: it rebuilds itself.",
+      backupNow: "Back up now",
+      showBackups: "Open folder",
+      restore: "Restore",
+      restoreConfirm: (when: string) =>
+        `Restore the backup of ${when}? The current work is first saved in a safety backup, then Looplab reloads.`,
+      restoreYes: "Restore",
+      restoreNo: "Cancel",
+      done: (when: string) => `Backup made: ${when}.`,
+      noBackups: "No backups yet.",
+      kindsBackup: {
+        auto: "automatic",
+        manual: "by hand",
+        safety: "safety",
+      } satisfies Record<BackupKind, string>,
+      mirror: "Second copy",
+      mirrorHint: "Every backup is also copied here, for example on an external drive.",
+      mirrorOff: "None",
+      mirrorChoose: "Choose folder",
+      mirrorStop: "Stop copying",
+      mirrorFailed: (detail: string) => `The second copy failed: ${detail}`,
+      recovered: (name: string) =>
+        `The library was damaged: it was set aside in the backup folder and replaced by the backup «${name}».`,
     },
   },
   about: {

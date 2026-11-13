@@ -60,9 +60,11 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   - `spectrum.rs`: FFT di ~0,35 s (realfft) letta su scala musicale, 5 punti per semitono da A0 a C8; su un loop
     media fino a 48 finestre. La tonalità sposta la scala, i canali si applicano prima dell'analisi.
 - **`src-tauri`**: guscio desktop. Comandi sottili in `commands/` che delegano all'engine.
-  - `paths.rs`: unica fonte dei percorsi in cui l'app scrive. In sviluppo tutto va in
-    `LOOPLAB_DEV_DATA_DIR` (definito in `.cargo/config.toml`), in rilascio nella cartella standard di Windows.
-    Versione portable: con `portable.txt` accanto all'exe tutto va in `dati\` lì accanto (`portable_data`); la
+  - `paths.rs`: unica fonte dei percorsi in cui l'app scrive (`Places`): **user** (il lavoro: `libreria.db` e
+    `suoni\`), **local** (si rigenera: `cache\`, `logs\`, `webview\`, `windows.json`), **backup**. Installata:
+    `%APPDATA%\Looplab`, `%LOCALAPPDATA%\Looplab`, `Documenti\Looplab\Backup`. Sviluppo
+    (`LOOPLAB_DEV_DATA_DIR` in `.cargo/config.toml`), `LOOPLAB_DATA_DIR` e portable: tutto sotto una cartella,
+    backup in `backup\`. Versione portable: con `portable.txt` accanto all'exe tutto va in `dati\` lì accanto (`portable_data`); la
     cache dei brani decodificati si ferma a 2 GB invece di 10 e gli aggiornamenti si segnalano soltanto (lo ZIP
     nuovo si scarica a mano). Lo ZIP lo crea `New-PortableZip` in `scripts/powershell/release-config.ps1`.
   - `window.rs`: le finestre si creano nel codice (non in `tauri.conf.json`) per poter spostare
@@ -72,10 +74,26 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   - `playback.rs`: evento tipizzato `PlaybackStatus` ~15 volte al secondo mentre suona.
   - `commands/waveform.rs`: `get_peaks` restituisce byte grezzi; tauri-specta non sa descriverli, quindi è
     registrato a parte in `main.rs` e avvolto a mano in `src/features/waveform/peaks.ts`.
-  - `project.rs`: schema del `.looplab.json` (unica definizione; i tipi TS sono generati), lettura/scrittura
-    atomica, ripiego nella cartella dati. `recent.rs`: file recenti (fino a 30, con ora di apertura e durata; `list` aggiunge loop, sezioni e velocità letti dal progetto di ogni brano). `json_file.rs`: lettura e scrittura
-    atomica (file temporaneo + rinomina) dei file JSON dell'app, usata da progetti, recenti e finestre. I valori predefiniti vivono solo qui
-    (`default_project`). EQ e canali usano direttamente i tipi di `audio-engine` (feature `typed`).
+  - **Libreria** (fase 19): `db.rs` apre `libreria.db` (SQLite con rusqlite `bundled`, `synchronous = FULL`,
+    schema versionato in `user_version`, tabelle `projects`, `recent`, `diary`, `prefs`, `meta`); `Library` è lo
+    stato condiviso dei comandi e all'avvio, se il file è danneggiato, lo mette da parte e rimette l'ultimo backup
+    sano (`backup::recover`). Le chiavi dei brani sono il percorso in minuscolo.
+  - `project.rs`: schema del progetto di un brano (unica definizione; i tipi TS sono generati), salvato come JSON
+    nella tabella `projects`. `fingerprint` (dimensione + FNV dei primi e ultimi 64 KB) ritrova il progetto di un
+    brano spostato o rinominato; una copia del brano riceve una copia del progetto. `recent.rs`: file recenti
+    (fino a 30, con ora di apertura e durata; `list` aggiunge loop, sezioni e velocità dal progetto). `diary.rs`:
+    diario. `prefs.rs`: preferenze dell'interfaccia (JSON per chiave). `legacy.rs`: importa una volta i file delle
+    versioni precedenti (`recent.json`, `diary.json`, `projects\`, `<brano>.looplab.json`, anche all'apertura di
+    un brano) e li sposta in `Backup\File delle versioni precedenti` con `origine.txt`.
+  - `backup.rs`: cartelle `AAAA-MM-GG HH.MM.SS <tipo>` con `libreria.db` (`VACUUM INTO` + `integrity_check`,
+    scritte come `.partial` e rinominate a fine copia) e `suoni\`. Automatico all'avvio e a ogni cambio di giorno
+    (thread in `main.rs`, controllo ogni 30 minuti); rotazione 7 giorni / 4 settimane / 12 mesi; manuali mai
+    cancellati, di sicurezza (prima di un ripristino) gli ultimi 5; seconda cartella facoltativa (`meta`
+    `backup_mirror`). `restore` chiude la libreria, fa il backup di sicurezza, rimette file e suoni e la riapre.
+    Comandi in `commands/archive.rs`, interfaccia in `app/ArchiveSettings.tsx` (Impostazioni → Dati).
+  - `json_file.rs`: lettura e scrittura atomica (file temporaneo + rinomina) dei file JSON rimasti: posizioni
+    delle finestre e lettura dei file delle versioni precedenti. I valori predefiniti del progetto vivono solo in
+    `project.rs` (`default_project`). EQ e canali usano direttamente i tipi di `audio-engine` (feature `typed`).
   - `media.rs`: FFmpeg facoltativo (estrazione audio, proxy H.264, codifica FLAC/MP3 degli export), cache in
     `paths::cache_dir`. `cache.rs`: spazio occupato e "Svuota" (salta i file in uso); brani decodificati in
     `cache/decoded/<hash>-<frequenza>.pcm|.peaks`, al massimo 10 GB (`trim_decoded` toglie i più vecchi).
@@ -115,7 +133,7 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 ## Tasti, pedali e diario
 
 - `lib/shortcuts.ts`: elenco delle azioni con i tasti predefiniti; `stores/keymap.ts` tiene i tasti cambiati e i
-  comandi MIDI (localStorage) e li rende attivi con `setActiveShortcuts`.
+  comandi MIDI (preferenze nella libreria) e li rende attivi con `setActiveShortcuts`.
 - `src-tauri/src/midi.rs`: apre ogni ingresso MIDI (ricontrolla ogni 2 s) e manda `MidiTrigger` all'interfaccia;
   `src-tauri/src/media_keys.rs`: tasti multimediali di sistema (opzione) → evento `MediaKey`.
   `features/remote/remoteControl.ts` collega entrambi alle azioni di `shortcutHandlers`.
@@ -129,7 +147,7 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   `ExportDialog.tsx`: la finestra; `ui.openExport(source)` la apre già sulla sezione o sul loop.
 - `features/notes/noteMath.ts`: nomi, tasti, note più forti; `NoteView.tsx` chiede lo spettro in un
   `requestAnimationFrame` (solo quando cambia qualcosa, al massimo ogni 80 ms mentre suona) e lo disegna su canvas.
-  `stores/notes.ts`: aperta/chiusa e modo (localStorage).
+  `stores/notes.ts`: aperta/chiusa e modo (preferenze nella libreria).
 
 ## Forma d'onda dettagliata
 
@@ -158,8 +176,8 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 ## Regole
 
 - Niente doppioni: un valore, un posto (colori in `theme.css`, testi in `i18n`, scorciatoie in `shortcuts.ts`,
-  limiti dei controlli in `features/player/limits.ts`, percorsi dati in `paths.rs`, preferenze del PC in
-  `lib/storage.ts`, valori con segno in `lib/format.ts`, percentuali scritte in `parsePercent`).
+  limiti dei controlli in `features/player/limits.ts`, percorsi dati in `paths.rs`, preferenze dell'interfaccia in
+  `lib/storage.ts` (lette tutte da `main.tsx` prima di caricare `boot.tsx`, salvate nella libreria), valori con segno in `lib/format.ts`, percentuali scritte in `parsePercent`).
 - Il thread audio è real-time safe: niente allocazioni, lock o I/O nella callback.
 - L'audio è il clock principale: playhead e video lo seguono.
 - Animazioni a 60 fps (playhead, forme d'onda, tempo) girano in `requestAnimationFrame` leggendo gli store

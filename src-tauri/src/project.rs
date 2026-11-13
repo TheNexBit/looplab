@@ -1,23 +1,25 @@
-//! The `.looplab.json` project file saved next to each track.
+//! The project of each track (markers, sections, loops, tempo, mix…), kept in the library.
 //!
-//! The schema lives here only: the TypeScript types are generated from it.
-//! Files are written atomically (temporary file + rename), so a crash never leaves
-//! a half-written project. When the track's folder is read-only, the project goes
-//! to the app data folder instead.
+//! The schema lives here only: the TypeScript types are generated from it. A project is stored
+//! as JSON in the `projects` table, keyed by the track's path; a fingerprint of the file's
+//! content finds it again when the track is moved, renamed or copied.
 
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::fs::File;
+use std::io::{self, Read, Seek, SeekFrom};
+use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use audio_engine::{ChannelMode, EqSettings};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 
+use crate::db::{LibraryError, path_key};
 use crate::hash::fnv1a;
-use crate::json_file::write_atomically;
 
 /// Bumped when the format changes in a way older readers cannot handle.
 pub const VERSION: u32 = 1;
-const EXTENSION: &str = "looplab.json";
+/// Bytes read at the start and at the end of a track for its fingerprint.
+const FINGERPRINT_SPAN: u64 = 64 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -195,117 +197,141 @@ pub struct StemChannel {
     pub solo: bool,
 }
 
-/// Where a project file is kept.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub enum ProjectLocation {
-    /// Next to the track, so it travels with it
-    BesideTrack,
-    /// In the app data folder, because the track's folder is read-only
-    AppData,
+/// Seconds since 1970.
+pub fn now() -> f64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0.0, |d| d.as_secs_f64())
 }
 
-#[derive(Debug)]
-pub enum ProjectError {
-    Io(io::Error),
-    /// The file exists but is not a project we can read
-    Invalid(String),
-}
-
-impl std::fmt::Display for ProjectError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Io(err) => write!(f, "project file error: {err}"),
-            Self::Invalid(detail) => write!(f, "invalid project file: {detail}"),
+/// What identifies a track's content wherever it is: its size and a hash of its first and last
+/// 64 KB. Quick even on a large video, and different for any two real recordings.
+pub fn fingerprint(track: &Path) -> Option<String> {
+    let read = || -> io::Result<String> {
+        let mut file = File::open(track)?;
+        let size = file.metadata()?.len();
+        let mut bytes = Vec::with_capacity(2 * FINGERPRINT_SPAN as usize);
+        (&mut file).take(FINGERPRINT_SPAN).read_to_end(&mut bytes)?;
+        if size > FINGERPRINT_SPAN {
+            file.seek(SeekFrom::Start(
+                size.saturating_sub(FINGERPRINT_SPAN).max(FINGERPRINT_SPAN),
+            ))?;
+            file.take(FINGERPRINT_SPAN).read_to_end(&mut bytes)?;
         }
+        Ok(format!("{size:x}-{:016x}", fnv1a(&bytes)))
+    };
+    read().ok()
+}
+
+/// A project read from its JSON, refusing what a newer Looplab wrote.
+pub fn parse(json: &str) -> Result<Project, LibraryError> {
+    let project: Project = serde_json::from_str(json)?;
+    if project.version > VERSION {
+        return Err(LibraryError::Invalid(format!(
+            "written by a newer Looplab (format {})",
+            project.version
+        )));
     }
+    Ok(project)
 }
 
-impl From<io::Error> for ProjectError {
-    fn from(err: io::Error) -> Self {
-        Self::Io(err)
+/// The project saved under exactly this path, if any.
+pub fn find(conn: &Connection, track: &str) -> Result<Option<Project>, LibraryError> {
+    conn.query_row(
+        "SELECT data FROM projects WHERE path_key = ?1",
+        [path_key(track)],
+        |row| row.get::<_, String>(0),
+    )
+    .optional()?
+    .map(|json| parse(&json))
+    .transpose()
+}
+
+/// The project of a track that was moved, renamed or copied: one saved with the same content.
+/// A moved track takes its project along; a copy gets its own copy of it.
+fn find_by_content(conn: &Connection, track: &str) -> Result<Option<Project>, LibraryError> {
+    let Some(print) = fingerprint(Path::new(track)) else {
+        return Ok(None);
+    };
+    let mut query = conn.prepare(
+        "SELECT path_key, path, data FROM projects WHERE fingerprint = ?1 ORDER BY updated_at DESC",
+    )?;
+    let found: Vec<(String, String, String)> = query
+        .query_map([&print], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))?
+        .collect::<Result<_, _>>()?;
+    // Prefer a project whose track is gone: that is the same file, moved
+    let Some((old_key, old_path, data)) = found
+        .iter()
+        .find(|(_, path, _)| !Path::new(path).exists())
+        .or(found.first())
+        .cloned()
+    else {
+        return Ok(None);
+    };
+    let project = parse(&data)?;
+    if Path::new(&old_path).exists() {
+        insert(conn, track, Some(&print), &data)?;
+    } else {
+        conn.execute(
+            "UPDATE projects SET path_key = ?1, path = ?2 WHERE path_key = ?3",
+            params![path_key(track), track, old_key],
+        )?;
     }
+    Ok(Some(project))
 }
 
-/// `song.mp3` → `song.mp3.looplab.json` (keeping the extension avoids clashes with `song.wav`).
-pub fn beside_track(track: &Path) -> PathBuf {
-    let mut name = track.file_name().unwrap_or_default().to_os_string();
-    name.push(".");
-    name.push(EXTENSION);
-    track.with_file_name(name)
+/// Writes the project of `track`, replacing the one it had.
+pub fn insert(
+    conn: &Connection,
+    track: &str,
+    print: Option<&str>,
+    data: &str,
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO projects (path_key, path, fingerprint, data, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5)
+         ON CONFLICT (path_key) DO UPDATE SET path = excluded.path,
+             fingerprint = COALESCE(excluded.fingerprint, projects.fingerprint),
+             data = excluded.data, updated_at = excluded.updated_at",
+        params![path_key(track), track, print, data, now()],
+    )?;
+    Ok(())
 }
 
-/// Fallback location in the app data folder, named after a stable hash of the track path.
-pub fn in_app_data(data_dir: &Path, track: &Path) -> PathBuf {
-    let key = track.to_string_lossy().to_lowercase();
-    data_dir
-        .join("projects")
-        .join(format!("{:016x}.{EXTENSION}", fnv1a(key.as_bytes())))
-}
-
-/// Reads the track's project from wherever it was saved, or `None` if it has none yet.
+/// The project of a track, or `None` if it has none yet. Looks by path, then for a project file
+/// of an older version beside the track (imported once), then by content.
 pub fn load(
-    data_dir: &Path,
-    track: &Path,
-) -> Result<Option<(Project, ProjectLocation)>, ProjectError> {
-    for (path, location) in [
-        (beside_track(track), ProjectLocation::BesideTrack),
-        (in_app_data(data_dir, track), ProjectLocation::AppData),
-    ] {
-        match fs::read_to_string(&path) {
-            Ok(text) => {
-                let project: Project = serde_json::from_str(&text)
-                    .map_err(|e| ProjectError::Invalid(e.to_string()))?;
-                if project.version > VERSION {
-                    return Err(ProjectError::Invalid(format!(
-                        "written by a newer Looplab (format {})",
-                        project.version
-                    )));
-                }
-                return Ok(Some((project, location)));
-            }
-            Err(err) if err.kind() == io::ErrorKind::NotFound => {}
-            Err(err) => return Err(err.into()),
-        }
+    conn: &Connection,
+    track: &str,
+    old_files: &Path,
+) -> Result<Option<Project>, LibraryError> {
+    if let Some(project) = find(conn, track)? {
+        return Ok(Some(project));
     }
-    Ok(None)
+    if let Some(project) = crate::legacy::import_beside_track(conn, track, old_files)? {
+        return Ok(Some(project));
+    }
+    find_by_content(conn, track)
 }
 
-/// Saves next to the track, falling back to the app data folder if that folder is read-only.
-pub fn save(
-    data_dir: &Path,
-    track: &Path,
-    project: &Project,
-) -> Result<ProjectLocation, ProjectError> {
+/// Saves the project of a track.
+pub fn save(conn: &Connection, track: &str, project: &Project) -> Result<(), LibraryError> {
     let project = Project {
         version: VERSION,
         ..project.clone()
     };
-    let json =
-        serde_json::to_string_pretty(&project).map_err(|e| ProjectError::Invalid(e.to_string()))?;
-
-    let beside = beside_track(track);
-    match write_atomically(&beside, &json) {
-        Ok(()) => {
-            // A copy left in app data from a time the folder was read-only is now stale
-            let _ = fs::remove_file(in_app_data(data_dir, track));
-            Ok(ProjectLocation::BesideTrack)
-        }
-        Err(err) if err.kind() == io::ErrorKind::PermissionDenied => {
-            let fallback = in_app_data(data_dir, track);
-            if let Some(dir) = fallback.parent() {
-                fs::create_dir_all(dir)?;
-            }
-            write_atomically(&fallback, &json)?;
-            Ok(ProjectLocation::AppData)
-        }
-        Err(err) => Err(err.into()),
-    }
+    let data = serde_json::to_string(&project)?;
+    insert(conn, track, fingerprint(Path::new(track)).as_deref(), &data)?;
+    Ok(())
 }
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use std::fs;
+    use std::path::PathBuf;
+
     use super::*;
+    use crate::db::tests::memory;
 
     /// A fresh folder under the shared cargo target dir (on the Dev Drive, never in C:\ Temp).
     pub(crate) fn temp_dir(name: &str) -> PathBuf {
@@ -365,63 +391,81 @@ pub(crate) mod tests {
         }
     }
 
-    #[test]
-    fn names_the_file_after_the_full_track_name() {
-        let path = beside_track(Path::new(r"D:\music\song.mp3"));
-        assert_eq!(path, PathBuf::from(r"D:\music\song.mp3.looplab.json"));
+    fn track(dir: &Path, name: &str, content: &[u8]) -> String {
+        let path = dir.join(name);
+        fs::write(&path, content).unwrap();
+        path.to_string_lossy().into_owned()
     }
 
     #[test]
-    fn saves_and_loads_beside_the_track() {
-        let dir = temp_dir("beside");
-        let track = dir.join("song.mp3");
-        let location = save(&dir.join("data"), &track, &sample()).unwrap();
-        assert_eq!(location, ProjectLocation::BesideTrack);
-        let (loaded, from) = load(&dir.join("data"), &track).unwrap().unwrap();
-        assert_eq!(loaded, sample());
-        assert_eq!(from, ProjectLocation::BesideTrack);
-        assert!(
-            !beside_track(&track).with_extension("json.tmp").exists(),
-            "no temporary file left"
-        );
+    fn saves_and_loads_by_path_ignoring_case() {
+        let dir = temp_dir("project-path");
+        let conn = memory();
+        let song = track(&dir, "Song.mp3", b"audio");
+        save(&conn, &song, &sample()).unwrap();
+        assert_eq!(load(&conn, &song, &dir).unwrap(), Some(sample()));
+        let upper = song.to_uppercase();
+        assert_eq!(load(&conn, &upper, &dir).unwrap(), Some(sample()));
     }
 
     #[test]
     fn a_track_without_project_has_none() {
-        let dir = temp_dir("none");
-        assert!(load(&dir, &dir.join("song.mp3")).unwrap().is_none());
+        let dir = temp_dir("project-none");
+        let conn = memory();
+        let song = track(&dir, "song.mp3", b"nothing saved");
+        assert!(load(&conn, &song, &dir).unwrap().is_none());
     }
 
     #[test]
-    fn reads_older_files_with_missing_fields() {
-        let dir = temp_dir("old");
-        let track = dir.join("song.wav");
-        fs::write(beside_track(&track), r#"{ "version": 1, "markers": [] }"#).unwrap();
-        let (loaded, _) = load(&dir, &track).unwrap().unwrap();
-        assert_eq!(loaded.speed, 1.0);
-        assert!(loaded.sections.is_empty());
+    fn a_moved_track_takes_its_project_along() {
+        let dir = temp_dir("project-moved");
+        let conn = memory();
+        let old = track(&dir, "old.mp3", &[3u8; 200_000]);
+        save(&conn, &old, &sample()).unwrap();
+        let new = dir.join("renamed.mp3").to_string_lossy().into_owned();
+        fs::rename(&old, &new).unwrap();
+        assert_eq!(load(&conn, &new, &dir).unwrap(), Some(sample()));
+        let rows: i64 = conn
+            .query_row("SELECT COUNT(*) FROM projects", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(rows, 1, "moved, not copied");
+        assert!(find(&conn, &old).unwrap().is_none());
     }
 
     #[test]
-    fn rejects_damaged_or_newer_files() {
-        let dir = temp_dir("bad");
-        let track = dir.join("song.flac");
-        fs::write(beside_track(&track), "{ not json").unwrap();
-        assert!(matches!(load(&dir, &track), Err(ProjectError::Invalid(_))));
-        fs::write(beside_track(&track), r#"{ "version": 99 }"#).unwrap();
-        assert!(matches!(load(&dir, &track), Err(ProjectError::Invalid(_))));
+    fn a_copied_track_gets_its_own_copy_of_the_project() {
+        let dir = temp_dir("project-copied");
+        let conn = memory();
+        let first = track(&dir, "a.mp3", b"same take");
+        save(&conn, &first, &sample()).unwrap();
+        let copy = track(&dir, "b.mp3", b"same take");
+        assert_eq!(load(&conn, &copy, &dir).unwrap(), Some(sample()));
+        assert_eq!(find(&conn, &first).unwrap(), Some(sample()));
+        assert_eq!(find(&conn, &copy).unwrap(), Some(sample()));
     }
 
     #[test]
-    fn app_data_name_is_stable_and_case_insensitive() {
-        let data = Path::new(r"D:\data");
-        assert_eq!(
-            in_app_data(data, Path::new(r"D:\Music\Song.mp3")),
-            in_app_data(data, Path::new(r"d:\music\song.mp3"))
-        );
-        assert_ne!(
-            in_app_data(data, Path::new(r"D:\music\a.mp3")),
-            in_app_data(data, Path::new(r"D:\music\b.mp3"))
-        );
+    fn reads_older_projects_and_rejects_newer_ones() {
+        let old = parse(r#"{ "version": 1, "markers": [] }"#).unwrap();
+        assert_eq!(old.speed, 1.0);
+        assert!(old.sections.is_empty());
+        assert!(matches!(parse("{ not json"), Err(LibraryError::Invalid(_))));
+        assert!(matches!(
+            parse(r#"{ "version": 99 }"#),
+            Err(LibraryError::Invalid(_))
+        ));
+    }
+
+    #[test]
+    fn the_fingerprint_follows_the_content() {
+        let dir = temp_dir("project-print");
+        let a = track(&dir, "a.wav", &[1u8; 300_000]);
+        let b = track(&dir, "b.wav", &[1u8; 300_000]);
+        let mut changed = vec![1u8; 300_000];
+        changed[299_999] = 2;
+        let c = track(&dir, "c.wav", &changed);
+        let print = |p: &str| fingerprint(Path::new(p)).unwrap();
+        assert_eq!(print(&a), print(&b));
+        assert_ne!(print(&a), print(&c));
     }
 }

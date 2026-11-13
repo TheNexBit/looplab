@@ -640,6 +640,43 @@ il metro.
    doppio clic), "Mix originale"; il mix è salvato nel progetto.
 7. 🔜 Prova dell'utente con `scripts\00-prova-strumenti.cmd` (copia con dati, porta 1423 e nome suoi).
 
+## 19. Archivio unico e backup 🚧
+
+Avviata il 13/11/2026 con il via dell'utente, in un worktree a parte (`D:\sandbox\looplab-archivio`, ramo
+`archivio`, nato da `stems`: contiene anche la fase 18).
+
+**Obiettivo:** niente file sparsi. Tutto il lavoro dell'utente in un solo archivio, nelle cartelle standard di
+Windows, con backup automatici a rotazione. Il punto di vista è quello di chi installa l'app: non deve scegliere
+nulla, e sa sempre dove sono i backup.
+
+**Scelte (consigliate, decise senza domande come da accordo):**
+
+- **Un database SQLite** (`libreria.db`) al posto dei file JSON: progetti dei brani, diario, recenti e preferenze
+  (prima nel localStorage del WebView). Nessun `.looplab.json` accanto ai brani.
+- **Lavoro e cache separati**: il lavoro (`libreria.db`, `suoni\`) in `%APPDATA%\Looplab`; ciò che si rigenera
+  (cache, log, WebView, posizioni delle finestre) in `%LOCALAPPDATA%\Looplab`; i backup, visibili, in
+  `Documenti\Looplab\Backup`. Versione portable, sviluppo e prova-build: tutto sotto una sola cartella, stessa
+  struttura.
+- **Brano riconosciuto dal contenuto**: un'impronta (dimensione + inizio e fine del file) ritrova il progetto di un
+  brano spostato o rinominato.
+- **Backup**: copia sicura del database (`VACUUM INTO`, verificata con `integrity_check`) più i suoni. Automatico
+  all'avvio e a ogni cambio di giorno; ne restano 7 giornalieri, 4 settimanali e 12 mensili. Quelli manuali non si
+  cancellano mai. Prima di un ripristino, copia di sicurezza dello stato attuale. Seconda destinazione facoltativa
+  (es. un disco esterno).
+- **Archivio danneggiato** all'avvio: messo da parte e sostituito dall'ultimo backup sano, con avviso.
+- **Migrazione senza perdite**: i vecchi `diary.json`, `recent.json`, `projects\` e i `.looplab.json` accanto ai brani
+  vengono importati e poi spostati (non cancellati) in `Backup\Migrazione <data>`.
+- La disinstallazione non tocca mai libreria e backup.
+
+**Passi:**
+
+1. 🚧 Cartelle standard (`paths.rs`) e database con schema versionato.
+2. Progetti, recenti, diario e preferenze nel database; impronta dei brani.
+3. Migrazione dei vecchi file.
+4. Backup automatici a rotazione, seconda destinazione, ripristino, recupero dell'archivio danneggiato.
+5. Interfaccia: Impostazioni → Dati, sezione Archivio e backup (cartelle, elenco backup, Backup ora, Ripristina).
+6. Prova dell'utente insieme alla fase 18.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

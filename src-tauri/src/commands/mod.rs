@@ -2,6 +2,7 @@
 //! Their TypeScript types are generated into `src/lib/bindings.ts` by tauri-specta.
 
 mod app;
+mod archive;
 mod click_sounds;
 mod data;
 mod error;
@@ -60,6 +61,14 @@ pub fn builder() -> Builder<tauri::Wry> {
             library::default_project,
             library::practice_diary,
             library::record_practice,
+            library::load_prefs,
+            library::set_pref,
+            library::import_prefs,
+            archive::archive_info,
+            archive::backup_now,
+            archive::restore_backup,
+            archive::set_backup_mirror,
+            archive::show_archive_folder,
             sound::set_eq,
             sound::set_channel_mode,
             sound::eq_response,
@@ -88,11 +97,6 @@ pub fn builder() -> Builder<tauri::Wry> {
             MidiTrigger,
             MediaKey
         ])
-}
-
-/// The app's data folder, as a command error if it cannot be found.
-fn data_dir(app: &AppHandle) -> Result<PathBuf, AppError> {
-    crate::paths::data_dir(app).map_err(AppError::internal)
 }
 
 /// The cache folder, as a command error if it cannot be found.

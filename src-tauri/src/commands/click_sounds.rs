@@ -15,8 +15,6 @@ use tauri::{AppHandle, State};
 use super::AppError;
 use crate::state::AppState;
 
-/// Folder of the imported sounds, inside the app's data folder.
-const FOLDER: &str = "suoni";
 /// Seconds of a file read to find its click: a long recording is not decoded to the end.
 const READ_SECONDS: f32 = 30.0;
 
@@ -48,7 +46,9 @@ impl From<SoundSlot> for ClickKind {
 }
 
 fn folder(app: &AppHandle) -> Result<PathBuf, AppError> {
-    let dir = super::data_dir(app)?.join(FOLDER);
+    let dir = crate::paths::places(app)
+        .map_err(AppError::internal)?
+        .sounds();
     fs::create_dir_all(&dir).map_err(AppError::internal)?;
     Ok(dir)
 }

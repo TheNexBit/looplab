@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { MIN_LOOP } from "@/features/player/limits";
 import { t } from "@/i18n";
-import type { MarkerKind, ProjectLocation } from "@/lib/bindings";
+import type { MarkerKind } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 
 /** Number of colours in the section palette (`--color-section-*` in theme.css). */
@@ -113,8 +113,6 @@ export function neighbourPoint(
 interface MarkersState {
   markers: MarkerData[];
   sections: SectionData[];
-  /** Where the project was last saved; null before the first save */
-  savedTo: ProjectLocation | null;
   addMarker: (kind: MarkerKind, time: number) => void;
   moveMarker: (id: string, time: number) => void;
   removeMarker: (id: string) => void;
@@ -132,14 +130,12 @@ interface MarkersState {
   setSectionMemo: (id: string, memo: string) => void;
   removeSection: (id: string) => void;
   replace: (markers: MarkerData[], sections: SectionData[]) => void;
-  setSavedTo: (location: ProjectLocation | null) => void;
 }
 
 /** Markers and sections of the open track. Saved by `features/markers/projectSync.ts`. */
 export const useMarkersStore = create<MarkersState>((set, get) => ({
   markers: [],
   sections: [],
-  savedTo: null,
 
   addMarker: (kind, time) =>
     set({ markers: [...get().markers, { id: newId(), time, kind, label: "" }] }),
@@ -191,5 +187,4 @@ export const useMarkersStore = create<MarkersState>((set, get) => ({
   removeSection: (id) => set({ sections: get().sections.filter((s) => s.id !== id) }),
 
   replace: (markers, sections) => set({ markers, sections, pendingSection: null }),
-  setSavedTo: (savedTo) => set({ savedTo }),
 }));

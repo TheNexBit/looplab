@@ -66,7 +66,6 @@ function SectionRow({ range }: { range: SectionRange }) {
 export function SectionList() {
   const sections = useMarkersStore((s) => s.sections);
   const markers = useMarkersStore((s) => s.markers);
-  const savedTo = useMarkersStore((s) => s.savedTo);
   const numbers = beatNumbers(markers);
   const sortedMarkers = [...markers].sort((a, b) => a.time - b.time);
 
@@ -125,10 +124,6 @@ export function SectionList() {
           </ul>
         )}
       </section>
-
-      {savedTo === "appData" && (
-        <p className="mt-auto px-2 text-xs text-fg-subtle">{t.markers.savedInAppData}</p>
-      )}
     </div>
   );
 }

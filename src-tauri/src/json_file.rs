@@ -1,4 +1,5 @@
-//! Small JSON files the app keeps for itself (recent list, window places, projects).
+//! Small JSON files: the window places this PC keeps, and the files of older versions read
+//! once to import them into the library.
 //!
 //! Every write is atomic (temporary file + rename): a crash or power cut never leaves
 //! a half-written file behind.

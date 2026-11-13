@@ -121,8 +121,7 @@ export function syncProject(): () => void {
     if (key === lastSaved) return;
     lastSaved = key;
     const result = await commands.saveProject(path, toFile(data));
-    if (result.status === "ok") useMarkersStore.getState().setSavedTo(result.data);
-    else usePlayerStore.getState().reportError(path, result.error);
+    if (result.status === "error") usePlayerStore.getState().reportError(path, result.error);
   };
 
   const schedule = () => {
@@ -139,13 +138,11 @@ export function syncProject(): () => void {
     writable = false;
     applying = true;
     await previous;
-    useMarkersStore.getState().setSavedTo(null);
     const [result, fallback] = await Promise.all([commands.loadProject(path), projectDefaults()]);
     if (track !== path) return;
     if (result.status === "ok") {
       const duration = usePlayerStore.getState().track?.duration ?? 0;
-      apply(result.data ? fromFile(result.data.project, duration) : fallback);
-      if (result.data) useMarkersStore.getState().setSavedTo(result.data.location);
+      apply(result.data ? fromFile(result.data, duration) : fallback);
       writable = true;
     } else {
       apply(fallback);

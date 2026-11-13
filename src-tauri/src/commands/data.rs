@@ -37,7 +37,7 @@ pub fn log_ui_error(source: String, message: String) {
 }
 
 /// Opens Explorer on `path`: the file selected in its folder, or the folder itself.
-fn explore(path: &Path, select: bool) -> Result<(), AppError> {
+pub(super) fn explore(path: &Path, select: bool) -> Result<(), AppError> {
     let mut command = Command::new("explorer");
     if select {
         // Explorer wants the quotes around the path only, which normal argument quoting breaks
@@ -63,8 +63,10 @@ pub fn show_log(app: AppHandle) -> Result<(), AppError> {
     if let Some(file) = log::file().filter(|file| file.is_file()) {
         return explore(file, true);
     }
-    let data = super::data_dir(&app)?;
-    let dir = log::dir(&data);
+    let local = crate::paths::places(&app)
+        .map_err(AppError::internal)?
+        .local;
+    let dir = log::dir(&local);
     std::fs::create_dir_all(&dir).map_err(AppError::internal)?;
     explore(&dir, false)
 }

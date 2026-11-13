@@ -1,10 +1,18 @@
 //! Single source of truth for where the app writes files.
 //!
-//! Development builds keep everything on the Dev Drive (`LOOPLAB_DEV_DATA_DIR`,
-//! set in `.cargo/config.toml`); release builds use the standard Windows folder,
-//! unless `LOOPLAB_DATA_DIR` is set (scripts/powershell/prova-build.ps1 uses it to test a release build
-//! without touching the real data). The portable version (a `portable.txt` file next to the
-//! exe) keeps everything in the `dati` folder beside it, so it can live on a USB stick.
+//! Three places, kept apart on purpose:
+//! - **user**: the player's work — the library database and the imported click sounds. This is
+//!   what a backup saves.
+//! - **local**: what this PC can rebuild or does not need to keep (cache, log, WebView2 data,
+//!   window places). Never backed up.
+//! - **backup**: the automatic and manual backups, where the user can find them.
+//!
+//! An installed copy uses the standard Windows folders: `%APPDATA%\Looplab`,
+//! `%LOCALAPPDATA%\Looplab` and `Documents\Looplab\Backup`. Development builds
+//! (`LOOPLAB_DEV_DATA_DIR`, set in `.cargo/config.toml`), a release build tested with
+//! `LOOPLAB_DATA_DIR` (scripts/powershell/prova-build.ps1) and the portable version (a
+//! `portable.txt` file next to the exe, data in the `dati` folder beside it) keep all three under
+//! one folder, with the same layout.
 
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -15,6 +23,43 @@ use tauri::AppHandle;
 const PORTABLE_MARK: &str = "portable.txt";
 /// Folder of the portable version's data, next to the exe.
 const PORTABLE_DATA: &str = "dati";
+/// Name of the app's folders in the standard Windows places.
+const APP_FOLDER: &str = "Looplab";
+
+/// Where everything goes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Places {
+    /// The player's work: library database and imported sounds
+    pub user: PathBuf,
+    /// Rebuildable or machine-only files: cache, log, WebView2, window places
+    pub local: PathBuf,
+    /// Backups
+    pub backup: PathBuf,
+    /// Where versions before the library kept their JSON files
+    pub legacy: PathBuf,
+}
+
+impl Places {
+    /// Everything under one folder: development, release tests and the portable version.
+    pub fn under(root: &Path) -> Self {
+        Self {
+            user: root.to_path_buf(),
+            local: root.to_path_buf(),
+            backup: root.join("backup"),
+            legacy: root.to_path_buf(),
+        }
+    }
+
+    /// Files Looplab can rebuild at any time: decoded audio, waveforms, stems, video proxies.
+    pub fn cache(&self) -> PathBuf {
+        self.local.join("cache")
+    }
+
+    /// The imported click sounds.
+    pub fn sounds(&self) -> PathBuf {
+        self.user.join("suoni")
+    }
+}
 
 /// The data folder of a portable copy whose exe sits in `exe_dir`, if it is one.
 fn portable_data_in(exe_dir: &Path) -> Option<PathBuf> {
@@ -34,39 +79,49 @@ pub fn portable_data() -> Option<&'static Path> {
     .as_deref()
 }
 
-/// Root folder for settings, caches and WebView2 data.
-pub fn data_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
+/// The single folder holding everything, when this copy does not use the Windows places.
+fn single_root() -> Option<PathBuf> {
     if let Some(dir) = std::env::var_os("LOOPLAB_DATA_DIR") {
-        return Ok(PathBuf::from(dir));
+        return Some(PathBuf::from(dir));
     }
     if let Some(dir) = portable_data() {
-        return Ok(dir.to_path_buf());
+        return Some(dir.to_path_buf());
     }
     #[cfg(debug_assertions)]
-    {
-        let _ = app;
-        Ok(PathBuf::from(env!("LOOPLAB_DEV_DATA_DIR")))
-    }
+    return Some(PathBuf::from(env!("LOOPLAB_DEV_DATA_DIR")));
     #[cfg(not(debug_assertions))]
-    {
-        use tauri::Manager;
-        app.path().app_local_data_dir()
+    None
+}
+
+/// The folders of this copy.
+pub fn places(app: &AppHandle) -> tauri::Result<Places> {
+    if let Some(root) = single_root() {
+        return Ok(Places::under(&root));
     }
+    use tauri::Manager;
+    let path = app.path();
+    Ok(Places {
+        user: path.data_dir()?.join(APP_FOLDER),
+        local: path.local_data_dir()?.join(APP_FOLDER),
+        backup: path.document_dir()?.join(APP_FOLDER).join("Backup"),
+        // Before the library, installed copies kept everything in Tauri's own app folder
+        legacy: path.app_local_data_dir()?,
+    })
 }
 
 /// Files Looplab can rebuild at any time: audio extracted from videos, video proxies.
 pub fn cache_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
-    Ok(data_dir(app)?.join("cache"))
+    Ok(places(app)?.cache())
 }
 
-/// Remembered window positions and sizes.
+/// Remembered window positions and sizes: they belong to this PC's screens.
 pub fn window_state_file(app: &AppHandle) -> tauri::Result<PathBuf> {
-    Ok(data_dir(app)?.join("windows.json"))
+    Ok(places(app)?.local.join("windows.json"))
 }
 
-/// WebView2 profile folder (cookies, cache, local storage of the UI).
+/// WebView2 profile folder (its own caches; the preferences live in the library).
 pub fn webview_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
-    Ok(data_dir(app)?.join("webview"))
+    Ok(places(app)?.local.join("webview"))
 }
 
 #[cfg(test)]
@@ -82,5 +137,14 @@ mod tests {
         assert_eq!(portable_data_in(&dir), None);
         fs::write(dir.join(PORTABLE_MARK), "").unwrap();
         assert_eq!(portable_data_in(&dir), Some(dir.join(PORTABLE_DATA)));
+    }
+
+    #[test]
+    fn one_folder_keeps_work_cache_and_backups_apart() {
+        let places = Places::under(Path::new("D:/data"));
+        assert_eq!(places.user, Path::new("D:/data"));
+        assert_eq!(places.cache(), Path::new("D:/data/cache"));
+        assert_eq!(places.backup, Path::new("D:/data/backup"));
+        assert_eq!(places.sounds(), Path::new("D:/data/suoni"));
     }
 }

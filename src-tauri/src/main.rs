@@ -1,17 +1,21 @@
 // Release builds have no console window on Windows
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod backup;
 mod cache;
 mod commands;
+mod db;
 mod diary;
 mod hash;
 mod json_file;
+mod legacy;
 mod log;
 mod media;
 mod media_keys;
 mod midi;
 mod paths;
 mod playback;
+mod prefs;
 mod project;
 mod recent;
 mod state;
@@ -93,9 +97,18 @@ fn main() {
             }
         })
         .setup(move |app| {
-            if let Ok(data_dir) = paths::data_dir(app.handle()) {
-                log::init(&data_dir, &app.package_info().version.to_string());
-            }
+            let places = paths::places(app.handle())?;
+            log::init(&places.local, &app.package_info().version.to_string());
+            // The library before any window: the UI reads its preferences from it at start
+            app.manage(db::Library::start(places));
+            // The day's automatic backup now, and again whenever the day changes
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                loop {
+                    backup::auto_if_due(&handle.state::<db::Library>());
+                    std::thread::sleep(std::time::Duration::from_secs(30 * 60));
+                }
+            });
             specta.mount_events(app);
             window::create_main(app.handle())?;
             window::create_video(app.handle())?;
