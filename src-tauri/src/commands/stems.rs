@@ -248,6 +248,52 @@ pub fn set_stem_levels(state: State<'_, AppState>, levels: Vec<f32>) -> Result<(
     Ok(())
 }
 
+/// The separated tracks saved as WAV files.
+#[derive(Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportedStems {
+    /// The song's folder
+    pub folder: String,
+    pub files: Vec<String>,
+}
+
+/// Saves the open song's separated tracks as WAV files in `Documents\Looplab\Tracce separate`
+/// (one folder per song), as they came out of the separation: no level, speed or EQ applied.
+#[tauri::command]
+#[specta::specta]
+pub async fn export_stems(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    request: StemsRequest,
+) -> Result<ExportedStems, AppError> {
+    let rate = state.engine()?.sample_rate();
+    let song = PathBuf::from(&request.path);
+    let stem = cache_stem(&app, &song, rate)?;
+    let root = crate::paths::places(&app)
+        .map_err(AppError::internal)?
+        .stems_out;
+    let files = tauri::async_runtime::spawn_blocking(move || {
+        let tracks = open_stems(&stem, rate)
+            .ok_or_else(|| AppError::new(ErrorKind::NotSeparated, "no separated tracks"))?;
+        let named: Vec<(&str, Pcm)> = SOURCES.iter().copied().zip(tracks).collect();
+        crate::stems_out::save(&root, &song, &named)
+            .map_err(|err| AppError::new(ErrorKind::ExportFailed, err))
+    })
+    .await
+    .map_err(AppError::internal)??;
+    Ok(ExportedStems {
+        folder: files
+            .first()
+            .and_then(|f| f.parent())
+            .map(|d| d.to_string_lossy().into_owned())
+            .unwrap_or_default(),
+        files: files
+            .iter()
+            .map(|f| f.to_string_lossy().into_owned())
+            .collect(),
+    })
+}
+
 /// The song as the model wants it: left and right at 44.1 kHz.
 fn to_model_rate(pcm: &Pcm, mut progress: impl FnMut(f32)) -> Result<[Vec<f32>; 2], AppError> {
     const CHUNK: usize = 8192;

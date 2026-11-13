@@ -62,6 +62,7 @@ export const it = {
       "Manca il modello per analizzare il tempo: esegui scripts\\10-modello-tempo.cmd.",
     stemModelMissing:
       "Manca il modello per separare gli strumenti: esegui scripts\\11-modello-strumenti.cmd.",
+    notSeparated: "Questo brano non è ancora separato: premi prima «Separa strumenti».",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",
@@ -83,6 +84,11 @@ export const it = {
     cancel: "Annulla",
     needsTrack: "Apri un brano per separarlo.",
     reset: "Mix originale",
+    export: "Esporta tracce",
+    exportHint:
+      "Salva le 6 tracce come file WAV (voce.wav, chitarra.wav…) in Documenti\\Looplab\\Tracce separate, una cartella per brano: pronte per Reaper. Come escono dalla separazione, senza livelli né velocità.",
+    exporting: "Salvataggio…",
+    exported: (folder: string) => `Tracce salvate in ${folder}`,
     resetHint: "Tutte le tracce al 100%, niente Mute né Solo: si sente il brano originale",
     mute: "Mute",
     solo: "Solo",

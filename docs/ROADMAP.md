@@ -687,6 +687,18 @@ nulla, e sa sempre dove sono i backup.
 **Note:** non ci sono ancora copie installate da altri; chi aveva usato una build di rilascio perderebbe solo le
 preferenze dell'interfaccia (il profilo WebView cambia cartella), non progetti, recenti e diario.
 
+## 20. Esporta tracce separate 🔜
+
+Chiesta dall'utente il 13/11/2026: le tracce separate stanno nella cache (file `.pcm` grezzi, si svuota da sola);
+servono come file veri, in un posto fisso e ordinato.
+
+1. ✅ Tasto «Esporta tracce» nel pannello Tracce: 6 WAV a 16 bit (`voce.wav`, `chitarra.wav`, `basso.wav`,
+   `batteria.wav`, `piano.wav`, `altro.wav`) come escono dalla separazione, senza livelli, velocità né EQ.
+2. ✅ Cartella fissa `Documenti\Looplab\Tracce separate\<brano>\` (in sviluppo e portable: `Tracce separate\` nella
+   cartella dei dati), con `origine.txt`; lo stesso brano riusa la sua cartella, un altro con lo stesso nome prende
+   «(2)». Finito il salvataggio, Esplora risorse si apre sui file.
+3. 🔜 Prova dell'utente con `scripts\01-dev.cmd`.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

@@ -146,6 +146,11 @@ export const commands = {
 	/**  Stops the separation in progress (it ends with `Cancelled`). */
 	cancelStems: () => __TAURI_INVOKE<void>("cancel_stems"),
 	/**
+	 *  Saves the open song's separated tracks as WAV files in `Documents\Looplab\Tracce separate`
+	 *  (one folder per song), as they came out of the separation: no level, speed or EQ applied.
+	 */
+	exportStems: (request: StemsRequest) => typedError<ExportedStems, AppError>(__TAURI_INVOKE("export_stems", { request })),
+	/**
 	 *  Levels of the separated tracks, 0..1, in the order of `StemsInfo::names`, mute and solo
 	 *  already applied. All at 1 plays the original song.
 	 */
@@ -375,6 +380,8 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 "tempoModelMissing" | 
 /**  The stem separation model is not installed (scripts/11-modello-strumenti.cmd) */
 "stemModelMissing" | 
+/**  The open song has no separated tracks to export */
+"notSeparated" | 
 /**  The library (libreria.db) could not be read or written */
 "library" | 
 /**  A backup could not be made or put back */
@@ -434,6 +441,13 @@ export type ExportRequest_Serialize = {
 	eq: EqSettings_Serialize,
 	channels: ChannelMode,
 	format: ExportFormat,
+};
+
+/**  The separated tracks saved as WAV files. */
+export type ExportedStems = {
+	/**  The song's folder */
+	folder: string,
+	files: string[],
 };
 
 /**  Gap trainer: bars heard, then bars silent. */

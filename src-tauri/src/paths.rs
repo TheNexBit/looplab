@@ -6,6 +6,7 @@
 //! - **local**: what this PC can rebuild or does not need to keep (cache, log, WebView2 data,
 //!   window places). Never backed up.
 //! - **backup**: the automatic and manual backups, where the user can find them.
+//! - **stems_out**: separated tracks saved as WAV files ("Export tracks"), beside the backups.
 //!
 //! An installed copy uses the standard Windows folders: `%APPDATA%\Looplab`,
 //! `%LOCALAPPDATA%\Looplab` and `Documents\Looplab\Backup`. Development builds
@@ -35,9 +36,14 @@ pub struct Places {
     pub local: PathBuf,
     /// Backups
     pub backup: PathBuf,
+    /// Separated tracks saved as WAV files, one folder per song
+    pub stems_out: PathBuf,
     /// Where versions before the library kept their JSON files
     pub legacy: PathBuf,
 }
+
+/// Folder of the separated tracks saved as WAV files.
+const STEMS_FOLDER: &str = "Tracce separate";
 
 impl Places {
     /// Everything under one folder: development, release tests and the portable version.
@@ -46,6 +52,7 @@ impl Places {
             user: root.to_path_buf(),
             local: root.to_path_buf(),
             backup: root.join("backup"),
+            stems_out: root.join(STEMS_FOLDER),
             legacy: root.to_path_buf(),
         }
     }
@@ -104,6 +111,7 @@ pub fn places(app: &AppHandle) -> tauri::Result<Places> {
         user: path.data_dir()?.join(APP_FOLDER),
         local: path.local_data_dir()?.join(APP_FOLDER),
         backup: path.document_dir()?.join(APP_FOLDER).join("Backup"),
+        stems_out: path.document_dir()?.join(APP_FOLDER).join(STEMS_FOLDER),
         // Before the library, installed copies kept everything in Tauri's own app folder
         legacy: path.app_local_data_dir()?,
     })

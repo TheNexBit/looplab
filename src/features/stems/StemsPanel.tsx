@@ -1,4 +1,5 @@
-import { RotateCcw, SplitSquareHorizontal } from "lucide-react";
+import { FileDown, RotateCcw, SplitSquareHorizontal } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Fader } from "@/components/ui/Fader";
@@ -8,7 +9,7 @@ import { cn } from "@/lib/cn";
 import { formatPercent } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 import { channelOf, STEM_LEVEL, STEM_ORDER, useStemsStore } from "@/stores/stems";
-import { cancelSeparation, separateStems } from "./actions";
+import { cancelSeparation, exportStems, separateStems } from "./actions";
 
 const s = t.stems;
 
@@ -146,9 +147,37 @@ export function StemsPanel() {
               </Button>
             </span>
           </Tooltip>
+          <ExportKey />
         </>
       )}
       <p className="mt-auto text-[10px] leading-snug text-fg-subtle">{s.licence}</p>
+    </div>
+  );
+}
+
+/** "Export tracks": the six tracks as WAV files, then their folder in Explorer. */
+function ExportKey() {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const run = async () => {
+    setBusy(true);
+    setMessage(null);
+    const result = await exportStems();
+    if (result?.status === "ok") setMessage(s.exported(result.data.folder));
+    else if (result) setMessage(t.errors[result.error.kind]);
+    setBusy(false);
+  };
+  return (
+    <div className="flex flex-col gap-1">
+      <Tooltip label={s.exportHint}>
+        <span className="self-start">
+          <Button variant="hardware" disabled={busy} onClick={() => void run()}>
+            <FileDown className="size-3.5" />
+            {busy ? s.exporting : s.export}
+          </Button>
+        </span>
+      </Tooltip>
+      {message && <p className="break-all text-xs text-fg-muted">{message}</p>}
     </div>
   );
 }

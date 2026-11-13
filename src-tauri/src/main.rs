@@ -19,6 +19,7 @@ mod prefs;
 mod project;
 mod recent;
 mod state;
+mod stems_out;
 mod voice;
 mod window;
 mod window_state;

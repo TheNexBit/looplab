@@ -59,6 +59,7 @@ export const en = {
       "The model for tempo analysis is missing: run scripts\\10-modello-tempo.cmd.",
     stemModelMissing:
       "The model for separating instruments is missing: run scripts\\11-modello-strumenti.cmd.",
+    notSeparated: "This track is not separated yet: press «Separate instruments» first.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
     internal: "Unexpected error.",
@@ -80,6 +81,11 @@ export const en = {
     cancel: "Cancel",
     needsTrack: "Open a song to separate it.",
     reset: "Original mix",
+    export: "Export tracks",
+    exportHint:
+      "Saves the 6 tracks as WAV files (voce.wav, chitarra.wav…) in Documents\\Looplab\\Tracce separate, one folder per song: ready for Reaper. As they come out of the separation, with no levels or speed.",
+    exporting: "Saving…",
+    exported: (folder: string) => `Tracks saved in ${folder}`,
     resetHint: "Every track at 100%, no Mute or Solo: the original song is heard",
     mute: "Mute",
     solo: "Solo",

@@ -88,6 +88,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             stems::load_stems,
             stems::separate_stems,
             stems::cancel_stems,
+            stems::export_stems,
             stems::set_stem_levels,
         ])
         .events(collect_events![

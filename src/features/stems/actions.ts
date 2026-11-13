@@ -32,6 +32,20 @@ export async function separateStems() {
   }
 }
 
+/**
+ * Saves the open song's separated tracks as WAV files (one folder per song) and shows them in
+ * Explorer. Gives the folder, or the error.
+ */
+export async function exportStems() {
+  const track = usePlayerStore.getState().track;
+  if (!track) return null;
+  const result = await commands.exportStems({ path: track.path });
+  if (result.status === "error") return result;
+  const first = result.data.files[0];
+  if (first) void commands.revealFile(first);
+  return result;
+}
+
 export function cancelSeparation() {
   void commands.cancelStems();
 }
