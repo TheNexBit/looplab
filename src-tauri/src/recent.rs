@@ -1,14 +1,14 @@
-//! The list of recently opened tracks, kept in the app data folder, with what the start
-//! screen shows about each one (when it was opened, its length, what its project holds).
+//! The list of recently opened tracks, kept in the library, with what the start screen shows
+//! about each one (when it was opened, its length, what its project holds).
 
 use std::path::Path;
-use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::{Deserialize, Serialize};
+use rusqlite::{Connection, params};
+use serde::Serialize;
 
-use crate::{json_file, project};
+use crate::db::{LibraryError, path_key};
+use crate::project;
 
-const FILE: &str = "recent.json";
 /// The start screen is mostly this list: room for a good number of tracks
 pub const LIMIT: usize = 30;
 
@@ -30,86 +30,77 @@ pub struct RecentFile {
     pub speed: Option<f64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Entry {
-    path: String,
-    #[serde(default)]
+/// Most recent first (entries of old versions without a time keep their order), at most `LIMIT`.
+pub fn list(conn: &Connection) -> Result<Vec<RecentFile>, LibraryError> {
+    let mut query = conn.prepare(
+        "SELECT recent.path, recent.opened_at, recent.duration, projects.data
+         FROM recent LEFT JOIN projects ON projects.path_key = recent.path_key
+         ORDER BY recent.opened_at IS NULL, recent.opened_at DESC, recent.rowid
+         LIMIT ?1",
+    )?;
+    let rows = query.query_map([LIMIT as i64], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, Option<f64>>(1)?,
+            row.get::<_, Option<f64>>(2)?,
+            row.get::<_, Option<String>>(3)?,
+        ))
+    })?;
+    let mut recent = Vec::new();
+    for row in rows {
+        let (path, opened_at, duration, data) = row?;
+        let file = Path::new(&path);
+        // A damaged project only loses its details here, never the entry
+        let saved = data.and_then(|json| project::parse(&json).ok());
+        recent.push(RecentFile {
+            name: file
+                .file_name()
+                .map_or_else(|| path.clone(), |n| n.to_string_lossy().into_owned()),
+            exists: file.is_file(),
+            opened_at,
+            duration,
+            saved_loops: saved.as_ref().map_or(0, |p| p.loops.len() as u32),
+            sections: saved.as_ref().map_or(0, |p| p.sections.len() as u32),
+            speed: saved.as_ref().map(|p| p.speed),
+            path,
+        });
+    }
+    Ok(recent)
+}
+
+/// Adds an entry as it was (used when importing the list of an older version).
+pub fn insert(
+    conn: &Connection,
+    path: &str,
     opened_at: Option<f64>,
-    #[serde(default)]
     duration: Option<f64>,
-}
-
-#[derive(Default, Serialize, Deserialize)]
-struct Stored {
-    #[serde(default)]
-    entries: Vec<Entry>,
-}
-
-fn read(data_dir: &Path) -> Vec<Entry> {
-    json_file::read_or_default::<Stored>(&data_dir.join(FILE)).entries
-}
-
-fn write(data_dir: &Path, entries: Vec<Entry>) -> std::io::Result<()> {
-    json_file::write(&data_dir.join(FILE), &Stored { entries })
-}
-
-fn now() -> f64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0.0, |d| d.as_secs_f64())
-}
-
-/// Most recent first, at most `LIMIT`.
-pub fn list(data_dir: &Path) -> Vec<RecentFile> {
-    read(data_dir)
-        .into_iter()
-        .map(|entry| {
-            let file = Path::new(&entry.path);
-            let exists = file.is_file();
-            // A damaged project only loses its details here, never the entry
-            let saved = if exists {
-                project::load(data_dir, file).ok().flatten().map(|(p, _)| p)
-            } else {
-                None
-            };
-            RecentFile {
-                name: file
-                    .file_name()
-                    .map_or_else(|| entry.path.clone(), |n| n.to_string_lossy().into_owned()),
-                exists,
-                opened_at: entry.opened_at,
-                duration: entry.duration,
-                saved_loops: saved.as_ref().map_or(0, |p| p.loops.len() as u32),
-                sections: saved.as_ref().map_or(0, |p| p.sections.len() as u32),
-                speed: saved.as_ref().map(|p| p.speed),
-                path: entry.path,
-            }
-        })
-        .collect()
+) -> rusqlite::Result<()> {
+    conn.execute(
+        "INSERT INTO recent (path_key, path, opened_at, duration) VALUES (?1, ?2, ?3, ?4)
+         ON CONFLICT (path_key) DO UPDATE SET path = excluded.path,
+             opened_at = excluded.opened_at,
+             duration = COALESCE(excluded.duration, recent.duration)",
+        params![path_key(path), path, opened_at, duration],
+    )?;
+    Ok(())
 }
 
 /// Moves `path` to the top of the list (Windows paths compare without case), noting the
 /// time and its `duration`.
-pub fn add(data_dir: &Path, path: &str, duration: Option<f64>) -> std::io::Result<()> {
-    let mut entries = read(data_dir);
-    entries.retain(|e| !e.path.eq_ignore_ascii_case(path));
-    entries.insert(
-        0,
-        Entry {
-            path: path.to_owned(),
-            opened_at: Some(now()),
-            duration,
-        },
-    );
-    entries.truncate(LIMIT);
-    write(data_dir, entries)
+pub fn add(conn: &Connection, path: &str, duration: Option<f64>) -> Result<(), LibraryError> {
+    insert(conn, path, Some(project::now()), duration)?;
+    conn.execute(
+        "DELETE FROM recent WHERE path_key NOT IN (
+             SELECT path_key FROM recent
+             ORDER BY opened_at IS NULL, opened_at DESC, rowid LIMIT ?1)",
+        [LIMIT as i64],
+    )?;
+    Ok(())
 }
 
-pub fn remove(data_dir: &Path, path: &str) -> std::io::Result<()> {
-    let mut entries = read(data_dir);
-    entries.retain(|e| !e.path.eq_ignore_ascii_case(path));
-    write(data_dir, entries)
+pub fn remove(conn: &Connection, path: &str) -> Result<(), LibraryError> {
+    conn.execute("DELETE FROM recent WHERE path_key = ?1", [path_key(path)])?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -117,49 +108,59 @@ mod tests {
     use std::fs;
 
     use super::*;
+    use crate::db::tests::memory;
     use crate::project::tests::temp_dir;
 
     #[test]
     fn newest_first_without_duplicates() {
-        let dir = temp_dir("recent-order");
-        add(&dir, r"D:\a.mp3", None).unwrap();
-        add(&dir, r"D:\b.mp3", None).unwrap();
-        add(&dir, r"d:\A.MP3", None).unwrap();
-        let names: Vec<String> = list(&dir).into_iter().map(|r| r.path).collect();
+        let conn = memory();
+        add(&conn, r"D:\a.mp3", None).unwrap();
+        add(&conn, r"D:\b.mp3", None).unwrap();
+        add(&conn, r"d:\A.MP3", None).unwrap();
+        let names: Vec<String> = list(&conn).unwrap().into_iter().map(|r| r.path).collect();
         assert_eq!(names, [r"d:\A.MP3", r"D:\b.mp3"]);
     }
 
     #[test]
     fn keeps_at_most_the_limit() {
-        let dir = temp_dir("recent-limit");
+        let conn = memory();
         for i in 0..LIMIT + 5 {
-            add(&dir, &format!(r"D:\song{i}.mp3"), None).unwrap();
+            add(&conn, &format!(r"D:\song{i}.mp3"), None).unwrap();
         }
-        let recent = list(&dir);
+        let recent = list(&conn).unwrap();
         assert_eq!(recent.len(), LIMIT);
         assert_eq!(recent[0].name, format!("song{}.mp3", LIMIT + 4));
+        let rows: i64 = conn
+            .query_row("SELECT COUNT(*) FROM recent", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(rows, LIMIT as i64);
     }
 
     #[test]
     fn reports_missing_files_and_removes_them() {
         let dir = temp_dir("recent-missing");
+        let conn = memory();
         let real = dir.join("real.wav");
         fs::write(&real, b"x").unwrap();
-        add(&dir, real.to_str().unwrap(), Some(42.0)).unwrap();
-        add(&dir, r"D:\nowhere\gone.mp3", None).unwrap();
-        let recent = list(&dir);
+        add(&conn, real.to_str().unwrap(), Some(42.0)).unwrap();
+        add(&conn, r"D:\nowhere\gone.mp3", None).unwrap();
+        let recent = list(&conn).unwrap();
         assert!(!recent[0].exists && recent[1].exists);
         assert_eq!(recent[1].duration, Some(42.0));
         assert!(recent[1].opened_at.is_some());
-        remove(&dir, r"D:\nowhere\gone.mp3").unwrap();
-        assert_eq!(list(&dir).len(), 1);
+        remove(&conn, r"D:\nowhere\gone.mp3").unwrap();
+        assert_eq!(list(&conn).unwrap().len(), 1);
     }
 
     #[test]
-    fn a_missing_or_broken_list_is_empty() {
-        let dir = temp_dir("recent-broken");
-        assert!(list(&dir).is_empty());
-        fs::write(dir.join(FILE), "{ broken").unwrap();
-        assert!(list(&dir).is_empty());
+    fn shows_what_the_project_holds() {
+        let conn = memory();
+        let project = project::Project {
+            speed: 0.8,
+            ..project::Project::default()
+        };
+        project::save(&conn, r"D:\x.mp3", &project).unwrap();
+        add(&conn, r"D:\x.mp3", None).unwrap();
+        assert_eq!(list(&conn).unwrap()[0].speed, Some(0.8));
     }
 }

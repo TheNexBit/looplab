@@ -6,6 +6,7 @@ import type { LoopOptions } from "@/stores/loop";
 import { type MarkerData, type SectionData, withEnds } from "@/stores/markers";
 import type { PlaylistStepData } from "@/stores/playlist";
 import type { SavedLoopData } from "@/stores/savedLoops";
+import type { StemChannelData } from "@/stores/stems";
 
 /** Project contents with every number guaranteed (JSON turns NaN into null). */
 export interface ProjectData {
@@ -27,6 +28,8 @@ export interface ProjectData {
   cents: number;
   eq: EqData;
   channels: ChannelMode;
+  /** Levels, Mute and Solo of the separated tracks */
+  stemMix: StemChannelData[];
 }
 
 const num = (value: number | null | undefined, fallback: number) =>
@@ -69,6 +72,7 @@ export function fromFile(file: Project_Serialize, duration = 0): ProjectData {
     cents: file.cents,
     eq: eqFromFile(file.eq),
     channels: file.channels,
+    stemMix: (file.stemMix ?? []).map((c) => ({ ...c, level: num(c.level, 1) })),
   };
 }
 

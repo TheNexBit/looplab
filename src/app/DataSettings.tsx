@@ -5,10 +5,11 @@ import { cacheFilesInUse } from "@/features/video/videoLoader";
 import { t } from "@/i18n";
 import { type AppInfo, type CacheUsage, commands } from "@/lib/bindings";
 import { formatBytes } from "@/lib/bytes";
+import { ArchiveSettings } from "./ArchiveSettings";
 
 const d = t.settings.data;
 
-/** Settings → Data: space taken by FFmpeg conversions, and the error log. */
+/** Settings → Data: library and backups, space taken by the cache, and the error log. */
 export function DataSettings() {
   const [usage, setUsage] = useState<CacheUsage[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export function DataSettings() {
 
   return (
     <div className="divide-y divide-border px-4 pt-1 pb-4">
+      <ArchiveSettings />
       <div className="py-3">
         <div className="flex items-center gap-4">
           <div className="flex-1">

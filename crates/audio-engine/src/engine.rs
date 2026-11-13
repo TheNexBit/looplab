@@ -18,6 +18,7 @@ use crate::metronome::{MetronomeSettings, Sequence};
 use crate::pattern::ClickKind;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
+use crate::stems::{StemLevels, Stems};
 use crate::tempo_map::TempoMap;
 use crate::tone::ToneSettings;
 use crate::voice::VoiceBank;
@@ -68,6 +69,10 @@ pub(crate) enum Command {
     SetChannelMode(ChannelMode),
     /// Level of the track alone (0..1), so the clicks can be heard over a loud mix
     SetTrackVolume(f32),
+    /// Separated tracks of the song (None: there are none)
+    SetStems(Option<Arc<Stems>>),
+    /// Their levels, mute and solo applied
+    SetStemLevels(StemLevels),
     SetClick(ClickSettings),
     /// Plays one click of a kind now, to hear its sound (also while paused)
     PreviewClick(ClickKind),
@@ -94,6 +99,7 @@ pub(crate) enum Garbage {
     Voice(#[allow(dead_code)] Arc<VoiceBank>),
     Samples(#[allow(dead_code)] Arc<ClickSamples>),
     TempoMap(#[allow(dead_code)] Arc<TempoMap>),
+    Stems(#[allow(dead_code)] Arc<Stems>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -254,6 +260,20 @@ impl Engine {
     /// keep their own.
     pub fn set_track_volume(&self, volume: f32) {
         self.send(Command::SetTrackVolume(volume.clamp(0.0, 1.0)));
+    }
+
+    /// The separated tracks of the open song, at the engine's rate; None removes them.
+    pub fn set_stems(&self, stems: Option<Arc<Stems>>) {
+        self.send(Command::SetStems(stems));
+    }
+
+    /// Levels of the separated tracks (0..1, mute and solo already applied). Untouched
+    /// (all at 1), the original song is heard.
+    pub fn set_stem_levels(&self, mut levels: StemLevels) {
+        for g in &mut levels.gains {
+            *g = g.clamp(0.0, 1.0);
+        }
+        self.send(Command::SetStemLevels(levels));
     }
 
     /// Tempo, metronome and count-in.

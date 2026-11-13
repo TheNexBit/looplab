@@ -3,7 +3,7 @@ import type { ExportSource } from "@/features/export/exportPlan";
 import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
-export type SidePanelTab = "sections" | "eq" | "practice";
+export type SidePanelTab = "sections" | "eq" | "practice" | "stems";
 export type Dialog = "palette" | "settings" | "about" | "diary" | "export";
 
 /** Width of the side panel, in CSS pixels. */
@@ -12,7 +12,7 @@ const WIDTH_KEY = "looplab.sidePanelWidth";
 /** Whether the side panel is open and which tab it shows: kept between sessions too */
 const OPEN_KEY = "looplab.sidePanelOpen";
 const TAB_KEY = "looplab.sidePanelTab";
-const TABS: readonly SidePanelTab[] = ["sections", "eq", "practice"];
+const TABS: readonly SidePanelTab[] = ["sections", "eq", "practice", "stems"];
 /** Width always left to the waveforms beside the panel. */
 const WAVEFORMS_MIN_WIDTH = 480;
 

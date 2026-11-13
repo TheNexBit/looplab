@@ -6,6 +6,7 @@ import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { EqPanel } from "@/features/eq/EqPanel";
 import { SectionList } from "@/features/markers/SectionList";
 import { PracticePanel } from "@/features/practice/PracticePanel";
+import { StemsPanel } from "@/features/stems/StemsPanel";
 import { t } from "@/i18n";
 import { SIDE_PANEL_WIDTH, type SidePanelTab, useUiStore } from "@/stores/ui";
 
@@ -13,6 +14,7 @@ const tabs: { id: SidePanelTab; label: string; content: ReactNode }[] = [
   { id: "sections", label: t.sidePanel.sections, content: <SectionList /> },
   { id: "practice", label: t.sidePanel.practice, content: <PracticePanel /> },
   { id: "eq", label: t.sidePanel.eq, content: <EqPanel /> },
+  { id: "stems", label: t.sidePanel.stems, content: <StemsPanel /> },
 ];
 
 export function SidePanel() {

@@ -70,9 +70,9 @@ export const commands = {
 	/**  Plays one click of a kind now, with its current sound, to hear it. */
 	previewSound: (slot: SoundSlot) => typedError<null, AppError>(__TAURI_INVOKE("preview_sound", { slot })),
 	/**  The saved project of a track, or `null` if it has none yet. */
-	loadProject: (track: string) => typedError<LoadedProject_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
-	/**  Saves the project of a track and says where it went. */
-	saveProject: (track: string, project: Project_Deserialize) => typedError<ProjectLocation, AppError>(__TAURI_INVOKE("save_project", { track, project })),
+	loadProject: (track: string) => typedError<Project_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
+	/**  Saves the project of a track. */
+	saveProject: (track: string, project: Project_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("save_project", { track, project })),
 	recentFiles: () => typedError<RecentFile_Serialize[], AppError>(__TAURI_INVOKE("recent_files")),
 	forgetRecent: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_recent", { track })),
 	/**
@@ -84,6 +84,18 @@ export const commands = {
 	practiceDiary: () => typedError<DiaryEntry[], AppError>(__TAURI_INVOKE("practice_diary")),
 	/**  Adds practice time (and the speed reached) to a track's day. */
 	recordPractice: (practice: DiaryEntry) => typedError<null, AppError>(__TAURI_INVOKE("record_practice", { practice })),
+	loadPrefs: () => typedError<StoredPrefs, AppError>(__TAURI_INVOKE("load_prefs")),
+	/**  Saves one preference (JSON text), or removes it with `null`. */
+	setPref: (key: string, value: string | null) => typedError<null, AppError>(__TAURI_INVOKE("set_pref", { key, value })),
+	/**  Imports, once, the preferences an older version kept in the WebView; returns them all. */
+	importPrefs: (values: { [key in string]: string }) => typedError<StoredPrefs, AppError>(__TAURI_INVOKE("import_prefs", { values })),
+	archiveInfo: () => typedError<ArchiveInfo_Serialize, AppError>(__TAURI_INVOKE("archive_info")),
+	backupNow: () => typedError<NewBackup_Serialize, AppError>(__TAURI_INVOKE("backup_now")),
+	/**  Puts a backup back (the UI then reloads its windows). */
+	restoreBackup: (name: string) => typedError<null, AppError>(__TAURI_INVOKE("restore_backup", { name })),
+	/**  Chooses a second backup folder, or stops using it with `null`. */
+	setBackupMirror: (dir: string | null) => typedError<null, AppError>(__TAURI_INVOKE("set_backup_mirror", { dir })),
+	showArchiveFolder: (folder: ArchiveFolder) => typedError<null, AppError>(__TAURI_INVOKE("show_archive_folder", { folder })),
 	setEq: (settings: EqSettings_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("set_eq", { settings })),
 	setChannelMode: (mode: ChannelMode) => typedError<null, AppError>(__TAURI_INVOKE("set_channel_mode", { mode })),
 	/**  Gain in dB of `settings` at each frequency, so the UI draws exactly what the engine does. */
@@ -120,6 +132,24 @@ export const commands = {
 	 *  are flagged `auto`, except the kept ones.
 	 */
 	analyzeTempo: (request: TempoRequest_Deserialize, onProgress: Channel<number | null>) => typedError<TempoMarker_Serialize[], AppError>(__TAURI_INVOKE("analyze_tempo", { request, onProgress })),
+	/**
+	 *  The open song's separated tracks if they are in the cache: the engine gets them and
+	 *  the answer names them; None when the song has not been separated yet.
+	 */
+	loadStems: (request: StemsRequest) => typedError<StemsInfo | null, AppError>(__TAURI_INVOKE("load_stems", { request })),
+	/**
+	 *  Separates the open song (a minute or so for five minutes of music), saves the tracks in
+	 *  the cache and gives them to the engine. `on_progress` receives 0..1. Stops, with
+	 *  `Cancelled`, when another song is opened or `cancel_stems` is called.
+	 */
+	separateStems: (request: StemsRequest, onProgress: Channel<number | null>) => typedError<StemsInfo, AppError>(__TAURI_INVOKE("separate_stems", { request, onProgress })),
+	/**  Stops the separation in progress (it ends with `Cancelled`). */
+	cancelStems: () => __TAURI_INVOKE<void>("cancel_stems"),
+	/**
+	 *  Levels of the separated tracks, 0..1, in the order of `StemsInfo::names`, mute and solo
+	 *  already applied. All at 1 plays the original song.
+	 */
+	setStemLevels: (levels: (number | null)[]) => typedError<null, AppError>(__TAURI_INVOKE("set_stem_levels", { levels })),
 };
 
 /** Events */
@@ -147,6 +177,62 @@ export type AppInfo = {
 	/**  Most space the decoded tracks may take, in bytes */
 	decodedLimit: number | null,
 };
+
+/**  Which folder to open in Explorer. */
+export type ArchiveFolder = "library" | "backups" | "mirror";
+
+/**  What the settings show about the library and its backups. */
+export type ArchiveInfo = ArchiveInfo_Serialize | ArchiveInfo_Deserialize;
+
+/**  What the settings show about the library and its backups. */
+export type ArchiveInfo_Deserialize = {
+	/**  The library file */
+	library: string,
+	libraryBytes: number | null,
+	backupDir: string,
+	/**  The second backup folder, if one was chosen */
+	mirrorDir?: string | null,
+	cacheDir: string,
+	/**  Newest first */
+	backups: BackupInfo[],
+	/**  The backup put back at start because the library was damaged */
+	recovered?: string | null,
+};
+
+/**  What the settings show about the library and its backups. */
+export type ArchiveInfo_Serialize = {
+	/**  The library file */
+	library: string,
+	libraryBytes: number | null,
+	backupDir: string,
+	/**  The second backup folder, if one was chosen */
+	mirrorDir: string | null,
+	cacheDir: string,
+	/**  Newest first */
+	backups: BackupInfo[],
+	/**  The backup put back at start because the library was damaged */
+	recovered: string | null,
+};
+
+/**  One backup, as the settings list it. */
+export type BackupInfo = {
+	/**  Folder name, also its id */
+	name: string,
+	kind: BackupKind,
+	/**  Local date, "2026-11-13" */
+	day: string,
+	/**  Local time, "09:56" */
+	time: string,
+	bytes: number | null,
+};
+
+export type BackupKind = 
+/**  Made by the app at start and when the day changes */
+"auto" | 
+/**  Asked for with "Backup now": never deleted */
+"manual" | 
+/**  Of the state before a restore */
+"safety";
 
 export type Band = {
 	enabled: boolean,
@@ -286,7 +372,13 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 /**  The track is still loading in the background */
 "stillLoading" | 
 /**  The beat-tracking model is not installed (scripts/10-modello-tempo.cmd) */
-"tempoModelMissing" | "internal";
+"tempoModelMissing" | 
+/**  The stem separation model is not installed (scripts/11-modello-strumenti.cmd) */
+"stemModelMissing" | 
+/**  The library (libreria.db) could not be read or written */
+"library" | 
+/**  A backup could not be made or put back */
+"backup" | "internal";
 
 /**  The exercises, each off when absent. */
 export type ExercisesRequest = ExercisesRequest_Serialize | ExercisesRequest_Deserialize;
@@ -350,18 +442,6 @@ export type GapRequest = {
 	playBars: number,
 	silentBars: number,
 	grow: boolean,
-};
-
-export type LoadedProject = LoadedProject_Serialize | LoadedProject_Deserialize;
-
-export type LoadedProject_Deserialize = {
-	project: Project_Deserialize,
-	location: ProjectLocation,
-};
-
-export type LoadedProject_Serialize = {
-	project: Project_Serialize,
-	location: ProjectLocation,
 };
 
 /**  Loop region and options, in seconds. */
@@ -448,6 +528,23 @@ export type MidiTrigger = {
 	number: number,
 };
 
+/**  A backup made on request (never deleted by the rotation). */
+export type NewBackup = NewBackup_Serialize | NewBackup_Deserialize;
+
+/**  A backup made on request (never deleted by the rotation). */
+export type NewBackup_Deserialize = {
+	backup: BackupInfo,
+	/**  Why the copy in the second backup folder failed, if it did */
+	mirrorError?: string | null,
+};
+
+/**  A backup made on request (never deleted by the rotation). */
+export type NewBackup_Serialize = {
+	backup: BackupInfo,
+	/**  Why the copy in the second backup folder failed, if it did */
+	mirrorError: string | null,
+};
+
 /**  One part of a sequence: a bar, its tempo and exercises, for some bars. */
 export type PartRequest = PartRequest_Serialize | PartRequest_Deserialize;
 
@@ -521,13 +618,6 @@ export type PlaylistStep = {
  */
 export type Project = Project_Serialize | Project_Deserialize;
 
-/**  Where a project file is kept. */
-export type ProjectLocation = 
-/**  Next to the track, so it travels with it */
-"besideTrack" | 
-/**  In the app data folder, because the track's folder is read-only */
-"appData";
-
 export type ProjectLoop = ProjectLoop_Serialize | ProjectLoop_Deserialize;
 
 export type ProjectLoop_Deserialize = {
@@ -582,6 +672,8 @@ export type Project_Deserialize = {
 	cents?: number,
 	eq?: EqSettings_Deserialize,
 	channels?: ChannelMode,
+	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
+	stemMix?: StemChannel[],
 };
 
 /**
@@ -620,6 +712,8 @@ export type Project_Serialize = {
 	cents: number,
 	eq: EqSettings_Serialize,
 	channels: ChannelMode,
+	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
+	stemMix: StemChannel[],
 };
 
 export type RecentFile = RecentFile_Serialize | RecentFile_Deserialize;
@@ -768,6 +862,35 @@ export type SpectrumRequest = {
 	channels: ChannelMode,
 	/**  Pitch shift in semitones (fractions are cents), so the keys match what is heard */
 	semitones: number | null,
+};
+
+/**  One separated track in the mixer: which one, its level and its keys. */
+export type StemChannel = {
+	/**  "vocals", "drums", "bass", "guitar", "piano", "other" */
+	name: string,
+	/**  0..1 */
+	level: number | null,
+	mute: boolean,
+	solo: boolean,
+};
+
+/**  The separated tracks of the open song, in the order the levels are given. */
+export type StemsInfo = {
+	/**  "drums", "bass", "other", "vocals", "guitar", "piano" */
+	names: string[],
+};
+
+export type StemsRequest = {
+	/**  The open song's file (the cache is keyed on it) */
+	path: string,
+};
+
+/**  The UI's preferences, read once when a window starts. */
+export type StoredPrefs = {
+	/**  JSON text by key */
+	values: { [key in string]: string },
+	/**  False until the preferences an older version kept in the WebView were imported */
+	imported: boolean,
 };
 
 /**

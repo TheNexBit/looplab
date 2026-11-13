@@ -11,6 +11,7 @@ import { usePracticeStore } from "@/stores/practice";
 import { useRecentStore } from "@/stores/recent";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
 import { useSettingsStore } from "@/stores/settings";
+import { useStemsStore } from "@/stores/stems";
 import { useViewStore } from "@/stores/view";
 import { fromFile, type ProjectData, toFile } from "./projectFile";
 
@@ -36,6 +37,7 @@ function snapshot(): ProjectData {
     cents,
     eq,
     channels,
+    stemMix: useStemsStore.getState().channels,
   };
 }
 
@@ -69,6 +71,7 @@ function apply(data: ProjectData) {
   player.setPitch(data.semitones, data.cents);
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
+  useStemsStore.getState().replace(data.stemMix);
   resume(data.position);
 }
 
@@ -118,8 +121,7 @@ export function syncProject(): () => void {
     if (key === lastSaved) return;
     lastSaved = key;
     const result = await commands.saveProject(path, toFile(data));
-    if (result.status === "ok") useMarkersStore.getState().setSavedTo(result.data);
-    else usePlayerStore.getState().reportError(path, result.error);
+    if (result.status === "error") usePlayerStore.getState().reportError(path, result.error);
   };
 
   const schedule = () => {
@@ -136,13 +138,11 @@ export function syncProject(): () => void {
     writable = false;
     applying = true;
     await previous;
-    useMarkersStore.getState().setSavedTo(null);
     const [result, fallback] = await Promise.all([commands.loadProject(path), projectDefaults()]);
     if (track !== path) return;
     if (result.status === "ok") {
       const duration = usePlayerStore.getState().track?.duration ?? 0;
-      apply(result.data ? fromFile(result.data.project, duration) : fallback);
-      if (result.data) useMarkersStore.getState().setSavedTo(result.data.location);
+      apply(result.data ? fromFile(result.data, duration) : fallback);
       writable = true;
     } else {
       apply(fallback);
@@ -190,6 +190,9 @@ export function syncProject(): () => void {
     }),
     useEqStore.subscribe((state, previous) => {
       if (state.settings !== previous.settings || state.channels !== previous.channels) schedule();
+    }),
+    useStemsStore.subscribe((state, previous) => {
+      if (state.channels !== previous.channels) schedule();
     }),
   ];
   void projectDefaults();

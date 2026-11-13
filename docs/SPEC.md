@@ -42,7 +42,7 @@ Non copiare nome, logo, icone o testi di Transcribe!: replichiamo le funzioni, n
 - Marker di battuta, marker liberi e **sezioni** con nome e colore (Intro, Strofa, Assolo…), aggiungibili anche al volo durante la riproduzione (tasto dedicato).
 - Clic su una sezione = loop di quella sezione. Navigazione marker precedente/successivo.
 - Lista sezioni in un pannello laterale, rinominabili e riordinabili.
-- Tutto salvato automaticamente in un **file progetto accanto al brano** (`<nomefile>.looplab.json`), così il lavoro è portabile.
+- Tutto salvato automaticamente nella **libreria** (`libreria.db`, fase 19): nessun file accanto ai brani; un brano spostato o rinominato ritrova il suo progetto dal contenuto. Backup automatici a rotazione in `Documenti\Looplab\Backup`.
 
 **EQ e isolamento (livello base)**
 
@@ -99,7 +99,7 @@ Ciò che serve a più feature va in `components/ui`, `lib` o `stores`, mai copia
 - Tauri CLI come dipendenza di sviluppo. Script PowerShell 7 in `scripts/`.
 - FFmpeg: una sola copia LGPL in `D:\tools\ffmpeg` scaricata da `scripts/05-fetch-ffmpeg.cmd`; in `src-tauri/binaries/` solo la copia per il pacchetto (esclusa da git).
 - Altri strumenti: chiedere prima, e vanno in `D:\tools`.
-- In sviluppo tutti i dati dell'app (store, stato finestre, cache proxy, WebView2) in `D:\.cache\looplab\dev-data`.
+- In sviluppo tutti i dati dell'app (libreria, backup, stato finestre, cache, WebView2) in `D:\.cache\looplab\dev-data`.
 - Git dal primo commit; remoto privato `TheNexBit/Looplab` creato con `gh` solo dopo ok.
 
 ### 5.3 Motore audio

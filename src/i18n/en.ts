@@ -1,5 +1,5 @@
 import type { CornersId, CustomColor, FontId, OverviewHeight } from "@/lib/appearance";
-import type { CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
+import type { BackupKind, CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
 import type { SETTING_CHOICES } from "@/stores/settings";
 
@@ -49,11 +49,16 @@ export const en = {
       "This file needs FFmpeg, which is not installed: run scripts\\05-fetch-ffmpeg.cmd.",
     ffmpegFailed: "FFmpeg could not convert the file.",
     projectFile:
-      "This track's .looplab.json file cannot be read or written: markers and sections are not saved.",
+      "This track's project cannot be read (maybe written by a newer Looplab): markers and sections are not saved.",
+    library:
+      "The library (libreria.db) cannot be read or written: your work is not saved. See Settings → Data.",
+    backup: "The backup failed: check the free space and the backup folder.",
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:
       "The model for tempo analysis is missing: run scripts\\10-modello-tempo.cmd.",
+    stemModelMissing:
+      "The model for separating instruments is missing: run scripts\\11-modello-strumenti.cmd.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
     internal: "Unexpected error.",
@@ -62,7 +67,33 @@ export const en = {
     sections: "Sections",
     eq: "EQ",
     practice: "Practice",
+    stems: "Tracks",
     resize: "Drag to widen or narrow the panel (double-click: normal width)",
+  },
+  stems: {
+    title: "Separated tracks",
+    intro:
+      "Splits the song into vocals, guitar, bass, drums, piano and the rest, each with its fader, Mute and Solo. Done once per song (about a minute for 5 minutes of music), then the tracks stay in the cache.",
+    separate: "Separate instruments",
+    separateHint: "Works out the tracks of the open song, once",
+    separating: "Separating",
+    cancel: "Cancel",
+    needsTrack: "Open a song to separate it.",
+    reset: "Original mix",
+    resetHint: "Every track at 100%, no Mute or Solo: the original song is heard",
+    mute: "Mute",
+    solo: "Solo",
+    levelHint: "Wheel: ±5%, double-click: 100%",
+    licence:
+      "HTDemucs model (Demucs v4): the licence of its weights is unclear, personal use only.",
+    names: {
+      vocals: "Vocals",
+      guitar: "Guitar",
+      bass: "Bass",
+      drums: "Drums",
+      piano: "Piano",
+      other: "Other",
+    } as Record<string, string>,
   },
   notes: {
     title: "Notes",
@@ -569,7 +600,6 @@ export const en = {
     tempoRightClick: "delete",
     removeTempoMarker: "Delete the tempo marker",
     sectionRightClick: "loop, export, colour, delete",
-    savedInAppData: "The track's folder is protected: the project is saved in the app's folder.",
   },
   eq: {
     title: "Equaliser",
@@ -799,7 +829,7 @@ export const en = {
       cache: "FFmpeg conversions",
       cacheHint: (limit: string) =>
         `Tracks already read (they reopen at once; ${limit} at most, the oldest go by themselves), extracted audio and videos made compatible. If they are needed again, Looplab makes them again by itself; the open track stays.`,
-      portable: "Portable version: the data lives in the «dati» folder next to Looplab.exe.",
+      portable: "Portable version: data and backups live in the «dati» folder next to Looplab.exe.",
       kinds: {
         decoded: "Tracks ready to play",
         audio: "Extracted audio",
@@ -811,6 +841,35 @@ export const en = {
       log: "Error log",
       logHint: "What went wrong and when. If you report a problem, attach the looplab.log file.",
       showLog: "Show the file",
+      archive: "Library",
+      archiveHint:
+        "All your work in one file: track projects, diary, recent tracks and settings. Imported click sounds sit beside it, in the «suoni» folder.",
+      showLibrary: "Show the file",
+      backups: "Backups",
+      backupsHint:
+        "An automatic one every day you use Looplab; the last 7 days, 4 weeks and 12 months are kept. Those made by hand stay forever. The cache is not needed: it rebuilds itself.",
+      backupNow: "Back up now",
+      showBackups: "Open folder",
+      restore: "Restore",
+      restoreConfirm: (when: string) =>
+        `Restore the backup of ${when}? The current work is first saved in a safety backup, then Looplab reloads.`,
+      restoreYes: "Restore",
+      restoreNo: "Cancel",
+      done: (when: string) => `Backup made: ${when}.`,
+      noBackups: "No backups yet.",
+      kindsBackup: {
+        auto: "automatic",
+        manual: "by hand",
+        safety: "safety",
+      } satisfies Record<BackupKind, string>,
+      mirror: "Second copy",
+      mirrorHint: "Every backup is also copied here, for example on an external drive.",
+      mirrorOff: "None",
+      mirrorChoose: "Choose folder",
+      mirrorStop: "Stop copying",
+      mirrorFailed: (detail: string) => `The second copy failed: ${detail}`,
+      recovered: (name: string) =>
+        `The library was damaged: it was set aside in the backup folder and replaced by the backup «${name}».`,
     },
   },
   about: {

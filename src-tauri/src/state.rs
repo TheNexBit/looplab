@@ -31,6 +31,10 @@ pub struct AppState {
     voice_language: Mutex<VoiceLanguage>,
     /// The beat-tracking network, loaded at the first tempo analysis (it takes a moment)
     tempo_analyzer: Mutex<Option<Arc<beat_detect::Analyzer>>>,
+    /// The stem separation network, loaded at the first separation
+    stem_separator: Mutex<Option<Arc<stem_split::Separator>>>,
+    /// Set to stop the separation in progress
+    stems_cancel: Mutex<Option<Arc<AtomicBool>>>,
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -116,6 +120,39 @@ impl AppState {
 
     pub fn track(&self) -> Option<Arc<Pcm>> {
         lock(&self.track).clone()
+    }
+
+    /// The stem separator, loading the model from `model` the first time.
+    pub fn stem_separator(
+        &self,
+        model: &std::path::Path,
+    ) -> Result<Arc<stem_split::Separator>, stem_split::NetworkError> {
+        let mut slot = lock(&self.stem_separator);
+        if let Some(separator) = slot.as_ref() {
+            return Ok(Arc::clone(separator));
+        }
+        let network = stem_split::Network::load(model)?;
+        let separator = Arc::new(stem_split::Separator::new(
+            network,
+            stem_split::SOURCES.len(),
+        ));
+        *slot = Some(Arc::clone(&separator));
+        Ok(separator)
+    }
+
+    /// A new separation: the one before it (if any) is told to stop.
+    pub fn new_stems_job(&self) -> Arc<AtomicBool> {
+        let flag = Arc::new(AtomicBool::new(false));
+        if let Some(old) = lock(&self.stems_cancel).replace(Arc::clone(&flag)) {
+            old.store(true, Ordering::Relaxed);
+        }
+        flag
+    }
+
+    pub fn cancel_stems_job(&self) {
+        if let Some(flag) = lock(&self.stems_cancel).as_ref() {
+            flag.store(true, Ordering::Relaxed);
+        }
     }
 
     /// The tempo analyzer, loading the model from `model` the first time.

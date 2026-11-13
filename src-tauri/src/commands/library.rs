@@ -1,63 +1,61 @@
-//! Project files, recently opened tracks and the practice diary.
+//! Track projects, recently opened tracks, practice diary and preferences: all in the library.
 
-use std::path::Path;
+use std::collections::BTreeMap;
 
 use serde::Serialize;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager, State};
 
 use super::{AppError, ErrorKind};
+use crate::db::{Library, LibraryError};
 use crate::diary::{self, DiaryEntry};
-use crate::paths;
-use crate::project::{self, Project, ProjectError, ProjectLocation};
+use crate::legacy;
+use crate::project::{self, Project};
 use crate::recent::{self, RecentFile};
+use crate::{log, prefs};
 
-impl From<ProjectError> for AppError {
-    fn from(err: ProjectError) -> Self {
-        Self::new(ErrorKind::ProjectFile, err)
+impl From<LibraryError> for AppError {
+    fn from(err: LibraryError) -> Self {
+        match err {
+            LibraryError::Invalid(_) => Self::new(ErrorKind::ProjectFile, err),
+            _ => Self::new(ErrorKind::Library, err),
+        }
     }
-}
-
-#[derive(Serialize, specta::Type)]
-pub struct LoadedProject {
-    pub project: Project,
-    pub location: ProjectLocation,
 }
 
 /// The saved project of a track, or `null` if it has none yet.
 #[tauri::command]
 #[specta::specta]
-pub fn load_project(app: AppHandle, track: String) -> Result<Option<LoadedProject>, AppError> {
-    let data_dir = super::data_dir(&app)?;
-    let loaded = project::load(&data_dir, Path::new(&track))?;
-    Ok(loaded.map(|(project, location)| LoadedProject { project, location }))
+pub fn load_project(
+    library: State<'_, Library>,
+    track: String,
+) -> Result<Option<Project>, AppError> {
+    let old_files = legacy::old_files_dir(library.places());
+    Ok(library.with(|conn| project::load(conn, &track, &old_files))?)
 }
 
-/// Saves the project of a track and says where it went.
+/// Saves the project of a track.
 #[tauri::command]
 #[specta::specta]
 pub fn save_project(
-    app: AppHandle,
+    library: State<'_, Library>,
     track: String,
     project: Project,
-) -> Result<ProjectLocation, AppError> {
-    let data_dir = super::data_dir(&app)?;
-    Ok(project::save(&data_dir, Path::new(&track), &project)?)
+) -> Result<(), AppError> {
+    Ok(library.with(|conn| project::save(conn, &track, &project))?)
 }
 
 /// Every day of practice of every track, oldest first.
 #[tauri::command]
 #[specta::specta]
-pub fn practice_diary(app: AppHandle) -> Result<Vec<DiaryEntry>, AppError> {
-    let data_dir = super::data_dir(&app)?;
-    Ok(diary::list(&data_dir))
+pub fn practice_diary(library: State<'_, Library>) -> Result<Vec<DiaryEntry>, AppError> {
+    Ok(library.with(diary::list)?)
 }
 
 /// Adds practice time (and the speed reached) to a track's day.
 #[tauri::command]
 #[specta::specta]
-pub fn record_practice(app: AppHandle, practice: DiaryEntry) -> Result<(), AppError> {
-    let data_dir = super::data_dir(&app)?;
-    diary::record(&data_dir, practice).map_err(AppError::internal)
+pub fn record_practice(library: State<'_, Library>, practice: DiaryEntry) -> Result<(), AppError> {
+    Ok(library.with(|conn| diary::record(conn, &practice))?)
 }
 
 /// A project with every default, for tracks opened for the first time.
@@ -70,21 +68,63 @@ pub fn default_project() -> Project {
 
 #[tauri::command]
 #[specta::specta]
-pub fn recent_files(app: AppHandle) -> Result<Vec<RecentFile>, AppError> {
-    let data_dir = super::data_dir(&app)?;
-    Ok(recent::list(&data_dir))
+pub fn recent_files(library: State<'_, Library>) -> Result<Vec<RecentFile>, AppError> {
+    Ok(library.with(recent::list)?)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn forget_recent(app: AppHandle, track: String) -> Result<(), AppError> {
-    let data_dir = super::data_dir(&app)?;
-    recent::remove(&data_dir, &track).map_err(AppError::internal)
+pub fn forget_recent(library: State<'_, Library>, track: String) -> Result<(), AppError> {
+    Ok(library.with(|conn| recent::remove(conn, &track))?)
 }
 
 /// Called after a track opens successfully; a failure here must not fail the opening.
 pub fn remember(app: &AppHandle, track: &str, duration: f64) {
-    if let Ok(data_dir) = paths::data_dir(app) {
-        let _ = recent::add(&data_dir, track, (duration > 0.0).then_some(duration));
+    let library = app.state::<Library>();
+    let duration = (duration > 0.0).then_some(duration);
+    if let Err(err) = library.with(|conn| recent::add(conn, track, duration)) {
+        log::error("library", &format!("recent list not updated: {err}"));
     }
+}
+
+/// The UI's preferences, read once when a window starts.
+#[derive(Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct StoredPrefs {
+    /// JSON text by key
+    pub values: BTreeMap<String, String>,
+    /// False until the preferences an older version kept in the WebView were imported
+    pub imported: bool,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn load_prefs(library: State<'_, Library>) -> Result<StoredPrefs, AppError> {
+    let (values, imported) = library.with(prefs::all)?;
+    Ok(StoredPrefs { values, imported })
+}
+
+/// Saves one preference (JSON text), or removes it with `null`.
+#[tauri::command]
+#[specta::specta]
+pub fn set_pref(
+    library: State<'_, Library>,
+    key: String,
+    value: Option<String>,
+) -> Result<(), AppError> {
+    Ok(library.with(|conn| prefs::set(conn, &key, value.as_deref()))?)
+}
+
+/// Imports, once, the preferences an older version kept in the WebView; returns them all.
+#[tauri::command]
+#[specta::specta]
+pub fn import_prefs(
+    library: State<'_, Library>,
+    values: BTreeMap<String, String>,
+) -> Result<StoredPrefs, AppError> {
+    let (values, imported) = library.with(|conn| {
+        prefs::import(conn, &values)?;
+        prefs::all(conn)
+    })?;
+    Ok(StoredPrefs { values, imported })
 }

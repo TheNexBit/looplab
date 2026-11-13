@@ -603,10 +603,90 @@ perfezionarla durante lo sviluppo):
 - Aspettativa realistica: tempo e battiti giusti quasi sempre; metrica e inizio battuta nei cambi frequenti sono il
   caso più difficile per qualunque programma, quindi proposti e da confermare.
 
+## 18. Separazione degli strumenti ✅
+
+Avviata il 10/11/2026 con il via dell'utente, in un worktree a parte (`D:\sandbox\looplab-stems`, ramo `stems`).
+
+**Obiettivo:** dal brano aperto, tracce separate di voce, batteria, basso, chitarra, piano e altro; ognuna con il suo
+fader, Mute e Solo, come le tracce di un DAW. Togli la chitarra e ci suoni sopra, tieni solo la batteria per capire
+il metro.
+
+**Scelte (consigliate, decise senza domande come da accordo):**
+
+- **Modello**: HTDemucs di Demucs v4.1 (Meta / Alexandre Défossez): codice MIT, il più documentato, versione a 4
+  tracce e a 6 (anche chitarra e piano). Portato in Rust come Beat This!: STFT in Rust, rete in ONNX con rten, niente
+  librerie native.
+- **Licenza dei pesi non chiara** (l'autore: addestrati anche su MUSDB, dati solo per ricerca; quelli a 6 tracce
+  probabilmente non commerciali). Va bene per sviluppo e uso personale; **prima di pubblicare** va chiarita o il
+  modello sostituito. Per questo il modello è un file a parte, intercambiabile.
+- **Una volta per brano, poi in cache**: la separazione su processore richiede qualche minuto; le tracce finiscono
+  nella cache come l'audio decodificato e la volta dopo si aprono subito. Mai in tempo reale.
+- **Nella catena prima dello stretch**: velocità, tonalità, EQ, loop valgono sul mix delle tracce scelte.
+- Solo processore (nessuna scheda video da richiedere); modello installato da script come quello del tempo, il
+  download su richiesta si decide con la pubblicazione.
+
+**Passi:**
+
+1. ✅ Ambiente Python di riferimento con Demucs 4.1; separazione di prova e tempi su CPU (109 s per 4:43 con
+   PyTorch).
+2. ✅ Esportazione ONNX della rete (senza STFT), prova con rten e confronto numero per numero con PyTorch.
+3. ✅ STFT/iSTFT, segmenti sovrapposti e ricomposizione come Demucs, in Rust: 40 s di brano uguali a Demucs entro
+   1,1·10⁻⁵, separati in 8,7 s.
+4. ✅ Separazione in background con avanzamento e Annulla; tracce a 16 bit nella cache dei brani (circa 54 MB per
+   traccia ogni 5 minuti), scritte a pezzi senza tenere il brano in memoria sei volte.
+5. ✅ Motore: mix delle tracce con livello, Mute e Solo prima dello stretch; finché nulla è toccato si sente
+   l'originale.
+6. ✅ Interfaccia: scheda "Tracce" del pannello laterale, "Separa strumenti", sei canali (S, M, fader con rotella e
+   doppio clic), "Mix originale"; il mix è salvato nel progetto.
+7. ✅ Provata dall'utente il 13/11/2026 (Mute e Solo, mix e originale, tracce ricaricate dalla cache, mix salvato
+   nel progetto). Unita in `main` insieme alla fase 19. Resta aperto: l'export usa il brano originale, non il mix
+   delle tracce.
+
+## 19. Archivio unico e backup ✅
+
+Avviata il 13/11/2026 con il via dell'utente, in un worktree a parte (`D:\sandbox\looplab-archivio`, ramo
+`archivio`, nato da `stems`: contiene anche la fase 18).
+
+**Obiettivo:** niente file sparsi. Tutto il lavoro dell'utente in un solo archivio, nelle cartelle standard di
+Windows, con backup automatici a rotazione. Il punto di vista è quello di chi installa l'app: non deve scegliere
+nulla, e sa sempre dove sono i backup.
+
+**Scelte (consigliate, decise senza domande come da accordo):**
+
+- **Un database SQLite** (`libreria.db`) al posto dei file JSON: progetti dei brani, diario, recenti e preferenze
+  (prima nel localStorage del WebView). Nessun `.looplab.json` accanto ai brani.
+- **Lavoro e cache separati**: il lavoro (`libreria.db`, `suoni\`) in `%APPDATA%\Looplab`; ciò che si rigenera
+  (cache, log, WebView, posizioni delle finestre) in `%LOCALAPPDATA%\Looplab`; i backup, visibili, in
+  `Documenti\Looplab\Backup`. Versione portable, sviluppo e prova-build: tutto sotto una sola cartella, stessa
+  struttura.
+- **Brano riconosciuto dal contenuto**: un'impronta (dimensione + inizio e fine del file) ritrova il progetto di un
+  brano spostato o rinominato.
+- **Backup**: copia sicura del database (`VACUUM INTO`, verificata con `integrity_check`) più i suoni. Automatico
+  all'avvio e a ogni cambio di giorno; ne restano 7 giornalieri, 4 settimanali e 12 mensili. Quelli manuali non si
+  cancellano mai. Prima di un ripristino, copia di sicurezza dello stato attuale. Seconda destinazione facoltativa
+  (es. un disco esterno).
+- **Archivio danneggiato** all'avvio: messo da parte e sostituito dall'ultimo backup sano, con avviso.
+- **Migrazione senza perdite**: i vecchi `diary.json`, `recent.json`, `projects\` e i `.looplab.json` accanto ai brani
+  vengono importati e poi spostati (non cancellati) in `Backup\File delle versioni precedenti`, con `origine.txt`
+  che dice da dove veniva ciascuno.
+- La disinstallazione non tocca mai libreria e backup (cartelle `Looplab`, non quelle col nome del pacchetto che
+  l'uninstaller di Tauri può cancellare).
+
+**Passi:**
+
+1. ✅ Cartelle standard (`paths.rs`) e database con schema versionato.
+2. ✅ Progetti, recenti, diario e preferenze nel database; impronta dei brani.
+3. ✅ Migrazione dei vecchi file (provata sui dati della copia "strumenti": progetto di The 12th Hour, recenti e
+   diario importati, file messi da parte).
+4. ✅ Backup automatici a rotazione, seconda destinazione, ripristino, recupero dell'archivio danneggiato.
+5. ✅ Interfaccia: Impostazioni → Dati, sezioni Libreria, Backup (Backup ora, Apri cartella, Ripristina) e
+   Seconda copia.
+6. ✅ Provata dall'utente il 13/11/2026 insieme alla fase 18, in una copia di prova con i suoi dati: import dei
+   vecchi file, Backup ora, Ripristina, backup di sicurezza e seconda copia funzionano. Unita in `main`.
+
+**Note:** non ci sono ancora copie installate da altri; chi aveva usato una build di rilascio perderebbe solo le
+preferenze dell'interfaccia (il profilo WebView cambia cartella), non progetti, recenti e diario.
+
 ## Dopo la prima versione
 
-- **Separazione AI degli strumenti** (voce, batteria, basso, altro) — **rimandata dall'utente a un secondo
-  momento**, non iniziare senza il suo via. Previsto: modello tipo HTDemucs (~300 MB) con ONNX Runtime, scaricati
-  solo su richiesta; nella catena prima dello stretch. Da decidere insieme: tracce calcolate una volta per brano e
-  salvate in cache (consigliato) o in tempo reale; processore o scheda video; comandi livello/Mute/Solo per
-  traccia; limite di spazio della cache; posizione in `dati\` nella versione portable.
+- (vuoto per ora)

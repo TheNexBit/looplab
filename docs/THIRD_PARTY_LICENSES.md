@@ -20,6 +20,8 @@ Questo file è mostrato in "Informazioni" e incluso nell'installer.
 | Tauri e i suoi plugin           | finestra dell'app              | MIT o Apache 2.0      | https://tauri.app                                        |
 | tauri-specta, specta            | tipi condivisi Rust/TypeScript | MIT                   | https://github.com/specta-rs                             |
 | serde, serde_json               | lettura e scrittura dei file   | MIT o Apache 2.0      | https://serde.rs                                         |
+| SQLite                          | libreria (libreria.db)         | pubblico dominio      | https://sqlite.org                                       |
+| rusqlite                        | SQLite da Rust                 | MIT                   | https://github.com/rusqlite/rusqlite                     |
 | React                           | interfaccia                    | MIT                   | https://react.dev                                        |
 | Radix UI                        | componenti dell'interfaccia    | MIT                   | https://www.radix-ui.com                                 |
 | Zustand                         | stato dell'interfaccia         | MIT                   | https://github.com/pmndrs/zustand                        |

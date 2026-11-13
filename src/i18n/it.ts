@@ -1,5 +1,5 @@
 import type { CornersId, CustomColor, FontId, OverviewHeight } from "@/lib/appearance";
-import type { CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
+import type { BackupKind, CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
 import type { SETTING_CHOICES } from "@/stores/settings";
 
@@ -52,11 +52,16 @@ export const it = {
       "Per questo file serve FFmpeg, che non è installato: esegui scripts\\05-fetch-ffmpeg.cmd.",
     ffmpegFailed: "FFmpeg non è riuscito a convertire il file.",
     projectFile:
-      "Il file .looplab.json di questo brano non si legge o non si scrive: marker e sezioni non vengono salvati.",
+      "Il progetto di questo brano non si legge (forse scritto da un Looplab più nuovo): marker e sezioni non vengono salvati.",
+    library:
+      "La libreria (libreria.db) non si legge o non si scrive: il lavoro non viene salvato. Guarda Impostazioni → Dati.",
+    backup: "Il backup non è riuscito: controlla lo spazio libero e la cartella dei backup.",
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     tempoModelMissing:
       "Manca il modello per analizzare il tempo: esegui scripts\\10-modello-tempo.cmd.",
+    stemModelMissing:
+      "Manca il modello per separare gli strumenti: esegui scripts\\11-modello-strumenti.cmd.",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
     internal: "Errore imprevisto.",
@@ -65,7 +70,33 @@ export const it = {
     sections: "Sezioni",
     eq: "EQ",
     practice: "Pratica",
+    stems: "Tracce",
     resize: "Trascina per allargare o stringere il pannello (doppio clic: larghezza normale)",
+  },
+  stems: {
+    title: "Tracce separate",
+    intro:
+      "Separa il brano in voce, chitarra, basso, batteria, piano e altro, ognuna con il suo fader, Mute e Solo. Si fa una volta per brano (circa un minuto ogni 5 minuti di musica), poi le tracce restano in cache.",
+    separate: "Separa strumenti",
+    separateHint: "Calcola le tracce del brano aperto, una volta sola",
+    separating: "Separazione in corso",
+    cancel: "Annulla",
+    needsTrack: "Apri un brano per separarlo.",
+    reset: "Mix originale",
+    resetHint: "Tutte le tracce al 100%, niente Mute né Solo: si sente il brano originale",
+    mute: "Mute",
+    solo: "Solo",
+    levelHint: "Rotella: ±5%, doppio clic: 100%",
+    licence:
+      "Modello HTDemucs (Demucs v4): la licenza dei pesi non è chiara, solo per uso personale.",
+    names: {
+      vocals: "Voce",
+      guitar: "Chitarra",
+      bass: "Basso",
+      drums: "Batteria",
+      piano: "Piano",
+      other: "Altro",
+    } as Record<string, string>,
   },
   notes: {
     title: "Note",
@@ -572,8 +603,6 @@ export const it = {
     tempoRightClick: "elimina",
     removeTempoMarker: "Elimina il marker di tempo",
     sectionRightClick: "loop, esporta, colore, elimina",
-    savedInAppData:
-      "La cartella del brano è protetta: il progetto è salvato nella cartella dell'app.",
   },
   eq: {
     title: "Equalizzatore",
@@ -805,7 +834,8 @@ export const it = {
       cache: "Conversioni di FFmpeg",
       cacheHint: (limit: string) =>
         `Brani già letti (si riaprono all'istante; al massimo ${limit}, i più vecchi si tolgono da soli), audio estratto e video resi compatibili. Se servono di nuovo, Looplab li rifà da solo; il brano aperto resta.`,
-      portable: "Versione portable: i dati stanno nella cartella «dati» accanto a Looplab.exe.",
+      portable:
+        "Versione portable: i dati e i backup stanno nella cartella «dati» accanto a Looplab.exe.",
       kinds: {
         decoded: "Brani pronti all'ascolto",
         audio: "Audio estratto",
@@ -817,6 +847,35 @@ export const it = {
       log: "Registro degli errori",
       logHint: "Cosa è andato storto e quando. Se segnali un problema, allega il file looplab.log.",
       showLog: "Mostra il file",
+      archive: "Libreria",
+      archiveHint:
+        "Tutto il tuo lavoro in un solo file: progetti dei brani, diario, recenti e impostazioni. I suoni del click importati stanno accanto, nella cartella «suoni».",
+      showLibrary: "Mostra il file",
+      backups: "Backup",
+      backupsHint:
+        "Uno automatico ogni giorno in cui usi Looplab; restano gli ultimi 7 giorni, 4 settimane e 12 mesi. Quelli fatti a mano restano per sempre. La cache non serve: si rifà da sola.",
+      backupNow: "Backup ora",
+      showBackups: "Apri cartella",
+      restore: "Ripristina",
+      restoreConfirm: (when: string) =>
+        `Ripristinare il backup del ${when}? Il lavoro di adesso viene prima salvato in un backup di sicurezza, poi Looplab si ricarica.`,
+      restoreYes: "Ripristina",
+      restoreNo: "Annulla",
+      done: (when: string) => `Backup fatto: ${when}.`,
+      noBackups: "Ancora nessun backup.",
+      kindsBackup: {
+        auto: "automatico",
+        manual: "a mano",
+        safety: "di sicurezza",
+      } satisfies Record<BackupKind, string>,
+      mirror: "Seconda copia",
+      mirrorHint: "Ogni backup viene copiato anche qui, per esempio su un disco esterno.",
+      mirrorOff: "Nessuna",
+      mirrorChoose: "Scegli cartella",
+      mirrorStop: "Non copiare più",
+      mirrorFailed: (detail: string) => `La seconda copia non è riuscita: ${detail}`,
+      recovered: (name: string) =>
+        `La libreria era danneggiata: è stata messa da parte nella cartella dei backup e sostituita dal backup «${name}».`,
     },
   },
   about: {

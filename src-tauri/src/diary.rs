@@ -1,15 +1,10 @@
 //! The practice diary: how long each track was practised each day, and how fast.
-//! Kept in the app data folder; the UI adds time while a track plays.
+//! Kept in the library; the UI adds time while a track plays.
 
-use std::path::Path;
-
+use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 
-use crate::json_file;
-
-const FILE: &str = "diary.json";
-/// Oldest entries are dropped past this many (years of daily practice).
-const LIMIT: usize = 5_000;
+use crate::db::{LibraryError, path_key};
 
 /// Practice of one track on one day.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
@@ -25,42 +20,49 @@ pub struct DiaryEntry {
     pub max_speed: f64,
 }
 
-#[derive(Default, Serialize, Deserialize)]
-struct Stored {
-    entries: Vec<DiaryEntry>,
-}
-
-pub fn list(data_dir: &Path) -> Vec<DiaryEntry> {
-    json_file::read_or_default::<Stored>(&data_dir.join(FILE)).entries
+/// Every entry, oldest first.
+pub fn list(conn: &Connection) -> Result<Vec<DiaryEntry>, LibraryError> {
+    let mut query =
+        conn.prepare("SELECT day, path, name, seconds, max_speed FROM diary ORDER BY day, rowid")?;
+    let entries = query
+        .query_map([], |row| {
+            Ok(DiaryEntry {
+                day: row.get(0)?,
+                path: row.get(1)?,
+                name: row.get(2)?,
+                seconds: row.get(3)?,
+                max_speed: row.get(4)?,
+            })
+        })?
+        .collect::<Result<_, _>>()?;
+    Ok(entries)
 }
 
 /// Adds practice time to the entry of that track and day (Windows paths compare without case).
-pub fn record(data_dir: &Path, practice: DiaryEntry) -> std::io::Result<()> {
-    let mut entries = list(data_dir);
-    match entries
-        .iter_mut()
-        .find(|e| e.day == practice.day && e.path.eq_ignore_ascii_case(&practice.path))
-    {
-        Some(entry) => {
-            entry.seconds += practice.seconds.max(0.0);
-            entry.max_speed = entry.max_speed.max(practice.max_speed);
-            entry.name = practice.name;
-        }
-        None => entries.push(DiaryEntry {
-            seconds: practice.seconds.max(0.0),
-            ..practice
-        }),
-    }
-    if entries.len() > LIMIT {
-        entries.drain(..entries.len() - LIMIT);
-    }
-    json_file::write(&data_dir.join(FILE), &Stored { entries })
+pub fn record(conn: &Connection, practice: &DiaryEntry) -> Result<(), LibraryError> {
+    conn.execute(
+        "INSERT INTO diary (day, path_key, path, name, seconds, max_speed)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+         ON CONFLICT (day, path_key) DO UPDATE SET
+             seconds = diary.seconds + excluded.seconds,
+             max_speed = max(diary.max_speed, excluded.max_speed),
+             name = excluded.name, path = excluded.path",
+        params![
+            practice.day,
+            path_key(&practice.path),
+            practice.path,
+            practice.name,
+            practice.seconds.max(0.0),
+            practice.max_speed
+        ],
+    )?;
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::project::tests::temp_dir;
+    use crate::db::tests::memory;
 
     fn practice(day: &str, path: &str, seconds: f64, max_speed: f64) -> DiaryEntry {
         DiaryEntry {
@@ -74,18 +76,20 @@ mod tests {
 
     #[test]
     fn adds_up_the_same_track_and_day() {
-        let dir = temp_dir("diary-sum");
-        record(&dir, practice("2026-11-06", r"D:\song.mp3", 30.0, 0.7)).unwrap();
-        record(&dir, practice("2026-11-06", r"d:\SONG.mp3", 45.0, 0.8)).unwrap();
-        record(&dir, practice("2026-11-07", r"D:\song.mp3", 10.0, 0.6)).unwrap();
-        let entries = list(&dir);
+        let conn = memory();
+        record(&conn, &practice("2026-11-06", r"D:\song.mp3", 30.0, 0.7)).unwrap();
+        record(&conn, &practice("2026-11-06", r"d:\SONG.mp3", 45.0, 0.8)).unwrap();
+        record(&conn, &practice("2026-11-07", r"D:\song.mp3", 10.0, 0.6)).unwrap();
+        record(&conn, &practice("2026-11-07", r"D:\song.mp3", -5.0, 0.5)).unwrap();
+        let entries = list(&conn).unwrap();
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].seconds, 75.0);
         assert_eq!(entries[0].max_speed, 0.8);
+        assert_eq!(entries[1].seconds, 10.0);
     }
 
     #[test]
-    fn a_missing_diary_is_empty() {
-        assert!(list(&temp_dir("diary-empty")).is_empty());
+    fn a_new_diary_is_empty() {
+        assert!(list(&memory()).unwrap().is_empty());
     }
 }
