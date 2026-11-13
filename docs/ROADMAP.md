@@ -638,7 +638,7 @@ il metro.
    l'originale.
 6. ✅ Interfaccia: scheda "Tracce" del pannello laterale, "Separa strumenti", sei canali (S, M, fader con rotella e
    doppio clic), "Mix originale"; il mix è salvato nel progetto.
-7. 🔜 Prova dell'utente con `scripts\00-prova-strumenti.cmd` (copia con dati, porta 1423 e nome suoi).
+7. 🔜 Prova dell'utente: insieme alla fase 19, con `scripts\00-prova-archivio.cmd`.
 
 ## 19. Archivio unico e backup 🚧
 
@@ -665,17 +665,27 @@ nulla, e sa sempre dove sono i backup.
   (es. un disco esterno).
 - **Archivio danneggiato** all'avvio: messo da parte e sostituito dall'ultimo backup sano, con avviso.
 - **Migrazione senza perdite**: i vecchi `diary.json`, `recent.json`, `projects\` e i `.looplab.json` accanto ai brani
-  vengono importati e poi spostati (non cancellati) in `Backup\Migrazione <data>`.
-- La disinstallazione non tocca mai libreria e backup.
+  vengono importati e poi spostati (non cancellati) in `Backup\File delle versioni precedenti`, con `origine.txt`
+  che dice da dove veniva ciascuno.
+- La disinstallazione non tocca mai libreria e backup (cartelle `Looplab`, non quelle col nome del pacchetto che
+  l'uninstaller di Tauri può cancellare).
 
 **Passi:**
 
-1. 🚧 Cartelle standard (`paths.rs`) e database con schema versionato.
-2. Progetti, recenti, diario e preferenze nel database; impronta dei brani.
-3. Migrazione dei vecchi file.
-4. Backup automatici a rotazione, seconda destinazione, ripristino, recupero dell'archivio danneggiato.
-5. Interfaccia: Impostazioni → Dati, sezione Archivio e backup (cartelle, elenco backup, Backup ora, Ripristina).
-6. Prova dell'utente insieme alla fase 18.
+1. ✅ Cartelle standard (`paths.rs`) e database con schema versionato.
+2. ✅ Progetti, recenti, diario e preferenze nel database; impronta dei brani.
+3. ✅ Migrazione dei vecchi file (provata sui dati della copia "strumenti": progetto di The 12th Hour, recenti e
+   diario importati, file messi da parte).
+4. ✅ Backup automatici a rotazione, seconda destinazione, ripristino, recupero dell'archivio danneggiato.
+5. ✅ Interfaccia: Impostazioni → Dati, sezioni Libreria, Backup (Backup ora, Apri cartella, Ripristina) e
+   Seconda copia.
+6. 🔜 Prova dell'utente insieme alla fase 18 con `scripts\00-prova-archivio.cmd` (dati copiati da quelli della prova
+   "strumenti", porta 1423; i `.looplab.json` accanto ai brani qui vengono solo copiati). Per unire in `main`:
+   annullare i commit della copia di prova (`1b45767` e quello "Trial copy" del ramo `archivio`), poi
+   `git merge --no-ff archivio`, test, rimozione dei worktree `looplab-stems` e `looplab-archivio`.
+
+**Note:** non ci sono ancora copie installate da altri; chi aveva usato una build di rilascio perderebbe solo le
+preferenze dell'interfaccia (il profilo WebView cambia cartella), non progetti, recenti e diario.
 
 ## Dopo la prima versione
 
