@@ -83,7 +83,7 @@ export const en = {
     reset: "Original mix",
     export: "Export tracks",
     exportHint:
-      "Saves the 6 tracks as WAV files (voce.wav, chitarra.wav…) in Documents\\Looplab\\Tracce separate, one folder per song: ready for Reaper. As they come out of the separation, with no levels or speed.",
+      "Saves the 6 tracks as WAV files (voce.wav, chitarra.wav…) in the folder chosen in Settings → Data (by default Documents\\Looplab\\Tracce separate), one folder per song: ready for Reaper. As they come out of the separation, with no levels or speed.",
     exporting: "Saving…",
     exported: (folder: string) => `Tracks saved in ${folder}`,
     resetHint: "Every track at 100%, no Mute or Solo: the original song is heard",
@@ -874,6 +874,11 @@ export const en = {
       mirrorChoose: "Choose folder",
       mirrorStop: "Stop copying",
       mirrorFailed: (detail: string) => `The second copy failed: ${detail}`,
+      stems: "Exported tracks",
+      stemsHint:
+        "Where «Export tracks» saves the WAV files of the separated tracks, one folder per song. You can choose another one, for example your Reaper projects folder.",
+      stemsDefault: "default",
+      stemsReset: "Default",
       recovered: (name: string) =>
         `The library was damaged: it was set aside in the backup folder and replaced by the backup «${name}».`,
     },

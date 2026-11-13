@@ -697,7 +697,9 @@ servono come file veri, in un posto fisso e ordinato.
 2. ✅ Cartella fissa `Documenti\Looplab\Tracce separate\<brano>\` (in sviluppo e portable: `Tracce separate\` nella
    cartella dei dati), con `origine.txt`; lo stesso brano riusa la sua cartella, un altro con lo stesso nome prende
    «(2)». Finito il salvataggio, Esplora risorse si apre sui file.
-3. 🔜 Prova dell'utente con `scripts\01-dev.cmd`.
+3. ✅ Cartella a scelta: Impostazioni → Dati, riga «Tracce esportate» (Apri cartella, Scegli cartella, Predefinita);
+   la scelta sta nella libreria, quindi finisce anche nei backup.
+4. 🔜 Prova dell'utente con `scripts\01-dev.cmd`.
 
 ## Dopo la prima versione
 

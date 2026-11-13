@@ -1,7 +1,8 @@
 //! "Export tracks": the separated tracks of a song saved as WAV files, ready for a DAW, in one
-//! fixed place — `Documents\Looplab\Tracce separate\<song>\voce.wav`, `chitarra.wav`… — and
-//! never in the cache, which empties itself. Each song folder has an `origine.txt` naming the
-//! song file it came from, so two songs with the same name never overwrite each other.
+//! place — by default `Documents\Looplab\Tracce separate\<song>\voce.wav`, `chitarra.wav`…,
+//! or a folder the user chose (kept in the library) — and never in the cache, which empties
+//! itself. Each song folder has an `origine.txt` naming the song file it came from, so two
+//! songs with the same name never overwrite each other.
 
 use std::fs;
 use std::io;
@@ -9,9 +10,30 @@ use std::path::{Path, PathBuf};
 
 use audio_engine::Pcm;
 use audio_engine::wav::{BitDepth, WavWriter};
+use rusqlite::Connection;
+
+use crate::db;
+use crate::paths::Places;
 
 /// Names the song's folder after its file.
 const ORIGIN: &str = "origine.txt";
+/// The folder chosen by the user, in the library's `meta` table.
+const CHOSEN: &str = "stems_out_dir";
+
+/// The folder chosen by the user, if any.
+pub fn chosen(conn: &Connection) -> rusqlite::Result<Option<PathBuf>> {
+    Ok(db::meta(conn, CHOSEN)?.map(PathBuf::from))
+}
+
+/// Where the tracks go: the chosen folder, or the default one.
+pub fn root(conn: &Connection, places: &Places) -> rusqlite::Result<PathBuf> {
+    Ok(chosen(conn)?.unwrap_or_else(|| places.stems_out.clone()))
+}
+
+/// Chooses the folder (or with `None` goes back to the default one).
+pub fn choose(conn: &Connection, dir: Option<&str>) -> rusqlite::Result<()> {
+    db::set_meta(conn, CHOSEN, dir)
+}
 /// Frames written at a time.
 const CHUNK: usize = 16_384;
 
@@ -147,6 +169,17 @@ mod tests {
         assert_eq!(song_folder(&root, &other), root.join("Song_ (2)"));
         save(&root, &other, &[("bass", tone(10))]).unwrap();
         assert_eq!(song_folder(&root, &other), root.join("Song_ (2)"));
+    }
+
+    #[test]
+    fn the_chosen_folder_wins_until_the_default_is_back() {
+        let conn = crate::db::tests::memory();
+        let places = Places::under(Path::new("D:/data"));
+        assert_eq!(root(&conn, &places).unwrap(), places.stems_out);
+        choose(&conn, Some("E:/Reaper/Tracce")).unwrap();
+        assert_eq!(root(&conn, &places).unwrap(), Path::new("E:/Reaper/Tracce"));
+        choose(&conn, None).unwrap();
+        assert_eq!(root(&conn, &places).unwrap(), places.stems_out);
     }
 
     #[test]

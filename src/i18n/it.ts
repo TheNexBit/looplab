@@ -86,7 +86,7 @@ export const it = {
     reset: "Mix originale",
     export: "Esporta tracce",
     exportHint:
-      "Salva le 6 tracce come file WAV (voce.wav, chitarra.wav…) in Documenti\\Looplab\\Tracce separate, una cartella per brano: pronte per Reaper. Come escono dalla separazione, senza livelli né velocità.",
+      "Salva le 6 tracce come file WAV (voce.wav, chitarra.wav…) nella cartella scelta in Impostazioni → Dati (di solito Documenti\\Looplab\\Tracce separate), una cartella per brano: pronte per Reaper. Come escono dalla separazione, senza livelli né velocità.",
     exporting: "Salvataggio…",
     exported: (folder: string) => `Tracce salvate in ${folder}`,
     resetHint: "Tutte le tracce al 100%, niente Mute né Solo: si sente il brano originale",
@@ -880,6 +880,11 @@ export const it = {
       mirrorChoose: "Scegli cartella",
       mirrorStop: "Non copiare più",
       mirrorFailed: (detail: string) => `La seconda copia non è riuscita: ${detail}`,
+      stems: "Tracce esportate",
+      stemsHint:
+        "Dove «Esporta tracce» salva i WAV delle tracce separate, una cartella per brano. Puoi sceglierne un'altra, per esempio quella dei progetti di Reaper.",
+      stemsDefault: "predefinita",
+      stemsReset: "Predefinita",
       recovered: (name: string) =>
         `La libreria era danneggiata: è stata messa da parte nella cartella dei backup e sostituita dal backup «${name}».`,
     },

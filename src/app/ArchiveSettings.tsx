@@ -1,5 +1,5 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { FolderOpen, HardDriveDownload, History, X } from "lucide-react";
+import { FolderOpen, HardDriveDownload, History, RotateCcw, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { t } from "@/i18n";
@@ -14,7 +14,7 @@ function when(backup: BackupInfo) {
   return `${day}/${m}/${y} ${backup.time}`;
 }
 
-/** Settings → Data: the library file, its backups (made, listed, restored) and the second copy. */
+/** Settings → Data: the library file, its backups (made, listed, restored), the second copy and where the exported tracks go. */
 export function ArchiveSettings() {
   const [info, setInfo] = useState<ArchiveInfo | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -69,6 +69,16 @@ export function ArchiveSettings() {
   const stopMirror = async () => {
     await commands.setBackupMirror(null);
     await refresh();
+  };
+
+  const setStemsFolder = async (dir: string | null) => {
+    await commands.setStemsFolder(dir);
+    await refresh();
+  };
+
+  const chooseStemsFolder = async () => {
+    const dir = await open({ directory: true, multiple: false });
+    if (dir) await setStemsFolder(dir);
   };
 
   return (
@@ -169,6 +179,31 @@ export function ArchiveSettings() {
           </>
         )}
         <Button variant="hardware" onClick={() => void chooseMirror()}>
+          <FolderOpen className="size-4" />
+          {d.mirrorChoose}
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-4 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-fg">{d.stems}</p>
+          <p className="text-xs text-fg-subtle">{d.stemsHint}</p>
+          <p className="mt-1 truncate font-mono text-xs text-fg-muted" title={info?.stemsDir ?? ""}>
+            {info?.stemsDir}
+            {info && !info.stemsDirChosen && ` (${d.stemsDefault})`}
+          </p>
+        </div>
+        <Button variant="hardware" onClick={() => void commands.showArchiveFolder("stems")}>
+          <FolderOpen className="size-4" />
+          {d.showBackups}
+        </Button>
+        {info?.stemsDirChosen && (
+          <Button variant="hardware" onClick={() => void setStemsFolder(null)}>
+            <RotateCcw className="size-4" />
+            {d.stemsReset}
+          </Button>
+        )}
+        <Button variant="hardware" onClick={() => void chooseStemsFolder()}>
           <FolderOpen className="size-4" />
           {d.mirrorChoose}
         </Button>

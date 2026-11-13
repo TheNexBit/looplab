@@ -6,6 +6,7 @@ use tauri::State;
 use super::{AppError, ErrorKind};
 use crate::backup::{self, BackupInfo, BackupKind};
 use crate::db::{Library, LibraryError};
+use crate::stems_out;
 
 /// What the settings show about the library and its backups.
 #[derive(Serialize, specta::Type)]
@@ -18,6 +19,10 @@ pub struct ArchiveInfo {
     /// The second backup folder, if one was chosen
     pub mirror_dir: Option<String>,
     pub cache_dir: String,
+    /// Where "Export tracks" saves the separated tracks
+    pub stems_dir: String,
+    /// True when the user chose that folder (false: the default one)
+    pub stems_dir_chosen: bool,
     /// Newest first
     pub backups: Vec<BackupInfo>,
     /// The backup put back at start because the library was damaged
@@ -36,7 +41,13 @@ pub fn archive_info(library: State<'_, Library>) -> Result<ArchiveInfo, AppError
     let mirror_dir = library
         .with(|conn| Ok(backup::mirror(conn)?))?
         .map(|dir| dir.to_string_lossy().into_owned());
+    let chosen = library.with(|conn| Ok(stems_out::chosen(conn)?))?;
     Ok(ArchiveInfo {
+        stems_dir_chosen: chosen.is_some(),
+        stems_dir: chosen
+            .unwrap_or_else(|| places.stems_out.clone())
+            .to_string_lossy()
+            .into_owned(),
         library_bytes: std::fs::metadata(&file).map_or(0.0, |m| m.len() as f64),
         library: file.to_string_lossy().into_owned(),
         backup_dir: places.backup.to_string_lossy().into_owned(),
@@ -82,6 +93,13 @@ pub fn set_backup_mirror(library: State<'_, Library>, dir: Option<String>) -> Re
     Ok(library.with(|conn| Ok(backup::set_mirror(conn, dir.as_deref())?))?)
 }
 
+/// Chooses where "Export tracks" saves, or goes back to the default folder with `null`.
+#[tauri::command]
+#[specta::specta]
+pub fn set_stems_folder(library: State<'_, Library>, dir: Option<String>) -> Result<(), AppError> {
+    Ok(library.with(|conn| Ok(stems_out::choose(conn, dir.as_deref())?))?)
+}
+
 /// Which folder to open in Explorer.
 #[derive(Clone, Copy, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -89,6 +107,7 @@ pub enum ArchiveFolder {
     Library,
     Backups,
     Mirror,
+    Stems,
 }
 
 #[tauri::command]
@@ -108,6 +127,11 @@ pub fn show_archive_folder(
             let dir = library
                 .with(|conn| Ok(backup::mirror(conn)?))?
                 .ok_or_else(|| AppError::internal("no second backup folder"))?;
+            std::fs::create_dir_all(&dir).map_err(AppError::internal)?;
+            super::data::explore(&dir, false)
+        }
+        ArchiveFolder::Stems => {
+            let dir = library.with(|conn| Ok(stems_out::root(conn, places)?))?;
             std::fs::create_dir_all(&dir).map_err(AppError::internal)?;
             super::data::explore(&dir, false)
         }

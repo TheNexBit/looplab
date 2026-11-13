@@ -68,6 +68,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             archive::backup_now,
             archive::restore_backup,
             archive::set_backup_mirror,
+            archive::set_stems_folder,
             archive::show_archive_folder,
             sound::set_eq,
             sound::set_channel_mode,

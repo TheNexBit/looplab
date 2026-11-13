@@ -95,6 +95,8 @@ export const commands = {
 	restoreBackup: (name: string) => typedError<null, AppError>(__TAURI_INVOKE("restore_backup", { name })),
 	/**  Chooses a second backup folder, or stops using it with `null`. */
 	setBackupMirror: (dir: string | null) => typedError<null, AppError>(__TAURI_INVOKE("set_backup_mirror", { dir })),
+	/**  Chooses where "Export tracks" saves, or goes back to the default folder with `null`. */
+	setStemsFolder: (dir: string | null) => typedError<null, AppError>(__TAURI_INVOKE("set_stems_folder", { dir })),
 	showArchiveFolder: (folder: ArchiveFolder) => typedError<null, AppError>(__TAURI_INVOKE("show_archive_folder", { folder })),
 	setEq: (settings: EqSettings_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("set_eq", { settings })),
 	setChannelMode: (mode: ChannelMode) => typedError<null, AppError>(__TAURI_INVOKE("set_channel_mode", { mode })),
@@ -146,8 +148,9 @@ export const commands = {
 	/**  Stops the separation in progress (it ends with `Cancelled`). */
 	cancelStems: () => __TAURI_INVOKE<void>("cancel_stems"),
 	/**
-	 *  Saves the open song's separated tracks as WAV files in `Documents\Looplab\Tracce separate`
-	 *  (one folder per song), as they came out of the separation: no level, speed or EQ applied.
+	 *  Saves the open song's separated tracks as WAV files in the chosen folder (by default
+	 *  `Documents\Looplab\Tracce separate`), one folder per song, as they came out of the
+	 *  separation: no level, speed or EQ applied.
 	 */
 	exportStems: (request: StemsRequest) => typedError<ExportedStems, AppError>(__TAURI_INVOKE("export_stems", { request })),
 	/**
@@ -184,7 +187,7 @@ export type AppInfo = {
 };
 
 /**  Which folder to open in Explorer. */
-export type ArchiveFolder = "library" | "backups" | "mirror";
+export type ArchiveFolder = "library" | "backups" | "mirror" | "stems";
 
 /**  What the settings show about the library and its backups. */
 export type ArchiveInfo = ArchiveInfo_Serialize | ArchiveInfo_Deserialize;
@@ -198,6 +201,10 @@ export type ArchiveInfo_Deserialize = {
 	/**  The second backup folder, if one was chosen */
 	mirrorDir?: string | null,
 	cacheDir: string,
+	/**  Where "Export tracks" saves the separated tracks */
+	stemsDir: string,
+	/**  True when the user chose that folder (false: the default one) */
+	stemsDirChosen: boolean,
 	/**  Newest first */
 	backups: BackupInfo[],
 	/**  The backup put back at start because the library was damaged */
@@ -213,6 +220,10 @@ export type ArchiveInfo_Serialize = {
 	/**  The second backup folder, if one was chosen */
 	mirrorDir: string | null,
 	cacheDir: string,
+	/**  Where "Export tracks" saves the separated tracks */
+	stemsDir: string,
+	/**  True when the user chose that folder (false: the default one) */
+	stemsDirChosen: boolean,
 	/**  Newest first */
 	backups: BackupInfo[],
 	/**  The backup put back at start because the library was damaged */

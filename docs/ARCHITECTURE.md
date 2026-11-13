@@ -92,7 +92,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     `backup_mirror`). `restore` chiude la libreria, fa il backup di sicurezza, rimette file e suoni e la riapre.
     Comandi in `commands/archive.rs`, interfaccia in `app/ArchiveSettings.tsx` (Impostazioni → Dati).
   - `stems_out.rs` (fase 20): «Esporta tracce» salva le tracce separate in WAV a 16 bit in `Places::stems_out`
-    (`Documenti\Looplab\Tracce separate\<brano>\voce.wav`…), una cartella per brano con `origine.txt`; comando
+    (`Documenti\Looplab\Tracce separate\<brano>\voce.wav`…), una cartella per brano con `origine.txt`; cartella scelta dall'utente in `meta` `stems_out_dir`
+    (`set_stems_folder`, riga «Tracce esportate» di `ArchiveSettings.tsx`); comando
     `export_stems` in `commands/stems.rs`, tasto in `features/stems/StemsPanel.tsx`.
   - `json_file.rs`: lettura e scrittura atomica (file temporaneo + rinomina) dei file JSON rimasti: posizioni
     delle finestre e lettura dei file delle versioni precedenti. I valori predefiniti del progetto vivono solo in

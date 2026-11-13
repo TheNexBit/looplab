@@ -257,8 +257,9 @@ pub struct ExportedStems {
     pub files: Vec<String>,
 }
 
-/// Saves the open song's separated tracks as WAV files in `Documents\Looplab\Tracce separate`
-/// (one folder per song), as they came out of the separation: no level, speed or EQ applied.
+/// Saves the open song's separated tracks as WAV files in the chosen folder (by default
+/// `Documents\Looplab\Tracce separate`), one folder per song, as they came out of the
+/// separation: no level, speed or EQ applied.
 #[tauri::command]
 #[specta::specta]
 pub async fn export_stems(
@@ -269,9 +270,8 @@ pub async fn export_stems(
     let rate = state.engine()?.sample_rate();
     let song = PathBuf::from(&request.path);
     let stem = cache_stem(&app, &song, rate)?;
-    let root = crate::paths::places(&app)
-        .map_err(AppError::internal)?
-        .stems_out;
+    let library = app.state::<crate::db::Library>();
+    let root = library.with(|conn| Ok(crate::stems_out::root(conn, library.places())?))?;
     let files = tauri::async_runtime::spawn_blocking(move || {
         let tracks = open_stems(&stem, rate)
             .ok_or_else(|| AppError::new(ErrorKind::NotSeparated, "no separated tracks"))?;
