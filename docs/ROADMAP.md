@@ -687,7 +687,7 @@ nulla, e sa sempre dove sono i backup.
 **Note:** non ci sono ancora copie installate da altri; chi aveva usato una build di rilascio perderebbe solo le
 preferenze dell'interfaccia (il profilo WebView cambia cartella), non progetti, recenti e diario.
 
-## 20. Esporta tracce separate 🔜
+## 20. Esporta tracce separate ✅
 
 Chiesta dall'utente il 13/11/2026: le tracce separate stanno nella cache (file `.pcm` grezzi, si svuota da sola);
 servono come file veri, in un posto fisso e ordinato.
@@ -699,7 +699,8 @@ servono come file veri, in un posto fisso e ordinato.
    «(2)». Finito il salvataggio, Esplora risorse si apre sui file.
 3. ✅ Cartella a scelta: Impostazioni → Dati, riga «Tracce esportate» (Apri cartella, Scegli cartella, Predefinita);
    la scelta sta nella libreria, quindi finisce anche nei backup.
-4. 🔜 Prova dell'utente con `scripts\01-dev.cmd`.
+4. ✅ Provata dall'utente il 13/11/2026 (primo avvio con la libreria e import dei vecchi dati, esportazione nella
+   cartella predefinita e in una scelta, ritorno alla predefinita). Da rifare quando capita: aprire un WAV in Reaper.
 
 ## Dopo la prima versione
 
