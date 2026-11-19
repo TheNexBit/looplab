@@ -135,7 +135,8 @@ export const useScoreStore = create<ScoreState>((set, get) => {
     fail: (error) => {
       // With a score on screen it stays: the problem shows as a notice over it
       if (get().link) set({ notice: error });
-      else set({ status: "error", error });
+      // With none, the empty panel opens with the message (a drop gives no other sign)
+      else set({ status: "error", error, asking: true });
     },
     clearNotice: () => set({ notice: null }),
 

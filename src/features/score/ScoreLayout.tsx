@@ -218,6 +218,21 @@ function FileMenu({ link }: { link: ProjectScore }) {
       </Tooltip>
       <DropdownMenu.Portal>
         <DropdownMenu.Content align="end" sideOffset={6} className={`${menuContent} w-64`}>
+          <DropdownMenu.Label className={menuLabel}>{t.score.staves}</DropdownMenu.Label>
+          <DropdownMenu.RadioGroup
+            value={link.staves}
+            onValueChange={(value) => store.setStaves(value as ProjectScore["staves"])}
+          >
+            <DropdownMenu.RadioItem value="tab" className={radio}>
+              {t.score.stavesTab}
+            </DropdownMenu.RadioItem>
+            <DropdownMenu.RadioItem value="notation" className={radio}>
+              {t.score.stavesNotation}
+            </DropdownMenu.RadioItem>
+            <DropdownMenu.RadioItem value="both" className={radio}>
+              {t.score.stavesBoth}
+            </DropdownMenu.RadioItem>
+          </DropdownMenu.RadioGroup>
           <DropdownMenu.Label className={menuLabel}>{t.score.layout}</DropdownMenu.Label>
           <DropdownMenu.RadioGroup
             value={link.layout}
@@ -298,17 +313,19 @@ function ScoreToolbar({ link }: { link: ProjectScore }) {
         <TrackMenu link={link} />
         {!collapsed && (
           <>
-            <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
-            <ChoiceKeys
-              label={t.score.staves}
-              value={link.staves}
-              choices={[
-                ["tab", t.score.stavesTab],
-                ["notation", t.score.stavesNotation],
-                ["both", t.score.stavesBoth],
-              ]}
-              onChange={store.setStaves}
-            />
+            <span className="hidden h-4 w-px shrink-0 bg-border lg:block" aria-hidden />
+            <div className="hidden lg:block">
+              <ChoiceKeys
+                label={t.score.staves}
+                value={link.staves}
+                choices={[
+                  ["tab", t.score.stavesTab],
+                  ["notation", t.score.stavesNotation],
+                  ["both", t.score.stavesBoth],
+                ]}
+                onChange={store.setStaves}
+              />
+            </div>
             <span className="hidden h-4 w-px shrink-0 bg-border xl:block" aria-hidden />
             <div className="hidden xl:block">
               <ChoiceKeys

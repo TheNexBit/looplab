@@ -153,6 +153,11 @@ export class ScoreEngine {
       if (this.destroyed) return;
       this.spans = this.readSpans();
       this.applySync(this.sync);
+      // alphaTab hands the score's sync points to its player only after this event: applied
+      // again once it is done, or a song reopened would follow the written tempo instead
+      setTimeout(() => {
+        if (!this.destroyed) this.applySync(this.sync);
+      }, 0);
       this.setPlaying(host.playing());
     });
     this.api.postRenderFinished.on(() => {
@@ -308,9 +313,12 @@ export class ScoreEngine {
 
   /** Moves the cursor to `seconds` of the recording (called on every display frame). */
   follow(seconds: number) {
-    if (!this.timeline || seconds === this.lastSent) return;
+    const timeline = this.timeline;
+    if (!timeline || seconds === this.lastSent) return;
     this.lastSent = seconds;
-    this.output.updatePosition(seconds * 1000);
+    // Past the score's end the cursor rests on its last beat (alphaTab would start over)
+    const end = timeline.seconds(timeline.endTick) - 0.005;
+    this.output.updatePosition(Math.min(seconds, end) * 1000);
   }
 
   /**
