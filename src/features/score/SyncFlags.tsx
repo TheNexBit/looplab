@@ -29,8 +29,11 @@ function landing(time: number, before: number, after: number): number {
   return Math.min(after - NEIGHBOUR_GAP, Math.max(before + NEIGHBOUR_GAP, landed));
 }
 
-const barName = (point: Pick<SyncPoint, "bar" | "occurrence" | "position">) =>
-  `${point.bar + 1}${point.occurrence > 0 ? `·${point.occurrence + 1}` : ""}${point.position >= 1 ? "|" : ""}`;
+/** "5", "5·2" (second time through), "fine 12" (where the last bar ends). */
+function barName(point: Pick<SyncPoint, "bar" | "occurrence" | "position">) {
+  const bar = `${point.bar + 1}${point.occurrence > 0 ? `·${point.occurrence + 1}` : ""}`;
+  return point.position >= 1 ? t.score.endOfBar(bar) : bar;
+}
 
 /**
  * The score's sync over the detailed waveform: a flag with the bar number at each sync point
@@ -65,7 +68,7 @@ export function SyncFlags({ area }: { area: RefObject<HTMLDivElement | null> }) 
         <div
           key={time}
           aria-hidden
-          className="absolute top-0 bottom-0 w-px bg-accent/15"
+          className="absolute top-0 bottom-0 w-px bg-fg-subtle/45"
           style={{ left: `${percentOfTrack(time, duration)}%` }}
         />
       ))}

@@ -708,6 +708,7 @@ export const en = {
     syncFlag: (bar: string) =>
       `Bar ${bar} — click: go there · drag: move (snaps to beats; Shift suspends it)`,
     syncFlagRightClick: "delete",
+    endOfBar: (bar: string) => `end ${bar}`,
     syncRemove: "Delete this point",
     syncRemoveFrom: "Delete this and the following",
     syncTap: "Tap the bars with the T key",

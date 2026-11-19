@@ -29,7 +29,10 @@ export function tapSync() {
     stopTapping();
     return;
   }
-  if (engine.canPin(point)) store.putSync(point);
+  // A tap that contradicts the sync (too early, say) is dropped and the same bar waits for the
+  // next T: nothing is skipped
+  if (!engine.canPin(point)) return;
+  store.putSync(point);
   const next = store.tapping + 1;
   store.setTapping(next < engine.bars.length ? next : null);
 }

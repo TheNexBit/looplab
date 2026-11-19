@@ -711,6 +711,7 @@ export const it = {
     syncFlag: (bar: string) =>
       `Battuta ${bar} — clic: vai lì · trascina: sposta (snap ai battiti; Maiusc lo sospende)`,
     syncFlagRightClick: "elimina",
+    endOfBar: (bar: string) => `fine ${bar}`,
     syncRemove: "Elimina questo punto",
     syncRemoveFrom: "Elimina questo e i successivi",
     syncTap: "Batti le battute col tasto T",

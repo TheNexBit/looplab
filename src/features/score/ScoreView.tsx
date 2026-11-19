@@ -186,7 +186,7 @@ export function ScoreView({ link }: { link: ProjectScore }) {
   return (
     <div
       ref={scrollRef}
-      className="score-scroll relative h-full overflow-auto overscroll-contain bg-stage"
+      className="score-scroll relative isolate h-full overflow-auto overscroll-contain bg-stage"
     >
       <div
         className="relative min-h-full cursor-pointer select-none"

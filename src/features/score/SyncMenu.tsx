@@ -157,9 +157,9 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
             </span>
           </DropdownMenu.Item>
           {synced && (
-            <div className="flex items-center gap-2 px-2.5 py-1.5">
+            <div className="flex items-center gap-1 px-2.5 py-1.5 whitespace-nowrap">
               <MoveHorizontal className="size-3.5 text-fg-muted" aria-hidden />
-              <span className="mr-auto">{t.score.syncShift}</span>
+              <span className="mr-auto pr-1">{t.score.syncShift}</span>
               {SHIFTS.map((step) => (
                 <button
                   key={step}
