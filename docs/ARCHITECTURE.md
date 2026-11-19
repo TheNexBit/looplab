@@ -119,6 +119,24 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   alla chiusura; non sovrascrive mai un file illeggibile.
 - `features/video/videoLoader.ts`, `detach.ts`: video del brano, proxy, finestra staccata.
 
+## Spartito (fase 21)
+
+- **Dati**: `scores.rs` copia il file collegato una sola volta in `spartiti\` accanto a `libreria.db`
+  (`Places::scores`), con nome dal contenuto `<size>-<fnv>.<ext>` (stesso file = stessa copia; l'originale non
+  si tocca). Il progetto del brano tiene `score` (file, nome, tracce, righi, impaginazione, segui, zoom, punti di
+  sincronia). All'avvio `scores::sweep` toglie le copie che nessun progetto nomina (più vecchie di un'ora) e i
+  `.parziale` rimasti. `backup.rs` copia `suoni\` e `spartiti\` in ogni backup (`USER_FOLDERS`); gli spartiti
+  invariati sono hard link al backup precedente dove il disco lo permette. Comandi: `import_score`,
+  `prepare_score` (apre solo quel file al protocollo asset).
+- **Vista**: `features/score/ScoreLayout.tsx` (pannello sopra le forme d'onda, barra, stati vuoto/caricamento/
+  errore), `ScoreView.tsx` (caricato solo quando serve: alphaTab pesa 1,2 MB), `scoreEngine.ts` (alphaTab in
+  modalità media esterni: non suona, segue la posizione del motore a ogni frame; disegno in un worker, colori dal
+  tema), `timeline.ts` (tick dello spartito ↔ secondi della registrazione attraverso i punti di sincronia: tra due
+  punti si segue il tempo scritto, prima/dopo il tratto più vicino). Clic su una nota = seek; trascinamento = loop
+  A/B (`useLoopStore.setRegion`), disegnato come fascia sopra il disegno con il resto sbiadito.
+- Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
+  importato con `?url` e finisce nel bundle.
+
 ## Pratica
 
 - `stores/practice.ts`: tempo del brano (salvato nel progetto) e contatore delle ripetizioni.

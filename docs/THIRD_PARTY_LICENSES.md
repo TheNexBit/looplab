@@ -31,6 +31,8 @@ Questo file è mostrato in "Informazioni" e incluso nell'installer.
 | Inter (font)                    | testi                          | SIL OFL 1.1           | https://github.com/rsms/inter                            |
 | JetBrains Mono (font)           | numeri e tempi                 | SIL OFL 1.1           | https://github.com/JetBrains/JetBrainsMono               |
 | Fontsource                      | pacchetti dei font             | MIT                   | https://fontsource.org                                   |
+| alphaTab 1.9                    | disegno di tab e spartiti      | MPL 2.0               | https://alphatab.net                                     |
+| Bravura (font, via alphaTab)    | simboli musicali               | SIL OFL 1.1           | https://github.com/steinbergmedia/bravura                |
 
 Le librerie Rust e JavaScript usate indirettamente hanno licenze compatibili (MIT, Apache 2.0, BSD, ISC,
 Zlib, MPL 2.0); l'elenco completo si ottiene da `Cargo.lock` e `package-lock.json`.
