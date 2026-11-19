@@ -2,6 +2,7 @@ import {
   AudioLines,
   ChevronDown,
   Download,
+  FileMusic,
   FolderOpen,
   Metronome,
   PanelRight,
@@ -24,6 +25,7 @@ import { useMetronomeStore } from "@/stores/metronome";
 import { useNotesStore } from "@/stores/notes";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
+import { useScoreStore } from "@/stores/score";
 import { useUiStore } from "@/stores/ui";
 import { toggleMini } from "./miniMode";
 
@@ -69,6 +71,37 @@ function RecentMenu() {
 }
 
 /** Undo / redo keys, dimmed when there is nothing to undo or redo. */
+/** Shows or hides the score panel; the lamp is lit while the song has a score linked. */
+function ScoreKey() {
+  const hasTrack = usePlayerStore((s) => s.track !== null);
+  const linked = useScoreStore((s) => s.link !== null);
+  const shown = useScoreStore((s) => (s.link ? !s.collapsed : s.asking));
+  const label = shown ? t.score.hide : t.score.show;
+  return (
+    <Tooltip label={label}>
+      <Button
+        variant="hardware"
+        disabled={!hasTrack}
+        aria-pressed={shown}
+        aria-label={label}
+        onClick={() => useScoreStore.getState().toggleShown()}
+        className={shown ? "text-accent" : undefined}
+      >
+        <FileMusic className="size-4" />
+        <span className="hidden xl:inline">{t.score.title}</span>
+        <span
+          aria-hidden
+          className={
+            linked
+              ? "size-1.5 rounded-full bg-loop shadow-[0_0_5px_var(--color-loop)]"
+              : "size-1.5 rounded-full bg-led-off"
+          }
+        />
+      </Button>
+    </Tooltip>
+  );
+}
+
 function HistoryKeys() {
   const canUndo = useHistoryStore((s) => s.past.length > 0);
   const canRedo = useHistoryStore((s) => s.future.length > 0);
@@ -151,6 +184,7 @@ export function TopBar() {
         </span>
       </div>
       <HistoryKeys />
+      <ScoreKey />
       <Tooltip label={t.export.title} shortcut="exportAudio">
         <Button
           variant="hardware"

@@ -744,3 +744,15 @@
 [data-radix-popper-content-wrapper]:has(> [data-hint]) {
   pointer-events: none;
 }
+
+/* Score (alphaTab): the bar playing is lit softly, the beat line glows in the theme's accent */
+.score-surface .at-cursor-bar {
+  background: color-mix(in srgb, var(--color-accent) 11%, transparent);
+  border-radius: 3px;
+}
+.score-surface .at-cursor-beat {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent);
+}

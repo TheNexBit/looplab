@@ -17,6 +17,7 @@ import { startDiary } from "@/features/practice/diaryRecorder";
 import { runPlaylist } from "@/features/practice/playlist";
 import { startTrainer } from "@/features/practice/trainer";
 import { startRemoteControl } from "@/features/remote/remoteControl";
+import { ScoreLayout } from "@/features/score/ScoreLayout";
 import { feedDetachedVideo } from "@/features/video/detach";
 import { VideoLayout } from "@/features/video/VideoLayout";
 import { followTrackVideo } from "@/features/video/videoLoader";
@@ -111,7 +112,9 @@ export function App() {
               <LoadingState />
             ) : hasTrack ? (
               <VideoLayout>
-                <WaveformPanel />
+                <ScoreLayout>
+                  <WaveformPanel />
+                </ScoreLayout>
               </VideoLayout>
             ) : (
               <EmptyState hovering={hovering} />

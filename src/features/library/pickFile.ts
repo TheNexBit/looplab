@@ -1,4 +1,5 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import { isScoreFile, linkScore } from "@/features/score/pickScore";
 import { t } from "@/i18n";
 import { commands } from "@/lib/bindings";
 import { usePlayerStore } from "@/stores/player";
@@ -14,9 +15,17 @@ export async function pickAndOpenFile() {
   if (path) await usePlayerStore.getState().open(path);
 }
 
-/** Opens the first supported file among those dropped on the window. */
+/**
+ * Opens the first supported file among those dropped on the window. A score file (Guitar Pro,
+ * MusicXML, PDF) dropped while a song is open is linked to that song instead.
+ */
 export function openDroppedFiles(paths: string[]) {
-  const { open, reportError } = usePlayerStore.getState();
+  const { open, reportError, track } = usePlayerStore.getState();
+  const score = track ? paths.find(isScoreFile) : undefined;
+  if (score) {
+    void linkScore(score);
+    return;
+  }
   const path = paths.find(isSupported);
   if (path) void open(path);
   else if (paths[0]) reportError(paths[0], { kind: "unsupportedFormat", detail: "" });

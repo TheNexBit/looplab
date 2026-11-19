@@ -10,6 +10,7 @@ import { usePlaylistStore } from "@/stores/playlist";
 import { usePracticeStore } from "@/stores/practice";
 import { useRecentStore } from "@/stores/recent";
 import { useSavedLoopsStore } from "@/stores/savedLoops";
+import { useScoreStore } from "@/stores/score";
 import { useSettingsStore } from "@/stores/settings";
 import { useStemsStore } from "@/stores/stems";
 import { useViewStore } from "@/stores/view";
@@ -38,6 +39,7 @@ function snapshot(): ProjectData {
     eq,
     channels,
     stemMix: useStemsStore.getState().channels,
+    score: useScoreStore.getState().link,
   };
 }
 
@@ -72,6 +74,7 @@ function apply(data: ProjectData) {
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
   useStemsStore.getState().replace(data.stemMix);
+  useScoreStore.getState().restore(data.score);
   resume(data.position);
 }
 
@@ -193,6 +196,9 @@ export function syncProject(): () => void {
     }),
     useStemsStore.subscribe((state, previous) => {
       if (state.channels !== previous.channels) schedule();
+    }),
+    useScoreStore.subscribe((state, previous) => {
+      if (state.link !== previous.link) schedule();
     }),
   ];
   void projectDefaults();

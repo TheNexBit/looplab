@@ -6,6 +6,7 @@ import type { LoopOptions } from "@/stores/loop";
 import { type MarkerData, type SectionData, withEnds } from "@/stores/markers";
 import type { PlaylistStepData } from "@/stores/playlist";
 import type { SavedLoopData } from "@/stores/savedLoops";
+import { type ProjectScore, SCORE_ZOOM } from "@/stores/score";
 import type { StemChannelData } from "@/stores/stems";
 
 /** Project contents with every number guaranteed (JSON turns NaN into null). */
@@ -30,6 +31,8 @@ export interface ProjectData {
   channels: ChannelMode;
   /** Levels, Mute and Solo of the separated tracks */
   stemMix: StemChannelData[];
+  /** The linked score (tab, notation or PDF) */
+  score: ProjectScore | null;
 }
 
 const num = (value: number | null | undefined, fallback: number) =>
@@ -73,6 +76,25 @@ export function fromFile(file: Project_Serialize, duration = 0): ProjectData {
     eq: eqFromFile(file.eq),
     channels: file.channels,
     stemMix: (file.stemMix ?? []).map((c) => ({ ...c, level: num(c.level, 1) })),
+    score: scoreOf(file),
+  };
+}
+
+/** The linked score of a file, with every number guaranteed and broken sync points left out. */
+function scoreOf(file: Project_Serialize): ProjectScore | null {
+  const score = file.score;
+  if (!score) return null;
+  return {
+    ...score,
+    zoom: num(score.zoom, SCORE_ZOOM.default),
+    sync: score.sync
+      .map((p) => ({
+        bar: p.bar,
+        occurrence: p.occurrence,
+        position: num(p.position, 0),
+        time: num(p.time, Number.NaN),
+      }))
+      .filter((p) => Number.isFinite(p.time)),
   };
 }
 

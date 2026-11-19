@@ -6,6 +6,7 @@ di alphaTab. Studio del **comportamento** (cosa vede e fa l'utente), non del cod
 ## 1. Come funziona Soundslice (analisi del comportamento)
 
 ### 1.1 Il modello: i syncpoint
+
 - Un **syncpoint** lega un punto dello spartito a un istante della registrazione. L'unità base è il **primo
   battito di una battuta**; si può scendere dentro la battuta agganciandosi a una nota ("guide notes") per i
   passaggi rubato.
@@ -18,6 +19,7 @@ di alphaTab. Studio del **comportamento** (cosa vede e fa l'utente), non del cod
   dopo l'ultimo un'"outro" (se ≥ 4 s).
 
 ### 1.2 Come si crea la sincronizzazione
+
 - **Tap**: si preme Play e si batte `T` su ogni inizio battuta.
 - **Primo e ultimo**: si mettono due punti, al secondo si scrive "end" → le battute in mezzo si spaziano uguali
   (ottimo per musica a metronomo).
@@ -29,6 +31,7 @@ di alphaTab. Studio del **comportamento** (cosa vede e fa l'utente), non del cod
 - Compensazione della **latenza** in millisecondi.
 
 ### 1.3 Il player
+
 - Cursore che segue la musica, note evidenziate. **Clic su una nota = salta lì**.
 - **Loop**: trascini sullo spartito, la selezione si aggancia a note, pause e stanghette; il resto si sbiadisce;
   bordi trascinabili; clic altrove = toglie il loop. Menu del loop: con conteggio, una volta sola, salva come clip.
@@ -42,6 +45,7 @@ di alphaTab. Studio del **comportamento** (cosa vede e fa l'utente), non del cod
   (per controllare la trascrizione).
 
 ### 1.4 Import
+
 - Guitar Pro 3–8 (.gp3 .gp4 .gp5 .gpx .gp), MusicXML, PowerTab, TuxGuitar, tab ASCII. Consigliano il .gp nativo
   (il MusicXML perde bending e armonici). Ignorano l'audio dentro i file GP8.
 - **PDF/foto**: lo scanner trasforma l'immagine in note (OMR). Limiti dichiarati per la tab: solo accordatura
@@ -50,6 +54,7 @@ di alphaTab. Studio del **comportamento** (cosa vede e fa l'utente), non del cod
   scansione si può anche esercitarsi **sull'immagine originale** (clic = salta, trascina = loop).
 
 ## 2. La base tecnica: alphaTab (MPL-2.0)
+
 - Legge Guitar Pro 3–8, MusicXML, Capella, alphaTex; disegna spartito e tab nel browser (quindi nella WebView).
 - **Modalità media esterni** (dalla 1.6, stabile 1.9): alphaTab non suona nulla, chiede a noi play/pausa/seek e
   riceve la posizione con `updatePosition(ms)` (consigliato ogni ≤ 50 ms). Interfaccia `IExternalMediaHandler`.
@@ -60,19 +65,21 @@ di alphaTab. Studio del **comportamento** (cosa vede e fa l'utente), non del cod
   `THIRD_PARTY_LICENSES.md`. Compatibile con qualsiasi licenza futura di Looplab.
 
 ## 3. Cosa ha già Looplab (vantaggio rispetto a partire da zero)
-| Soundslice | Looplab oggi |
-|---|---|
-| Rallentamento di qualità, loop precisi al campione | Motore Rust con stretch e loop A/B ✅ |
-| Righello battiti, Detect beats | Fase 17: Beat This! in Rust, battiti + battute + mappa del tempo ✅ |
-| Più tracce con volumi | Fase 18: separazione strumenti ✅ |
-| Manico illuminato | `src/features/fretboard` (manico e accordature) ✅ |
-| Metronomo con conteggio sul tempo vero | Click e count-in sulla mappa del tempo ✅ |
-| Forma d'onda con trascinamento | `src/features/waveform` ✅ |
+
+| Soundslice                                         | Looplab oggi                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------- |
+| Rallentamento di qualità, loop precisi al campione | Motore Rust con stretch e loop A/B ✅                               |
+| Righello battiti, Detect beats                     | Fase 17: Beat This! in Rust, battiti + battute + mappa del tempo ✅ |
+| Più tracce con volumi                              | Fase 18: separazione strumenti ✅                                   |
+| Manico illuminato                                  | `src/features/fretboard` (manico e accordature) ✅                  |
+| Metronomo con conteggio sul tempo vero             | Click e count-in sulla mappa del tempo ✅                           |
+| Forma d'onda con trascinamento                     | `src/features/waveform` ✅                                          |
 
 **Effetto a catena importante:** la tab contiene la metrica esatta di ogni battuta (7/4, 4/4…). Usata come vincolo
 dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4 di "The 12th Hour".
 
 ## 4. Decisioni di progetto
+
 1. **Il motore Rust resta il padrone del tempo.** alphaTab in modalità media esterni: il cursore legge la posizione
    del motore (che è già in tempo del brano, quindi la velocità non cambia nulla per la tab).
 2. **Modello dei punti come alphaTab** (`barIndex`, `occurrence`, `position`, `ms`) + flag reale/implicito come
@@ -82,8 +89,8 @@ dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4
    `D:\.cache\looplab\dev-data\spartiti\`), i punti stanno in `libreria.db`. Nessun file accanto ai brani; finisce
    nei backup.
 4. **Auto sync in due livelli**, entrambi locali e senza abbonamenti:
-   - *dai battiti*: allineamento (programmazione dinamica) delle battute della tab sui battiti della fase 17;
-   - *dalle note* (dopo): confronto delle altezze tra il synth della tab e l'audio (cromagramma + DTW in Rust).
+   - _dai battiti_: allineamento (programmazione dinamica) delle battute della tab sui battiti della fase 17;
+   - _dalle note_ (dopo): confronto delle altezze tra il synth della tab e l'audio (cromagramma + DTW in Rust).
 5. **PDF senza OMR**, ma non "solo visore": rilevo righi e stanghette nell'immagine (linee orizzontali e verticali,
    analisi semplice e affidabile su tab stampate) → ogni battuta del PDF diventa un riquadro cliccabile, si
    sincronizza come una tab vera, il loop si trascina sull'immagine. L'OMR resta un esperimento separato
@@ -92,6 +99,7 @@ dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4
 ## 5. Requisiti non negoziabili (dall'utente, 19/11/2026)
 
 ### 5.1 Interfaccia fantastica e comprensibile a colpo d'occhio
+
 - Una sola zona "Spartito" coerente col resto dell'app (stessi colori, font, comandi da DAW): niente finestre
   nuove con stili diversi. La tab si adatta a tema chiaro/scuro.
 - Gerarchia visiva chiara: la battuta che suona è la cosa più evidente (cursore + battuta evidenziata), il loop è
@@ -102,6 +110,7 @@ dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4
   valori da digitare. Tooltip su ogni comando con la scorciatoia.
 
 ### 5.2 Fluidità e prestazioni
+
 - Cursore a 60 fps legato al frame (requestAnimationFrame) con interpolazione tra le posizioni del motore: niente
   scatti anche se il motore manda la posizione ogni 50 ms.
 - alphaTab disegna **in un worker** e solo le parti visibili (rendering pigro); lo scorrimento della pagina non
@@ -111,6 +120,7 @@ dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4
 - Il synth di alphaTab e il suo soundfont **non** vengono caricati finché non servono (fase 24).
 
 ### 5.3 Dati salvati: niente sparso per il mondo
+
 - Quando l'utente collega una tab o un PDF a un brano, il file viene **copiato una volta** in
   `%APPDATA%\Looplab\spartiti\` (sviluppo: `D:\.cache\looplab\dev-data\spartiti\`) con nome dato dal contenuto
   (impronta), così due brani con lo stesso PDF non lo duplicano. L'originale dell'utente non viene mai toccato.
@@ -123,6 +133,7 @@ dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4
 - In Impostazioni → Dati la voce "Spartiti" mostra cartella e spazio occupato, come le altre.
 
 ## 6. Fasi proposte
+
 - **21 – Tab Guitar Pro nel player**: collega un .gp a un brano; tab/spartito con alphaTab; cursore sul motore;
   clic = salta; trascina = loop A/B agganciato a note e battute; impaginazione verticale / pagine / orizzontale;
   scelta della traccia (chitarra, basso…); tasti come sopra; sync iniziale "primo e ultimo punto" + sync dei GP8.
@@ -135,6 +146,7 @@ dall'analisi della fase 17, risolve proprio il problema aperto dell'intro in 7/4
   nel motore), auto sync dalle note, conteggio e velocità progressiva sui loop della tab.
 
 ## 7. Rischi
+
 - alphaTab dentro WebView2: da verificare prestazioni su tab lunghe (pagine da molti righi) e font/caratteri.
 - Ritornelli e salti (D.S., Coda): da gestire con `occurrence`; da provare su file reali.
 - PDF scansionati storti o di bassa qualità: il rilevamento di righi peggiora; serve correzione a mano.
