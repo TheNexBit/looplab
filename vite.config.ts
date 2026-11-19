@@ -1,6 +1,6 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath } from "node:url";
-import { alphaTab } from "@coderline/alphatab/vite";
+import { alphaTab } from "@coderline/alphatab-vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";

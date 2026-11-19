@@ -773,10 +773,21 @@ di `TempoFlags`, vale anche per le bandierine della sincronia).
   ogni cambio, es. l'intro in 7/4): metronomo, griglia e conteggio diventano giusti anche nei brani prog.
 - Annulla/Ripeti comprendono la sincronia; tutto si salva nel progetto del brano.
 
-## 23. Spartiti PDF 🚧
+## 23. Spartiti PDF ✅
 
 **Obiettivo:** un PDF (la tab stampata dei corsi, uno spartito) si usa come una tab Guitar Pro: segue la musica,
 le battute si cliccano, si sincronizza e ci si fa il loop sopra.
+
+**Fatto** (verificato dal collaudatore in due giri, 23/26 controlli Ok e 3 avvisi minori; provato dall'utente il
+19/11/2026 sull'Esercizio 10 JTC, 7/7 passi Ok): tutto il piano qui sotto. Dalle verifiche: le tab ora usano il
+motore SVG di alphaTab (quello a canvas perdeva il contesto su alcuni bending: "Melody Solo" non si disegnava); il
+PDF riaperto va subito sulla battuta della testina; le pagine lontane liberano la memoria; la ricerca delle battute
+lascia respirare l'interfaccia tra una pagina e l'altra; testi per i PDF illeggibili; il plugin Vite di alphaTab
+si importa dal suo pacchetto (`@coderline/alphatab-vite`).
+
+**Da perfezionare:** in riproduzione un PDF lungo costa ~20 % di un core in più del pannello chiuso (fluido, p95
+18 ms); la prima ricerca delle battute ha ancora uno scatto (max ~170 ms) una volta sola; 7 PDF su 27 del corso
+perdono 1-2 battute (una ne perde 10), da correggere col tasto destro.
 
 **Piano:**
 
