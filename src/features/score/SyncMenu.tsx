@@ -83,7 +83,7 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
                 synced ? "bg-loop shadow-[0_0_5px_var(--color-loop)]" : "animate-pulse bg-accent",
               )}
             />
-            {synced ? t.score.sync : t.score.unsynced}
+            {t.score.sync}
           </Button>
         </DropdownMenu.Trigger>
       </Tooltip>
