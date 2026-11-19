@@ -663,7 +663,7 @@ export const en = {
     hide: "Hide the score",
     emptyTitle: "Link a tab or a score to this song",
     emptyHint:
-      "Drop a Guitar Pro (.gp, .gp5, .gpx…) or MusicXML file here, or choose it from disk.",
+      "Drop a Guitar Pro (.gp, .gp5, .gpx…), MusicXML or PDF file here, or choose it from disk.",
     emptyNoTrack: "Open a song first: the score is linked to the open song.",
     emptySafe:
       "Looplab keeps a copy in its library (backed up): your file stays where it is, untouched.",
@@ -675,7 +675,6 @@ export const en = {
     loading: "Drawing the score…",
     failed: "This file cannot be read as a score.",
     failedHint: "Try saving it again from Guitar Pro or exporting it as MusicXML.",
-    pdfSoon: "PDFs come in the next phase: for now link a Guitar Pro or MusicXML file.",
     resize: "Drag to change the score's height",
     collapse: "Collapse",
     expand: "Expand",
@@ -725,6 +724,13 @@ export const en = {
     tempoFromScore: "Make the tempo map from the tab",
     tempoFromScoreHint:
       "Tempo and meter at every change (e.g. a 7/4 intro): metronome and grid become right",
+    pdfPage: (n: number) => `Page ${n}`,
+    pdfBar: (n: number) => `Bar ${n}`,
+    pdfSplit: "Split the bar here",
+    pdfMerge: "Merge with the next bar",
+    pdfRemove: "Not a bar",
+    detecting: (done: number, of: number) =>
+      `Looking for the bars in the PDF… page ${done} of ${of}`,
     syncFromFile: "Use the sync saved in the file",
     syncClear: "Clear the sync",
     clickHint: "Click a note: jump there · Drag over notes: loop",

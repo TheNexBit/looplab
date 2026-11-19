@@ -4,7 +4,7 @@ import { useLoopStore } from "./loop";
 import { type MarkerData, type SectionData, useMarkersStore } from "./markers";
 import { usePracticeStore } from "./practice";
 import { type SavedLoopData, useSavedLoopsStore } from "./savedLoops";
-import { type SyncPoint, useScoreStore } from "./score";
+import { type PdfBar, type SyncPoint, useScoreStore } from "./score";
 
 /** Changes closer together than this are one step (a drag is one step, not hundreds). */
 const SETTLE_MS = 400;
@@ -19,6 +19,8 @@ export interface EditState {
   tempoMap: TempoMap;
   /** Sync of the linked score (null without one) */
   scoreSync: SyncPoint[] | null;
+  /** A PDF's bars, as split, merged or dropped by hand */
+  pdfBars: PdfBar[] | null;
 }
 
 function capture(): EditState {
@@ -31,6 +33,7 @@ function capture(): EditState {
     savedLoops: useSavedLoopsStore.getState().loops,
     tempoMap: usePracticeStore.getState().tempoMap,
     scoreSync: useScoreStore.getState().link?.sync ?? null,
+    pdfBars: useScoreStore.getState().link?.pdfBars ?? null,
   };
 }
 
@@ -40,6 +43,7 @@ const same = (a: EditState, b: EditState) =>
   a.savedLoops === b.savedLoops &&
   a.tempoMap === b.tempoMap &&
   a.scoreSync === b.scoreSync &&
+  a.pdfBars === b.pdfBars &&
   a.loop.start === b.loop.start &&
   a.loop.end === b.loop.end &&
   a.loop.enabled === b.loop.enabled;
@@ -89,7 +93,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => {
     useLoopStore.setState(state.loop);
     useSavedLoopsStore.getState().replace(state.savedLoops);
     usePracticeStore.getState().setTempoMap(state.tempoMap);
-    if (state.scoreSync) useScoreStore.getState().setSync(state.scoreSync);
+    if (state.pdfBars && state.scoreSync) {
+      useScoreStore.getState().setPdfBars(state.pdfBars, state.scoreSync);
+    } else if (state.scoreSync) useScoreStore.getState().setSync(state.scoreSync);
     restoring = false;
     settled = state;
   };
@@ -104,8 +110,14 @@ export const useHistoryStore = create<HistoryState>((set, get) => {
 
   // Only the sync: the view (zoom, staves…) and the score being loaded are no edits
   useScoreStore.subscribe((state, previous) => {
-    if (state.link?.sync !== previous.link?.sync && state.link?.file === previous.link?.file)
-      onChange();
+    const edited =
+      state.link?.sync !== previous.link?.sync || state.link?.pdfBars !== previous.link?.pdfBars;
+    // The bars a PDF gets when first opened are no edit either: only a change of the same file
+    const found =
+      (previous.link?.pdfBars.length ?? 0) === 0 && state.link?.pdfBars !== previous.link?.pdfBars;
+    // Taken as the starting point: an undo never goes back to "no bars found yet"
+    if (found) settle();
+    else if (edited && state.link?.file === previous.link?.file) onChange();
   });
 
   return {

@@ -3,7 +3,7 @@ import { t } from "@/i18n";
 import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
 
-/** Score files Looplab draws (Guitar Pro 3-8, MusicXML, Capella). PDFs come in phase 23. */
+/** Score files Looplab shows: Guitar Pro 3-8, MusicXML, Capella (drawn) and PDF (pictures). */
 export const SCORE_EXTENSIONS = [
   "gp",
   "gp3",
@@ -14,23 +14,17 @@ export const SCORE_EXTENSIONS = [
   "mxl",
   "xml",
   "capx",
+  "pdf",
 ];
 
 const extension = (path: string) => path.split(".").pop()?.toLowerCase() ?? "";
 
-export const isScoreFile = (path: string) =>
-  SCORE_EXTENSIONS.includes(extension(path)) || extension(path) === "pdf";
+export const isScoreFile = (path: string) => SCORE_EXTENSIONS.includes(extension(path));
 
 /** Links a score file to the open song (copied once into the library). */
 export async function linkScore(path: string) {
   const store = useScoreStore.getState();
   if (!usePlayerStore.getState().track) return;
-  if (extension(path) === "pdf") {
-    // A tab already on screen stays; with none, the empty panel opens with the message
-    if (!store.link) useScoreStore.setState({ asking: true });
-    store.fail({ kind: "unsupportedFormat", detail: "pdf" });
-    return;
-  }
   await store.linkFile(path);
 }
 

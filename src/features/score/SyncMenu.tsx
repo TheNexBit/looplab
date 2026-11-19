@@ -132,30 +132,35 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
             </span>
           </DropdownMenu.Item>
           <DropdownMenu.Separator className={menuSeparator} />
-          <DropdownMenu.Item
-            className={cn(menuItem, "items-start")}
-            disabled={!hasGrid}
-            onSelect={syncToGrid}
-          >
-            <Grid3x3 className="mt-0.5 size-3.5 shrink-0" />
-            <span>
-              {t.score.syncGrid}
-              <span className="block text-[11px] opacity-70">
-                {hasGrid ? t.score.syncGridHint : t.score.syncGridNeedsTempo}
-              </span>
-            </span>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            className={cn(menuItem, "items-start")}
-            disabled={!synced}
-            onSelect={tempoMapFromScore}
-          >
-            <Metronome className="mt-0.5 size-3.5 shrink-0" />
-            <span>
-              {t.score.tempoFromScore}
-              <span className="block text-[11px] opacity-70">{t.score.tempoFromScoreHint}</span>
-            </span>
-          </DropdownMenu.Item>
+          {/* A PDF's meters are not read from the picture: grid and tempo map need a tab */}
+          {link.kind === "notation" && (
+            <>
+              <DropdownMenu.Item
+                className={cn(menuItem, "items-start")}
+                disabled={!hasGrid}
+                onSelect={syncToGrid}
+              >
+                <Grid3x3 className="mt-0.5 size-3.5 shrink-0" />
+                <span>
+                  {t.score.syncGrid}
+                  <span className="block text-[11px] opacity-70">
+                    {hasGrid ? t.score.syncGridHint : t.score.syncGridNeedsTempo}
+                  </span>
+                </span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                className={cn(menuItem, "items-start")}
+                disabled={!synced}
+                onSelect={tempoMapFromScore}
+              >
+                <Metronome className="mt-0.5 size-3.5 shrink-0" />
+                <span>
+                  {t.score.tempoFromScore}
+                  <span className="block text-[11px] opacity-70">{t.score.tempoFromScoreHint}</span>
+                </span>
+              </DropdownMenu.Item>
+            </>
+          )}
           {synced && (
             <div className="flex items-center gap-1 px-2.5 py-1.5 whitespace-nowrap">
               <MoveHorizontal className="size-3.5 text-fg-muted" aria-hidden />

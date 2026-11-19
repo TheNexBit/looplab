@@ -605,6 +605,16 @@ export type PartRequest_Serialize = {
 	bars: number,
 };
 
+/**  A bar on a page of a PDF score: a box in 0..1 of the page. */
+export type PdfBar = {
+	/**  0-based page number */
+	page: number,
+	x: number | null,
+	y: number | null,
+	w: number | null,
+	h: number | null,
+};
+
 export type PlaybackStatus = PlaybackStatus_Serialize | PlaybackStatus_Deserialize;
 
 export type PlaybackStatus_Deserialize = {
@@ -694,6 +704,11 @@ export type ProjectScore_Deserialize = {
 	zoom?: number | null,
 	/**  Where bars fall in the recording; empty = the score's own tempo from 0 s */
 	sync?: SyncPoint_Deserialize[],
+	/**
+	 *  PDF only: the bars on its pages, in reading order (found once, then as the user fixed
+	 *  them); empty until found
+	 */
+	pdfBars?: PdfBar[],
 };
 
 /**  The score linked to a track: the file in the library's `spartiti` folder and how it is shown. */
@@ -712,6 +727,11 @@ export type ProjectScore_Serialize = {
 	zoom: number | null,
 	/**  Where bars fall in the recording; empty = the score's own tempo from 0 s */
 	sync: SyncPoint_Serialize[],
+	/**
+	 *  PDF only: the bars on its pages, in reading order (found once, then as the user fixed
+	 *  them); empty until found
+	 */
+	pdfBars: PdfBar[],
 };
 
 /**

@@ -187,6 +187,22 @@ pub struct ProjectScore {
     /// Where bars fall in the recording; empty = the score's own tempo from 0 s
     #[serde(default)]
     pub sync: Vec<SyncPoint>,
+    /// PDF only: the bars on its pages, in reading order (found once, then as the user fixed
+    /// them); empty until found
+    #[serde(default)]
+    pub pdf_bars: Vec<PdfBar>,
+}
+
+/// A bar on a page of a PDF score: a box in 0..1 of the page.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PdfBar {
+    /// 0-based page number
+    pub page: u32,
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
 }
 
 const fn one() -> f64 {

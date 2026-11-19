@@ -31,6 +31,8 @@ import { stopTapping } from "./syncActions";
 
 /** alphaTab (1.2 MB) loads only when a score is first shown, never at start. */
 const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.ScoreView })));
+/** pdf.js too loads only when a PDF is first shown. */
+const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.PdfView })));
 
 /** Space always left to the waveforms under the score (CSS pixels). */
 const WAVEFORMS_MIN_HEIGHT = 230;
@@ -207,6 +209,8 @@ function FollowMenu({ link }: { link: ProjectScore }) {
  */
 function FileMenu({ link }: { link: ProjectScore }) {
   const store = useScoreStore.getState();
+  // A PDF is a picture: no tracks, staves or layout to choose
+  const notation = link.kind === "notation";
   const radio = cn(menuItem, "data-[state=checked]:text-accent");
   return (
     <DropdownMenu.Root>
@@ -219,33 +223,41 @@ function FileMenu({ link }: { link: ProjectScore }) {
       </Tooltip>
       <DropdownMenu.Portal>
         <DropdownMenu.Content align="end" sideOffset={6} className={`${menuContent} w-64`}>
-          <DropdownMenu.Label className={menuLabel}>{t.score.staves}</DropdownMenu.Label>
-          <DropdownMenu.RadioGroup
-            value={link.staves}
-            onValueChange={(value) => store.setStaves(value as ProjectScore["staves"])}
-          >
-            <DropdownMenu.RadioItem value="tab" className={radio}>
-              {t.score.stavesTab}
-            </DropdownMenu.RadioItem>
-            <DropdownMenu.RadioItem value="notation" className={radio}>
-              {t.score.stavesNotation}
-            </DropdownMenu.RadioItem>
-            <DropdownMenu.RadioItem value="both" className={radio}>
-              {t.score.stavesBoth}
-            </DropdownMenu.RadioItem>
-          </DropdownMenu.RadioGroup>
-          <DropdownMenu.Label className={menuLabel}>{t.score.layout}</DropdownMenu.Label>
-          <DropdownMenu.RadioGroup
-            value={link.layout}
-            onValueChange={(value) => store.setLayout(value as ProjectScore["layout"])}
-          >
-            <DropdownMenu.RadioItem value="page" className={radio}>
-              {t.score.layoutPage}
-            </DropdownMenu.RadioItem>
-            <DropdownMenu.RadioItem value="horizontal" className={radio}>
-              {t.score.layoutHorizontal}
-            </DropdownMenu.RadioItem>
-          </DropdownMenu.RadioGroup>
+          {notation && (
+            <DropdownMenu.Label className={menuLabel}>{t.score.staves}</DropdownMenu.Label>
+          )}
+          {notation && (
+            <DropdownMenu.RadioGroup
+              value={link.staves}
+              onValueChange={(value) => store.setStaves(value as ProjectScore["staves"])}
+            >
+              <DropdownMenu.RadioItem value="tab" className={radio}>
+                {t.score.stavesTab}
+              </DropdownMenu.RadioItem>
+              <DropdownMenu.RadioItem value="notation" className={radio}>
+                {t.score.stavesNotation}
+              </DropdownMenu.RadioItem>
+              <DropdownMenu.RadioItem value="both" className={radio}>
+                {t.score.stavesBoth}
+              </DropdownMenu.RadioItem>
+            </DropdownMenu.RadioGroup>
+          )}
+          {notation && (
+            <DropdownMenu.Label className={menuLabel}>{t.score.layout}</DropdownMenu.Label>
+          )}
+          {notation && (
+            <DropdownMenu.RadioGroup
+              value={link.layout}
+              onValueChange={(value) => store.setLayout(value as ProjectScore["layout"])}
+            >
+              <DropdownMenu.RadioItem value="page" className={radio}>
+                {t.score.layoutPage}
+              </DropdownMenu.RadioItem>
+              <DropdownMenu.RadioItem value="horizontal" className={radio}>
+                {t.score.layoutHorizontal}
+              </DropdownMenu.RadioItem>
+            </DropdownMenu.RadioGroup>
+          )}
           <DropdownMenu.Label className={menuLabel}>{t.score.follow}</DropdownMenu.Label>
           <DropdownMenu.RadioGroup
             value={link.follow}
@@ -339,6 +351,7 @@ function TapBanner({ next }: { next: number }) {
 
 function ScoreToolbar({ link }: { link: ProjectScore }) {
   const store = useScoreStore.getState();
+  const notation = link.kind === "notation";
   const collapsed = useScoreStore((s) => s.collapsed);
   const ready = useScoreStore((s) => s.status === "ready");
   const tapping = useScoreStore((s) => s.tapping);
@@ -348,34 +361,42 @@ function ScoreToolbar({ link }: { link: ProjectScore }) {
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
         <PanelTitle />
         {tapping !== null && <TapBanner next={tapping} />}
-        {tapping === null && <TrackMenu link={link} />}
+        {tapping === null && notation && <TrackMenu link={link} />}
         {tapping === null && !collapsed && (
           <>
-            <span className="hidden h-4 w-px shrink-0 bg-border lg:block" aria-hidden />
-            <div className="hidden lg:block">
-              <ChoiceKeys
-                label={t.score.staves}
-                value={link.staves}
-                choices={[
-                  ["tab", t.score.stavesTab],
-                  ["notation", t.score.stavesNotation],
-                  ["both", t.score.stavesBoth],
-                ]}
-                onChange={store.setStaves}
-              />
-            </div>
-            <span className="hidden h-4 w-px shrink-0 bg-border xl:block" aria-hidden />
-            <div className="hidden xl:block">
-              <ChoiceKeys
-                label={t.score.layout}
-                value={link.layout}
-                choices={[
-                  ["page", t.score.layoutPage],
-                  ["horizontal", t.score.layoutHorizontal],
-                ]}
-                onChange={store.setLayout}
-              />
-            </div>
+            {notation && (
+              <span className="hidden h-4 w-px shrink-0 bg-border lg:block" aria-hidden />
+            )}
+            {notation && (
+              <div className="hidden lg:block">
+                <ChoiceKeys
+                  label={t.score.staves}
+                  value={link.staves}
+                  choices={[
+                    ["tab", t.score.stavesTab],
+                    ["notation", t.score.stavesNotation],
+                    ["both", t.score.stavesBoth],
+                  ]}
+                  onChange={store.setStaves}
+                />
+              </div>
+            )}
+            {notation && (
+              <span className="hidden h-4 w-px shrink-0 bg-border xl:block" aria-hidden />
+            )}
+            {notation && (
+              <div className="hidden xl:block">
+                <ChoiceKeys
+                  label={t.score.layout}
+                  value={link.layout}
+                  choices={[
+                    ["page", t.score.layoutPage],
+                    ["horizontal", t.score.layoutHorizontal],
+                  ]}
+                  onChange={store.setLayout}
+                />
+              </div>
+            )}
             <div className="hidden lg:block">
               <FollowMenu link={link} />
             </div>
@@ -472,7 +493,6 @@ function EmptyBody() {
 /** What a score problem means for the user, in their words. */
 function problemText(error: AppError | null): string {
   if (!error || error.detail === "score") return t.score.failed;
-  if (error.detail === "pdf") return t.score.pdfSoon;
   return t.errors[error.kind];
 }
 
@@ -511,6 +531,7 @@ function NoticeToast() {
 function ScoreBody({ link }: { link: ProjectScore }) {
   const status = useScoreStore((s) => s.status);
   const error = useScoreStore((s) => s.error);
+  const detecting = useScoreStore((s) => s.detecting);
   if (status === "error") {
     return (
       <Notice
@@ -527,14 +548,14 @@ function ScoreBody({ link }: { link: ProjectScore }) {
   return (
     <>
       <Suspense fallback={null}>
-        <ScoreView link={link} />
+        {link.kind === "pdf" ? <PdfView link={link} /> : <ScoreView link={link} />}
       </Suspense>
       <NoticeToast />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-stage/80">
           <span className="flex items-center gap-2 text-xs text-fg-muted">
             <Loader2 className="size-4 animate-spin" />
-            {t.score.loading}
+            {detecting ? t.score.detecting(detecting.done, detecting.of) : t.score.loading}
           </span>
         </div>
       )}

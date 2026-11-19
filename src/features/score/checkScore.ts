@@ -1,4 +1,3 @@
-import { importer } from "@coderline/alphatab";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { commands } from "@/lib/bindings";
 
@@ -21,9 +20,26 @@ export async function scoreBytes(file: string): Promise<Uint8Array | null> {
 export async function isReadable(file: string): Promise<boolean> {
   const bytes = await scoreBytes(file);
   if (!bytes) return false;
+  if (file.toLowerCase().endsWith(".pdf")) return isReadablePdf(bytes);
   try {
+    const { importer } = await import("@coderline/alphatab");
     return importer.ScoreLoader.loadScoreFromBytes(bytes).masterBars.length > 0;
   } catch {
     return false;
+  }
+}
+
+/** True if pdf.js opens the PDF and it has at least one page (pdf.js loaded on demand). */
+async function isReadablePdf(bytes: Uint8Array): Promise<boolean> {
+  const pdfjs = await import("pdfjs-dist");
+  const { default: workerUrl } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  const task = pdfjs.getDocument({ data: bytes });
+  try {
+    return (await task.promise).numPages > 0;
+  } catch {
+    return false;
+  } finally {
+    void task.destroy();
   }
 }

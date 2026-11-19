@@ -666,7 +666,7 @@ export const it = {
     hide: "Nascondi lo spartito",
     emptyTitle: "Collega una tab o uno spartito a questo brano",
     emptyHint:
-      "Trascina qui un file Guitar Pro (.gp, .gp5, .gpx…) o MusicXML, oppure sceglilo dal disco.",
+      "Trascina qui un file Guitar Pro (.gp, .gp5, .gpx…), MusicXML o PDF, oppure sceglilo dal disco.",
     emptyNoTrack: "Apri prima un brano: lo spartito si collega al brano aperto.",
     emptySafe:
       "Looplab ne tiene una copia nella sua libreria (con i backup): il tuo file resta dov'è, intatto.",
@@ -678,7 +678,6 @@ export const it = {
     loading: "Disegno lo spartito…",
     failed: "Questo file non si riesce a leggere come spartito.",
     failedHint: "Prova a salvarlo di nuovo da Guitar Pro o a esportarlo in MusicXML.",
-    pdfSoon: "I PDF arrivano nella prossima fase: per ora collega un file Guitar Pro o MusicXML.",
     resize: "Trascina per cambiare l'altezza dello spartito",
     collapse: "Comprimi",
     expand: "Espandi",
@@ -729,6 +728,12 @@ export const it = {
     tempoFromScore: "Crea la mappa del tempo dalla tab",
     tempoFromScoreHint:
       "Tempo e metrica di ogni cambio (es. intro in 7/4): metronomo e griglia diventano giusti",
+    pdfPage: (n: number) => `Pagina ${n}`,
+    pdfBar: (n: number) => `Battuta ${n}`,
+    pdfSplit: "Dividi la battuta qui",
+    pdfMerge: "Unisci alla battuta dopo",
+    pdfRemove: "Non è una battuta",
+    detecting: (done: number, of: number) => `Cerco le battute nel PDF… pagina ${done} di ${of}`,
     syncFromFile: "Usa la sincronia salvata nel file",
     syncClear: "Azzera la sincronia",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",

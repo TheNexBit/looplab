@@ -25,6 +25,17 @@ export interface ProjectScore {
   follow: ScoreFollow;
   zoom: number;
   sync: SyncPoint[];
+  /** PDF only: its bars, in reading order (found once, then as the user fixed them) */
+  pdfBars: PdfBar[];
+}
+
+/** A bar on a page of a PDF: a box in 0..1 of the page (0-based page). */
+export interface PdfBar {
+  page: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 /** "none": no score linked; "loading": being read and drawn; "ready"; "error". */
@@ -87,6 +98,8 @@ interface ScoreState extends Prefs {
   setFollow: (follow: ScoreFollow) => void;
   zoomBy: (steps: number) => void;
   setSync: (sync: SyncPoint[]) => void;
+  /** PDF: its bars (found, or fixed by the user) and the sync that goes with them. */
+  setPdfBars: (bars: PdfBar[], sync?: SyncPoint[]) => void;
   /** Adds a sync point, replacing one at the same place of the score. */
   putSync: (point: SyncPoint) => void;
   /** Moves sync point `index` (in `link.sync`) to `time`. */
@@ -96,6 +109,8 @@ interface ScoreState extends Prefs {
   removeSyncFrom: (index: number) => void;
   /** Moves every sync point by `seconds` (never before 0). */
   shiftSync: (seconds: number) => void;
+  /** PDF: pages scanned for bars so far, while it is first opened */
+  detecting: { done: number; of: number } | null;
   /** Tap mode: the bar pass (playback order) the next `T` pins, or null when off */
   tapping: number | null;
   setTapping: (next: number | null) => void;
@@ -188,6 +203,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
           follow: "continuous",
           zoom: SCORE_ZOOM.default,
           sync: [],
+          pdfBars: [],
         },
         status: "loading",
         error: null,
@@ -214,6 +230,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       edit({ zoom: next });
     },
     setSync: (sync) => edit({ sync }),
+    setPdfBars: (pdfBars, sync) => edit(sync ? { pdfBars, sync } : { pdfBars }),
     moveSync: (index, time) => {
       const sync = get().link?.sync ?? [];
       const point = sync[index];
@@ -232,6 +249,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       const delta = Math.max(seconds, -Math.min(...sync.map((p) => p.time)));
       edit({ sync: sync.map((p) => ({ ...p, time: p.time + delta })) });
     },
+    detecting: null,
     tapping: null,
     setTapping: (tapping) => set({ tapping }),
     timing: 0,

@@ -773,10 +773,28 @@ di `TempoFlags`, vale anche per le bandierine della sincronia).
   ogni cambio, es. l'intro in 7/4): metronomo, griglia e conteggio diventano giusti anche nei brani prog.
 - Annulla/Ripeti comprendono la sincronia; tutto si salva nel progetto del brano.
 
-## 23. Spartiti PDF 🔜
+## 23. Spartiti PDF 🚧
 
-pdf.js, rilevamento di righi e stanghette, battute cliccabili, sincronizzazione e loop sull'immagine, pagine che
-girano da sole. Immagini delle pagine come cache rigenerabile.
+**Obiettivo:** un PDF (la tab stampata dei corsi, uno spartito) si usa come una tab Guitar Pro: segue la musica,
+le battute si cliccano, si sincronizza e ci si fa il loop sopra.
+
+**Piano:**
+
+- **pdf.js 6.5** (Apache 2.0) disegna le pagine una sotto l'altra, solo quelle vicine alla vista (memoria e CPU
+  basse anche con PDF lunghi); niente immagini su disco: le pagine si ridisegnano al volo, nulla da pulire.
+- **Battute trovate da sole** (`pdf/detectBars.ts`): linee del rigo (4-6 linee equidistanti con carta in mezzo),
+  righi uniti in un sistema se una stanghetta li attraversa tutti, stanghette = colonne scure su tutti i righi
+  del sistema (un'asta di nota attraversa al massimo un rigo). Pagine scure (copertine, pubblicità) saltate. Prova
+  sui 27 PDF del corso JTC di Marco Sfogli: 20 identici al file Guitar Pro, gli altri con 1-2 battute in meno.
+  Senza nessun rigo trovato ogni pagina vale una battuta (le pagine girano lo stesso).
+- Le battute trovate si salvano nel progetto (`pdfBars`, una volta sola); **correzione a mano** col tasto destro su
+  una battuta: dividi qui, unisci alla successiva, non è una battuta (la sincronia si sposta di conseguenza; Annulla
+  e Ripeti valgono anche qui).
+- Cursore e battuta illuminata come nella tab, a ogni frame; clic = salta all'inizio della battuta; trascina =
+  loop sulle battute; segui continuo / una schermata alla volta / fermo; zoom.
+- Sincronia con gli stessi strumenti della fase 22 (bandierine, tap col T, sposta tutto). Tra due punti le
+  battute si dividono il tempo in parti uguali. «Segui la griglia» e «Mappa del tempo dalla tab» solo per le tab
+  (in un PDF la metrica non si legge).
 
 ## 24. Extra dello spartito 🔜
 

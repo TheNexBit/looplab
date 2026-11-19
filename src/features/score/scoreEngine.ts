@@ -3,8 +3,8 @@ import * as alphaTab from "@coderline/alphatab";
 import bravuraWoff2 from "@coderline/alphatab/font/Bravura.woff2?url";
 import { themeColor } from "@/lib/theme";
 import type { ProjectScore, ScoreTrack, SyncPoint } from "@/stores/score";
-import { quartersOf, type TimedBar } from "./syncTools";
-import { type BarSpan, buildTimeline, type Timeline } from "./timeline";
+import { BarSync } from "./barSync";
+import type { BarSpan } from "./timeline";
 
 type Api = alphaTab.AlphaTabApi;
 type Beat = alphaTab.model.Beat;
@@ -16,9 +16,6 @@ export interface ScoreHost {
   position: () => number;
   playing: () => boolean;
 }
-
-/** Least time between two sync points (seconds): closer ones are a slip of the hand. */
-const MIN_SYNC_GAP = 0.2;
 
 export interface ScoreEvents {
   loaded: (tracks: ScoreTrack[], barCount: number, fileSync: SyncPoint[]) => void;
@@ -92,14 +89,11 @@ function themeResources(resources: alphaTab.RenderingResources) {
  * what comes into view) and moves its cursor from the positions it is given; it never plays a
  * sound. Clicks, loops and sync go through `timeline`, built from the score's own bars.
  */
-export class ScoreEngine {
+export class ScoreEngine extends BarSync {
   private readonly api: Api;
   private readonly output: alphaTab.synth.IExternalMediaSynthOutput;
-  private timeline: Timeline | null = null;
-  private spans: BarSpan[] = [];
   private lastSent = Number.NaN;
   private view: ProjectScore;
-  private sync: SyncPoint[];
   private destroyed = false;
 
   constructor(
@@ -109,6 +103,7 @@ export class ScoreEngine {
     private readonly host: ScoreHost,
     private readonly events: ScoreEvents,
   ) {
+    super();
     this.view = view;
     this.sync = view.sync;
     const settings = new alphaTab.Settings();
@@ -154,7 +149,7 @@ export class ScoreEngine {
     });
     this.api.midiLoaded.on(() => {
       if (this.destroyed) return;
-      this.spans = this.readSpans();
+      this.setSpans(this.readSpans());
       this.applySync(this.sync);
       // alphaTab hands the score's sync points to its player only after this event: applied
       // again once it is done, or a song reopened would follow the written tempo instead
@@ -195,44 +190,6 @@ export class ScoreEngine {
       play() {},
       pause() {},
     };
-  }
-
-  /**
-   * The usable part of `sync`: in score order each point must come later in the recording
-   * than the one before (at least `MIN_SYNC_GAP`). Points that contradict an earlier one, or
-   * name a bar the score does not have, are left out.
-   */
-  cleanSync(sync: SyncPoint[]): SyncPoint[] {
-    if (this.spans.length === 0) return sync;
-    const probe = buildTimeline(this.spans, []);
-    const placed = sync
-      .map((point) => ({ point, tick: probe.tickOf(point.bar, point.occurrence, point.position) }))
-      .filter((p): p is { point: SyncPoint; tick: number } => p.tick !== null)
-      .sort((a, b) => a.tick - b.tick);
-    const kept: SyncPoint[] = [];
-    let lastTime = Number.NEGATIVE_INFINITY;
-    let lastTick = Number.NEGATIVE_INFINITY;
-    for (const { point, tick } of placed) {
-      if (tick > lastTick && point.time >= lastTime + MIN_SYNC_GAP) {
-        kept.push(point);
-        lastTime = point.time;
-        lastTick = tick;
-      }
-    }
-    return kept;
-  }
-
-  /** True if `point` can join the sync without contradicting it (or replacing its own place). */
-  canPin(point: SyncPoint): boolean {
-    const others = this.sync.filter(
-      (p) =>
-        !(
-          p.bar === point.bar &&
-          p.occurrence === point.occurrence &&
-          Math.abs(p.position - point.position) < 1e-6
-        ),
-    );
-    return this.cleanSync([...others, point]).includes(point);
   }
 
   /** Every pass through every bar, in playback order, from alphaTab's MIDI. */
@@ -302,12 +259,11 @@ export class ScoreEngine {
   }
 
   private applySync(saved: SyncPoint[]) {
-    this.sync = saved;
+    // Points that contradict each other (two at the same second…) are left out: they would
+    // stall alphaTab. With no bars known yet (before midiLoaded) nothing is applied
+    const sync = this.setSync(saved);
     const score = this.api.score;
-    // Applied once the bars are known (midiLoaded): only then can the points be checked
     if (!score || this.spans.length === 0) return;
-    // Points that contradict each other (two at the same second…) would stall alphaTab
-    const sync = this.cleanSync(saved);
     score.applyFlatSyncPoints(
       sync.map((p) => ({
         barIndex: p.bar,
@@ -317,7 +273,6 @@ export class ScoreEngine {
       })),
     );
     this.api.updateSyncPoints();
-    if (this.spans.length > 0) this.timeline = buildTimeline(this.spans, sync);
     this.lastSent = Number.NaN;
     this.follow(this.host.position());
     this.events.timed();
@@ -343,62 +298,6 @@ export class ScoreEngine {
     if (playing === isPlaying) return;
     if (playing) this.api.play();
     else this.api.pause();
-  }
-
-  get ready() {
-    return this.timeline !== null;
-  }
-
-  get bars(): readonly BarSpan[] {
-    return this.spans;
-  }
-
-  /** Every bar pass with where it starts in the recording, and where the last one ends. */
-  timedBars(): { bars: TimedBar[]; end: number } | null {
-    const timeline = this.timeline;
-    if (!timeline) return null;
-    const bars = this.spans.map((span) => ({
-      bar: span.bar,
-      occurrence: span.occurrence,
-      quarters: quartersOf(span.startTick, span.endTick),
-      time: timeline.seconds(span.startTick),
-      beatsPerBar: span.beatsPerBar ?? 4,
-      beatUnit: span.beatUnit ?? 4,
-    }));
-    return { bars, end: timeline.seconds(timeline.endTick) };
-  }
-
-  /** The sync point at the start of the bar pass number `index` (playback order), at `time`. */
-  barStart(index: number, time: number): SyncPoint | null {
-    const span = this.spans[index];
-    return span ? { bar: span.bar, occurrence: span.occurrence, position: 0, time } : null;
-  }
-
-  /** Index (playback order) of the bar pass a sync point starts, -1 if none. */
-  indexOf(point: SyncPoint): number {
-    return this.spans.findIndex((s) => s.bar === point.bar && s.occurrence === point.occurrence);
-  }
-
-  /** The bar pass heard at `seconds`, and how far through it (0..1). */
-  placeAt(seconds: number): SyncPoint | null {
-    const timeline = this.timeline;
-    if (!timeline) return null;
-    const tick = timeline.tick(seconds);
-    const span = timeline.spanAt(tick);
-    if (!span) return null;
-    const length = span.endTick - span.startTick;
-    return {
-      bar: span.bar,
-      occurrence: span.occurrence,
-      position: length > 0 ? (tick - span.startTick) / length : 0,
-      time: seconds,
-    };
-  }
-
-  /** Seconds where a place of the score is heard. */
-  timeOf(bar: number, occurrence: number, position: number): number | null {
-    const tick = this.timeline?.tickOf(bar, occurrence, position);
-    return tick == null || !this.timeline ? null : this.timeline.seconds(tick);
   }
 
   /** The beat under a point of the drawing (CSS pixels from its top left). */

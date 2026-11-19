@@ -95,6 +95,15 @@ function scoreOf(file: Project_Serialize): ProjectScore | null {
         time: num(p.time, Number.NaN),
       }))
       .filter((p) => Number.isFinite(p.time)),
+    pdfBars: (score.pdfBars ?? [])
+      .map((b) => ({
+        page: b.page,
+        x: num(b.x, -1),
+        y: num(b.y, -1),
+        w: num(b.w, 0),
+        h: num(b.h, 0),
+      }))
+      .filter((b) => b.x >= 0 && b.y >= 0 && b.w > 0 && b.h > 0),
   };
 }
 
