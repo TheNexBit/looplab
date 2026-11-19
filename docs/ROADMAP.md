@@ -743,10 +743,18 @@ dura come a velocità 1); la scritta "alphaTab.net" resta visibile (richiesta da
   battuta finisce qui" (le battute in mezzo seguono il tempo scritto). L'editor completo è la fase 22.
 - Stati disegnati: vuoto (trascina qui un file), caricamento, errore spiegato, non ancora sincronizzato.
 
-## 22. Editor di sincronizzazione 🚧
+## 22. Editor di sincronizzazione ✅
 
 **Obiettivo:** sincronizzare la tab con la registrazione in pochi secondi e correggerla a vista, come in
 Soundslice, con i comandi di Looplab (bandierine come quelle del tempo, Annulla/Ripeti, snap).
+
+**Fatto** (verificato dal collaudatore, 22 controlli Ok e 4 difetti minori corretti; provato dall'utente il
+19/11/2026): tutto il piano qui sotto. Dalle prove: un T rifiutato aspetta la stessa battuta; la battuta del
+prossimo T si ricava sempre dalle bandierine presenti (dopo Ctrl+Z la tab si sfasava di una battuta); il disegno
+della tab non passa sopra i menu; il pulsante si chiama sempre «Sincronizza» e la spia dice lo stato.
+
+**Da perfezionare:** la bandierina del tempo molto vicina all'inizio del brano esce a sinistra (difetto vecchio
+di `TempoFlags`, vale anche per le bandierine della sincronia).
 
 **Piano:**
 
