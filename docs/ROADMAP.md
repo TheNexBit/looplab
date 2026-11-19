@@ -709,11 +709,22 @@ servono come file veri, in un posto fisso e ordinato.
 4. ✅ Provata dall'utente il 13/11/2026 (primo avvio con la libreria e import dei vecchi dati, esportazione nella
    cartella predefinita e in una scelta, ritorno alla predefinita). Da rifare quando capita: aprire un WAV in Reaper.
 
-## 21. Tab Guitar Pro nel player 🚧
+## 21. Tab Guitar Pro nel player ✅
 
 **Obiettivo:** come in Soundslice, la tab di un file Guitar Pro scorre sincronizzata con la registrazione vera;
 clic su una nota = salta lì, trascinare sulle note = loop A/B. Studio completo e requisiti (UI, prestazioni,
 dati) in `docs/studi/2026-11-19_tab-sincronizzate.md`. Ramo `tab`.
+
+**Fatto** (verificato dal collaudatore in tre giri, 22/22 controlli; provato dall'utente il 19/11/2026 sugli
+esercizi JTC di Marco Sfogli, 10/10 punti Ok): tutto il piano qui sotto. Correzioni nate dalle verifiche: alphaTab
+non comanda mai il motore (oltre la fine dello spartito la musica tornava a 0), punti di sincronia in conflitto
+rifiutati nel menu e scartati se già salvati (due punti allo stesso secondo bloccavano la pagina), velocità non
+applicata due volte al cursore, fascia del loop con i tick assoluti, barra usabile a 900 px (tutte le scelte anche
+nel menu "…"), un PDF o un errore non nascondono la tab (avviso), file illeggibili mai collegati, sincronia
+salvata applicata anche riaprendo il brano, cursore fermo sull'ultima battuta oltre la fine.
+
+**Da perfezionare:** a velocità ridotta il cursore anticipa al massimo ~1/16 (lo scorrimento animato di alphaTab
+dura come a velocità 1); la scritta "alphaTab.net" resta visibile (richiesta dalla documentazione di alphaTab).
 
 **Piano:**
 
