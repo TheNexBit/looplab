@@ -300,13 +300,21 @@ export function PdfView({ link }: { link: ProjectScore }) {
     }
     const box = barBox(bar, layout);
     const x = box.x + Math.min(1, Math.max(0, at.position)) * box.w;
-    cursor.style.visibility = "visible";
-    lit.style.visibility = "visible";
-    cursor.style.transform = `translate(${x - 1.5}px, ${box.y}px)`;
-    cursor.style.height = `${box.h}px`;
-    lit.style.transform = `translate(${box.x}px, ${box.y}px)`;
-    lit.style.width = `${box.w}px`;
-    lit.style.height = `${box.h}px`;
+    // Written only when they change by a whole pixel: no style work, no layer update otherwise
+    const set = (
+      element: HTMLElement,
+      name: "transform" | "width" | "height" | "visibility",
+      value: string,
+    ) => {
+      if (element.style[name] !== value) element.style[name] = value;
+    };
+    set(cursor, "visibility", "visible");
+    set(lit, "visibility", "visible");
+    set(cursor, "transform", `translate(${Math.round(x - 1.5)}px, ${Math.round(box.y)}px)`);
+    set(cursor, "height", `${Math.round(box.h)}px`);
+    set(lit, "transform", `translate(${Math.round(box.x)}px, ${Math.round(box.y)}px)`);
+    set(lit, "width", `${Math.round(box.w)}px`);
+    set(lit, "height", `${Math.round(box.h)}px`);
     if (at.index !== lastBar.current) {
       // The first placing (a song reopened, a new layout) jumps; later ones glide
       const behavior: ScrollBehavior = lastBar.current < 0 ? "auto" : "smooth";
@@ -484,7 +492,7 @@ export function PdfView({ link }: { link: ProjectScore }) {
               />
               <div
                 ref={cursorRef}
-                className="invisible absolute top-0 left-0 w-[3px] rounded-[2px] bg-accent shadow-[0_0_10px_var(--color-accent)] will-change-transform"
+                className="invisible absolute top-0 left-0 w-[3px] rounded-[2px] bg-accent will-change-transform"
               />
             </div>
           </div>
