@@ -733,7 +733,11 @@ export const it = {
     pdfSplit: "Dividi la battuta qui",
     pdfMerge: "Unisci alla battuta dopo",
     pdfRemove: "Non è una battuta",
-    detecting: (done: number, of: number) => `Cerco le battute nel PDF… pagina ${done} di ${of}`,
+    detecting: (done: number, of: number) =>
+      `Cerco le battute nel PDF… pagina ${Math.min(done + 1, of)} di ${of}`,
+    failedPdf: "Questo PDF non si riesce ad aprire.",
+    failedPdfHint:
+      "Prova ad aprirlo con un lettore PDF e a salvarne una copia, poi collega quella.",
     syncFromFile: "Usa la sincronia salvata nel file",
     syncClear: "Azzera la sincronia",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",

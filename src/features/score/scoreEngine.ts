@@ -108,7 +108,8 @@ export class ScoreEngine extends BarSync {
     this.sync = view.sync;
     const settings = new alphaTab.Settings();
     settings.core.useWorkers = true;
-    settings.core.engine = "html5";
+    // SVG: alphaTab's canvas engine loses its drawing context on some bends (alphaTab 1.9)
+    settings.core.engine = "svg";
     settings.core.enableLazyLoading = true;
     settings.core.smuflFontSources = new Map([[alphaTab.FontFileFormat.Woff2, bravuraWoff2]]);
     settings.display.layoutMode = LAYOUTS[view.layout];

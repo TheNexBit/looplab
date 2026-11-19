@@ -730,7 +730,9 @@ export const en = {
     pdfMerge: "Merge with the next bar",
     pdfRemove: "Not a bar",
     detecting: (done: number, of: number) =>
-      `Looking for the bars in the PDF… page ${done} of ${of}`,
+      `Looking for the bars in the PDF… page ${Math.min(done + 1, of)} of ${of}`,
+    failedPdf: "This PDF cannot be opened.",
+    failedPdfHint: "Try opening it in a PDF reader and saving a copy, then link that one.",
     syncFromFile: "Use the sync saved in the file",
     syncClear: "Clear the sync",
     clickHint: "Click a note: jump there · Drag over notes: loop",

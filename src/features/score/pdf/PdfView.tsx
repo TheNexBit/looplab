@@ -41,6 +41,9 @@ async function drawPage(doc: Doc, index: number, canvas: HTMLCanvasElement, cssW
   await page.render({ canvasContext: context, viewport, canvas }).promise;
 }
 
+/** Lets a frame be drawn before the next heavy step (scanning runs on the main thread). */
+const breather = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 /** The bars of every page (reading order), found from the pictures; one per page if none is. */
 async function findBars(doc: Doc, onPage: (done: number) => void): Promise<PdfBar[]> {
   const bars: PdfBar[] = [];
@@ -56,11 +59,13 @@ async function findBars(doc: Doc, onPage: (done: number) => void): Promise<PdfBa
     context.fillStyle = "#fff";
     context.fillRect(0, 0, canvas.width, canvas.height);
     await page.render({ canvasContext: context, viewport, canvas }).promise;
+    await breather();
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
     for (const box of detectBars(toGray(pixels), canvas.width, canvas.height)) {
       bars.push({ page: index, ...box });
     }
     onPage(index + 1);
+    await breather();
   }
   // A PDF with no staff found (a lead sheet, a handwritten page): each page is one "bar", so
   // the pages still turn with the music
@@ -89,7 +94,13 @@ function Page({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !near) return;
+    if (!canvas) return;
+    if (!near) {
+      // Out of reach: the picture is let go (a 1x1 canvas holds no memory to speak of)
+      canvas.width = 1;
+      canvas.height = 1;
+      return;
+    }
     let stale = false;
     const timer = setTimeout(() => {
       if (!stale) void drawPage(doc, index, canvas, width);
@@ -197,7 +208,7 @@ export function PdfView({ link }: { link: ProjectScore }) {
           store.setPdfBars(found);
         }
       } catch {
-        if (!cancelled) store.setStatus("error", { kind: "corruptFile", detail: "score" });
+        if (!cancelled) store.setStatus("error", { kind: "corruptFile", detail: "pdf" });
       }
     })();
     return () => {
@@ -211,6 +222,7 @@ export function PdfView({ link }: { link: ProjectScore }) {
   // Bars and sync into the clock; ready once there are bars
   useEffect(() => {
     clock.update(bars, link.sync);
+    lastFrame.current = "";
     activeScore.engine = clock;
     if (bars.length > 0 && doc) {
       const store = useScoreStore.getState();
@@ -262,12 +274,24 @@ export function PdfView({ link }: { link: ProjectScore }) {
 
   // The lit bar and the cursor, moved on every frame without React; the view follows them
   const lastBar = useRef(-1);
+  const lastFrame = useRef("");
+  // A new layout (pages measured, zoom, width): the view is placed on the bar again at once
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset when the layout changes
+  useEffect(() => {
+    lastBar.current = -1;
+    lastFrame.current = "";
+  }, [layout]);
   useAnimationFrame(() => {
     const cursor = cursorRef.current;
     const lit = litRef.current;
     const scroller = scrollRef.current;
-    if (!cursor || !lit || !scroller) return;
-    const at = clock.ready ? clock.barAt(currentPosition()) : null;
+    if (!cursor || !lit || !scroller || layout.tops.length === 0) return;
+    const position = currentPosition();
+    // Nothing moved since the last frame (paused, or the same timing): nothing to write
+    const key = `${position}|${clock.ready}`;
+    if (key === lastFrame.current) return;
+    lastFrame.current = key;
+    const at = clock.ready ? clock.barAt(position) : null;
     const bar = at ? bars[at.index] : undefined;
     if (!at || !bar) {
       cursor.style.visibility = "hidden";
@@ -284,18 +308,26 @@ export function PdfView({ link }: { link: ProjectScore }) {
     lit.style.width = `${box.w}px`;
     lit.style.height = `${box.h}px`;
     if (at.index !== lastBar.current) {
+      // The first placing (a song reopened, a new layout) jumps; later ones glide
+      const behavior: ScrollBehavior = lastBar.current < 0 ? "auto" : "smooth";
       lastBar.current = at.index;
       const follow = useScoreStore.getState().link?.follow ?? "continuous";
       const top = scroller.scrollTop;
       const bottom = top + scroller.clientHeight;
       const outside = box.y < top || box.y + box.h > bottom;
-      if (follow === "continuous" && (outside || box.y > top + scroller.clientHeight * 0.55)) {
+      const first = behavior === "auto";
+      if (follow !== "off" && first && outside) {
+        scroller.scrollTo({ top: Math.max(0, box.y - scroller.clientHeight * 0.25), behavior });
+      } else if (
+        follow === "continuous" &&
+        (outside || box.y > top + scroller.clientHeight * 0.55)
+      ) {
         scroller.scrollTo({
           top: Math.max(0, box.y - scroller.clientHeight * 0.25),
-          behavior: "smooth",
+          behavior,
         });
       } else if (follow === "paged" && outside) {
-        scroller.scrollTo({ top: Math.max(0, box.y - GAP), behavior: "smooth" });
+        scroller.scrollTo({ top: Math.max(0, box.y - GAP), behavior });
       }
     }
   });

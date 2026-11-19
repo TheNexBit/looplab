@@ -493,7 +493,15 @@ function EmptyBody() {
 /** What a score problem means for the user, in their words. */
 function problemText(error: AppError | null): string {
   if (!error || error.detail === "score") return t.score.failed;
+  if (error.detail === "pdf") return t.score.failedPdf;
   return t.errors[error.kind];
+}
+
+/** What to try about a score problem, if anything helps. */
+function problemHint(error: AppError | null): string | undefined {
+  if (!error || error.detail === "score") return t.score.failedHint;
+  if (error.detail === "pdf") return t.score.failedPdfHint;
+  return undefined;
 }
 
 /** How long a notice stays over the score. */
@@ -515,7 +523,7 @@ function NoticeToast() {
     >
       <AlertCircle className="size-3.5 shrink-0 text-red-400" />
       <span>{problemText(notice)}</span>
-      {notice.detail === "score" && <span className="text-fg-subtle">{t.score.failedHint}</span>}
+      {problemHint(notice) && <span className="text-fg-subtle">{problemHint(notice)}</span>}
       <button
         type="button"
         aria-label={t.score.dismiss}
@@ -537,7 +545,7 @@ function ScoreBody({ link }: { link: ProjectScore }) {
       <Notice
         icon={<AlertCircle className="size-7 text-red-400" />}
         title={problemText(error)}
-        hint={!error || error.detail === "score" ? t.score.failedHint : undefined}
+        hint={problemHint(error)}
       >
         <Button variant="hardware" className="mt-1" onClick={() => void pickScore()}>
           {t.score.change}

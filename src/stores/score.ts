@@ -182,7 +182,11 @@ export const useScoreStore = create<ScoreState>((set, get) => {
         return;
       }
       if (!readable) {
-        get().fail({ kind: "corruptFile", detail: "score" });
+        // "pdf" or "score": what to tell the user to try depends on the kind of file
+        get().fail({
+          kind: "corruptFile",
+          detail: path.toLowerCase().endsWith(".pdf") ? "pdf" : "score",
+        });
         return;
       }
       const { file, name, kind } = result.data;
