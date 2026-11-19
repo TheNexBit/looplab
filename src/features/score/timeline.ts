@@ -121,15 +121,20 @@ export function buildTimeline(bars: BarSpan[], points: ScorePoint[]): Timeline {
     return span.startTick + p * (span.endTick - span.startTick);
   };
 
-  // Sync anchors: score clock (ms) → recording (ms), sorted, one per score moment
-  const anchors = points
+  // Sync anchors: score clock (ms) → recording (ms), sorted, both always moving forward (a
+  // point that would make time stand still or run back is left out: the map stays invertible)
+  const anchors: { synth: number; media: number }[] = [];
+  const sorted = points
     .map((p) => {
       const tick = tickOf(p.bar, p.occurrence, p.position);
       return tick === null ? null : { synth: synthMs(tick), media: p.time * 1000 };
     })
     .filter((a): a is { synth: number; media: number } => a !== null)
-    .sort((a, b) => a.synth - b.synth)
-    .filter((a, i, all) => i === 0 || a.synth > (all[i - 1]?.synth ?? Number.NEGATIVE_INFINITY));
+    .sort((a, b) => a.synth - b.synth);
+  for (const anchor of sorted) {
+    const last = anchors.at(-1);
+    if (!last || (anchor.synth > last.synth && anchor.media > last.media)) anchors.push(anchor);
+  }
   const synthAxis = anchors.map((a) => a.synth);
   const mediaAxis = anchors.map((a) => a.media);
   const clampTick = (tick: number) => Math.min(endTick, Math.max(bars[0]?.startTick ?? 0, tick));

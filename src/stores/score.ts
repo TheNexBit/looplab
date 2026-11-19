@@ -71,6 +71,11 @@ interface ScoreState extends Prefs {
 
   /** Replaces the link (a song opened): only projectSync calls it. */
   restore: (link: ProjectScore | null) => void;
+  /** A problem to tell over the score shown (it stays on screen), shown a few seconds */
+  notice: AppError | null;
+  /** Shows a problem: as a notice over the score if one is shown, else in the empty panel. */
+  fail: (error: AppError) => void;
+  clearNotice: () => void;
   /** Copies `path` into the library and links it to the open song. */
   linkFile: (path: string) => Promise<void>;
   unlink: () => void;
@@ -113,10 +118,12 @@ export const useScoreStore = create<ScoreState>((set, get) => {
     barCount: 0,
     linking: false,
     asking: false,
+    notice: null,
 
     restore: (link) =>
       set({
         asking: false,
+        notice: null,
         link,
         status: link ? "loading" : "none",
         error: null,
@@ -125,12 +132,27 @@ export const useScoreStore = create<ScoreState>((set, get) => {
         barCount: 0,
       }),
 
+    fail: (error) => {
+      // With a score on screen it stays: the problem shows as a notice over it
+      if (get().link) set({ notice: error });
+      else set({ status: "error", error });
+    },
+    clearNotice: () => set({ notice: null }),
+
     linkFile: async (path) => {
-      set({ linking: true });
+      set({ linking: true, notice: null });
       const result = await commands.importScore(path);
+      // A file alphaTab cannot read is not linked (its copy goes at the next clean-up)
+      const readable =
+        result.status === "ok" &&
+        (await import("@/features/score/checkScore").then((m) => m.isReadable(result.data.file)));
       set({ linking: false });
       if (result.status === "error") {
-        set({ status: "error", error: result.error });
+        get().fail(result.error);
+        return;
+      }
+      if (!readable) {
+        get().fail({ kind: "corruptFile", detail: "score" });
         return;
       }
       const { file, name, kind } = result.data;

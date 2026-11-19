@@ -695,6 +695,8 @@ export const it = {
     followPaged: "Una schermata alla volta",
     followOff: "Fermo",
     zoom: "Grandezza",
+    zoomIn: "Più grande",
+    zoomOut: "Più piccolo",
     sync: "Sincronizza",
     unsynced: "Non sincronizzato",
     synced: (n: number) => (n === 1 ? "1 punto di sincronia" : `${n} punti di sincronia`),
@@ -704,9 +706,12 @@ export const it = {
     syncLastHint:
       "Metti la testina dove finisce l'ultima battuta: quelle in mezzo seguono il tempo scritto",
     syncHere: (bar: number) => `La battuta ${bar} inizia qui`,
+    syncConflict:
+      "Non qui: la testina deve stare dopo i punti che vengono prima e prima di quelli dopo",
     syncFromFile: "Usa la sincronia salvata nel file",
     syncClear: "Azzera la sincronia",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",
+    dismiss: "Chiudi",
   },
   palette: {
     results: "Azioni",

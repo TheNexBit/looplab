@@ -97,6 +97,23 @@ describe("buildTimeline", () => {
     expect(t.tick(5)).toBeCloseTo(6 * Q);
   });
 
+  it("ignores a point that would make time stand still (bar 1 and the end at the same second)", () => {
+    const t = buildTimeline(
+      spans([
+        [0, 4],
+        [1, 4],
+      ]),
+      [
+        { bar: 0, occurrence: 0, position: 0, time: 1 },
+        { bar: 1, occurrence: 0, position: 1, time: 1 },
+      ],
+    );
+    // Only the first point counts: the written tempo from 1 s, and seeking stays where asked
+    expect(t.seconds(4 * Q)).toBeCloseTo(3);
+    expect(t.tick(3)).toBeCloseTo(4 * Q);
+    expect(Number.isFinite(t.tick(5))).toBe(true);
+  });
+
   it("keeps the tick inside the score", () => {
     const t = buildTimeline(spans([[0, 4]]), []);
     expect(t.tick(-5)).toBe(0);

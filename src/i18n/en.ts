@@ -692,6 +692,8 @@ export const en = {
     followPaged: "One screen at a time",
     followOff: "Still",
     zoom: "Size",
+    zoomIn: "Larger",
+    zoomOut: "Smaller",
     sync: "Sync",
     unsynced: "Not synced",
     synced: (n: number) => (n === 1 ? "1 sync point" : `${n} sync points`),
@@ -701,9 +703,12 @@ export const en = {
     syncLastHint:
       "Put the playhead where the last bar ends: the bars between follow the written tempo",
     syncHere: (bar: number) => `Bar ${bar} starts here`,
+    syncConflict:
+      "Not here: the playhead must be after the points before it and before those after",
     syncFromFile: "Use the sync saved in the file",
     syncClear: "Clear the sync",
     clickHint: "Click a note: jump there · Drag over notes: loop",
+    dismiss: "Close",
   },
   palette: {
     results: "Actions",

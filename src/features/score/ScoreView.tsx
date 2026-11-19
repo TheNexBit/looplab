@@ -59,13 +59,7 @@ export function ScoreView({ link }: { link: ProjectScore }) {
       {
         duration: trackDuration,
         position: () => currentPosition(),
-        seek: (seconds) => player().seek(seconds),
-        play: () => {
-          if (!player().playing) player().togglePlay();
-        },
-        pause: () => {
-          if (player().playing) player().togglePlay();
-        },
+        playing: () => player().playing,
       },
       {
         loaded: (tracks, barCount, fileSync) => store.setLoaded(tracks, barCount, fileSync),
@@ -78,8 +72,6 @@ export function ScoreView({ link }: { link: ProjectScore }) {
     );
     engineRef.current = engine;
     activeScore.engine = engine;
-    engine.setPlaying(player().playing);
-    engine.setSpeed(player().speed);
 
     let cancelled = false;
     void (async () => {
@@ -100,7 +92,6 @@ export function ScoreView({ link }: { link: ProjectScore }) {
 
     const stopPlayer = usePlayerStore.subscribe((state, previous) => {
       if (state.playing !== previous.playing) engine.setPlaying(state.playing);
-      if (state.speed !== previous.speed) engine.setSpeed(state.speed);
     });
     const stopTheme = onThemeChange(() => engine.retheme());
     return () => {

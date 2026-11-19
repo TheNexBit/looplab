@@ -26,8 +26,9 @@ export async function linkScore(path: string) {
   const store = useScoreStore.getState();
   if (!usePlayerStore.getState().track) return;
   if (extension(path) === "pdf") {
-    store.setStatus("error", { kind: "unsupportedFormat", detail: "pdf" });
-    useScoreStore.setState({ asking: !store.link });
+    // A tab already on screen stays; with none, the empty panel opens with the message
+    if (!store.link) useScoreStore.setState({ asking: true });
+    store.fail({ kind: "unsupportedFormat", detail: "pdf" });
     return;
   }
   await store.linkFile(path);

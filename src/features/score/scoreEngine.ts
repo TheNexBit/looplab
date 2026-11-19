@@ -8,15 +8,16 @@ import { type BarSpan, buildTimeline, type Timeline } from "./timeline";
 type Api = alphaTab.AlphaTabApi;
 type Beat = alphaTab.model.Beat;
 
-/** What the engine asks of the player: Looplab's engine keeps the time, alphaTab follows. */
+/** What the engine reads of the player: Looplab's engine keeps the time, alphaTab follows. */
 export interface ScoreHost {
   /** Seconds of the recording */
   duration: () => number;
   position: () => number;
-  seek: (seconds: number) => void;
-  play: () => void;
-  pause: () => void;
+  playing: () => boolean;
 }
+
+/** Least time between two sync points (seconds): closer ones are a slip of the hand. */
+const MIN_SYNC_GAP = 0.2;
 
 export interface ScoreEvents {
   loaded: (tracks: ScoreTrack[], barCount: number, fileSync: SyncPoint[]) => void;
@@ -93,8 +94,6 @@ export class ScoreEngine {
   private readonly output: alphaTab.synth.IExternalMediaSynthOutput;
   private timeline: Timeline | null = null;
   private spans: BarSpan[] = [];
-  /** alphaTab's play/pause/seek calls caused by Looplab itself are not sent back */
-  private echo = false;
   private lastSent = Number.NaN;
   private view: ProjectScore;
   private sync: SyncPoint[];
@@ -145,15 +144,16 @@ export class ScoreEngine {
         position: p.barPosition,
         time: p.millisecondOffset / 1000,
       }));
-      this.applySync(this.sync);
+      // The song's own sync rules, not the file's (that one is only offered in the menu); the
+      // song's is applied once the bars are known and its points can be checked
+      score.applyFlatSyncPoints([]);
       events.loaded(tracks, score.masterBars.length, fileSync);
     });
     this.api.midiLoaded.on(() => {
       if (this.destroyed) return;
       this.spans = this.readSpans();
-      this.timeline = buildTimeline(this.spans, this.sync);
-      this.lastSent = Number.NaN;
-      this.follow(host.position());
+      this.applySync(this.sync);
+      this.setPlaying(host.playing());
     });
     this.api.postRenderFinished.on(() => {
       if (!this.destroyed) events.rendered();
@@ -163,9 +163,13 @@ export class ScoreEngine {
     });
   }
 
+  /**
+   * alphaTab only shows: it never drives the player. Clicks and drags are Looplab's own, and
+   * the seek/pause alphaTab sends by itself (its "song" ends where the score ends, earlier
+   * than the recording) must not reach the engine.
+   */
   private handler(): alphaTab.synth.IExternalMediaHandler {
     const host = this.host;
-    const self = this;
     return {
       get backingTrackDuration() {
         return host.duration() * 1000;
@@ -179,16 +183,48 @@ export class ScoreEngine {
         return 1;
       },
       set masterVolume(_volume: number) {},
-      seekTo(time: number) {
-        if (!self.echo) host.seek(time / 1000);
-      },
-      play() {
-        if (!self.echo) host.play();
-      },
-      pause() {
-        if (!self.echo) host.pause();
-      },
+      seekTo() {},
+      play() {},
+      pause() {},
     };
+  }
+
+  /**
+   * The usable part of `sync`: in score order each point must come later in the recording
+   * than the one before (at least `MIN_SYNC_GAP`). Points that contradict an earlier one, or
+   * name a bar the score does not have, are left out.
+   */
+  cleanSync(sync: SyncPoint[]): SyncPoint[] {
+    if (this.spans.length === 0) return sync;
+    const probe = buildTimeline(this.spans, []);
+    const placed = sync
+      .map((point) => ({ point, tick: probe.tickOf(point.bar, point.occurrence, point.position) }))
+      .filter((p): p is { point: SyncPoint; tick: number } => p.tick !== null)
+      .sort((a, b) => a.tick - b.tick);
+    const kept: SyncPoint[] = [];
+    let lastTime = Number.NEGATIVE_INFINITY;
+    let lastTick = Number.NEGATIVE_INFINITY;
+    for (const { point, tick } of placed) {
+      if (tick > lastTick && point.time >= lastTime + MIN_SYNC_GAP) {
+        kept.push(point);
+        lastTime = point.time;
+        lastTick = tick;
+      }
+    }
+    return kept;
+  }
+
+  /** True if `point` can join the sync without contradicting it (or replacing its own place). */
+  canPin(point: SyncPoint): boolean {
+    const others = this.sync.filter(
+      (p) =>
+        !(
+          p.bar === point.bar &&
+          p.occurrence === point.occurrence &&
+          Math.abs(p.position - point.position) < 1e-6
+        ),
+    );
+    return this.cleanSync([...others, point]).includes(point);
   }
 
   /** Every pass through every bar, in playback order, from alphaTab's MIDI. */
@@ -249,10 +285,13 @@ export class ScoreEngine {
     this.api.render();
   }
 
-  private applySync(sync: SyncPoint[]) {
-    this.sync = sync;
+  private applySync(saved: SyncPoint[]) {
+    this.sync = saved;
     const score = this.api.score;
-    if (!score) return;
+    // Applied once the bars are known (midiLoaded): only then can the points be checked
+    if (!score || this.spans.length === 0) return;
+    // Points that contradict each other (two at the same second…) would stall alphaTab
+    const sync = this.cleanSync(saved);
     score.applyFlatSyncPoints(
       sync.map((p) => ({
         barIndex: p.bar,
@@ -274,28 +313,16 @@ export class ScoreEngine {
     this.output.updatePosition(seconds * 1000);
   }
 
-  /** Tells alphaTab the player started or stopped, so its cursor glides or rests. */
+  /**
+   * Tells alphaTab the player started or stopped, so its cursor glides or rests. Its speed
+   * stays 1: the positions it gets are already in recording time, whatever the engine's speed.
+   */
   setPlaying(playing: boolean) {
     if (!this.api.isReadyForPlayback) return;
     const isPlaying = this.api.playerState === alphaTab.synth.PlayerState.Playing;
     if (playing === isPlaying) return;
-    this.echo = true;
-    try {
-      if (playing) this.api.play();
-      else this.api.pause();
-    } finally {
-      this.echo = false;
-    }
-  }
-
-  /** The engine's speed, so the cursor's glide lasts as long as the beat really does. */
-  setSpeed(speed: number) {
-    this.echo = true;
-    try {
-      this.api.playbackSpeed = speed;
-    } finally {
-      this.echo = false;
-    }
+    if (playing) this.api.play();
+    else this.api.pause();
   }
 
   get ready() {
@@ -366,8 +393,9 @@ export class ScoreEngine {
     for (const bar of tickCache.masterBars) {
       if (bar.end <= from || bar.start >= to) continue;
       for (let beat = bar.firstBeat; beat; beat = beat.nextBeat) {
-        const beatStart = beat.start;
-        const beatEnd = beat.end;
+        // A beat's ticks count from the start of its bar
+        const beatStart = bar.start + beat.start;
+        const beatEnd = bar.start + beat.end;
         if (beatEnd <= from || beatStart >= to) {
           if (beat === bar.lastBeat) break;
           continue;
