@@ -53,6 +53,8 @@ export const en = {
     library:
       "The library (libreria.db) cannot be read or written: your work is not saved. See Settings → Data.",
     backup: "The backup failed: check the free space and the backup folder.",
+    scoreTooLarge: "The score file is too large (over 200 MB).",
+    scoreMissing: "The library copy of this score is gone: link it again.",
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:

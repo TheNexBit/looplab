@@ -191,6 +191,18 @@ impl Library {
         {
             log::error("library", &format!("importing the old files failed: {err}"));
         }
+        // Score files no song uses any more go away: nothing left lying around
+        if let Some(conn) = &conn {
+            match crate::scores::sweep(conn, &places.scores()) {
+                Ok(0) => {}
+                Ok(n) => log::write(
+                    log::Level::Info,
+                    "library",
+                    &format!("removed {n} unused score files"),
+                ),
+                Err(err) => log::error("library", &format!("score clean-up failed: {err}")),
+            }
+        }
         if let Some(err) = &failure {
             log::error("library", err);
         }

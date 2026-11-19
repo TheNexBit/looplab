@@ -10,6 +10,7 @@ mod export;
 mod library;
 mod metronome;
 mod player;
+mod scores;
 mod sound;
 mod spectrum;
 mod stems;
@@ -54,6 +55,8 @@ pub fn builder() -> Builder<tauri::Wry> {
             click_sounds::delete_click_sound,
             click_sounds::set_click_samples,
             click_sounds::preview_sound,
+            scores::import_score,
+            scores::prepare_score,
             library::load_project,
             library::save_project,
             library::recent_files,

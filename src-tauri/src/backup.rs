@@ -18,7 +18,7 @@ use serde::Serialize;
 
 use crate::db::{self, Library, LibraryError};
 use crate::log;
-use crate::paths::Places;
+use crate::paths::{Places, SCORES_FOLDER, USER_FOLDERS};
 
 /// The second backup folder, in the library's `meta` table.
 const MIRROR: &str = "backup_mirror";
@@ -144,6 +144,10 @@ pub fn list(dir: &Path) -> Vec<BackupInfo> {
         .filter(|entry| entry.path().is_dir())
         .filter_map(|entry| {
             let name = entry.file_name().to_string_lossy().into_owned();
+            // A backup still being written ("… manuale (2).partial" would parse) is not one yet
+            if name.ends_with(PARTIAL) {
+                return None;
+            }
             let (day, time, kind) = parse_name(&name)?;
             Some(BackupInfo {
                 bytes: folder_bytes(&entry.path()) as f64,
@@ -231,14 +235,52 @@ fn copy_files(from: &Path, to: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Copies a whole backup folder (the database and its `suoni` folder).
-fn copy_backup(from: &Path, to: &Path) -> std::io::Result<()> {
-    copy_files(from, to)?;
-    let sounds = from.join("suoni");
-    if sounds.is_dir() {
-        copy_files(&sounds, &to.join("suoni"))?;
+/// Like `copy_files`, but a file already in `previous` under the same name is hard-linked to it
+/// instead of copied. Only for folders whose files are named by their content (`spartiti`): the
+/// same name is the same bytes, so a week of backups holds one copy of a large PDF.
+fn link_or_copy_files(from: &Path, to: &Path, previous: Option<&Path>) -> std::io::Result<()> {
+    fs::create_dir_all(to)?;
+    for entry in fs::read_dir(from).into_iter().flatten().flatten() {
+        if !entry.path().is_file() {
+            continue;
+        }
+        let target = to.join(entry.file_name());
+        let linked = previous
+            .map(|dir| dir.join(entry.file_name()))
+            .filter(|old| {
+                old.metadata()
+                    .is_ok_and(|m| Some(m.len()) == entry.metadata().ok().map(|n| n.len()))
+            })
+            .is_some_and(|old| fs::hard_link(old, &target).is_ok());
+        if !linked {
+            fs::copy(entry.path(), &target)?;
+        }
     }
     Ok(())
+}
+
+/// Copies the user folders (`suoni`, `spartiti`) of `from` into `to`, those that exist.
+/// `previous` is the newest earlier backup, whose unchanged score files are linked, not copied.
+fn copy_user_folders(from: &Path, to: &Path, previous: Option<&Path>) -> std::io::Result<()> {
+    for folder in USER_FOLDERS {
+        let source = from.join(folder);
+        if !source.is_dir() {
+            continue;
+        }
+        if folder == SCORES_FOLDER {
+            let previous = previous.map(|dir| dir.join(folder));
+            link_or_copy_files(&source, &to.join(folder), previous.as_deref())?;
+        } else {
+            copy_files(&source, &to.join(folder))?;
+        }
+    }
+    Ok(())
+}
+
+/// Copies a whole backup folder (the database and its user folders).
+fn copy_backup(from: &Path, to: &Path) -> std::io::Result<()> {
+    copy_files(from, to)?;
+    copy_user_folders(from, to, None)
 }
 
 /// True if the backup folder holds a library SQLite finds intact.
@@ -283,10 +325,10 @@ pub fn create(conn: &Connection, places: &Places, kind: BackupKind) -> Result<Ma
                 "the backup copy failed its check".into(),
             ));
         }
-        let sounds = places.sounds();
-        if sounds.is_dir() {
-            copy_files(&sounds, &partial.join("suoni"))?;
-        }
+        let previous = list(&places.backup)
+            .first()
+            .map(|b| places.backup.join(&b.name));
+        copy_user_folders(&places.user, &partial, previous.as_deref())?;
         Ok(())
     })();
     if let Err(err) = made {
@@ -351,11 +393,10 @@ pub fn restore(library: &Library, name: &str) -> Result<(), LibraryError> {
         let temporary = file.with_extension("db.ripristino");
         fs::copy(source.join(db::FILE), &temporary)?;
         fs::rename(&temporary, &file)?;
-        let sounds = places.sounds();
-        let _ = fs::remove_dir_all(&sounds);
-        if source.join("suoni").is_dir() {
-            copy_files(&source.join("suoni"), &sounds)?;
+        for folder in USER_FOLDERS {
+            let _ = fs::remove_dir_all(places.user.join(folder));
         }
+        copy_user_folders(&source, &places.user, None)?;
         Ok(())
     })
 }
@@ -496,6 +537,43 @@ mod tests {
         fs::create_dir_all(places.sounds()).unwrap();
         fs::write(places.sounds().join("clap.wav"), b"RIFF").unwrap();
         places
+    }
+
+    #[test]
+    fn backups_hold_the_scores_once_and_restore_puts_them_back() {
+        let places = places("backup-scores");
+        let conn = db::open(&places.user.join(db::FILE)).unwrap();
+        let score = "10-0123456789abcdef.gp";
+        fs::create_dir_all(places.scores()).unwrap();
+        fs::write(places.scores().join(score), b"0123456789abcdef").unwrap();
+        let first = create(&conn, &places, BackupKind::Manual).unwrap();
+        let second = create(&conn, &places, BackupKind::Manual).unwrap();
+        let a = places
+            .backup
+            .join(&first.info.name)
+            .join("spartiti")
+            .join(score);
+        let b = places
+            .backup
+            .join(&second.info.name)
+            .join("spartiti")
+            .join(score);
+        assert_eq!(fs::read(&a).unwrap(), b"0123456789abcdef");
+        assert_eq!(fs::read(&b).unwrap(), b"0123456789abcdef");
+        // Hard-linked to the earlier backup where the disk allows it (NTFS; not ReFS, where
+        // the plain copy is a block clone instead): writing through one name shows in the other
+        let probe = places.user.join("link-probe");
+        if fs::hard_link(places.user.join(db::FILE), &probe).is_ok() {
+            fs::write(&b, b"changed").unwrap();
+            assert_eq!(fs::read(&a).unwrap(), b"changed");
+            fs::write(&b, b"0123456789abcdef").unwrap();
+        }
+
+        fs::remove_dir_all(places.scores()).unwrap();
+        drop(conn);
+        let library = Library::start(places.clone());
+        restore(&library, &first.info.name).unwrap();
+        assert!(places.scores().join(score).is_file());
     }
 
     #[test]

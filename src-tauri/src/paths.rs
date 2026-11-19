@@ -44,6 +44,10 @@ pub struct Places {
 
 /// Folder of the separated tracks saved as WAV files.
 const STEMS_FOLDER: &str = "Tracce separate";
+/// Folders of the user's work beside the library, saved in every backup (no subfolders).
+pub const SOUNDS_FOLDER: &str = "suoni";
+pub const SCORES_FOLDER: &str = "spartiti";
+pub const USER_FOLDERS: [&str; 2] = [SOUNDS_FOLDER, SCORES_FOLDER];
 
 impl Places {
     /// Everything under one folder: development, release tests and the portable version.
@@ -64,7 +68,12 @@ impl Places {
 
     /// The imported click sounds.
     pub fn sounds(&self) -> PathBuf {
-        self.user.join("suoni")
+        self.user.join(SOUNDS_FOLDER)
+    }
+
+    /// The score files (Guitar Pro, PDF) linked to tracks, copied in once and named by content.
+    pub fn scores(&self) -> PathBuf {
+        self.user.join(SCORES_FOLDER)
     }
 }
 

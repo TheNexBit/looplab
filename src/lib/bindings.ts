@@ -69,6 +69,16 @@ export const commands = {
 	setClickSamples: (slots: [(string | null), (string | null), (string | null), (string | null)]) => typedError<null, AppError>(__TAURI_INVOKE("set_click_samples", { slots })),
 	/**  Plays one click of a kind now, with its current sound, to hear it. */
 	previewSound: (slot: SoundSlot) => typedError<null, AppError>(__TAURI_INVOKE("preview_sound", { slot })),
+	/**
+	 *  Copies a score file into the library (once per content) and says what it is. The project
+	 *  of the song then names it; the user's file is never changed.
+	 */
+	importScore: (path: string) => typedError<ScoreFile, AppError>(__TAURI_INVOKE("import_score", { path })),
+	/**
+	 *  Lets the UI read one library score through the asset protocol (bytes as they are, no JSON
+	 *  round trip) and returns its path. Only that file is opened up, never the folder.
+	 */
+	prepareScore: (file: string) => typedError<string, AppError>(__TAURI_INVOKE("prepare_score", { file })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<Project_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track. */
@@ -396,7 +406,11 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 /**  The library (libreria.db) could not be read or written */
 "library" | 
 /**  A backup could not be made or put back */
-"backup" | "internal";
+"backup" | 
+/**  A score file over the size limit (200 MB) */
+"scoreTooLarge" | 
+/**  The library's copy of a linked score is gone */
+"scoreMissing" | "internal";
 
 /**  The exercises, each off when absent. */
 export type ExercisesRequest = ExercisesRequest_Serialize | ExercisesRequest_Deserialize;
@@ -661,6 +675,45 @@ export type ProjectLoop_Serialize = {
 	gap: number | null,
 };
 
+/**  The score linked to a track: the file in the library's `spartiti` folder and how it is shown. */
+export type ProjectScore = ProjectScore_Serialize | ProjectScore_Deserialize;
+
+/**  The score linked to a track: the file in the library's `spartiti` folder and how it is shown. */
+export type ProjectScore_Deserialize = {
+	/**  Name in the `spartiti` folder (by content) */
+	file: string,
+	/**  Name of the user's original file, to show */
+	name: string,
+	kind: ScoreKind,
+	/**  Indexes of the score's tracks drawn (guitar, bass…); empty = the first */
+	tracks?: number[],
+	staves?: ScoreStaves,
+	layout?: ScoreLayout,
+	follow?: ScoreFollow,
+	/**  Size of the drawing, 1 = normal */
+	zoom?: number | null,
+	/**  Where bars fall in the recording; empty = the score's own tempo from 0 s */
+	sync?: SyncPoint_Deserialize[],
+};
+
+/**  The score linked to a track: the file in the library's `spartiti` folder and how it is shown. */
+export type ProjectScore_Serialize = {
+	/**  Name in the `spartiti` folder (by content) */
+	file: string,
+	/**  Name of the user's original file, to show */
+	name: string,
+	kind: ScoreKind,
+	/**  Indexes of the score's tracks drawn (guitar, bass…); empty = the first */
+	tracks: number[],
+	staves: ScoreStaves,
+	layout: ScoreLayout,
+	follow: ScoreFollow,
+	/**  Size of the drawing, 1 = normal */
+	zoom: number | null,
+	/**  Where bars fall in the recording; empty = the score's own tempo from 0 s */
+	sync: SyncPoint_Serialize[],
+};
+
 /**
  *  Everything remembered about one track. Missing fields take their defaults,
  *  so files written by older versions still open.
@@ -699,6 +752,8 @@ export type Project_Deserialize = {
 	channels?: ChannelMode,
 	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
 	stemMix?: StemChannel[],
+	/**  The linked score (tab, notation or PDF), if any */
+	score?: ProjectScore_Deserialize | null,
 };
 
 /**
@@ -739,6 +794,8 @@ export type Project_Serialize = {
 	channels: ChannelMode,
 	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
 	stemMix: StemChannel[],
+	/**  The linked score (tab, notation or PDF), if any */
+	score: ProjectScore_Serialize | null,
 };
 
 export type RecentFile = RecentFile_Serialize | RecentFile_Deserialize;
@@ -812,6 +869,32 @@ export type SavedLoop_Serialize = {
 	/**  The player's own words about it, shown while it plays */
 	memo: string,
 };
+
+/**  A score file in the library. */
+export type ScoreFile = {
+	/**  File name in the `spartiti` folder: what projects store */
+	file: string,
+	/**  Name of the user's original, to show */
+	name: string,
+	kind: ScoreKind,
+	bytes: number | null,
+};
+
+/**  How the view follows the playhead: scrolling all the time, or a screen at a time. */
+export type ScoreFollow = "continuous" | "paged" | "off";
+
+/**  What kind of score a file is, from its extension. */
+export type ScoreKind = 
+/**  Guitar Pro 3-8, MusicXML, Capella: notes Looplab can draw and follow */
+"notation" | 
+/**  A picture of the music (phase 23) */
+"pdf";
+
+/**  How the score is laid out: systems one under the other, or one long line. */
+export type ScoreLayout = "page" | "horizontal";
+
+/**  Which staves of the score are drawn. */
+export type ScoreStaves = "tab" | "notation" | "both";
 
 /**  A part of the track with a name, like a Reaper region: it runs from `start` to `end`. */
 export type Section = Section_Serialize | Section_Deserialize;
@@ -916,6 +999,36 @@ export type StoredPrefs = {
 	values: { [key in string]: string },
 	/**  False until the preferences an older version kept in the WebView were imported */
 	imported: boolean,
+};
+
+/**
+ *  Where a point of the score falls in the recording: the start of bar `bar` (0-based, as
+ *  written) on its `occurrence`-th time through (repeats), plus `position` (0..1) of the bar.
+ */
+export type SyncPoint = SyncPoint_Serialize | SyncPoint_Deserialize;
+
+/**
+ *  Where a point of the score falls in the recording: the start of bar `bar` (0-based, as
+ *  written) on its `occurrence`-th time through (repeats), plus `position` (0..1) of the bar.
+ */
+export type SyncPoint_Deserialize = {
+	bar: number,
+	occurrence?: number,
+	position?: number | null,
+	/**  Seconds in the recording */
+	time: number | null,
+};
+
+/**
+ *  Where a point of the score falls in the recording: the start of bar `bar` (0-based, as
+ *  written) on its `occurrence`-th time through (repeats), plus `position` (0..1) of the bar.
+ */
+export type SyncPoint_Serialize = {
+	bar: number,
+	occurrence: number,
+	position: number | null,
+	/**  Seconds in the recording */
+	time: number | null,
 };
 
 /**

@@ -123,6 +123,94 @@ pub struct TempoMarker {
     pub auto: bool,
 }
 
+/// Which staves of the score are drawn.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum ScoreStaves {
+    Tab,
+    Notation,
+    Both,
+}
+
+/// How the score is laid out: systems one under the other, or one long line.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum ScoreLayout {
+    Page,
+    Horizontal,
+}
+
+/// How the view follows the playhead: scrolling all the time, or a screen at a time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum ScoreFollow {
+    Continuous,
+    Paged,
+    Off,
+}
+
+/// Where a point of the score falls in the recording: the start of bar `bar` (0-based, as
+/// written) on its `occurrence`-th time through (repeats), plus `position` (0..1) of the bar.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncPoint {
+    pub bar: u32,
+    #[serde(default)]
+    pub occurrence: u32,
+    #[serde(default)]
+    pub position: f64,
+    /// Seconds in the recording
+    pub time: f64,
+}
+
+/// The score linked to a track: the file in the library's `spartiti` folder and how it is shown.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectScore {
+    /// Name in the `spartiti` folder (by content)
+    pub file: String,
+    /// Name of the user's original file, to show
+    pub name: String,
+    pub kind: crate::scores::ScoreKind,
+    /// Indexes of the score's tracks drawn (guitar, bass…); empty = the first
+    #[serde(default)]
+    pub tracks: Vec<u32>,
+    #[serde(default = "ScoreStaves::default_staves")]
+    pub staves: ScoreStaves,
+    #[serde(default = "ScoreLayout::default_layout")]
+    pub layout: ScoreLayout,
+    #[serde(default = "ScoreFollow::default_follow")]
+    pub follow: ScoreFollow,
+    /// Size of the drawing, 1 = normal
+    #[serde(default = "one")]
+    pub zoom: f64,
+    /// Where bars fall in the recording; empty = the score's own tempo from 0 s
+    #[serde(default)]
+    pub sync: Vec<SyncPoint>,
+}
+
+const fn one() -> f64 {
+    1.0
+}
+
+impl ScoreStaves {
+    const fn default_staves() -> Self {
+        Self::Both
+    }
+}
+
+impl ScoreLayout {
+    const fn default_layout() -> Self {
+        Self::Page
+    }
+}
+
+impl ScoreFollow {
+    const fn default_follow() -> Self {
+        Self::Continuous
+    }
+}
+
 /// Everything remembered about one track. Missing fields take their defaults,
 /// so files written by older versions still open.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
@@ -158,6 +246,8 @@ pub struct Project {
     pub channels: ChannelMode,
     /// Levels, Mute and Solo of the separated tracks (empty until the song is separated)
     pub stem_mix: Vec<StemChannel>,
+    /// The linked score (tab, notation or PDF), if any
+    pub score: Option<ProjectScore>,
 }
 
 impl Default for Project {
@@ -181,6 +271,7 @@ impl Default for Project {
             eq: EqSettings::default(),
             channels: ChannelMode::Stereo,
             stem_mix: Vec::new(),
+            score: None,
         }
     }
 }

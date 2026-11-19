@@ -34,6 +34,10 @@ pub enum ErrorKind {
     Library,
     /// A backup could not be made or put back
     Backup,
+    /// A score file over the size limit (200 MB)
+    ScoreTooLarge,
+    /// The library's copy of a linked score is gone
+    ScoreMissing,
     Internal,
 }
 

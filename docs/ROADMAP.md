@@ -709,6 +709,44 @@ servono come file veri, in un posto fisso e ordinato.
 4. ✅ Provata dall'utente il 13/11/2026 (primo avvio con la libreria e import dei vecchi dati, esportazione nella
    cartella predefinita e in una scelta, ritorno alla predefinita). Da rifare quando capita: aprire un WAV in Reaper.
 
+## 21. Tab Guitar Pro nel player 🚧
+
+**Obiettivo:** come in Soundslice, la tab di un file Guitar Pro scorre sincronizzata con la registrazione vera;
+clic su una nota = salta lì, trascinare sulle note = loop A/B. Studio completo e requisiti (UI, prestazioni,
+dati) in `docs/studi/2026-11-19_tab-sincronizzate.md`. Ramo `tab`.
+
+**Piano:**
+
+- **Dati**: "Collega spartito" copia il file una volta in `spartiti\` nella cartella utente (nome = impronta del
+  contenuto, niente doppioni), il progetto del brano ricorda file, traccia, vista e punti di sincronizzazione in
+  `libreria.db`. La cartella `spartiti\` entra nei backup e nel ripristino come `suoni\`; i file che nessun brano
+  usa più si tolgono all'avvio. L'originale dell'utente non viene mai toccato.
+- **Vista Spartito** agganciata sopra le forme d'onda, ridimensionabile e comprimibile (come il video). alphaTab
+  1.9 (MPL-2.0) disegna tab e spartito in un worker, con i colori del tema. Barra: traccia (chitarra, basso…),
+  tab / spartito / entrambi, verticale / orizzontale, segui continuo / a pagine, zoom −/+.
+- **Motore padrone del tempo**: alphaTab in modalità media esterni; il cursore legge la posizione del motore a ogni
+  frame (fluido anche rallentato). Mappa tick ↔ secondi nostra (`timeline.ts`, con test) per loop e clic.
+- **Interazione**: clic su una nota = salta; trascina = loop A/B agganciato alle note (precisione al campione del
+  motore); il loop si vede come fascia colorata sulla tab e il resto si sbiadisce.
+- **Sincronizzazione iniziale**: punti letti dai file GP8; altrimenti "La battuta 1 inizia qui" e "L'ultima
+  battuta finisce qui" (le battute in mezzo seguono il tempo scritto). L'editor completo è la fase 22.
+- Stati disegnati: vuoto (trascina qui un file), caricamento, errore spiegato, non ancora sincronizzato.
+
+## 22. Editor di sincronizzazione 🔜
+
+Punti sulla forma d'onda (tap con `T`, trascina, sposta tutti, impliciti/reali, snap ai battiti, Annulla/Ripeti,
+"cancella questo e i successivi"), auto sync dai battiti della fase 17; la metrica della tab guida l'analisi.
+
+## 23. Spartiti PDF 🔜
+
+pdf.js, rilevamento di righi e stanghette, battute cliccabili, sincronizzazione e loop sull'immagine, pagine che
+girano da sole. Immagini delle pagine come cache rigenerabile.
+
+## 24. Extra dello spartito 🔜
+
+Manico illuminato dalle note della tab, synth sovrapposto, auto sync dalle note, conteggio e velocità progressiva
+sui loop della tab.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

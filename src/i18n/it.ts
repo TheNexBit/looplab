@@ -56,6 +56,8 @@ export const it = {
     library:
       "La libreria (libreria.db) non si legge o non si scrive: il lavoro non viene salvato. Guarda Impostazioni → Dati.",
     backup: "Il backup non è riuscito: controlla lo spazio libero e la cartella dei backup.",
+    scoreTooLarge: "Il file dello spartito è troppo grande (oltre 200 MB).",
+    scoreMissing: "La copia dello spartito nella libreria non c'è più: collegalo di nuovo.",
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     tempoModelMissing:

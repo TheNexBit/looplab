@@ -18,6 +18,7 @@ mod playback;
 mod prefs;
 mod project;
 mod recent;
+mod scores;
 mod state;
 mod stems_out;
 mod voice;
