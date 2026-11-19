@@ -24,9 +24,10 @@ import type { AppError } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
 import { type ProjectScore, SCORE_ZOOM, useScoreStore } from "@/stores/score";
+import { activeScore } from "./activeScore";
 import { pickScore } from "./pickScore";
-
 import { SyncMenu } from "./SyncMenu";
+import { stopTapping } from "./syncActions";
 
 /** alphaTab (1.2 MB) loads only when a score is first shown, never at start. */
 const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.ScoreView })));
@@ -301,17 +302,54 @@ function FileMenu({ link }: { link: ProjectScore }) {
   );
 }
 
+/** Tap mode: which bar the next T pins, lit like a recording lamp; Esc or the key ends it. */
+function TapBanner({ next }: { next: number }) {
+  const bar = activeScore.engine?.bars[next];
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      stopTapping();
+    };
+    window.addEventListener("keydown", onKey, { capture: true });
+    return () => window.removeEventListener("keydown", onKey, { capture: true });
+  }, []);
+  return (
+    <div
+      role="status"
+      className="flex min-w-0 items-center gap-2 rounded-control border border-accent/50 bg-accent/10 px-2 py-0.5"
+    >
+      <span
+        aria-hidden
+        className="size-2 shrink-0 animate-pulse rounded-full bg-accent shadow-[0_0_6px_var(--color-accent)]"
+      />
+      <span className="truncate font-medium text-fg">
+        {t.score.tappingNow((bar?.bar ?? 0) + 1)}
+      </span>
+      <kbd className="rounded-[3px] border border-border bg-well px-1 font-mono text-[10px] text-accent">
+        T
+      </kbd>
+      <Button size="md" className="h-6 px-2" onClick={stopTapping}>
+        {t.score.tappingStop}
+      </Button>
+    </div>
+  );
+}
+
 function ScoreToolbar({ link }: { link: ProjectScore }) {
   const store = useScoreStore.getState();
   const collapsed = useScoreStore((s) => s.collapsed);
   const ready = useScoreStore((s) => s.status === "ready");
+  const tapping = useScoreStore((s) => s.tapping);
   return (
     <header className="flex h-9 shrink-0 items-center gap-2 px-3 text-xs">
       {/* Left: what a narrow window can drop (all of it is also in the "…" menu) */}
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
         <PanelTitle />
-        <TrackMenu link={link} />
-        {!collapsed && (
+        {tapping !== null && <TapBanner next={tapping} />}
+        {tapping === null && <TrackMenu link={link} />}
+        {tapping === null && !collapsed && (
           <>
             <span className="hidden h-4 w-px shrink-0 bg-border lg:block" aria-hidden />
             <div className="hidden lg:block">

@@ -4,6 +4,7 @@ import { useLoopStore } from "./loop";
 import { type MarkerData, type SectionData, useMarkersStore } from "./markers";
 import { usePracticeStore } from "./practice";
 import { type SavedLoopData, useSavedLoopsStore } from "./savedLoops";
+import { type SyncPoint, useScoreStore } from "./score";
 
 /** Changes closer together than this are one step (a drag is one step, not hundreds). */
 const SETTLE_MS = 400;
@@ -16,6 +17,8 @@ export interface EditState {
   loop: { start: number | null; end: number | null; enabled: boolean };
   savedLoops: SavedLoopData[];
   tempoMap: TempoMap;
+  /** Sync of the linked score (null without one) */
+  scoreSync: SyncPoint[] | null;
 }
 
 function capture(): EditState {
@@ -27,6 +30,7 @@ function capture(): EditState {
     loop: { start, end, enabled },
     savedLoops: useSavedLoopsStore.getState().loops,
     tempoMap: usePracticeStore.getState().tempoMap,
+    scoreSync: useScoreStore.getState().link?.sync ?? null,
   };
 }
 
@@ -35,6 +39,7 @@ const same = (a: EditState, b: EditState) =>
   a.sections === b.sections &&
   a.savedLoops === b.savedLoops &&
   a.tempoMap === b.tempoMap &&
+  a.scoreSync === b.scoreSync &&
   a.loop.start === b.loop.start &&
   a.loop.end === b.loop.end &&
   a.loop.enabled === b.loop.enabled;
@@ -49,7 +54,7 @@ interface HistoryState {
 }
 
 /**
- * Undo / redo of markers, sections, the loop, saved loops and the tempo map. It watches those stores:
+ * Undo / redo of markers, sections, the loop, saved loops, the tempo map and the score sync. It watches those stores:
  * the state before a burst of changes becomes one step once they settle.
  */
 export const useHistoryStore = create<HistoryState>((set, get) => {
@@ -84,6 +89,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => {
     useLoopStore.setState(state.loop);
     useSavedLoopsStore.getState().replace(state.savedLoops);
     usePracticeStore.getState().setTempoMap(state.tempoMap);
+    if (state.scoreSync) useScoreStore.getState().setSync(state.scoreSync);
     restoring = false;
     settled = state;
   };
@@ -94,6 +100,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => {
   // Only the map itself: the playhead moving the focus is no edit
   usePracticeStore.subscribe((state, previous) => {
     if (state.tempoMap !== previous.tempoMap) onChange();
+  });
+
+  // Only the sync: the view (zoom, staves…) and the score being loaded are no edits
+  useScoreStore.subscribe((state, previous) => {
+    if (state.link?.sync !== previous.link?.sync && state.link?.file === previous.link?.file)
+      onChange();
   });
 
   return {

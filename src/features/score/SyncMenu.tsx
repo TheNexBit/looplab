@@ -1,19 +1,34 @@
-import { Eraser, FileDown, Flag, FlagTriangleRight, MapPin } from "lucide-react";
+import {
+  Eraser,
+  FileDown,
+  Flag,
+  FlagTriangleRight,
+  Grid3x3,
+  Hand,
+  MapPin,
+  Metronome,
+  MoveHorizontal,
+} from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
+import { menuContent, menuItem, menuLabel, menuSeparator, smallKey } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { currentPosition } from "@/stores/player";
+import { usePracticeStore } from "@/stores/practice";
 import { type ProjectScore, type SyncPoint, useScoreStore } from "@/stores/score";
 import { activeScore } from "./activeScore";
+import { startTapping, syncToGrid, tempoMapFromScore } from "./syncActions";
+
+/** Steps of "Move all", seconds: fine and coarse, earlier and later. */
+const SHIFTS = [-0.5, -0.05, 0.05, 0.5] as const;
 
 /**
- * Quick sync of phase 21: pin bar 1, the last bar's end, or the bar under the cursor to the
- * playhead. Between pinned bars the music follows the written tempo. The full editor (tap,
- * drag on the waveform, snap to beats) is phase 22.
+ * The score's sync: pin bar 1, the last bar's end or the bar under the cursor to the playhead;
+ * tap the bars with T; lock every bar to the tempo grid; make the tempo map from the tab;
+ * move all points together. The points themselves are dragged on the waveform (SyncFlags).
  */
 /** The points the menu offers, worked out when it opens (the playhead moves meanwhile). */
 interface Offer {
@@ -50,6 +65,7 @@ function offerAt(time: number): Offer {
 
 export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boolean }) {
   const fileSync = useScoreStore((s) => s.fileSync);
+  const hasGrid = usePracticeStore((s) => s.tempoMap.length > 0);
   const [offer, setOffer] = useState<Offer>(NO_OFFER);
   const count = link.sync.length;
   const synced = count > 0;
@@ -107,6 +123,57 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
               <MapPin className="size-3.5" />
               {t.score.syncHere(offer.here.bar + 1)}
             </DropdownMenu.Item>
+          )}
+          <DropdownMenu.Item className={cn(menuItem, "items-start")} onSelect={startTapping}>
+            <Hand className="mt-0.5 size-3.5 shrink-0" />
+            <span>
+              {t.score.syncTap}
+              <span className="block text-[11px] opacity-70">{t.score.syncTapHint}</span>
+            </span>
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator className={menuSeparator} />
+          <DropdownMenu.Item
+            className={cn(menuItem, "items-start")}
+            disabled={!hasGrid}
+            onSelect={syncToGrid}
+          >
+            <Grid3x3 className="mt-0.5 size-3.5 shrink-0" />
+            <span>
+              {t.score.syncGrid}
+              <span className="block text-[11px] opacity-70">
+                {hasGrid ? t.score.syncGridHint : t.score.syncGridNeedsTempo}
+              </span>
+            </span>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            className={cn(menuItem, "items-start")}
+            disabled={!synced}
+            onSelect={tempoMapFromScore}
+          >
+            <Metronome className="mt-0.5 size-3.5 shrink-0" />
+            <span>
+              {t.score.tempoFromScore}
+              <span className="block text-[11px] opacity-70">{t.score.tempoFromScoreHint}</span>
+            </span>
+          </DropdownMenu.Item>
+          {synced && (
+            <div className="flex items-center gap-2 px-2.5 py-1.5">
+              <MoveHorizontal className="size-3.5 text-fg-muted" aria-hidden />
+              <span className="mr-auto">{t.score.syncShift}</span>
+              {SHIFTS.map((step) => (
+                <button
+                  key={step}
+                  type="button"
+                  className={cn(smallKey, "w-auto px-1.5 font-mono text-[10px] tabular")}
+                  aria-label={step < 0 ? t.score.syncShiftEarlier : t.score.syncShiftLater}
+                  title={step < 0 ? t.score.syncShiftEarlier : t.score.syncShiftLater}
+                  onClick={() => useScoreStore.getState().shiftSync(step)}
+                >
+                  {step > 0 ? "+" : "−"}
+                  {Math.abs(step).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </button>
+              ))}
+            </div>
           )}
           {(fileSync.length > 0 || synced) && <DropdownMenu.Separator className={menuSeparator} />}
           {fileSync.length > 0 && (

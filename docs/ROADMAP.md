@@ -743,10 +743,27 @@ dura come a velocità 1); la scritta "alphaTab.net" resta visibile (richiesta da
   battuta finisce qui" (le battute in mezzo seguono il tempo scritto). L'editor completo è la fase 22.
 - Stati disegnati: vuoto (trascina qui un file), caricamento, errore spiegato, non ancora sincronizzato.
 
-## 22. Editor di sincronizzazione 🔜
+## 22. Editor di sincronizzazione 🚧
 
-Punti sulla forma d'onda (tap con `T`, trascina, sposta tutti, impliciti/reali, snap ai battiti, Annulla/Ripeti,
-"cancella questo e i successivi"), auto sync dai battiti della fase 17; la metrica della tab guida l'analisi.
+**Obiettivo:** sincronizzare la tab con la registrazione in pochi secondi e correggerla a vista, come in
+Soundslice, con i comandi di Looplab (bandierine come quelle del tempo, Annulla/Ripeti, snap).
+
+**Piano:**
+
+- **Bandierine delle battute** sulla forma d'onda dettagliata: ogni punto di sincronia è una bandierina col numero
+  di battuta (colore dello spartito); tra un punto e l'altro sottili righe dove cadono le battute calcolate, così si
+  vede subito se la tab "scivola". Clic = salta lì; trascina = sposta (con lo snap ai battiti della mappa del tempo
+  se il magnete è acceso, Shift lo sospende), senza poter scavalcare i vicini; tasto destro = elimina, elimina
+  questo e i successivi.
+- **Batti le battute**: dal menu Sincronizza si entra in modalità tap: in riproduzione ogni `T` fissa l'inizio
+  della battuta successiva (la barra dello spartito dice quale), `Esc` esce. Fuori da questa modalità `T` resta il
+  tap del tempo.
+- **Sposta tutto**: tutti i punti avanti o indietro insieme (es. la registrazione ha un'intro più lunga).
+- **Segui la griglia del tempo**: con una mappa del tempo (fase 17 o a mano) e la battuta 1 fissata, ogni battuta
+  della tab si aggancia alla griglia seguendo la metrica scritta nella tab.
+- **Mappa del tempo dalla tab**: il contrario, una tab sincronizzata crea la mappa del tempo (tempo e metrica di
+  ogni cambio, es. l'intro in 7/4): metronomo, griglia e conteggio diventano giusti anche nei brani prog.
+- Annulla/Ripeti comprendono la sincronia; tutto si salva nel progetto del brano.
 
 ## 23. Spartiti PDF 🔜
 

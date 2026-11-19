@@ -68,6 +68,12 @@ export function ScoreView({ link }: { link: ProjectScore }) {
           setBands(span ? engine.regionRects(span.start, span.end) : NO_BANDS);
         },
         failed: () => store.setStatus("error"),
+        timed: () => {
+          store.bumpTiming();
+          // The loop band follows the bars wherever the new sync puts them
+          const span = shownRef.current;
+          setBands(span ? engine.regionRects(span.start, span.end) : NO_BANDS);
+        },
       },
     );
     engineRef.current = engine;

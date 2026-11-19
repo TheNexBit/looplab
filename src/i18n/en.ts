@@ -705,6 +705,25 @@ export const en = {
     syncHere: (bar: number) => `Bar ${bar} starts here`,
     syncConflict:
       "Not here: the playhead must be after the points before it and before those after",
+    syncFlag: (bar: string) =>
+      `Bar ${bar} — click: go there · drag: move (snaps to beats; Shift suspends it)`,
+    syncFlagRightClick: "delete",
+    syncRemove: "Delete this point",
+    syncRemoveFrom: "Delete this and the following",
+    syncTap: "Tap the bars with the T key",
+    syncTapHint: "Play the song and press T on every downbeat: each T pins the next bar",
+    tappingNow: (bar: number) => `Bar ${bar}: press T on its first beat`,
+    tappingStop: "Done (Esc)",
+    syncShift: "Move all",
+    syncShiftEarlier: "All earlier",
+    syncShiftLater: "All later",
+    syncGrid: "Follow the tempo grid",
+    syncGridHint: "Every bar locks to the tempo map, with the meter written in the tab",
+    syncGridNeedsTempo:
+      "Needs a tempo map: “Analyse tempo” in the Tempo module, or set one by hand",
+    tempoFromScore: "Make the tempo map from the tab",
+    tempoFromScoreHint:
+      "Tempo and meter at every change (e.g. a 7/4 intro): metronome and grid become right",
     syncFromFile: "Use the sync saved in the file",
     syncClear: "Clear the sync",
     clickHint: "Click a note: jump there · Drag over notes: loop",

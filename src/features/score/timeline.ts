@@ -22,6 +22,9 @@ export interface BarSpan {
   endTick: number;
   /** Tempo changes inside the bar, the first at `startTick`; quarter notes per minute */
   tempos: { tick: number; bpm: number }[];
+  /** Written meter (7/8 → 7 and 8); 4/4 when unknown */
+  beatsPerBar?: number;
+  beatUnit?: number;
 }
 
 export interface ScorePoint {

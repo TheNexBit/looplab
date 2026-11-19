@@ -3,6 +3,7 @@ import * as alphaTab from "@coderline/alphatab";
 import bravuraWoff2 from "@coderline/alphatab/font/Bravura.woff2?url";
 import { themeColor } from "@/lib/theme";
 import type { ProjectScore, ScoreTrack, SyncPoint } from "@/stores/score";
+import { quartersOf, type TimedBar } from "./syncTools";
 import { type BarSpan, buildTimeline, type Timeline } from "./timeline";
 
 type Api = alphaTab.AlphaTabApi;
@@ -24,6 +25,8 @@ export interface ScoreEvents {
   /** Bars and beats are drawn (again): overlays must be placed again */
   rendered: () => void;
   failed: (message: string) => void;
+  /** Bars and sync are known (again): where each bar falls in the recording may have moved */
+  timed: () => void;
 }
 
 /** A rectangle in the score's drawing, in CSS pixels from its top left. */
@@ -104,7 +107,7 @@ export class ScoreEngine {
     scroller: HTMLElement,
     view: ProjectScore,
     private readonly host: ScoreHost,
-    events: ScoreEvents,
+    private readonly events: ScoreEvents,
   ) {
     this.view = view;
     this.sync = view.sync;
@@ -245,7 +248,15 @@ export class ScoreEngine {
         if (change.tick > lookup.start) tempos.push({ tick: change.tick, bpm: change.tempo });
         else if (tempos[0]) tempos[0].bpm = change.tempo;
       }
-      return { bar, occurrence, startTick: lookup.start, endTick: lookup.end, tempos };
+      return {
+        bar,
+        occurrence,
+        startTick: lookup.start,
+        endTick: lookup.end,
+        tempos,
+        beatsPerBar: lookup.masterBar.timeSignatureNumerator,
+        beatUnit: lookup.masterBar.timeSignatureDenominator,
+      };
     });
   }
 
@@ -309,6 +320,7 @@ export class ScoreEngine {
     if (this.spans.length > 0) this.timeline = buildTimeline(this.spans, sync);
     this.lastSent = Number.NaN;
     this.follow(this.host.position());
+    this.events.timed();
   }
 
   /** Moves the cursor to `seconds` of the recording (called on every display frame). */
@@ -339,6 +351,32 @@ export class ScoreEngine {
 
   get bars(): readonly BarSpan[] {
     return this.spans;
+  }
+
+  /** Every bar pass with where it starts in the recording, and where the last one ends. */
+  timedBars(): { bars: TimedBar[]; end: number } | null {
+    const timeline = this.timeline;
+    if (!timeline) return null;
+    const bars = this.spans.map((span) => ({
+      bar: span.bar,
+      occurrence: span.occurrence,
+      quarters: quartersOf(span.startTick, span.endTick),
+      time: timeline.seconds(span.startTick),
+      beatsPerBar: span.beatsPerBar ?? 4,
+      beatUnit: span.beatUnit ?? 4,
+    }));
+    return { bars, end: timeline.seconds(timeline.endTick) };
+  }
+
+  /** The sync point at the start of the bar pass number `index` (playback order), at `time`. */
+  barStart(index: number, time: number): SyncPoint | null {
+    const span = this.spans[index];
+    return span ? { bar: span.bar, occurrence: span.occurrence, position: 0, time } : null;
+  }
+
+  /** Index (playback order) of the bar pass a sync point starts, -1 if none. */
+  indexOf(point: SyncPoint): number {
+    return this.spans.findIndex((s) => s.bar === point.bar && s.occurrence === point.occurrence);
   }
 
   /** The bar pass heard at `seconds`, and how far through it (0..1). */

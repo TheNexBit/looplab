@@ -5,6 +5,7 @@ import { nudgeBpm, tapMetronome } from "@/features/metronome/TempoControls";
 import { setFollow } from "@/features/player/FollowKey";
 import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/actions";
 import { togglePlaylist } from "@/features/practice/playlist";
+import { isTapping, tapSync } from "@/features/score/syncActions";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
 import {
@@ -141,7 +142,9 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   undo: () => useHistoryStore.getState().undo(),
   redo: () => useHistoryStore.getState().redo(),
   saveLoop: () => useSavedLoopsStore.getState().saveCurrent(),
-  tapTempo: () => (metronomeMode() ? tapMetronome() : hasTrack() && tapBeat()),
+  // In the score's tap mode T pins the next bar; otherwise it taps the tempo
+  tapTempo: () =>
+    metronomeMode() ? tapMetronome() : isTapping() ? tapSync() : hasTrack() && tapBeat(),
   toggleMetronome,
   toggleCountIn: () => useSettingsStore.getState().update({ countIn: !settings().countIn }),
   setDownbeat: () => hasTrack() && setDownbeatHere(),

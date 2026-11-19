@@ -89,6 +89,19 @@ interface ScoreState extends Prefs {
   setSync: (sync: SyncPoint[]) => void;
   /** Adds a sync point, replacing one at the same place of the score. */
   putSync: (point: SyncPoint) => void;
+  /** Moves sync point `index` (in `link.sync`) to `time`. */
+  moveSync: (index: number, time: number) => void;
+  removeSync: (index: number) => void;
+  /** Removes the sync points at `index` and every one after it in the recording. */
+  removeSyncFrom: (index: number) => void;
+  /** Moves every sync point by `seconds` (never before 0). */
+  shiftSync: (seconds: number) => void;
+  /** Tap mode: the bar pass (playback order) the next `T` pins, or null when off */
+  tapping: number | null;
+  setTapping: (next: number | null) => void;
+  /** Goes up each time the score's bars are placed again in the recording (for overlays) */
+  timing: number;
+  bumpTiming: () => void;
   setSize: (size: number) => void;
   toggleCollapsed: () => void;
   /** The top bar's Score key: shows or hides the panel (the empty one with no score). */
@@ -124,6 +137,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       set({
         asking: false,
         notice: null,
+        tapping: null,
         link,
         status: link ? "loading" : "none",
         error: null,
@@ -185,7 +199,8 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       prefs({ collapsed: false });
     },
 
-    unlink: () => set({ link: null, status: "none", error: null, tracks: [], fileSync: [] }),
+    unlink: () =>
+      set({ link: null, status: "none", error: null, tracks: [], fileSync: [], tapping: null }),
     setStatus: (status, error = null) => set({ status, error }),
     setLoaded: (tracks, barCount, fileSync) => set({ tracks, barCount, fileSync, status: "ready" }),
     setTracks: (tracks) => edit({ tracks }),
@@ -199,6 +214,28 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       edit({ zoom: next });
     },
     setSync: (sync) => edit({ sync }),
+    moveSync: (index, time) => {
+      const sync = get().link?.sync ?? [];
+      const point = sync[index];
+      if (point) edit({ sync: sync.map((p, i) => (i === index ? { ...p, time } : p)) });
+    },
+    removeSync: (index) => edit({ sync: (get().link?.sync ?? []).filter((_, i) => i !== index) }),
+    removeSyncFrom: (index) => {
+      const sync = get().link?.sync ?? [];
+      const from = sync[index]?.time;
+      if (from !== undefined) edit({ sync: sync.filter((p) => p.time < from) });
+    },
+    shiftSync: (seconds) => {
+      const sync = get().link?.sync ?? [];
+      if (sync.length === 0) return;
+      // The earliest point stops at 0: all move by the same amount, so the spacing stays
+      const delta = Math.max(seconds, -Math.min(...sync.map((p) => p.time)));
+      edit({ sync: sync.map((p) => ({ ...p, time: p.time + delta })) });
+    },
+    tapping: null,
+    setTapping: (tapping) => set({ tapping }),
+    timing: 0,
+    bumpTiming: () => set({ timing: get().timing + 1 }),
     putSync: (point) => {
       const sync = get().link?.sync ?? [];
       edit({ sync: [...sync.filter((p) => !samePlace(p, point)), point] });

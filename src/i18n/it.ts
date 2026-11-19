@@ -708,6 +708,26 @@ export const it = {
     syncHere: (bar: number) => `La battuta ${bar} inizia qui`,
     syncConflict:
       "Non qui: la testina deve stare dopo i punti che vengono prima e prima di quelli dopo",
+    syncFlag: (bar: string) =>
+      `Battuta ${bar} — clic: vai lì · trascina: sposta (snap ai battiti; Maiusc lo sospende)`,
+    syncFlagRightClick: "elimina",
+    syncRemove: "Elimina questo punto",
+    syncRemoveFrom: "Elimina questo e i successivi",
+    syncTap: "Batti le battute col tasto T",
+    syncTapHint:
+      "Fai suonare il brano e premi T su ogni primo battito: ogni T fissa la battuta successiva",
+    tappingNow: (bar: number) => `Battuta ${bar}: premi T sul suo primo battito`,
+    tappingStop: "Fine (Esc)",
+    syncShift: "Sposta tutto",
+    syncShiftEarlier: "Tutto prima",
+    syncShiftLater: "Tutto dopo",
+    syncGrid: "Segui la griglia del tempo",
+    syncGridHint: "Ogni battuta si aggancia alla mappa del tempo, con la metrica scritta nella tab",
+    syncGridNeedsTempo:
+      "Serve una mappa del tempo: «Analizza tempo» nel modulo Tempo, o impostala a mano",
+    tempoFromScore: "Crea la mappa del tempo dalla tab",
+    tempoFromScoreHint:
+      "Tempo e metrica di ogni cambio (es. intro in 7/4): metronomo e griglia diventano giusti",
     syncFromFile: "Usa la sincronia salvata nel file",
     syncClear: "Azzera la sincronia",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",
