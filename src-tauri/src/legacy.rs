@@ -83,7 +83,8 @@ fn set_aside(file: &Path, dest: &Path, name: &str, remove: bool) -> std::io::Res
 }
 
 /// Imports the project file an older version left beside `track`, if there is one, and sets
-/// the file aside in `dest`. A damaged file is left where it is.
+/// the file aside in `dest`. A damaged file is left where it is and reported as
+/// `LibraryError::Invalid`, so the user is told and nothing is saved over it.
 pub fn import_beside_track(
     conn: &Connection,
     track: &str,
@@ -100,7 +101,7 @@ pub fn import_beside_track(
                 "library",
                 &format!("{} not imported: {err}", file.display()),
             );
-            return Ok(None);
+            return Err(err);
         }
     };
     if project::find(conn, track)?.is_none() {
@@ -172,7 +173,11 @@ pub fn import_old_files(conn: &Connection, places: &Places) -> Result<(), Librar
     tx.commit()?;
 
     for track in &tracks {
-        import_beside_track(conn, track, &dest)?;
+        // A damaged file stays beside its track: it is reported when that track is opened
+        match import_beside_track(conn, track, &dest) {
+            Ok(_) | Err(LibraryError::Invalid(_)) => {}
+            Err(err) => return Err(err),
+        }
     }
     for name in ["recent.json", "diary.json"] {
         let file = dir.join(name);
@@ -287,11 +292,12 @@ mod tests {
         let track = root.join("song.wav").to_string_lossy().into_owned();
         fs::write(beside_track(&track), "{ broken").unwrap();
         let conn = memory();
-        assert!(
-            import_beside_track(&conn, &track, &root.join("kept"))
-                .unwrap()
-                .is_none()
-        );
+        assert!(matches!(
+            import_beside_track(&conn, &track, &root.join("kept")),
+            Err(LibraryError::Invalid(_))
+        ));
         assert!(beside_track(&track).exists());
+        // Opening the track reports it too, and the start's import skips it
+        assert!(project::load(&conn, &track, &root.join("kept")).is_err());
     }
 }

@@ -11,23 +11,26 @@ import { type SavedLoopData, useSavedLoopsStore } from "@/stores/savedLoops";
 function SavedLoopRow({ loop, current }: { loop: SavedLoopData; current: boolean }) {
   const { rename, remove, recall, setMemo } = useSavedLoopsStore.getState();
   return (
-    <li className="group flex h-[30px] items-center gap-2 rounded-control border border-transparent px-2 hover:border-edge hover:bg-well">
+    <li className="group flex items-center gap-2 rounded-control border border-transparent px-2 py-1 hover:border-edge hover:bg-well">
       <span
         aria-hidden
         className={
           current
-            ? "h-4 w-1 shrink-0 rounded-[1px] bg-loop shadow-[0_0_6px_var(--color-loop)]"
-            : "h-4 w-1 shrink-0 rounded-[1px] bg-loop/40"
+            ? "h-8 w-1 shrink-0 rounded-[1px] bg-loop shadow-[0_0_6px_var(--color-loop)]"
+            : "h-8 w-1 shrink-0 rounded-[1px] bg-loop/40"
         }
       />
-      <InlineName
-        value={loop.name}
-        label={t.savedLoops.rename}
-        onRename={(name) => rename(loop.id, name)}
-      />
-      <span className="font-mono text-[11px] text-fg-subtle tabular">
-        {formatTime(loop.start)}–{formatTime(loop.end)}
-      </span>
+      {/* Name over its times, so the name has the whole width of the row (as in Sections) */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <InlineName
+          value={loop.name}
+          label={t.savedLoops.rename}
+          onRename={(name) => rename(loop.id, name)}
+        />
+        <span className="px-1 font-mono text-[11px] whitespace-nowrap text-fg-subtle tabular">
+          {formatTime(loop.start)}–{formatTime(loop.end)}
+        </span>
+      </div>
       <MemoButton
         memo={loop.memo}
         label={`${t.memo.title}: ${loop.name}`}

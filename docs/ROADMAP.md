@@ -5,7 +5,7 @@
 | 1   | Fondamenta                 | ✅ completata              |
 | 2   | Cuore audio                | ✅ completata              |
 | 3   | Velocità, tonalità e loop  | ✅ completata              |
-| 4   | Marker e sezioni           | ✅ completata — da provare |
+| 4   | Marker e sezioni           | ✅ collaudata (19/11/2026) |
 | 5   | EQ e isolamento base       | ✅ completata — da provare |
 | 6   | Video                      | ✅ completata — da provare |
 | 7   | Rifinitura e distribuzione | ✅ completata — da provare |
@@ -65,6 +65,13 @@ la successiva), nessun riordino manuale (l'ordine è quello del brano), velocit�
   tipi generati), 0,8 s dopo l'ultima modifica e alla chiusura; scrittura atomica; un file illeggibile non viene
   mai sovrascritto; cartella protetta → copia nella cartella dati dell'app.
 - File recenti (10) nello stato vuoto e nel menu accanto ad "Apri" (`src-tauri/src/recent.rs`).
+- Correzioni dopo il collaudo del 19/11/2026 (`docs/collaudo/`): la barra in basso entra di nuovo in ogni
+  larghezza da 900 px in su (misurato a 900, 1023, 1024, 1279, 1280, 1535, 1536, 1799 e 1800 px; sotto i 1280 px
+  Segui, Brano intero e Calamita si nascondono e restano sui tasti F, Z e G, come Batti e Conteggio e l'intervallo
+  del loop; i fader e il display si stringono sotto i 1024 px; Batti e Conteggio si vedono da 1600 px, i tasti 50/75/100% da 1800 px; il contatore ×N del loop sta accanto alla scritta «Loop», così non allarga la barra); nel pannello
+  Sezioni e nei Loop salvati il nome sta sopra gli orari e ha il suggerimento col nome intero; Esc nella rinomina annulla davvero e un nome lasciato com'era non aggiunge un passo di Annulla; un
+  vecchio `.looplab.json` danneggiato fa comparire l'avviso «il progetto non si legge»; Biome ignora `.claude` e
+  `docs/collaudo`.
 
 ## 5. EQ e isolamento base ✅
 

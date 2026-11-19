@@ -25,7 +25,7 @@ const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
 
 /** Speed and pitch faders line up one under the other */
 const LABEL = "w-16";
-const TRACK = "w-16 xl:w-20 2xl:w-24";
+const TRACK = "w-12 lg:w-16 2xl:w-20 min-[1800px]:w-24";
 
 /** Bottom dock: transport, loop, tempo and click (like every DAW), speed and pitch. */
 export function TransportDock() {
@@ -43,7 +43,7 @@ export function TransportDock() {
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
-    <footer className="flex h-[88px] shrink-0 items-center gap-1 border-t border-edge bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2 lg:gap-2 xl:gap-2.5 xl:px-4 shadow-[inset_0_1px_0_var(--color-sheen)]">
+    <footer className="flex h-[88px] shrink-0 items-center gap-1 border-t border-edge bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2 lg:gap-2 2xl:gap-2.5 2xl:px-4 shadow-[inset_0_1px_0_var(--color-sheen)]">
       <div className={GROUP}>
         <Tooltip label={playLabel} shortcut="playPause">
           <Button
@@ -81,9 +81,11 @@ export function TransportDock() {
       <TimeDisplay />
       <div className={GROUP}>
         <LoopMenu disabled={!hasTrack} />
-        <FollowKey />
-        {/* Below 1024 px the dock has no room for it: the Z key and the palette still do it */}
-        <div className="hidden lg:flex">
+        {/* Below 1280 px the dock has no room for these three: F, Z, G and the palette still do them */}
+        <div className="hidden xl:flex">
+          <FollowKey />
+        </div>
+        <div className="hidden xl:flex">
           <Tooltip label={t.transport.wholeTrack} shortcut="zoomToTrack">
             <Button
               variant="hardware"
@@ -99,25 +101,27 @@ export function TransportDock() {
             </Button>
           </Tooltip>
         </div>
-        <Tooltip label={t.transport.snap} shortcut="toggleSnap">
-          <Button
-            variant="hardware"
-            size="key"
-            led="amber"
-            active={snap && !suspended}
-            onClick={() => useSettingsStore.getState().update({ snap: !snap })}
-            aria-label={t.shortcuts.toggleSnap}
-            aria-pressed={snap}
-          >
-            <Magnet className="size-4" />
-          </Button>
-        </Tooltip>
+        <div className="hidden xl:flex">
+          <Tooltip label={t.transport.snap} shortcut="toggleSnap">
+            <Button
+              variant="hardware"
+              size="key"
+              led="amber"
+              active={snap && !suspended}
+              onClick={() => useSettingsStore.getState().update({ snap: !snap })}
+              aria-label={t.shortcuts.toggleSnap}
+              aria-pressed={snap}
+            >
+              <Magnet className="size-4" />
+            </Button>
+          </Tooltip>
+        </div>
       </div>
 
       <TempoModule />
 
       {/* Speed over pitch, like two strips of a mixer: the dock fits the narrowest window */}
-      <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-3 py-1.5">
+      <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-2 py-1.5 lg:px-3">
         {/* Track and click levels first: lower the track to hear the click over a loud mix */}
         <VolumeStrip />
         <div className="grid gap-1">
@@ -141,7 +145,7 @@ export function TransportDock() {
                 active={speed === preset}
                 onClick={() => setSpeed(preset)}
                 aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
-                className="hidden h-[22px] px-1.5 font-mono text-[10px] tabular 2xl:inline-block"
+                className="hidden h-[22px] px-1.5 font-mono text-[10px] tabular min-[1800px]:inline-block"
               >
                 {formatPercent(preset)}
               </Chip>

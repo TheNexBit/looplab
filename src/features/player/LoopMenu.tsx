@@ -60,14 +60,19 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
               className="h-12 gap-2 rounded-l-none border-l-0 px-2.5"
             >
               {/* Loop range readout; the key opens the loop options */}
-              <span className="flex flex-col items-start gap-px max-lg:hidden">
-                <span className="panel-label">{t.transport.loop}</span>
+              <span className="flex flex-col items-start gap-px max-xl:hidden">
+                <span className="panel-label">
+                  {t.transport.loop}
+                  {/* Repetitions played, like the counter of a looper pedal: on the label's
+                      line, so a long count never widens the dock */}
+                  {region && repetitions > 0 && (
+                    <span className="ml-1.5 font-mono normal-case tracking-normal text-readout tabular">
+                      ×{repetitions + 1}
+                    </span>
+                  )}
+                </span>
                 <span className="font-mono text-xs whitespace-nowrap text-fg tabular">
                   {region ? `${formatTime(region.start)} → ${formatTime(region.end)}` : "—"}
-                  {/* Repetitions played, like the counter of a looper pedal */}
-                  {region && repetitions > 0 && (
-                    <span className="ml-1.5 text-readout">×{repetitions + 1}</span>
-                  )}
                 </span>
               </span>
               <ChevronDown className="size-3.5" />

@@ -20,16 +20,16 @@ export function TimeDisplay() {
   });
 
   return (
-    <div className="flex h-[58px] w-[104px] shrink-0 xl:w-44 flex-col justify-center gap-1 lcd rounded-panel px-3">
+    <div className="flex h-[58px] w-24 shrink-0 lg:w-[104px] 2xl:w-44 flex-col justify-center gap-1 lcd rounded-panel px-3">
       <div className="flex items-baseline justify-between">
-        <span className="hidden text-[9px] font-medium tracking-[0.16em] text-lcd-dim uppercase xl:inline">
+        <span className="hidden text-[9px] font-medium tracking-[0.16em] text-lcd-dim uppercase 2xl:inline">
           {t.transport.position}
         </span>
         <span ref={durationRef} className="font-mono text-[11px] text-lcd-dim tabular" />
       </div>
       <span
         ref={positionRef}
-        className="font-mono text-[20px] leading-none xl:text-[26px] font-medium text-lcd-fg tabular lcd-glow"
+        className="font-mono text-[20px] leading-none 2xl:text-[26px] font-medium text-lcd-fg tabular lcd-glow"
       />
     </div>
   );
