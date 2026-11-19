@@ -9,22 +9,47 @@ import { gridSync, tempoMapFromBars } from "./syncTools";
  * the next bar's start at the playhead. The shortcut `T` comes here only while it is on.
  */
 export function startTapping() {
-  const engine = activeScore.engine;
-  const sync = useScoreStore.getState().link?.sync ?? [];
-  if (!engine) return;
-  const latest = [...sync].sort((a, b) => b.time - a.time)[0];
-  const next = latest ? engine.indexOf(latest) + 1 : 0;
-  useScoreStore.getState().setTapping(next < engine.bars.length ? next : 0);
+  const next = nextTapIndex();
+  const bars = activeScore.engine?.bars.length ?? 0;
+  if (bars > 0) useScoreStore.getState().setTapping(next < bars ? next : 0);
 }
 
 export const stopTapping = () => useScoreStore.getState().setTapping(null);
+
+/**
+ * The bar pass (playback order) the next `T` pins: the one after the latest point in the
+ * recording, bar 1 with none. Always worked out from the points there are, never counted
+ * apart: an undo, a delete or a drag can never leave tap mode one bar ahead.
+ */
+function nextTapIndex(): number {
+  const engine = activeScore.engine;
+  const sync = useScoreStore.getState().link?.sync ?? [];
+  if (!engine) return 0;
+  const latest = sync.reduce<(typeof sync)[number] | null>(
+    (last, p) => (!last || p.time > last.time ? p : last),
+    null,
+  );
+  if (!latest) return 0;
+  // The end of the last bar is pinned: nothing is left to tap
+  if (latest.position >= 1) return engine.bars.length;
+  return engine.indexOf(latest) + 1;
+}
+
+// Whatever changes the points while tapping (undo, redo, a drag, a delete), the bar shown
+// and pinned next follows them
+useScoreStore.subscribe((state, previous) => {
+  if (state.tapping === null || state.link?.sync === previous.link?.sync) return;
+  const next = nextTapIndex();
+  const bars = activeScore.engine?.bars.length ?? 0;
+  if (next !== state.tapping) state.setTapping(next < bars ? next : null);
+});
 
 /** One `T` in tap mode: the bar due starts here; a tap that would contradict the sync is skipped. */
 export function tapSync() {
   const engine = activeScore.engine;
   const store = useScoreStore.getState();
   if (!engine || store.tapping === null) return;
-  const point = engine.barStart(store.tapping, currentPosition());
+  const point = engine.barStart(nextTapIndex(), currentPosition());
   if (!point) {
     stopTapping();
     return;
@@ -32,9 +57,8 @@ export function tapSync() {
   // A tap that contradicts the sync (too early, say) is dropped and the same bar waits for the
   // next T: nothing is skipped
   if (!engine.canPin(point)) return;
+  // The subscription above moves tap mode on to the following bar
   store.putSync(point);
-  const next = store.tapping + 1;
-  store.setTapping(next < engine.bars.length ? next : null);
 }
 
 /** True while `T` belongs to tap mode instead of the tempo tap. */
