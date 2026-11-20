@@ -8,6 +8,7 @@
 //! → `pcm` (kept in memory) + `peaks` (waveform data).
 //! Playback: `engine` (handle) drives `render` (audio thread): reader → stretch → device.
 
+pub mod align;
 pub mod click;
 pub mod decode;
 pub mod dsp;
@@ -23,6 +24,7 @@ mod render;
 pub mod resample;
 pub mod spectrum;
 pub mod stems;
+pub mod synth;
 pub mod tempo_map;
 pub mod time;
 pub mod tone;
@@ -43,6 +45,7 @@ pub use pattern::{BarPattern, BeatState, ClickKind};
 pub use pcm::Pcm;
 pub use peaks::Peaks;
 pub use stems::{MAX_STEMS, StemLevels, Stems};
+pub use synth::{Note, SynthSettings};
 pub use tempo_map::{TempoMap, TempoSegment};
 pub use tone::ToneSettings;
 pub use voice::{CountVoice, Syllable, VoiceBank};

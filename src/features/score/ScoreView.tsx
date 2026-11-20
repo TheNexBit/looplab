@@ -8,6 +8,7 @@ import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player"
 import { type ProjectScore, useScoreStore } from "@/stores/score";
 import { activeScore } from "./activeScore";
 import { type Rect, ScoreEngine } from "./scoreEngine";
+import { startScoreExtras } from "./scoreExtras";
 
 /** Pointer travel (CSS px) under which a press is a click, not a drag. */
 const DRAG_PX = 4;
@@ -37,6 +38,7 @@ export function ScoreView({ link }: { link: ProjectScore }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<ScoreEngine | null>(null);
+  const extrasRef = useRef<ReturnType<typeof startScoreExtras> | null>(null);
   const [bands, setBands] = useState<Bands>(NO_BANDS);
   const [drag, setDrag] = useState<Span>(null);
   const loop = useLoopSpan();
@@ -70,6 +72,7 @@ export function ScoreView({ link }: { link: ProjectScore }) {
         failed: () => store.setStatus("error"),
         timed: () => {
           store.bumpTiming();
+          extrasRef.current?.refresh();
           // The loop band follows the bars wherever the new sync puts them
           const span = shownRef.current;
           setBands(span ? engine.regionRects(span.start, span.end) : NO_BANDS);
@@ -78,6 +81,8 @@ export function ScoreView({ link }: { link: ProjectScore }) {
     );
     engineRef.current = engine;
     activeScore.engine = engine;
+    const extras = startScoreExtras(engine);
+    extrasRef.current = extras;
 
     let cancelled = false;
     void (async () => {
@@ -104,6 +109,8 @@ export function ScoreView({ link }: { link: ProjectScore }) {
       cancelled = true;
       stopPlayer();
       stopTheme();
+      extras.stop();
+      extrasRef.current = null;
       engine.destroy();
       engineRef.current = null;
       if (activeScore.engine === engine) activeScore.engine = null;
@@ -113,6 +120,8 @@ export function ScoreView({ link }: { link: ProjectScore }) {
   // Staves, layout, follow, zoom, tracks, sync: applied to the running engine
   useEffect(() => {
     engineRef.current?.setView(link);
+    // Another track shows other notes (the sync's own changes come back as `timed`)
+    extrasRef.current?.refresh();
   }, [link]);
 
   // Loop band: placed again when the loop (or the drag) changes

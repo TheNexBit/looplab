@@ -93,6 +93,7 @@ pub fn render(
     let click = ClickSettings::default();
     let tempo = crate::tempo_map::TempoMap::default();
     let mut clicks = ClickQueue::new();
+    let mut notes = crate::synth::NoteQueue::new();
     let mut reader = Reader::new(rate);
     reader.jump(start);
     let mut fed = 0_u64;
@@ -101,8 +102,16 @@ pub fn render(
             settings: &region,
             click: &click,
             tempo: &tempo,
+            notes: &[],
         };
-        reader.read(&Source::track(Some(pcm)), rules, *fed, &mut clicks, out);
+        reader.read(
+            &Source::track(Some(pcm)),
+            rules,
+            *fed,
+            &mut clicks,
+            &mut notes,
+            out,
+        );
         *fed += (out.len() / CHANNELS) as u64;
     };
 

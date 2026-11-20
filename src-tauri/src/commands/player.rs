@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
 use audio_engine::{
-    BarPattern, ClickSettings, LoadError, LoopSettings, TempoMap, TempoSegment, ToneSettings, time,
+    BarPattern, ClickSettings, LoadError, LoopSettings, Note, SynthSettings, TempoMap,
+    TempoSegment, ToneSettings, time,
 };
 use serde::{Deserialize, Serialize};
 use tauri::State;
@@ -280,6 +281,54 @@ fn tempo_map(markers: &[TempoMarker], rate: u32) -> TempoMap {
 #[specta::specta]
 pub fn set_reference_tone(state: State<'_, AppState>, hz: f32, level: f32) -> Result<(), AppError> {
     state.engine()?.set_tone(ToneSettings { hz, level });
+    Ok(())
+}
+
+/// A note of the score for the synth over the track, in seconds of the recording.
+#[derive(Debug, Clone, Copy, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ScoreNote {
+    pub time: f64,
+    /// Seconds it lasts at speed 1
+    pub length: f64,
+    /// MIDI note number, transposition already applied (fractional: cents)
+    pub midi: f32,
+    /// 0..1
+    pub velocity: f32,
+}
+
+/// The notes the synth plays over the track (replacing the ones before; empty: none).
+#[tauri::command]
+#[specta::specta]
+pub fn set_score_notes(state: State<'_, AppState>, notes: Vec<ScoreNote>) -> Result<(), AppError> {
+    let Some(engine) = state.running_engine() else {
+        return Ok(());
+    };
+    let rate = engine.sample_rate();
+    engine.set_notes(
+        notes
+            .into_iter()
+            .filter(|n| {
+                n.time.is_finite() && n.time >= 0.0 && n.length.is_finite() && n.midi.is_finite()
+            })
+            .map(|n| Note {
+                start: time::seconds_to_frames(n.time, rate),
+                length: time::seconds_to_frames(n.length.max(0.01), rate),
+                midi: n.midi.clamp(0.0, 127.0),
+                velocity: n.velocity.clamp(0.0, 1.0),
+            })
+            .collect(),
+    );
+    Ok(())
+}
+
+/// Level of the synth that plays the score over the track (0 = off).
+#[tauri::command]
+#[specta::specta]
+pub fn set_synth_level(state: State<'_, AppState>, level: f32) -> Result<(), AppError> {
+    if let Some(engine) = state.running_engine() {
+        engine.set_synth(SynthSettings { level });
+    }
     Ok(())
 }
 

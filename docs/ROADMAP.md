@@ -807,10 +807,35 @@ perdono 1-2 battute (una ne perde 10), da correggere col tasto destro.
   battute si dividono il tempo in parti uguali. «Segui la griglia» e «Mappa del tempo dalla tab» solo per le tab
   (in un PDF la metrica non si legge).
 
-## 24. Extra dello spartito 🔜
+## 24. Extra dello spartito ✅
 
-Manico illuminato dalle note della tab, synth sovrapposto, auto sync dalle note, conteggio e velocità progressiva
-sui loop della tab.
+**Obiettivo:** manico illuminato dalle note della tab, synth sovrapposto, auto sync dalle note, conteggio e
+velocità progressiva sui loop della tab.
+
+**Fatto** (verificato dal collaudatore in tre giri; da provare dall'utente). Dalle verifiche: la sincronia
+automatica scambiava il conteggio a clic per la battuta 1 e il fruscio della distorsione per note (ora conta solo
+ciò che sale sopra lo spettro intero, con soglia a −40 dB e armoniche); le partenze possibili si seguono fino in
+fondo e vince quella che spiega tutto il brano. Misure da zero: Es. 01 36 ms medio, Melody Solo 18 ms, Es. 05 e 21
+sul primo attacco dopo il conteggio; banco di prova su 26 esercizi JTC: 21 partono giusti, 5 ambigui danno l'avviso.
+Il manico si nasconde sotto i 768 px insieme al suo tasto; il synth segue anche i centesimi della trasposizione.
+
+**Da perfezionare:** se le note si ripetono uguali ogni mezza battuta (Es. 10) la battuta 1 da zero può cadere
+mezza battuta prima: compare l'avviso e, fissata la battuta 1, il risultato è preciso (15 ms). Note basse vicine
+(2 semitoni) si distinguono poco: servirebbe un'analisi più fine sotto i 150 Hz.
+
+Cosa c'è:
+
+- **Synth sovrapposto**: tasto «Synth» con spia nella barra dello spartito (tasto destro = volume). Il motore
+  audio suona le note della traccia scelta sopra la registrazione: allineate al campione anche rallentate e nei
+  loop, con la trasposizione del brano; le note stoppate (x) non suonano.
+- **Manico**: tasto «Manico»: sotto la tab un manico con le note che si sentono adesso (pallino col tasto) e,
+  tenui, quelle che arrivano; corde e accordatura della traccia, tasti quanti ne usa la tab (12-24).
+- **Sincronizza dalle note** (menu Sincronizza, solo tab): Looplab ascolta la registrazione e mette da solo le
+  bandierine dove serve (poche: una dove il tempo cambia); la battuta 1 fissata a mano resta; le battute
+  incerte sono indicate. Annulla la toglie in un colpo.
+- **Conteggio e speed trainer sui loop della tab**: il loop trascinato sulla tab è il loop A/B, quindi conteggio
+  e trainer valgono già; ora il conteggio (e il metronomo) funzionano anche senza mappa del tempo, col tempo e la
+  metrica della tab sincronizzata.
 
 ## Dopo la prima versione
 

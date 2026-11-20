@@ -3,7 +3,7 @@ import { eqToRust, useEqStore } from "@/stores/eq";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
-import { usePracticeStore } from "@/stores/practice";
+import { clickTempoMap, usePracticeStore } from "@/stores/practice";
 import { type Settings, useSettingsStore } from "@/stores/settings";
 import { stemGains, useStemsStore } from "@/stores/stems";
 
@@ -92,7 +92,7 @@ export function syncWithEngine(): () => void {
   const pushTrackVolume = (force = false) =>
     sendTrackVolume(useSettingsStore.getState().trackVolume, force);
   const sendTempo = sender(commands.setTempoMap);
-  const pushTempo = (force = false) => sendTempo(usePracticeStore.getState().tempoMap, force);
+  const pushTempo = (force = false) => sendTempo(clickTempoMap(), force);
 
   const loopSettings = () => {
     const loop = useLoopStore.getState();

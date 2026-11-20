@@ -736,6 +736,27 @@ export const en = {
     syncFromFile: "Use the sync saved in the file",
     syncClear: "Clear the sync",
     clickHint: "Click a note: jump there · Drag over notes: loop",
+    autoSync: "Sync from the notes",
+    autoSyncHint:
+      "Looplab listens to the recording and finds where every bar starts by itself, matching note attacks with the tab",
+    autoSyncKeep: "Bar 1 stays where you pinned it",
+    aligning: (percent: number) => `Listening to the recording and finding the bars… ${percent}%`,
+    autoNoNotes: "This track of the tab has no notes to match with the recording.",
+    autoFailed: "The tab's notes were not found in the recording: pin bar 1 by hand and try again.",
+    autoDone: "Synced from the notes. Check the flags: drag them to move them.",
+    autoDoneCheck: (bars: string) =>
+      `Synced from the notes. Check bars ${bars}: the match was uncertain there.`,
+    autoCheckFirst:
+      "Synced, but bar 1 is uncertain (the notes repeat the same). If it is wrong: put the playhead on its first beat, Sync → «Bar 1 starts here», then run «Sync from the notes» again.",
+    synth: "Synth",
+    synthHint: "Plays the tab's notes over the recording, in time even slowed down",
+    synthRightClick: "synth volume",
+    synthLevel: "Synth volume",
+    synthTrack: "Plays the track chosen in the bar (with the song's transposition)",
+    neck: "Neck",
+    neckHint: "Shows on the neck the notes you are hearing, and fainter the ones coming next",
+    neckEmpty: "This track has no strings: the neck stays dark.",
+    neckFret: (fret: number) => `fret ${fret}`,
     dismiss: "Close",
   },
   palette: {

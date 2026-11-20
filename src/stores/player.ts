@@ -12,7 +12,7 @@ import {
 } from "@/lib/bindings";
 import { clamp } from "@/lib/time";
 import { advanceInLoop, loopWait, restartAt, useLoopStore } from "./loop";
-import { currentTempoMap } from "./practice";
+import { clickTempoMap } from "./practice";
 import { useSettingsStore } from "./settings";
 import { useViewStore } from "./view";
 
@@ -119,7 +119,7 @@ export function playbackClock(state: PlayerState = usePlayerStore.getState()) {
  */
 function countInNow(from = 0): number {
   const { countIn, countInBars } = useSettingsStore.getState();
-  return countInSeconds(countIn ? countInBars : 0, currentTempoMap() ?? [], from);
+  return countInSeconds(countIn ? countInBars : 0, clickTempoMap(), from);
 }
 
 /** Length of the open track in seconds, 0 when none is open. */

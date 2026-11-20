@@ -7,6 +7,7 @@ import {
   Loader2,
   MoreHorizontal,
   ShieldCheck,
+  Sparkles,
   X,
   ZoomIn,
   ZoomOut,
@@ -24,10 +25,13 @@ import type { AppError } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
 import { type ProjectScore, SCORE_ZOOM, useScoreStore } from "@/stores/score";
+import { useSettingsStore } from "@/stores/settings";
 import { activeScore } from "./activeScore";
+import { NeckKey, SynthKey } from "./ExtrasKeys";
 import { pickScore } from "./pickScore";
 import { SyncMenu } from "./SyncMenu";
 import { stopTapping } from "./syncActions";
+import { TabNeck } from "./TabNeck";
 
 /** alphaTab (1.2 MB) loads only when a score is first shown, never at start. */
 const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.ScoreView })));
@@ -417,6 +421,15 @@ function ScoreToolbar({ link }: { link: ProjectScore }) {
       </div>
       {/* Right: always on screen */}
       <div className="flex shrink-0 items-center gap-1">
+        {notation && tapping === null && (
+          <>
+            <SynthKey />
+            <div className="hidden md:block">
+              <NeckKey />
+            </div>
+            <span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
+          </>
+        )}
         <SyncMenu link={link} disabled={!ready} />
         <FileMenu link={link} />
         <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
@@ -536,10 +549,40 @@ function NoticeToast() {
   );
 }
 
+/** A good outcome over the score (the automatic sync's result), shown a few seconds. */
+function InfoToast() {
+  const info = useScoreStore((s) => s.info);
+  useEffect(() => {
+    if (!info) return;
+    const timer = setTimeout(() => useScoreStore.getState().setInfo(null), NOTICE_MS * 1.5);
+    return () => clearTimeout(timer);
+  }, [info]);
+  if (!info) return null;
+  return (
+    <div
+      role="status"
+      className="absolute top-2 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
+    >
+      <Sparkles className="size-3.5 shrink-0 text-accent" />
+      <span>{info}</span>
+      <button
+        type="button"
+        aria-label={t.score.dismiss}
+        className="ml-1 text-fg-subtle hover:text-fg"
+        onClick={() => useScoreStore.getState().setInfo(null)}
+      >
+        <X className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
 function ScoreBody({ link }: { link: ProjectScore }) {
   const status = useScoreStore((s) => s.status);
   const error = useScoreStore((s) => s.error);
   const detecting = useScoreStore((s) => s.detecting);
+  const aligning = useScoreStore((s) => s.aligning);
+  const neck = useSettingsStore((s) => s.scoreNeck) && link.kind === "notation";
   if (status === "error") {
     return (
       <Notice
@@ -555,10 +598,29 @@ function ScoreBody({ link }: { link: ProjectScore }) {
   }
   return (
     <>
-      <Suspense fallback={null}>
-        {link.kind === "pdf" ? <PdfView link={link} /> : <ScoreView link={link} />}
-      </Suspense>
+      <div className="flex size-full flex-col">
+        <div className="relative min-h-0 flex-1">
+          <Suspense fallback={null}>
+            {link.kind === "pdf" ? <PdfView link={link} /> : <ScoreView link={link} />}
+          </Suspense>
+        </div>
+        {/* Its key hides below md: so does the neck, never left on with no way to turn it off */}
+        {neck && status === "ready" && (
+          <div className="hidden md:block">
+            <TabNeck />
+          </div>
+        )}
+      </div>
       <NoticeToast />
+      <InfoToast />
+      {aligning !== null && status === "ready" && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex justify-center">
+          <span className="flex items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]">
+            <Loader2 className="size-3.5 animate-spin text-accent" />
+            {t.score.aligning(Math.round(aligning * 100))}
+          </span>
+        </div>
+      )}
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-stage/80">
           <span className="flex items-center gap-2 text-xs text-fg-muted">

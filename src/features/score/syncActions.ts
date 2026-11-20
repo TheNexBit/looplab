@@ -1,7 +1,12 @@
+import { Channel } from "@tauri-apps/api/core";
+import { t } from "@/i18n";
+import { commands } from "@/lib/bindings";
 import { currentPosition } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { useScoreStore } from "@/stores/score";
 import { activeScore } from "./activeScore";
+import { activeTab } from "./scoreExtras";
+import { barRanges } from "./scoreNotes";
 import { gridSync, tempoMapFromBars } from "./syncTools";
 
 /**
@@ -89,4 +94,52 @@ export function tempoMapFromScore(): boolean {
   if (map.length === 0) return false;
   usePracticeStore.getState().setTempoMap(map);
   return true;
+}
+
+/**
+ * Automatic sync from the notes: the recording's note attacks are matched with the tab's
+ * notes, bar by bar (in the engine, off the interface). Bar 1, if already pinned, is kept
+ * where it is. The result is ordinary sync points: they can be checked and dragged, and one
+ * Undo brings back the sync there was before.
+ */
+export async function autoSync() {
+  const tab = activeTab.source;
+  const store = useScoreStore.getState();
+  const file = store.link?.file;
+  if (!tab || !file || store.aligning !== null) return;
+  const bars = tab.alignBars();
+  if (!bars.some((bar) => bar.onsets.length > 0)) {
+    store.setInfo(t.score.autoNoNotes);
+    return;
+  }
+  const first =
+    store.link?.sync.find((p) => p.bar === 0 && p.occurrence === 0 && p.position === 0)?.time ??
+    null;
+  store.setAligning(0);
+  const progress = new Channel<number | null>();
+  progress.onmessage = (value) => {
+    if (useScoreStore.getState().aligning !== null) {
+      useScoreStore.getState().setAligning(value ?? 0);
+    }
+  };
+  const result = await commands.alignScore(bars, first, progress);
+  const now = useScoreStore.getState();
+  now.setAligning(null);
+  // Another song (or score) opened meanwhile: the result is not its own
+  if (now.link?.file !== file || activeTab.source !== tab) return;
+  if (result.status === "error") {
+    now.fail(result.error);
+    return;
+  }
+  const { sync, unsure } = tab.syncFromAligned(result.data);
+  if (sync.length === 0) {
+    now.setInfo(t.score.autoFailed);
+    return;
+  }
+  now.setSync(sync);
+  const spans = activeScore.engine?.bars ?? [];
+  // Bar 1 unsure: the notes fit as well somewhere else (a pattern repeating every half bar)
+  if (unsure.includes(0)) now.setInfo(t.score.autoCheckFirst);
+  else if (unsure.length > 0) now.setInfo(t.score.autoDoneCheck(barRanges(spans, unsure)));
+  else now.setInfo(t.score.autoDone);
 }

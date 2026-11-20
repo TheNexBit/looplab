@@ -1,9 +1,18 @@
 import * as alphaTab from "@coderline/alphatab";
 // The music font (Bravura, SIL OFL) bundled by Vite from the package: nothing copied around
 import bravuraWoff2 from "@coderline/alphatab/font/Bravura.woff2?url";
+import type { AlignedBar } from "@/lib/bindings";
 import { themeColor } from "@/lib/theme";
 import type { ProjectScore, ScoreTrack, SyncPoint } from "@/stores/score";
 import { BarSync } from "./barSync";
+import {
+  alignBars,
+  type NeckChord,
+  neckChords,
+  syncFromAligned,
+  synthNotes,
+  type TabNote,
+} from "./scoreNotes";
 import type { BarSpan } from "./timeline";
 
 type Api = alphaTab.AlphaTabApi;
@@ -95,6 +104,8 @@ export class ScoreEngine extends BarSync {
   private lastSent = Number.NaN;
   private view: ProjectScore;
   private destroyed = false;
+  /** The notes of the shown tracks, read once per load / track choice */
+  private tabNotes: TabNote[] | null = null;
 
   constructor(
     element: HTMLElement,
@@ -150,6 +161,7 @@ export class ScoreEngine extends BarSync {
     });
     this.api.midiLoaded.on(() => {
       if (this.destroyed) return;
+      this.tabNotes = null;
       this.setSpans(this.readSpans());
       this.applySync(this.sync);
       // alphaTab hands the score's sync points to its player only after this event: applied
@@ -218,6 +230,82 @@ export class ScoreEngine extends BarSync {
     });
   }
 
+  /** Every note of the shown tracks (drums left out), in playback order. */
+  private notes(): TabNote[] {
+    if (this.tabNotes) return this.tabNotes;
+    const score = this.api.score;
+    if (!score || this.spans.length === 0) return [];
+    const shown = (this.view.tracks.length > 0 ? this.view.tracks : [0])
+      .map((i) => score.tracks[i])
+      .filter((track) => track !== undefined);
+    const notes: TabNote[] = [];
+    this.spans.forEach((span, index) => {
+      for (const track of shown) {
+        for (const staff of track.staves) {
+          if (staff.isPercussion) continue;
+          const strings = staff.isStringed ? staff.tuning.length : 0;
+          const bar = staff.bars[span.bar];
+          if (!bar) continue;
+          for (const voice of bar.voices) {
+            for (const beat of voice.beats) {
+              if (beat.isRest) continue;
+              const tick = span.startTick + beat.playbackStart;
+              for (const note of beat.notes) {
+                // A tied note goes on ringing: it is not struck again
+                if (note.isTieDestination) continue;
+                notes.push({
+                  span: index,
+                  tick,
+                  endTick: tick + beat.playbackDuration,
+                  midi: note.realValue,
+                  velocity: 0.35 + (Number(note.dynamics) / 7) * 0.65,
+                  string: strings > 0 ? note.string : 0,
+                  fret: note.fret,
+                  strings,
+                  dead: note.isDead,
+                });
+              }
+            }
+          }
+        }
+      }
+    });
+    notes.sort((a, b) => a.tick - b.tick || a.string - b.string);
+    this.tabNotes = notes;
+    return notes;
+  }
+
+  /** Strings of the first shown track (lowest first, MIDI), or empty if it has none. */
+  tuning(): number[] {
+    const score = this.api.score;
+    const track = score?.tracks[this.view.tracks[0] ?? 0];
+    const staff = track?.staves.find((s) => s.isStringed && !s.isPercussion);
+    // alphaTab lists the strings from the highest
+    return staff ? [...staff.tuning].reverse() : [];
+  }
+
+  /** The notes for the synth over the track (seconds of the recording, transposed). */
+  synthNotes(semitones: number) {
+    const timeline = this.timeline;
+    return timeline ? synthNotes(this.notes(), timeline, semitones) : [];
+  }
+
+  /** The chords the neck lights up, in seconds of the recording. */
+  neckChords(): NeckChord[] {
+    const timeline = this.timeline;
+    return timeline ? neckChords(this.notes(), timeline) : [];
+  }
+
+  /** What the automatic sync needs: bars at the written tempo with their notes. */
+  alignBars() {
+    return alignBars(this.spans, this.notes());
+  }
+
+  /** Sync points from the bar starts the automatic sync found, and the bars to check. */
+  syncFromAligned(found: AlignedBar[]) {
+    return syncFromAligned(this.spans, found);
+  }
+
   load(bytes: Uint8Array) {
     this.api.load(bytes, this.view.tracks.length > 0 ? this.view.tracks : [0]);
   }
@@ -247,6 +335,7 @@ export class ScoreEngine extends BarSync {
       const tracks = (view.tracks.length > 0 ? view.tracks : [0])
         .map((i) => score.tracks[i])
         .filter((track) => track !== undefined);
+      this.tabNotes = null;
       this.api.renderTracks(tracks);
     } else if (redraw) this.api.render();
     if (view.sync !== this.sync) this.applySync(view.sync);

@@ -38,6 +38,10 @@ export const commands = {
 	 *  before any track is open (it starts the audio device like `preview_sound`).
 	 */
 	setReferenceTone: (hz: number | null, level: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_reference_tone", { hz, level })),
+	/**  The notes the synth plays over the track (replacing the ones before; empty: none). */
+	setScoreNotes: (notes: ScoreNote[]) => typedError<null, AppError>(__TAURI_INVOKE("set_score_notes", { notes })),
+	/**  Level of the synth that plays the score over the track (0 = off). */
+	setSynthLevel: (level: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_synth_level", { level })),
 	/**
 	 *  Settings of the metronome on its own; while it runs they take over at once, keeping
 	 *  the place in the bar. Starts the audio device if needed: no track is required.
@@ -69,6 +73,11 @@ export const commands = {
 	setClickSamples: (slots: [(string | null), (string | null), (string | null), (string | null)]) => typedError<null, AppError>(__TAURI_INVOKE("set_click_samples", { slots })),
 	/**  Plays one click of a kind now, with its current sound, to hear it. */
 	previewSound: (slot: SoundSlot) => typedError<null, AppError>(__TAURI_INVOKE("preview_sound", { slot })),
+	/**
+	 *  Finds where every bar of the score starts in the open recording, from its notes. `first`
+	 *  fixes bar 1 when already known. One result per bar plus the end of the last one.
+	 */
+	alignScore: (bars: AlignBar[], first: number | null, onProgress: Channel<number | null>) => typedError<AlignedBar[], AppError>(__TAURI_INVOKE("align_score", { bars, first, onProgress })),
 	/**
 	 *  Copies a score file into the library (once per content) and says what it is. The project
 	 *  of the song then names it; the user's file is never changed.
@@ -180,6 +189,24 @@ export const events = {
 };
 
 /* Types */
+/**  One pass through a bar, in playback order: its length at the written tempo and its notes. */
+export type AlignBar = {
+	seconds: number | null,
+	onsets: AlignOnset[],
+};
+
+/**  A note group of a bar for the automatic sync: when it starts (0..1 of the bar) and its pitches. */
+export type AlignOnset = {
+	at: number | null,
+	midis: number[],
+};
+
+/**  Where a bar starts in the recording, and how sure the match is (0..1). */
+export type AlignedBar = {
+	time: number | null,
+	confidence: number | null,
+};
+
 /**  Error returned by every command. `detail` is technical text for logs, not for the user. */
 export type AppError = {
 	kind: ErrorKind,
@@ -912,6 +939,17 @@ export type ScoreKind =
 
 /**  How the score is laid out: systems one under the other, or one long line. */
 export type ScoreLayout = "page" | "horizontal";
+
+/**  A note of the score for the synth over the track, in seconds of the recording. */
+export type ScoreNote = {
+	time: number | null,
+	/**  Seconds it lasts at speed 1 */
+	length: number | null,
+	/**  MIDI note number, transposition already applied (fractional: cents) */
+	midi: number | null,
+	/**  0..1 */
+	velocity: number | null,
+};
 
 /**  Which staves of the score are drawn. */
 export type ScoreStaves = "tab" | "notation" | "both";

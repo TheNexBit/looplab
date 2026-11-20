@@ -111,6 +111,12 @@ interface ScoreState extends Prefs {
   shiftSync: (seconds: number) => void;
   /** PDF: pages scanned for bars so far, while it is first opened */
   detecting: { done: number; of: number } | null;
+  /** Automatic sync from the notes under way: how far (0..1), null when not running */
+  aligning: number | null;
+  setAligning: (progress: number | null) => void;
+  /** A good outcome to tell over the score (a few seconds), like `notice` for problems */
+  info: string | null;
+  setInfo: (info: string | null) => void;
   /** Tap mode: the bar pass (playback order) the next `T` pins, or null when off */
   tapping: number | null;
   setTapping: (next: number | null) => void;
@@ -152,6 +158,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       set({
         asking: false,
         notice: null,
+        info: null,
         tapping: null,
         link,
         status: link ? "loading" : "none",
@@ -254,6 +261,10 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       edit({ sync: sync.map((p) => ({ ...p, time: p.time + delta })) });
     },
     detecting: null,
+    aligning: null,
+    setAligning: (aligning) => set({ aligning }),
+    info: null,
+    setInfo: (info) => set({ info }),
     tapping: null,
     setTapping: (tapping) => set({ tapping }),
     timing: 0,

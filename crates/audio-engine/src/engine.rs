@@ -19,6 +19,7 @@ use crate::pattern::ClickKind;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
 use crate::stems::{StemLevels, Stems};
+use crate::synth::{Note, SynthSettings};
 use crate::tempo_map::TempoMap;
 use crate::tone::ToneSettings;
 use crate::voice::VoiceBank;
@@ -82,6 +83,10 @@ pub(crate) enum Command {
     SetTempoMap(Arc<TempoMap>),
     /// Reference note to tune by ear, heard also while paused
     SetTone(ToneSettings),
+    /// Level of the synth playing the score's notes over the track
+    SetSynth(SynthSettings),
+    /// The score's notes, by start frame
+    SetNotes(Arc<Vec<Note>>),
     /// The metronome on its own (no track): its bar, tempo and sounds…
     SetMetronome(MetronomeSettings),
     /// …started from its count-in, or stopped
@@ -100,6 +105,7 @@ pub(crate) enum Garbage {
     Samples(#[allow(dead_code)] Arc<ClickSamples>),
     TempoMap(#[allow(dead_code)] Arc<TempoMap>),
     Stems(#[allow(dead_code)] Arc<Stems>),
+    Notes(#[allow(dead_code)] Arc<Vec<Note>>),
 }
 
 /// Written by the audio thread, read by everyone else.
@@ -320,6 +326,17 @@ impl Engine {
     /// Steady reference note (`hz` 0 = off), heard over the track and while paused.
     pub fn set_tone(&self, settings: ToneSettings) {
         self.send(Command::SetTone(settings));
+    }
+
+    /// Level of the synth that plays the score's notes over the track (0 = off).
+    pub fn set_synth(&self, settings: SynthSettings) {
+        self.send(Command::SetSynth(settings));
+    }
+
+    /// The score's notes in track frames (sorted here, off the audio thread).
+    pub fn set_notes(&self, mut notes: Vec<Note>) {
+        notes.sort_by_key(|n| n.start);
+        self.send(Command::SetNotes(Arc::new(notes)));
     }
 
     fn send(&self, command: Command) {

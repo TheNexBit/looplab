@@ -8,6 +8,7 @@ import {
   MapPin,
   Metronome,
   MoveHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { useState } from "react";
@@ -20,7 +21,7 @@ import { currentPosition } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { type ProjectScore, type SyncPoint, useScoreStore } from "@/stores/score";
 import { activeScore } from "./activeScore";
-import { startTapping, syncToGrid, tempoMapFromScore } from "./syncActions";
+import { autoSync, startTapping, syncToGrid, tempoMapFromScore } from "./syncActions";
 
 /** Steps of "Move all", seconds: fine and coarse, earlier and later. */
 const SHIFTS = [-0.5, -0.05, 0.05, 0.5] as const;
@@ -67,7 +68,9 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
   const fileSync = useScoreStore((s) => s.fileSync);
   const hasGrid = usePracticeStore((s) => s.tempoMap.length > 0);
   const [offer, setOffer] = useState<Offer>(NO_OFFER);
+  const aligning = useScoreStore((s) => s.aligning !== null);
   const count = link.sync.length;
+  const hasFirst = link.sync.some((p) => p.bar === 0 && p.occurrence === 0 && p.position === 0);
   const synced = count > 0;
   const pin = (point: SyncPoint | null) => point && useScoreStore.getState().putSync(point);
 
@@ -92,6 +95,25 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
           <DropdownMenu.Label className={menuLabel}>
             {synced ? t.score.synced(count) : t.score.unsynced}
           </DropdownMenu.Label>
+          {/* A PDF has no notes to listen for: the automatic sync needs a tab */}
+          {link.kind === "notation" && (
+            <>
+              <DropdownMenu.Item
+                className={cn(menuItem, "items-start")}
+                disabled={aligning}
+                onSelect={() => void autoSync()}
+              >
+                <Sparkles className="mt-0.5 size-3.5 shrink-0 text-accent" />
+                <span>
+                  {t.score.autoSync}
+                  <span className="block text-[11px] opacity-70">
+                    {hasFirst ? t.score.autoSyncKeep : t.score.autoSyncHint}
+                  </span>
+                </span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator className={menuSeparator} />
+            </>
+          )}
           <DropdownMenu.Item
             className={cn(menuItem, "items-start")}
             disabled={!offer.first}

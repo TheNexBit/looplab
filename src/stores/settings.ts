@@ -58,6 +58,11 @@ export interface Settings {
   trainerStep: number;
   /** …every `trainerEvery` repetitions */
   trainerEvery: number;
+  /** Synth playing the tab's notes over the recording, and its level (kept while off) */
+  scoreSynth: boolean;
+  scoreSynthLevel: number;
+  /** Neck under the tab, lighting the notes being played */
+  scoreNeck: boolean;
   /** Media keys reach Looplab even while another program has the focus */
   globalMediaKeys: boolean;
   /** Beat and bar lines on the waveform (when the tempo is known); the magnet uses them */
@@ -139,6 +144,7 @@ export const SETTING_LIMITS = {
   trainerTo: { min: 0.25, max: 2, step: 0.01 },
   trainerStep: { min: 0.01, max: 0.25, step: 0.01 },
   trainerEvery: { min: 1, max: 20, step: 1 },
+  scoreSynthLevel: { min: 0.05, max: 1, step: 0.05 },
   waveZoom: { min: 1, max: 4, step: 0.5 },
   playheadWidth: { min: 1, max: 3, step: 1 },
   wheelSpeed: { min: 0.5, max: 2, step: 0.25 },
@@ -179,6 +185,9 @@ const DEFAULTS: Settings = {
   trainerTo: 1,
   trainerStep: 0.05,
   trainerEvery: 2,
+  scoreSynth: false,
+  scoreSynthLevel: 0.5,
+  scoreNeck: false,
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",

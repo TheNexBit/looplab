@@ -18,6 +18,7 @@ use crate::metronome::Metronome;
 use crate::pattern::ClickKind;
 use crate::pcm::{CHANNELS, Pcm};
 use crate::stems::{INPUTS, Source, StemLevels, Stems};
+use crate::synth::{Note, NoteQueue, Synth};
 use crate::tempo_map::TempoMap;
 use crate::tone::ToneVoice;
 
@@ -40,6 +41,8 @@ pub(crate) struct Rules<'a> {
     pub settings: &'a LoopSettings,
     pub click: &'a ClickSettings,
     pub tempo: &'a TempoMap,
+    /// Notes of the synth over the track, by start (empty when it is off)
+    pub notes: &'a [Note],
 }
 
 /// Reads the track frame by frame, wrapping around the loop with a short crossfade.
@@ -59,6 +62,9 @@ pub(crate) struct Reader {
     splice: usize,
     /// Loop repetitions started
     wraps: u64,
+    /// Next note to queue, and whether it must be looked up again (after a jump or a wrap)
+    next_note: usize,
+    notes_dirty: bool,
 }
 
 impl Reader {
@@ -74,6 +80,8 @@ impl Reader {
             count_in_pulses: 1,
             splice: ((SPLICE_SECONDS * sample_rate as f32) as usize).max(1),
             wraps: 0,
+            next_note: 0,
+            notes_dirty: true,
         }
     }
 
@@ -83,6 +91,12 @@ impl Reader {
         self.fade_in_left = 0;
         self.gap_left = 0;
         self.count_in_span = 0;
+        self.notes_dirty = true;
+    }
+
+    /// The notes changed: the next one is looked up again.
+    pub(crate) fn notes_changed(&mut self) {
+        self.notes_dirty = true;
     }
 
     /// Silence with clicks before the next frame is read (count-in before playback starts).
@@ -107,12 +121,14 @@ impl Reader {
         rules: Rules<'_>,
         fed: u64,
         clicks: &mut ClickQueue,
+        queued_notes: &mut NoteQueue,
         out: &mut [f32],
     ) {
         let Rules {
             settings,
             click,
             tempo,
+            notes,
         } = rules;
         let block = (out.len() / CHANNELS).max(1) as f32;
         let sample = |frame: u64, index: usize| source.frame(frame, index as f32 / block);
@@ -162,6 +178,20 @@ impl Reader {
                 if hits.cross {
                     clicks.push(at, ClickKind::Cross);
                 }
+                if !notes.is_empty() {
+                    if self.notes_dirty {
+                        self.next_note = notes.partition_point(|n| n.start < self.position);
+                        self.notes_dirty = false;
+                    }
+                    while let Some(note) = notes.get(self.next_note)
+                        && note.start <= self.position
+                    {
+                        if note.start == self.position {
+                            queued_notes.push(at, note);
+                        }
+                        self.next_note += 1;
+                    }
+                }
                 let weight = if self.fade_in_left > 0 {
                     self.fade_in_left -= 1;
                     1.0 - self.fade_in_left as f32 / splice
@@ -191,6 +221,7 @@ impl Reader {
         self.gap_left = settings.gap + self.count_in_span;
         self.fade_in_left = self.splice;
         self.wraps += 1;
+        self.notes_dirty = true;
     }
 }
 
@@ -229,6 +260,9 @@ pub(crate) struct Renderer {
     metronome: Metronome,
     /// Reference note to tune by ear, mixed over everything
     tone: ToneVoice,
+    /// The score's notes played over the track
+    synth: Synth,
+    notes: Arc<Vec<Note>>,
     /// Play was pressed with a count-in: the next jump starts with it
     count_in_on_jump: bool,
 
@@ -295,6 +329,8 @@ impl Renderer {
             cross_voice: ClickVoice::new(sample_rate),
             metronome: Metronome::new(sample_rate),
             tone: ToneVoice::new(sample_rate),
+            synth: Synth::new(sample_rate),
+            notes: Arc::new(Vec::new()),
             count_in_on_jump: false,
             input: vec![0.0; max_input * CHANNELS],
             output: vec![0.0; CHUNK * CHANNELS],
@@ -399,6 +435,7 @@ impl Renderer {
                 Command::Play => self.play(),
                 Command::Pause => {
                     self.playing = false;
+                    self.synth.release();
                     self.count_in_on_jump = false;
                 }
                 Command::Seek(frame) => {
@@ -450,6 +487,16 @@ impl Renderer {
                     }
                 }
                 Command::SetTone(settings) => self.tone.set(settings),
+                Command::SetSynth(settings) => self.synth.set(settings),
+                Command::SetNotes(notes) => {
+                    let old = std::mem::replace(&mut self.notes, notes);
+                    self.reader.notes_changed();
+                    if let Err(rtrb::PushError::Full(old)) = self.garbage.push(Garbage::Notes(old))
+                    {
+                        // Never free memory here: leaking is better than a glitch
+                        std::mem::forget(old);
+                    }
+                }
                 Command::SetVoice(bank) => {
                     let old = self.metronome.set_voice_bank(bank);
                     if let Err(rtrb::PushError::Full(old)) = self.garbage.push(Garbage::Voice(old))
@@ -524,6 +571,7 @@ impl Renderer {
             };
             voice.start_kind(kind, self.click.sound(kind));
         }
+        self.synth.start_due(heard, self.speed);
         let extra = self.extra();
         // About 10 ms to settle at 48 kHz
         self.track_level += (self.track_volume - self.track_level) * TRACK_LEVEL_GLIDE;
@@ -542,6 +590,7 @@ impl Renderer {
             + self.cross_voice.next(volume)
             + self.metronome.next()
             + self.tone.next()
+            + self.synth.next()
     }
 
     fn render_chunk(&mut self) {
@@ -552,10 +601,12 @@ impl Renderer {
 
         self.remember();
         let input = &mut self.input[..frames * CHANNELS];
+        let notes: &[Note] = if self.synth.is_on() { &self.notes } else { &[] };
         let rules = Rules {
             settings: &self.settings,
             click: &self.click,
             tempo: &self.tempo,
+            notes,
         };
         let to = self.stem_levels.inputs(self.stems.as_deref());
         let source = Source {
@@ -564,8 +615,14 @@ impl Renderer {
             from: self.stem_gains,
             to,
         };
-        self.reader
-            .read(&source, rules, self.fed, &mut self.clicks, input);
+        self.reader.read(
+            &source,
+            rules,
+            self.fed,
+            &mut self.clicks,
+            self.synth.queue(),
+            input,
+        );
         self.stem_gains = to;
         self.fed += frames as u64;
 
@@ -582,6 +639,7 @@ impl Renderer {
         self.reader.jump(frame);
         self.clicks.clear();
         self.voice.stop();
+        self.synth.stop();
         if std::mem::take(&mut self.count_in_on_jump) {
             self.reader.start_count_in(&self.click, &self.tempo);
         }
@@ -596,10 +654,12 @@ impl Renderer {
             gap: self.reader.gap_left,
         });
         let input = &mut self.input[..preroll * CHANNELS];
+        let notes: &[Note] = if self.synth.is_on() { &self.notes } else { &[] };
         let rules = Rules {
             settings: &self.settings,
             click: &self.click,
             tempo: &self.tempo,
+            notes,
         };
         let source = Source {
             track: self.track.as_deref(),
@@ -607,8 +667,14 @@ impl Renderer {
             from: self.stem_gains,
             to: self.stem_gains,
         };
-        self.reader
-            .read(&source, rules, self.fed, &mut self.clicks, input);
+        self.reader.read(
+            &source,
+            rules,
+            self.fed,
+            &mut self.clicks,
+            self.synth.queue(),
+            input,
+        );
         self.fed += preroll as u64;
         self.stretch
             .seek(&self.input[..preroll * CHANNELS], f64::from(self.speed));
@@ -1080,9 +1146,11 @@ mod tests {
                 settings: &LoopSettings::default(),
                 click: &click,
                 tempo: &tempo,
+                notes: &[],
             },
             0,
             &mut clicks,
+            &mut NoteQueue::new(),
             &mut silence,
         );
         let accents: Vec<bool> = std::iter::from_fn(|| clicks.pop_due(f64::MAX))

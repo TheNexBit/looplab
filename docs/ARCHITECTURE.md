@@ -134,6 +134,16 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   tema), `timeline.ts` (tick dello spartito ↔ secondi della registrazione attraverso i punti di sincronia: tra due
   punti si segue il tempo scritto, prima/dopo il tratto più vicino). Clic su una nota = seek; trascinamento = loop
   A/B (`useLoopStore.setRegion`), disegnato come fascia sopra il disegno con il resto sbiadito.
+- **Extra (fase 24)**: `scoreEngine.ts` legge le note delle tracce mostrate (`scoreNotes.ts`, funzioni pure con
+  test: note del synth in secondi, accordi del manico, battute per la sincronia automatica, semplificazione dei
+  punti trovati). `scoreExtras.ts` le tiene allineate: a ogni `timed` manda le note al motore
+  (`set_score_notes`), il livello (`set_synth_level`), gli accordi al manico (`TabNeck.tsx`, SVG in pixel, si
+  ridisegna solo quando cambia l'accordo) e la mappa del tempo della tab a `practice.scoreMap`, che clic e
+  conteggio usano solo se il brano non ha una mappa sua (`clickTempoMap`). Il synth è `audio-engine/synth.rs`:
+  il lettore mette in coda le note come i clic (allineate al campione a ogni velocità e nei loop), voci additive
+  con fasori rotanti, niente allocazioni nel thread audio. La sincronia automatica è `audio-engine/align.rs`
+  (comando `align_score`): attacchi per semitono ogni 10 ms dalla registrazione, poi ricerca a fascio battuta per
+  battuta (tempo libero di variare del 12 % tra due battute); il risultato diventa normali punti di sincronia.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

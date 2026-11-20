@@ -741,6 +741,29 @@ export const it = {
     syncFromFile: "Usa la sincronia salvata nel file",
     syncClear: "Azzera la sincronia",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",
+    autoSync: "Sincronizza dalle note",
+    autoSyncHint:
+      "Looplab ascolta la registrazione e trova da solo dove inizia ogni battuta, confrontando gli attacchi delle note con la tab",
+    autoSyncKeep: "La battuta 1 resta dove l'hai fissata",
+    aligning: (percent: number) => `Ascolto la registrazione e cerco le battute… ${percent}%`,
+    autoNoNotes:
+      "In questa traccia della tab non ci sono note da confrontare con la registrazione.",
+    autoFailed:
+      "Non ho trovato le note della tab nella registrazione: fissa a mano la battuta 1 e riprova.",
+    autoDone: "Sincronizzato dalle note. Controlla le bandierine: si spostano trascinandole.",
+    autoDoneCheck: (bars: string) =>
+      `Sincronizzato dalle note. Controlla le battute ${bars}: lì la corrispondenza era incerta.`,
+    autoCheckFirst:
+      "Sincronizzato, ma la battuta 1 è incerta (le note si ripetono uguali). Se non è giusta: metti la testina sul suo primo battito, Sincronizza → «La battuta 1 inizia qui», poi rifai «Sincronizza dalle note».",
+    synth: "Synth",
+    synthHint: "Suona le note della tab sopra la registrazione, a tempo anche rallentata",
+    synthRightClick: "volume del synth",
+    synthLevel: "Volume del synth",
+    synthTrack: "Suona la traccia scelta nella barra (con la trasposizione del brano)",
+    neck: "Manico",
+    neckHint: "Mostra sul manico le note che stai sentendo, e più tenui quelle che arrivano",
+    neckEmpty: "Questa traccia non ha corde: il manico resta spento.",
+    neckFret: (fret: number) => `tasto ${fret}`,
     dismiss: "Chiudi",
   },
   palette: {

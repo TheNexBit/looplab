@@ -16,6 +16,12 @@ import { clamp } from "@/lib/time";
 interface PracticeState {
   /** Where tempo and meter change in the open track (empty while unknown). Saved in the project. */
   tempoMap: TempoMap;
+  /**
+   * Tempo and meter of the synced tab, used for the clicks and the count-in only while the
+   * song has no tempo map of its own (never saved, never drawn as the grid)
+   */
+  scoreMap: TempoMap;
+  setScoreMap: (map: TempoMap) => void;
   /** The marker in force at the playhead: the one the tempo display and the meter edit */
   focus: number;
   /**
@@ -67,6 +73,12 @@ let firstBeatGuess = () => 0;
 export function currentTempoMap(): TempoMap | null {
   const { tempoMap } = usePracticeStore.getState();
   return tempoMap.length > 0 ? tempoMap : null;
+}
+
+/** What the clicks and the count-in follow: the song's tempo map, else the synced tab's. */
+export function clickTempoMap(): TempoMap {
+  const { tempoMap, scoreMap } = usePracticeStore.getState();
+  return tempoMap.length > 0 ? tempoMap : scoreMap;
 }
 
 const roundBpm = (bpm: number) => Math.round(clamp(bpm, BPM.min, BPM.max) * 10) / 10;
@@ -124,6 +136,8 @@ export const usePracticeStore = create<PracticeState>((set, get) => {
 
   return {
     tempoMap: [],
+    scoreMap: [],
+    setScoreMap: (scoreMap) => set({ scoreMap }),
     focus: 0,
     bpm: null,
     beatOffset: null,
