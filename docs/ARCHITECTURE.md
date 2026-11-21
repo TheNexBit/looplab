@@ -144,6 +144,10 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   con fasori rotanti, niente allocazioni nel thread audio. La sincronia automatica è `audio-engine/align.rs`
   (comando `align_score`): attacchi per semitono ogni 10 ms dalla registrazione, poi ricerca a fascio battuta per
   battuta (tempo libero di variare del 12 % tra due battute); il risultato diventa normali punti di sincronia.
+- **Lezione (fase 25)**: `App.tsx` (`TrackLayout`) sceglie `features/video/LessonLayout.tsx` quando il brano ha
+  video e spartito (video non staccato, preferenza `beside`): video e `ScorePanel` affiancati sopra, forme d'onda
+  sotto a tutta larghezza; altrimenti `VideoLayout` → `ScoreLayout` come prima. I pezzi riusati sono
+  `VideoHeader`/`VideoBox`/`DetachKey`/`BesideKey` (VideoLayout.tsx) e `ScorePanel` (ScoreLayout.tsx).
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

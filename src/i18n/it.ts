@@ -655,6 +655,11 @@ export const it = {
     unavailable: "Video non disponibile",
     proxying: "Preparo una versione del video compatibile…",
     detach: "Apri in una finestra separata",
+    besideOn: "Affianca allo spartito (video e tab insieme, forme d'onda sotto)",
+    besideOff: "Torna ai pannelli di sempre",
+    resizeBeside: "Trascina per dividere lo spazio tra video e spartito (doppio clic: metà e metà)",
+    resizeLesson:
+      "Trascina per dividere lo spazio tra lezione e forme d'onda (doppio clic: di nuovo come all'inizio)",
     dockTop: "Aggancia sopra",
     dockSide: "Aggancia a lato",
     collapse: "Comprimi",

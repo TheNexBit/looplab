@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, ExternalLink, PanelLeft, PanelTop } from "lucide-react";
+import { ChevronDown, ChevronUp, Columns2, ExternalLink, PanelLeft, PanelTop } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
@@ -6,6 +6,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { playbackClock } from "@/stores/player";
+import { useScoreStore } from "@/stores/score";
 import { useVideoStore } from "@/stores/video";
 import { detachVideo } from "./detach";
 import { VideoView } from "./VideoView";
@@ -26,12 +27,78 @@ const panelSize = (top: boolean, size: number) =>
     ? { height: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px))` }
     : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
 
+/** The video panel's title bar; `children` are its keys, on the right. */
+export function VideoHeader({ children }: { children: ReactNode }) {
+  return (
+    <header className="flex h-8 shrink-0 items-center gap-1 px-3 text-xs text-fg-subtle">
+      <span className="mr-auto font-medium tracking-wide uppercase">{t.video.title}</span>
+      {children}
+    </header>
+  );
+}
+
+/** Opens the video in a window of its own. */
+export function DetachKey() {
+  return (
+    <Tooltip label={t.video.detach}>
+      <Button
+        size="icon"
+        className="size-6"
+        aria-label={t.video.detach}
+        onClick={() => void detachVideo()}
+      >
+        <ExternalLink className="size-3.5" />
+      </Button>
+    </Tooltip>
+  );
+}
+
+/** With a score: puts the video beside it (a lesson), or back to the usual panels. */
+export function BesideKey({ beside }: { beside: boolean }) {
+  const label = beside ? t.video.besideOff : t.video.besideOn;
+  return (
+    <Tooltip label={label}>
+      <Button
+        size="icon"
+        className={cn("size-6", beside && "text-accent")}
+        aria-label={label}
+        aria-pressed={beside}
+        onClick={() => useVideoStore.getState().setBeside(!beside)}
+      >
+        <Columns2 className="size-3.5" />
+      </Button>
+    </Tooltip>
+  );
+}
+
+/** The picture, in its dark frame, following the player's clock. */
+export function VideoBox() {
+  const video = useVideoStore();
+  return (
+    <div className="min-h-0 flex-1 px-4 pb-2">
+      <div className="size-full overflow-hidden rounded-panel border border-border bg-black">
+        <VideoView
+          src={video.src}
+          status={video.status}
+          progress={video.progress}
+          error={video.error}
+          clock={playbackClock}
+          onUnsupported={() => void fallBackToProxy()}
+          onNoPicture={() => video.setStatus("none", { src: null })}
+          onReady={() => video.setStatus("ready")}
+        />
+      </div>
+    </div>
+  );
+}
+
 /**
  * Docks the video panel above or beside the waveforms (`children`), resizable and
  * collapsible. Without a video, or while it is detached, only `children` is shown.
  */
 export function VideoLayout({ children }: { children: ReactNode }) {
   const video = useVideoStore();
+  const hasScore = useScoreStore((s) => s.link !== null);
   const layoutRef = useRef<HTMLDivElement>(null);
   if (video.status === "none" || video.detached) return children;
   const top = video.dock === "top";
@@ -54,8 +121,8 @@ export function VideoLayout({ children }: { children: ReactNode }) {
       className="flex shrink-0 flex-col overflow-hidden"
       style={video.collapsed ? undefined : panelSize(top, video.size)}
     >
-      <header className="flex h-8 shrink-0 items-center gap-1 px-3 text-xs text-fg-subtle">
-        <span className="mr-auto font-medium tracking-wide uppercase">{t.video.title}</span>
+      <VideoHeader>
+        {hasScore && <BesideKey beside={false} />}
         <Tooltip label={top ? t.video.dockSide : t.video.dockTop}>
           <Button
             size="icon"
@@ -66,16 +133,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
             {top ? <PanelLeft className="size-3.5" /> : <PanelTop className="size-3.5" />}
           </Button>
         </Tooltip>
-        <Tooltip label={t.video.detach}>
-          <Button
-            size="icon"
-            className="size-6"
-            aria-label={t.video.detach}
-            onClick={() => void detachVideo()}
-          >
-            <ExternalLink className="size-3.5" />
-          </Button>
-        </Tooltip>
+        <DetachKey />
         <Tooltip label={video.collapsed ? t.video.expand : t.video.collapse}>
           <Button
             size="icon"
@@ -90,23 +148,8 @@ export function VideoLayout({ children }: { children: ReactNode }) {
             )}
           </Button>
         </Tooltip>
-      </header>
-      {!video.collapsed && (
-        <div className="min-h-0 flex-1 px-4 pb-2">
-          <div className="size-full overflow-hidden rounded-panel border border-border bg-black">
-            <VideoView
-              src={video.src}
-              status={video.status}
-              progress={video.progress}
-              error={video.error}
-              clock={playbackClock}
-              onUnsupported={() => void fallBackToProxy()}
-              onNoPicture={() => video.setStatus("none", { src: null })}
-              onReady={() => video.setStatus("ready")}
-            />
-          </div>
-        </div>
-      )}
+      </VideoHeader>
+      {!video.collapsed && <VideoBox />}
     </section>
   );
 

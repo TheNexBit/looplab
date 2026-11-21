@@ -652,6 +652,12 @@ export const en = {
     unavailable: "Video not available",
     proxying: "Preparing a compatible version of the video…",
     detach: "Open in a separate window",
+    besideOn: "Put beside the score (video and tab together, waveforms below)",
+    besideOff: "Back to the usual panels",
+    resizeBeside:
+      "Drag to share the room between video and score (double-click: back to the start)",
+    resizeLesson:
+      "Drag to share the room between the lesson and the waveforms (double-click: back to the start)",
     dockTop: "Dock on top",
     dockSide: "Dock at the side",
     collapse: "Collapse",

@@ -19,6 +19,7 @@ import { startTrainer } from "@/features/practice/trainer";
 import { startRemoteControl } from "@/features/remote/remoteControl";
 import { ScoreLayout } from "@/features/score/ScoreLayout";
 import { feedDetachedVideo } from "@/features/video/detach";
+import { LessonLayout } from "@/features/video/LessonLayout";
 import { VideoLayout } from "@/features/video/VideoLayout";
 import { followTrackVideo } from "@/features/video/videoLoader";
 import { WaveformPanel } from "@/features/waveform/WaveformPanel";
@@ -27,8 +28,10 @@ import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
 import { useMetronomeStore } from "@/stores/metronome";
 import { usePlayerStore } from "@/stores/player";
+import { useScoreStore } from "@/stores/score";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
+import { useVideoStore } from "@/stores/video";
 import { AboutDialog } from "./AboutDialog";
 import { CommandPalette } from "./CommandPalette";
 import { DiaryDialog } from "./DiaryDialog";
@@ -111,11 +114,7 @@ export function App() {
             {loading ? (
               <LoadingState />
             ) : hasTrack ? (
-              <VideoLayout>
-                <ScoreLayout>
-                  <WaveformPanel />
-                </ScoreLayout>
-              </VideoLayout>
+              <TrackLayout />
             ) : (
               <EmptyState hovering={hovering} />
             )}
@@ -144,5 +143,28 @@ export function App() {
         <ExportDialog />
       </div>
     </TooltipProvider>
+  );
+}
+
+/**
+ * The open track's panels: with a video and a score (a lesson) the two side by side over the
+ * waveforms, unless the user chose the usual panels or the video is in its own window.
+ */
+function TrackLayout() {
+  const link = useScoreStore((s) => s.link);
+  const lesson = useVideoStore((s) => s.status !== "none" && !s.detached && s.beside);
+  if (link && lesson) {
+    return (
+      <LessonLayout link={link}>
+        <WaveformPanel />
+      </LessonLayout>
+    );
+  }
+  return (
+    <VideoLayout>
+      <ScoreLayout>
+        <WaveformPanel />
+      </ScoreLayout>
+    </VideoLayout>
   );
 }

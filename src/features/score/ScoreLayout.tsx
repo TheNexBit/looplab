@@ -353,10 +353,27 @@ function TapBanner({ next }: { next: number }) {
   );
 }
 
-function ScoreToolbar({ link }: { link: ProjectScore }) {
+/**
+ * The score panel without its docking: toolbar and drawing. Beside the video (a lesson) it
+ * fills its column and never collapses (the row is resized instead).
+ */
+export function ScorePanel({ link }: { link: ProjectScore }) {
+  return (
+    <section aria-label={t.score.title} className="flex size-full flex-col overflow-hidden">
+      <ScoreToolbar link={link} lesson />
+      <div className="min-h-0 flex-1 px-3 pb-2">
+        <div className="relative size-full overflow-hidden rounded-panel border border-border">
+          <ScoreBody link={link} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: boolean }) {
   const store = useScoreStore.getState();
   const notation = link.kind === "notation";
-  const collapsed = useScoreStore((s) => s.collapsed);
+  const collapsed = useScoreStore((s) => s.collapsed) && !lesson;
   const ready = useScoreStore((s) => s.status === "ready");
   const tapping = useScoreStore((s) => s.tapping);
   return (
@@ -432,16 +449,22 @@ function ScoreToolbar({ link }: { link: ProjectScore }) {
         )}
         <SyncMenu link={link} disabled={!ready} />
         <FileMenu link={link} />
-        <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
-          <Button
-            size="icon"
-            className="size-6"
-            aria-label={collapsed ? t.score.expand : t.score.collapse}
-            onClick={store.toggleCollapsed}
-          >
-            {collapsed ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
-          </Button>
-        </Tooltip>
+        {!lesson && (
+          <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
+            <Button
+              size="icon"
+              className="size-6"
+              aria-label={collapsed ? t.score.expand : t.score.collapse}
+              onClick={store.toggleCollapsed}
+            >
+              {collapsed ? (
+                <ChevronDown className="size-3.5" />
+              ) : (
+                <ChevronUp className="size-3.5" />
+              )}
+            </Button>
+          </Tooltip>
+        )}
       </div>
     </header>
   );
