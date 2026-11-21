@@ -27,6 +27,9 @@
 | 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)    |
 | 23  | Spartiti PDF               | ✅ provata (19/11/2026)    |
 | 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
+| 25  | Lezione: video e tab       | 🔜 da fare                 |
+| 26  | Più file, basi al volo     | 🔜 da fare                 |
+| 27  | Home delle lezioni         | 🔜 da fare                 |
 
 ## 1. Fondamenta ✅
 
@@ -851,6 +854,46 @@ Cosa c'è:
 - **Conteggio e speed trainer sui loop della tab**: il loop trascinato sulla tab è il loop A/B, quindi conteggio
   e trainer valgono già; ora il conteggio (e il metronomo) funzionano anche senza mappa del tempo, col tempo e la
   metrica della tab sincronizzata.
+
+## 25. Lezione: video e tab affiancati 🔜
+
+**Obiettivo:** una video lezione si studia come su JTC Guitar: video e tab insieme, sincronizzati, con loop,
+velocità, synth e manico. Bozza approvata in chat il 21/11/2026 (da confermare dopo la prova).
+
+- **Vista affiancata**: video a sinistra, spartito a destra, divisorio trascinabile (si ricorda la proporzione);
+  sotto, a tutta larghezza, la forma d'onda in una fascia ridimensionabile; trasporto come adesso.
+- Si attiva da sola quando il brano aperto ha video e spartito; un tasto passa a «Sopra/sotto» o al layout di
+  sempre. Il video resta staccabile in un'altra finestra (lo spartito allora prende tutto lo spazio).
+- In testa il nome della lezione (corso e modulo, se viene dalla Home) e i tasti «Con chitarra / Solo base».
+- Prestazioni: video, tab e cursore fluidi insieme a 60 fps anche rallentati; misura della CPU come nelle fasi 21-23.
+
+## 26. Stesso esercizio, più file: sincronia condivisa e basi 🔜
+
+**Obiettivo:** video, mp3 e base dello stesso esercizio sono una cosa sola: la tab sincronizzata una volta vale
+per tutti, e si passa dalla registrazione alla base al volo.
+
+- **Spostamento automatico** tra audio del video e mp3 (confronto dei suoni, precisione al millisecondo): la
+  sincronia della tab, i marker e i loop si traducono da un file all'altro. Se i due file non combaciano (versioni
+  diverse) Looplab lo dice e tiene sincronie separate.
+- **Cambio al volo «Con chitarra / Solo base»**: stesso punto, stesso loop, stessa velocità e tonalità; la base
+  si allinea alla registrazione nello stesso modo (attacco comune). Scorciatoia da tastiera.
+- Dati: un «esercizio» in `libreria.db` raggruppa i suoi file (impronte, non percorsi soltanto: i file spostati si
+  ritrovano), nessun file scritto accanto ai media.
+
+## 27. Home delle lezioni 🔜
+
+**Obiettivo:** le cartelle dei corsi diventano una libreria: si sceglie una lezione e si apre già pronta.
+
+- **Cartelle scelte dall'utente** (una o più, es. il corso JTC): Looplab le legge e mostra corso → moduli →
+  lezioni, riconoscendo in ogni lezione video, audio, base, tab Guitar Pro, PDF (stessa cartella e nomi simili:
+  «Melody Solo.mp4», «Melody Solo tab.gp», «Melody Solo Backing.mp3»).
+- Si aggiorna da sola quando si aggiungono o tolgono file; la lettura avviene in sottofondo, a pezzi, senza
+  bloccare l'interfaccia, e un indice in `libreria.db` la rende immediata alle aperture successive.
+- **Apri lezione** = video (o audio) + tab collegata in automatico + base pronta; tasto destro per scegliere cosa
+  aprire o correggere un abbinamento sbagliato (la correzione si ricorda).
+- Su ogni lezione: stato della tab (sincronizzata / da sincronizzare), ultima apertura e minuti di pratica (dal
+  diario), cerca per nome; «Ultime aperte» in cima.
+- Anche aprendo un file da fuori (trascinato o Apri) Looplab cerca accanto la sua tab e la collega.
 
 ## Dopo la prima versione
 
