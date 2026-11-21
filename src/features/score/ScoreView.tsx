@@ -9,6 +9,7 @@ import { type ProjectScore, useScoreStore } from "@/stores/score";
 import { activeScore } from "./activeScore";
 import { type Rect, ScoreEngine } from "./scoreEngine";
 import { startScoreExtras } from "./scoreExtras";
+import { useWheelZoom } from "./useWheelZoom";
 
 /** Pointer travel (CSS px) under which a press is a click, not a drag. */
 const DRAG_PX = 4;
@@ -36,6 +37,7 @@ function useLoopSpan(): Span {
  */
 export function ScoreView({ link }: { link: ProjectScore }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  useWheelZoom(scrollRef);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<ScoreEngine | null>(null);
   const extrasRef = useRef<ReturnType<typeof startScoreExtras> | null>(null);

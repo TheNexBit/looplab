@@ -380,11 +380,26 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
     <header className="@container flex h-9 shrink-0 items-center gap-2 px-3 text-xs">
       {/* Left: what a narrow window can drop (all of it is also in the "…" menu) */}
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <PanelTitle />
+        <span className="hidden shrink-0 @min-[40rem]:flex">
+          <PanelTitle />
+        </span>
         {tapping !== null && <TapBanner next={tapping} />}
         {tapping === null && notation && <TrackMenu link={link} />}
         {tapping === null && !collapsed && (
           <>
+            {/* The zoom goes last when room runs out: it is what a narrow column needs most */}
+            <div className="hidden shrink-0 @min-[30rem]:block">
+              <Stepper
+                label={t.score.zoom}
+                value={link.zoom}
+                min={SCORE_ZOOM.min}
+                max={SCORE_ZOOM.max}
+                step={SCORE_ZOOM.step}
+                defaultValue={SCORE_ZOOM.default}
+                format={(zoom) => `${Math.round(zoom * 100)}%`}
+                onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
+              />
+            </div>
             {notation && (
               <span className="hidden h-4 w-px shrink-0 bg-border @min-[58rem]:block" aria-hidden />
             )}
@@ -420,18 +435,6 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
             )}
             <div className="hidden @min-[46rem]:block">
               <FollowMenu link={link} />
-            </div>
-            <div className="hidden @min-[76rem]:block">
-              <Stepper
-                label={t.score.zoom}
-                value={link.zoom}
-                min={SCORE_ZOOM.min}
-                max={SCORE_ZOOM.max}
-                step={SCORE_ZOOM.step}
-                defaultValue={SCORE_ZOOM.default}
-                format={(zoom) => `${Math.round(zoom * 100)}%`}
-                onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
-              />
             </div>
           </>
         )}

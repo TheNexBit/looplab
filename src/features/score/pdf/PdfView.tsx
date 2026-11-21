@@ -12,6 +12,7 @@ import { useLoopStore } from "@/stores/loop";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { type PdfBar, type ProjectScore, useScoreStore } from "@/stores/score";
 import { activeScore } from "../activeScore";
+import { useWheelZoom } from "../useWheelZoom";
 import { detectBars, toGray } from "./detectBars";
 import { mergeBars, PdfClock, removeBar, splitBar } from "./pdfClock";
 
@@ -163,6 +164,7 @@ function barBox(bar: PdfBar, layout: Layout) {
  */
 export function PdfView({ link }: { link: ProjectScore }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  useWheelZoom(scrollRef);
   const cursorRef = useRef<HTMLDivElement>(null);
   const litRef = useRef<HTMLDivElement>(null);
   const [doc, setDoc] = useState<Doc | null>(null);
