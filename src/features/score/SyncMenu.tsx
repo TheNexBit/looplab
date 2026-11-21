@@ -8,11 +8,13 @@ import {
   MapPin,
   Metronome,
   MoveHorizontal,
+  RefreshCw,
   Sparkles,
 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useCompact } from "@/components/ui/FitBar";
 import { menuContent, menuItem, menuLabel, menuSeparator, smallKey } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
@@ -69,6 +71,7 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
   const hasGrid = usePracticeStore((s) => s.tempoMap.length > 0);
   const [offer, setOffer] = useState<Offer>(NO_OFFER);
   const aligning = useScoreStore((s) => s.aligning !== null);
+  const compact = useCompact();
   const count = link.sync.length;
   const hasFirst = link.sync.some((p) => p.bar === 0 && p.occurrence === 0 && p.position === 0);
   const synced = count > 0;
@@ -78,7 +81,7 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
     <DropdownMenu.Root onOpenChange={(open) => open && setOffer(offerAt(currentPosition()))}>
       <Tooltip label={synced ? t.score.synced(count) : t.score.unsynced}>
         <DropdownMenu.Trigger asChild>
-          <Button variant="hardware" options disabled={disabled}>
+          <Button variant="hardware" options disabled={disabled} aria-label={t.score.sync}>
             <span
               aria-hidden
               className={cn(
@@ -86,7 +89,7 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
                 synced ? "bg-loop shadow-[0_0_5px_var(--color-loop)]" : "animate-pulse bg-accent",
               )}
             />
-            {t.score.sync}
+            {compact ? <RefreshCw className="size-3.5" /> : t.score.sync}
           </Button>
         </DropdownMenu.Trigger>
       </Tooltip>

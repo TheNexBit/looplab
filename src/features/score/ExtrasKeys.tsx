@@ -1,6 +1,8 @@
+import { AudioLines, Guitar } from "lucide-react";
 import { Popover } from "radix-ui";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
+import { useCompact } from "@/components/ui/FitBar";
 import { parsePercent } from "@/components/ui/NumberField";
 import { OptionsPanel, useOptions } from "@/components/ui/OptionsKey";
 import { Slider } from "@/components/ui/Slider";
@@ -18,8 +20,10 @@ function LampKey({
   rightClick,
   onToggle,
   onContextMenu,
+  icon,
   children,
 }: {
+  icon: ReactNode;
   on: boolean;
   label: string;
   hint: string;
@@ -28,6 +32,8 @@ function LampKey({
   onContextMenu?: (event: { preventDefault: () => void }) => void;
   children?: ReactNode;
 }) {
+  // In a crowded bar the key keeps its icon and lamp; its name stays in the hint
+  const compact = useCompact();
   return (
     <Tooltip label={hint} rightClick={rightClick}>
       <Button
@@ -46,7 +52,7 @@ function LampKey({
             on ? "bg-accent shadow-[0_0_5px_var(--color-accent)]" : "bg-led-off",
           )}
         />
-        {label}
+        {compact ? icon : label}
         {children}
       </Button>
     </Tooltip>
@@ -72,6 +78,7 @@ export function SynthKey() {
             label={t.score.synth}
             hint={t.score.synthHint}
             rightClick={t.score.synthRightClick}
+            icon={<AudioLines className="size-3.5" />}
             onToggle={() => update({ scoreSynth: !on })}
             onContextMenu={onContextMenu}
           />
@@ -106,6 +113,7 @@ export function NeckKey() {
       on={on}
       label={t.score.neck}
       hint={t.score.neckHint}
+      icon={<Guitar className="size-3.5" />}
       onToggle={() => useSettingsStore.getState().update({ scoreNeck: !on })}
     />
   );

@@ -6,6 +6,7 @@ import {
   Link2Off,
   Loader2,
   MoreHorizontal,
+  ScrollText,
   ShieldCheck,
   Sparkles,
   X,
@@ -16,6 +17,7 @@ import { DropdownMenu } from "radix-ui";
 import { lazy, type ReactNode, Suspense, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
+import { FitBar, useCompact, useFitMode } from "@/components/ui/FitBar";
 import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Stepper } from "@/components/ui/Stepper";
@@ -93,10 +95,14 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
 }
 
 function PanelTitle() {
+  const compact = useCompact();
   return (
-    <span className="flex shrink-0 items-center gap-1.5 font-medium tracking-wide text-fg-subtle uppercase">
+    <span
+      title={compact ? t.score.title : undefined}
+      className="flex shrink-0 items-center gap-1.5 font-medium tracking-wide text-fg-subtle uppercase"
+    >
       <FileMusic className="size-3.5 text-accent" aria-hidden />
-      {t.score.title}
+      {compact ? <span className="sr-only">{t.score.title}</span> : t.score.title}
     </span>
   );
 }
@@ -122,6 +128,7 @@ function EmptyHeader() {
 
 /** Tracks of the score to draw: one at a time (as a guitarist reads), or all of them. */
 function TrackMenu({ link }: { link: ProjectScore }) {
+  const compact = useCompact();
   const tracks = useScoreStore((s) => s.tracks);
   const current = link.tracks[0] ?? 0;
   const name = tracks.find((track) => track.index === current)?.name ?? "—";
@@ -129,7 +136,12 @@ function TrackMenu({ link }: { link: ProjectScore }) {
     <DropdownMenu.Root>
       <Tooltip label={t.score.track}>
         <DropdownMenu.Trigger asChild>
-          <Button variant="hardware" options className="max-w-44" disabled={tracks.length === 0}>
+          <Button
+            variant="hardware"
+            options
+            className={compact ? "max-w-28" : "max-w-44"}
+            disabled={tracks.length === 0}
+          >
             <span className="truncate">{name}</span>
           </Button>
         </DropdownMenu.Trigger>
@@ -161,6 +173,7 @@ function TrackMenu({ link }: { link: ProjectScore }) {
 }
 
 function FollowMenu({ link }: { link: ProjectScore }) {
+  const compact = useCompact();
   const names = {
     continuous: t.score.followContinuous,
     paged: t.score.followPaged,
@@ -170,8 +183,8 @@ function FollowMenu({ link }: { link: ProjectScore }) {
     <DropdownMenu.Root>
       <Tooltip label={t.score.follow}>
         <DropdownMenu.Trigger asChild>
-          <Button variant="hardware" options>
-            {t.score.follow}
+          <Button variant="hardware" options aria-label={t.score.follow}>
+            {compact ? <ScrollText className="size-3.5" /> : t.score.follow}
             <span
               aria-hidden
               className={cn(
@@ -377,89 +390,98 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
   const ready = useScoreStore((s) => s.status === "ready");
   const tapping = useScoreStore((s) => s.tapping);
   return (
-    <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1 text-xs">
-      {/* Every key stays on screen: in a narrow column the bar goes on to a second row */}
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
+    <header className="shrink-0 px-3 py-1 text-xs">
+      {/* Every key stays on screen: names give way to icons first, then a second row */}
+      <FitBar className="min-h-7 gap-x-2">
         <PanelTitle />
         {tapping !== null && <TapBanner next={tapping} />}
         {tapping === null && notation && <TrackMenu link={link} />}
-        {tapping === null && !collapsed && (
-          <>
-            <div className="shrink-0">
-              <Stepper
-                label={t.score.zoom}
-                value={link.zoom}
-                min={SCORE_ZOOM.min}
-                max={SCORE_ZOOM.max}
-                step={SCORE_ZOOM.step}
-                defaultValue={SCORE_ZOOM.default}
-                format={(zoom) => `${Math.round(zoom * 100)}%`}
-                onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
-              />
-            </div>
-            {notation && <span className="h-4 w-px shrink-0 bg-border" aria-hidden />}
-            {notation && (
-              <div className="shrink-0">
-                <ChoiceKeys
-                  label={t.score.staves}
-                  value={link.staves}
-                  choices={[
-                    ["tab", t.score.stavesTab],
-                    ["notation", t.score.stavesNotation],
-                    ["both", t.score.stavesBoth],
-                  ]}
-                  onChange={store.setStaves}
-                />
-              </div>
-            )}
-            {notation && <span className="h-4 w-px shrink-0 bg-border" aria-hidden />}
-            {notation && (
-              <div className="shrink-0">
-                <ChoiceKeys
-                  label={t.score.layout}
-                  value={link.layout}
-                  choices={[
-                    ["page", t.score.layoutPage],
-                    ["horizontal", t.score.layoutHorizontal],
-                  ]}
-                  onChange={store.setLayout}
-                />
-              </div>
-            )}
-            <div className="shrink-0">
-              <FollowMenu link={link} />
-            </div>
-          </>
-        )}
-      </div>
-      <div className="ml-auto flex shrink-0 flex-wrap items-center gap-1">
-        {notation && tapping === null && (
-          <>
-            <SynthKey />
-            <NeckKey />
-            <span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
-          </>
-        )}
-        <SyncMenu link={link} disabled={!ready} />
-        <FileMenu link={link} />
-        {!lesson && (
-          <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
-            <Button
-              size="icon"
-              className="size-6"
-              aria-label={collapsed ? t.score.expand : t.score.collapse}
-              onClick={store.toggleCollapsed}
-            >
-              {collapsed ? (
-                <ChevronDown className="size-3.5" />
-              ) : (
-                <ChevronUp className="size-3.5" />
-              )}
-            </Button>
-          </Tooltip>
-        )}
-      </div>
+        {tapping === null && !collapsed && <ViewKeys link={link} />}
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          {notation && tapping === null && (
+            <>
+              <SynthKey />
+              <NeckKey />
+              <Separator />
+            </>
+          )}
+          <SyncMenu link={link} disabled={!ready} />
+          <FileMenu link={link} />
+          {!lesson && (
+            <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
+              <Button
+                size="icon"
+                className="size-6"
+                aria-label={collapsed ? t.score.expand : t.score.collapse}
+                onClick={store.toggleCollapsed}
+              >
+                {collapsed ? (
+                  <ChevronDown className="size-3.5" />
+                ) : (
+                  <ChevronUp className="size-3.5" />
+                )}
+              </Button>
+            </Tooltip>
+          )}
+        </div>
+      </FitBar>
     </header>
+  );
+}
+
+/** A thin line between groups of keys (left out once the bar runs on two rows). */
+function Separator() {
+  const mode = useFitMode();
+  if (mode === "wrap") return null;
+  return <span className="mx-0.5 h-4 w-px shrink-0 bg-border" aria-hidden />;
+}
+
+/** Staves, layout, follow and zoom: shorter names in a compact bar, never hidden. */
+function ViewKeys({ link }: { link: ProjectScore }) {
+  const store = useScoreStore.getState();
+  const compact = useCompact();
+  const notation = link.kind === "notation";
+  return (
+    <>
+      {notation && <Separator />}
+      {notation && (
+        <ChoiceKeys
+          label={t.score.staves}
+          value={link.staves}
+          choices={[
+            ["tab", compact ? t.score.stavesTabShort : t.score.stavesTab],
+            ["notation", compact ? t.score.stavesNotationShort : t.score.stavesNotation],
+            ["both", compact ? t.score.stavesBothShort : t.score.stavesBoth],
+          ]}
+          onChange={store.setStaves}
+        />
+      )}
+      {notation && <Separator />}
+      {notation && (
+        <ChoiceKeys
+          label={t.score.layout}
+          value={link.layout}
+          choices={[
+            ["page", compact ? t.score.layoutPageShort : t.score.layoutPage],
+            ["horizontal", compact ? t.score.layoutHorizontalShort : t.score.layoutHorizontal],
+          ]}
+          onChange={store.setLayout}
+        />
+      )}
+      <FollowMenu link={link} />
+      <div className="shrink-0">
+        <Stepper
+          label={t.score.zoom}
+          value={link.zoom}
+          min={SCORE_ZOOM.min}
+          max={SCORE_ZOOM.max}
+          step={SCORE_ZOOM.step}
+          defaultValue={SCORE_ZOOM.default}
+          format={(zoom) => `${Math.round(zoom * 100)}%`}
+          onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
+        />
+      </div>
+    </>
   );
 }
 
