@@ -17,6 +17,8 @@ const PREFS_KEY = "looplab.video";
 
 interface Prefs {
   dock: VideoDock;
+  /** Where the video docks when the song has a score too (beside it by default: room for both) */
+  dockWithScore: VideoDock;
   size: number;
   collapsed: boolean;
   /** With a score too: video beside the score, waveforms below (else the panels as without one) */
@@ -28,6 +30,7 @@ interface Prefs {
 /** Layout preferences are a per-machine convenience: kept in the WebView's local storage. */
 const DEFAULT_PREFS: Prefs = {
   dock: "top",
+  dockWithScore: "side",
   size: VIDEO_SIZE.default,
   collapsed: false,
   beside: true,
@@ -42,6 +45,7 @@ function loadPrefs(): Prefs {
     typeof value === "number" && Number.isFinite(value) ? clamp(value, min, max) : fallback;
   return {
     dock: stored.dock === "side" ? "side" : "top",
+    dockWithScore: stored.dockWithScore === "top" ? "top" : "side",
     size: number(stored.size, VIDEO_SIZE.min, VIDEO_SIZE.max, DEFAULT_PREFS.size),
     collapsed: stored.collapsed === true,
     beside: stored.beside !== false,
@@ -68,6 +72,7 @@ interface VideoState extends Prefs {
     extra?: Partial<Pick<VideoState, "src" | "progress" | "error">>,
   ) => void;
   setDock: (dock: VideoDock) => void;
+  setDockWithScore: (dock: VideoDock) => void;
   setSize: (size: number) => void;
   toggleCollapsed: () => void;
   setBeside: (beside: boolean) => void;
@@ -79,8 +84,16 @@ interface VideoState extends Prefs {
 export const useVideoStore = create<VideoState>((set, get) => {
   const prefs = (patch: Partial<Prefs>) => {
     set(patch);
-    const { dock, size, collapsed, beside, split, lessonHeight } = get();
-    writeStored(PREFS_KEY, { dock, size, collapsed, beside, split, lessonHeight });
+    const { dock, dockWithScore, size, collapsed, beside, split, lessonHeight } = get();
+    writeStored(PREFS_KEY, {
+      dock,
+      dockWithScore,
+      size,
+      collapsed,
+      beside,
+      split,
+      lessonHeight,
+    });
   };
   return {
     ...loadPrefs(),
@@ -91,6 +104,7 @@ export const useVideoStore = create<VideoState>((set, get) => {
     detached: false,
     setStatus: (status, extra) => set({ status, ...extra }),
     setDock: (dock) => prefs({ dock }),
+    setDockWithScore: (dockWithScore) => prefs({ dockWithScore }),
     setSize: (size) => prefs({ size: Math.round(clamp(size, VIDEO_SIZE.min, VIDEO_SIZE.max)) }),
     toggleCollapsed: () => prefs({ collapsed: !get().collapsed }),
     setBeside: (beside) => prefs({ beside }),

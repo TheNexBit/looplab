@@ -18,8 +18,6 @@ import { fallBackToProxy } from "./videoLoader";
  * detailed view on top; a readable waveform width at the side.
  */
 const WAVEFORMS_MIN_HEIGHT = 260;
-/** With a score under the video too, the waveforms make do with less (they give way first). */
-const WAVEFORMS_MIN_WITH_SCORE = 150;
 /** The picture never shrinks to its title bar alone. */
 const VIDEO_MIN_VISIBLE = 140;
 const WAVEFORMS_MIN_WIDTH = 420;
@@ -108,9 +106,11 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   const hasScore = useScoreStore((s) => s.link !== null);
   const layoutRef = useRef<HTMLDivElement>(null);
   if (video.status === "none" || video.detached) return children;
-  const top = video.dock === "top";
+  // With a score the video has its own place (beside it by default), so both stay large
+  const dock = hasScore ? video.dockWithScore : video.dock;
+  const top = dock === "top";
   // Under the video: the waveforms, and the score's least height when one is shown
-  const below = hasScore ? WAVEFORMS_MIN_WITH_SCORE + SCORE_MIN_VISIBLE : WAVEFORMS_MIN_HEIGHT;
+  const below = WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : 0);
 
   // Largest panel the window allows now (the CSS of `panelSize` keeps it so on screen)
   const largest = () => {
@@ -137,7 +137,11 @@ export function VideoLayout({ children }: { children: ReactNode }) {
             size="icon"
             className="size-6"
             aria-label={top ? t.video.dockSide : t.video.dockTop}
-            onClick={() => video.setDock(top ? "side" : "top")}
+            onClick={() =>
+              hasScore
+                ? video.setDockWithScore(top ? "side" : "top")
+                : video.setDock(top ? "side" : "top")
+            }
           >
             {top ? <PanelLeft className="size-3.5" /> : <PanelTop className="size-3.5" />}
           </Button>

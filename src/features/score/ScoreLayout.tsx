@@ -41,7 +41,7 @@ const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.Sco
 const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.PdfView })));
 
 /** Space always left to the waveforms under the score (CSS pixels). */
-const WAVEFORMS_MIN_HEIGHT = 150;
+const WAVEFORMS_MIN_HEIGHT = 230;
 /** Least height of the score panel (bar on two rows and a readable stave): the waveforms give way first. */
 export const SCORE_MIN_VISIBLE = 200;
 const HANDLE_PX = 4;

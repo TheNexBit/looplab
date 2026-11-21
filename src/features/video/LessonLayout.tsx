@@ -11,7 +11,7 @@ import { BesideKey, DetachKey, VideoBox, VideoHeader } from "./VideoLayout";
 const WAVEFORMS_MIN_HEIGHT = 170;
 /** Narrowest the video and the score columns get, in CSS pixels. */
 const VIDEO_MIN_WIDTH = 200;
-const SCORE_MIN_WIDTH = 340;
+const SCORE_MIN_WIDTH = 400;
 /** Thickness of the bars: the one between the columns, the one over the waveforms. */
 const SIDE_BAR_PX = 6;
 const ROW_BAR_PX = 4;
