@@ -377,18 +377,15 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
   const ready = useScoreStore((s) => s.status === "ready");
   const tapping = useScoreStore((s) => s.tapping);
   return (
-    <header className="@container flex h-9 shrink-0 items-center gap-2 px-3 text-xs">
-      {/* Left: what a narrow window can drop (all of it is also in the "…" menu) */}
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <span className="hidden shrink-0 @min-[40rem]:flex">
-          <PanelTitle />
-        </span>
+    <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1 text-xs">
+      {/* Every key stays on screen: in a narrow column the bar goes on to a second row */}
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <PanelTitle />
         {tapping !== null && <TapBanner next={tapping} />}
         {tapping === null && notation && <TrackMenu link={link} />}
         {tapping === null && !collapsed && (
           <>
-            {/* The zoom goes last when room runs out: it is what a narrow column needs most */}
-            <div className="hidden shrink-0 @min-[30rem]:block">
+            <div className="shrink-0">
               <Stepper
                 label={t.score.zoom}
                 value={link.zoom}
@@ -400,11 +397,9 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
                 onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
               />
             </div>
+            {notation && <span className="h-4 w-px shrink-0 bg-border" aria-hidden />}
             {notation && (
-              <span className="hidden h-4 w-px shrink-0 bg-border @min-[58rem]:block" aria-hidden />
-            )}
-            {notation && (
-              <div className="hidden @min-[58rem]:block">
+              <div className="shrink-0">
                 <ChoiceKeys
                   label={t.score.staves}
                   value={link.staves}
@@ -417,11 +412,9 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
                 />
               </div>
             )}
+            {notation && <span className="h-4 w-px shrink-0 bg-border" aria-hidden />}
             {notation && (
-              <span className="hidden h-4 w-px shrink-0 bg-border @min-[76rem]:block" aria-hidden />
-            )}
-            {notation && (
-              <div className="hidden @min-[76rem]:block">
+              <div className="shrink-0">
                 <ChoiceKeys
                   label={t.score.layout}
                   value={link.layout}
@@ -433,20 +426,17 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
                 />
               </div>
             )}
-            <div className="hidden @min-[46rem]:block">
+            <div className="shrink-0">
               <FollowMenu link={link} />
             </div>
           </>
         )}
       </div>
-      {/* Right: always on screen */}
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="ml-auto flex shrink-0 flex-wrap items-center gap-1">
         {notation && tapping === null && (
           <>
             <SynthKey />
-            <div className="hidden md:block">
-              <NeckKey />
-            </div>
+            <NeckKey />
             <span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
           </>
         )}
@@ -630,12 +620,7 @@ function ScoreBody({ link }: { link: ProjectScore }) {
             {link.kind === "pdf" ? <PdfView link={link} /> : <ScoreView link={link} />}
           </Suspense>
         </div>
-        {/* Its key hides below md: so does the neck, never left on with no way to turn it off */}
-        {neck && status === "ready" && (
-          <div className="hidden md:block">
-            <TabNeck />
-          </div>
-        )}
+        {neck && status === "ready" && <TabNeck />}
       </div>
       <NoticeToast />
       <InfoToast />
