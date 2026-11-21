@@ -27,7 +27,7 @@
 | 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)    |
 | 23  | Spartiti PDF               | ✅ provata (19/11/2026)    |
 | 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
-| 25  | Lezione: video e tab       | 🔜 da fare                 |
+| 25  | Lezione: video e tab       | ✅ provata (21/11/2026)    |
 | 26  | Inquadrature, basi, file   | 🔜 da fare                 |
 | 27  | Home delle lezioni         | 🔜 da fare                 |
 
@@ -855,12 +855,12 @@ Cosa c'è:
   e trainer valgono già; ora il conteggio (e il metronomo) funzionano anche senza mappa del tempo, col tempo e la
   metrica della tab sincronizzata.
 
-## 25. Lezione: video e tab affiancati 🔜
+## 25. Lezione: video e tab affiancati ✅
 
 **Obiettivo:** una video lezione si studia come su JTC Guitar: video e tab insieme, sincronizzati, con loop,
 velocità, synth e manico. Bozza mostrata in chat e approvata il 21/11/2026.
 
-**Fatto** (verificato dal collaudatore in due giri, 33 controlli Ok; da provare dall'utente): `features/video/LessonLayout.tsx`; preferenze `beside`, `split`,
+**Fatto** (verificato dal collaudatore; provato dall'utente il 21/11/2026, 7/7 e 7/7 passi Ok, zoom ripristinato): `features/video/LessonLayout.tsx`; preferenze `beside`, `split`,
 `lessonHeight` nel video store (per PC); tasto «Affianca allo spartito» nella barra del video. Il collegamento
 della lezione alla Home e i tasti «Con chitarra / Solo base» arrivano con le fasi 26-27.
 
