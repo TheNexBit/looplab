@@ -858,7 +858,7 @@ Cosa c'è:
 ## 25. Lezione: video e tab affiancati 🔜
 
 **Obiettivo:** una video lezione si studia come su JTC Guitar: video e tab insieme, sincronizzati, con loop,
-velocità, synth e manico. Bozza approvata in chat il 21/11/2026 (da confermare dopo la prova).
+velocità, synth e manico. Bozza mostrata in chat il 21/11/2026, da confermare.
 
 - **Vista affiancata**: video a sinistra, spartito a destra, divisorio trascinabile (si ricorda la proporzione);
   sotto, a tutta larghezza, la forma d'onda in una fascia ridimensionabile; trasporto come adesso.
