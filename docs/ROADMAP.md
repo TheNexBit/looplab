@@ -812,7 +812,7 @@ perdono 1-2 battute (una ne perde 10), da correggere col tasto destro.
 **Obiettivo:** manico illuminato dalle note della tab, synth sovrapposto, auto sync dalle note, conteggio e
 velocità progressiva sui loop della tab.
 
-**Fatto** (verificato dal collaudatore in tre giri; da provare dall'utente). Dalle verifiche: la sincronia
+**Fatto** (verificato dal collaudatore in tre giri; provato dall'utente il 21/11/2026, 8/8 passi Ok). Dalle verifiche: la sincronia
 automatica scambiava il conteggio a clic per la battuta 1 e il fruscio della distorsione per note (ora conta solo
 ciò che sale sopra lo spettro intero, con soglia a −40 dB e armoniche); le partenze possibili si seguono fino in
 fondo e vince quella che spiega tutto il brano. Misure da zero: Es. 01 36 ms medio, Melody Solo 18 ms, Es. 05 e 21
