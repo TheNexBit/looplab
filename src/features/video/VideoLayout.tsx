@@ -18,6 +18,10 @@ import { fallBackToProxy } from "./videoLoader";
  * detailed view on top; a readable waveform width at the side.
  */
 const WAVEFORMS_MIN_HEIGHT = 260;
+/** With a score under the video too, the waveforms make do with less (they give way first). */
+const WAVEFORMS_MIN_WITH_SCORE = 150;
+/** The picture never shrinks to its title bar alone. */
+const VIDEO_MIN_VISIBLE = 140;
 const WAVEFORMS_MIN_WIDTH = 420;
 /** The drag bar between the video and the waveforms. */
 const HANDLE_PX = 4;
@@ -25,7 +29,9 @@ const HANDLE_PX = 4;
 /** The chosen size, shrunk when the window is too small, so the video never pushes the waveforms out. */
 const panelSize = (top: boolean, size: number, below: number) =>
   top
-    ? { height: `min(${size}px, calc(100% - ${below}px))` }
+    ? {
+        height: `max(min(${VIDEO_MIN_VISIBLE}px, 100%), min(${size}px, calc(100% - ${below}px)))`,
+      }
     : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
 
 /** The video panel's title bar; `children` are its keys, on the right. */
@@ -104,7 +110,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   if (video.status === "none" || video.detached) return children;
   const top = video.dock === "top";
   // Under the video: the waveforms, and the score's least height when one is shown
-  const below = WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : 0);
+  const below = hasScore ? WAVEFORMS_MIN_WITH_SCORE + SCORE_MIN_VISIBLE : WAVEFORMS_MIN_HEIGHT;
 
   // Largest panel the window allows now (the CSS of `panelSize` keeps it so on screen)
   const largest = () => {

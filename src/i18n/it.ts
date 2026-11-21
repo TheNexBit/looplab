@@ -1081,6 +1081,8 @@ export const it = {
     clickVolume: "Click",
     clickVolumeHint: "Volume del click e del count-in. Rotella: ±5%, doppio clic: 60%.",
     speed: "Velocità",
+    speedShort: "Vel.",
+    pitchShort: "Tono",
     speedPreset: "Velocità",
     pitch: "Pitch",
     fineTune: "Fine tune (cents)",

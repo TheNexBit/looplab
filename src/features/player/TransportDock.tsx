@@ -139,7 +139,7 @@ function SpeedPitch() {
       <div className="grid gap-1">
         <div className="flex items-center gap-1">
           <Slider
-            label={t.transport.speed}
+            label={compact ? t.transport.speedShort : t.transport.speed}
             value={speed}
             defaultValue={SPEED.default}
             min={SPEED.min}
@@ -152,21 +152,25 @@ function SpeedPitch() {
             trackClassName={track}
           />
           {SPEED_PRESETS.map((preset) => (
-            <Chip
-              key={preset}
-              active={speed === preset}
-              onClick={() => setSpeed(preset)}
-              aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
-              className={cn("h-[22px] font-mono text-[10px] tabular", compact ? "px-1" : "px-1.5")}
-            >
-              {compact ? Math.round(preset * 100) : formatPercent(preset)}
-            </Chip>
+            <Tooltip key={preset} label={`${t.transport.speedPreset} ${formatPercent(preset)}`}>
+              <Chip
+                active={speed === preset}
+                onClick={() => setSpeed(preset)}
+                aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
+                className={cn(
+                  "h-[22px] font-mono text-[10px] tabular",
+                  compact ? "px-1" : "px-1.5",
+                )}
+              >
+                {compact ? Math.round(preset * 100) : formatPercent(preset)}
+              </Chip>
+            </Tooltip>
           ))}
         </div>
 
         <div className="flex items-center gap-1">
           <Slider
-            label={t.transport.pitch}
+            label={compact ? t.transport.pitchShort : t.transport.pitch}
             value={semitones}
             defaultValue={SEMITONES.default}
             min={SEMITONES.min}

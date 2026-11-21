@@ -1076,6 +1076,8 @@ export const en = {
     clickVolume: "Click",
     clickVolumeHint: "Volume of the click and the count-in. Wheel: ±5%, double-click: 60%.",
     speed: "Speed",
+    speedShort: "Spd",
+    pitchShort: "Pitch",
     speedPreset: "Speed",
     pitch: "Pitch",
     fineTune: "Fine tune (cents)",

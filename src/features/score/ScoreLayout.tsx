@@ -41,7 +41,7 @@ const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.Sco
 const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.PdfView })));
 
 /** Space always left to the waveforms under the score (CSS pixels). */
-const WAVEFORMS_MIN_HEIGHT = 230;
+const WAVEFORMS_MIN_HEIGHT = 150;
 /** Least height of the score panel (bar on two rows and a readable stave): the waveforms give way first. */
 export const SCORE_MIN_VISIBLE = 200;
 const HANDLE_PX = 4;
@@ -145,7 +145,7 @@ function TrackMenu({ link }: { link: ProjectScore }) {
           <Button
             variant="hardware"
             options
-            className={compact ? "max-w-28" : "max-w-44"}
+            className={compact ? "max-w-24" : "max-w-44"}
             disabled={tracks.length === 0}
           >
             <span className="truncate">{name}</span>
@@ -398,38 +398,37 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
   return (
     <header className="shrink-0 px-3 py-1 text-xs">
       {/* Every key stays on screen: names give way to icons first, then a second row */}
-      <FitBar className="min-h-7 gap-x-2">
+      <FitBar className="min-h-7 gap-x-2 data-[fit=compact]:gap-x-1 data-[fit=wrap]:gap-x-1">
         <PanelTitle />
         {tapping !== null && <TapBanner next={tapping} />}
         {tapping === null && notation && <TrackMenu link={link} />}
         {tapping === null && !collapsed && <ViewKeys link={link} />}
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          {notation && tapping === null && (
-            <>
-              <SynthKey />
-              <NeckKey />
-              <Separator />
-            </>
-          )}
-          <SyncMenu link={link} disabled={!ready} />
-          <FileMenu link={link} />
-          {!lesson && (
-            <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
-              <Button
-                size="icon"
-                className="size-6"
-                aria-label={collapsed ? t.score.expand : t.score.collapse}
-                onClick={store.toggleCollapsed}
-              >
-                {collapsed ? (
-                  <ChevronDown className="size-3.5" />
-                ) : (
-                  <ChevronUp className="size-3.5" />
-                )}
-              </Button>
-            </Tooltip>
-          )}
-        </div>
+        <span aria-hidden className="ml-auto" />
+        {notation && tapping === null && (
+          <>
+            <SynthKey />
+            <NeckKey />
+            <Separator />
+          </>
+        )}
+        <SyncMenu link={link} disabled={!ready} />
+        <FileMenu link={link} />
+        {!lesson && (
+          <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
+            <Button
+              size="icon"
+              className="size-6"
+              aria-label={collapsed ? t.score.expand : t.score.collapse}
+              onClick={store.toggleCollapsed}
+            >
+              {collapsed ? (
+                <ChevronDown className="size-3.5" />
+              ) : (
+                <ChevronUp className="size-3.5" />
+              )}
+            </Button>
+          </Tooltip>
+        )}
       </FitBar>
     </header>
   );
