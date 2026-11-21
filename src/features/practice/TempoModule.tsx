@@ -390,7 +390,7 @@ export function TempoModule({ className }: { className?: string }) {
   return (
     <div className={cn("well flex shrink-0 items-center gap-1 rounded-panel p-1.5", className)}>
       <BpmDisplay />
-      <div className="hidden min-[1600px]:flex">
+      <div className="flex">
         <Tooltip label={p.tapHint} shortcut="tapTempo">
           <Button
             variant="hardware"
@@ -416,7 +416,7 @@ export function TempoModule({ className }: { className?: string }) {
           <Metronome className="size-4" />
         </Button>
       </Tooltip>
-      <div className="hidden min-[1600px]:flex">
+      <div className="flex">
         <CountInKey />
       </div>
     </div>

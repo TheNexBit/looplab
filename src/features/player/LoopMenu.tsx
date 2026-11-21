@@ -60,7 +60,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
               className="h-12 gap-2 rounded-l-none border-l-0 px-2.5"
             >
               {/* Loop range readout; the key opens the loop options */}
-              <span className="flex flex-col items-start gap-px max-xl:hidden">
+              <span className="flex flex-col items-start gap-px">
                 <span className="panel-label">
                   {t.transport.loop}
                   {/* Repetitions played, like the counter of a looper pedal: on the label's

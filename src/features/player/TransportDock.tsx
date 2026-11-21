@@ -3,6 +3,7 @@ import { Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Fader } from "@/components/ui/Fader";
+import { FitBar } from "@/components/ui/FitBar";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -10,7 +11,6 @@ import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
 import { formatPercent, signed } from "@/lib/format";
-
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { showsWhole, useViewStore } from "@/stores/view";
@@ -43,49 +43,47 @@ export function TransportDock() {
   const playLabel = playing ? t.transport.pause : t.transport.play;
 
   return (
-    <footer className="flex h-[88px] shrink-0 items-center gap-1 border-t border-edge bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2 lg:gap-2 2xl:gap-2.5 2xl:px-4 shadow-[inset_0_1px_0_var(--color-sheen)]">
-      <div className={GROUP}>
-        <Tooltip label={playLabel} shortcut="playPause">
-          <Button
-            variant="hardware"
-            size="play"
-            led="green"
-            active={playing}
-            disabled={!hasTrack}
-            onClick={togglePlay}
-            aria-label={playLabel}
-          >
-            {playing ? (
-              <Pause className="size-[18px] fill-loop text-loop" />
-            ) : (
-              <Play className="size-[18px] fill-current" />
-            )}
-          </Button>
-        </Tooltip>
+    <footer className="shrink-0 border-t border-edge bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2 py-1.5 2xl:px-4 shadow-[inset_0_1px_0_var(--color-sheen)]">
+      {/* Every key stays: in a narrow window the keys get compact, then the dock takes two rows */}
+      <FitBar className="min-h-[76px] gap-x-1 lg:gap-x-2 2xl:gap-x-2.5">
+        <div className={GROUP}>
+          <Tooltip label={playLabel} shortcut="playPause">
+            <Button
+              variant="hardware"
+              size="play"
+              led="green"
+              active={playing}
+              disabled={!hasTrack}
+              onClick={togglePlay}
+              aria-label={playLabel}
+            >
+              {playing ? (
+                <Pause className="size-[18px] fill-loop text-loop" />
+              ) : (
+                <Play className="size-[18px] fill-current" />
+              )}
+            </Button>
+          </Tooltip>
 
-        <Tooltip label={t.transport.returnToStart}>
-          <Button
-            variant="hardware"
-            size="key"
-            led="amber"
-            active={returnToStart}
-            onClick={() => useSettingsStore.getState().update({ returnToStart: !returnToStart })}
-            aria-label={t.settings.returnToStart}
-            aria-pressed={returnToStart}
-          >
-            <Undo2 className="size-4" />
-          </Button>
-        </Tooltip>
-      </div>
-
-      <TimeDisplay />
-      <div className={GROUP}>
-        <LoopMenu disabled={!hasTrack} />
-        {/* Below 1280 px the dock has no room for these three: F, Z, G and the palette still do them */}
-        <div className="hidden xl:flex">
-          <FollowKey />
+          <Tooltip label={t.transport.returnToStart}>
+            <Button
+              variant="hardware"
+              size="key"
+              led="amber"
+              active={returnToStart}
+              onClick={() => useSettingsStore.getState().update({ returnToStart: !returnToStart })}
+              aria-label={t.settings.returnToStart}
+              aria-pressed={returnToStart}
+            >
+              <Undo2 className="size-4" />
+            </Button>
+          </Tooltip>
         </div>
-        <div className="hidden xl:flex">
+
+        <TimeDisplay />
+        <div className={GROUP}>
+          <LoopMenu disabled={!hasTrack} />
+          <FollowKey />
           <Tooltip label={t.transport.wholeTrack} shortcut="zoomToTrack">
             <Button
               variant="hardware"
@@ -100,8 +98,6 @@ export function TransportDock() {
               <MoveHorizontal className="size-4" />
             </Button>
           </Tooltip>
-        </div>
-        <div className="hidden xl:flex">
           <Tooltip label={t.transport.snap} shortcut="toggleSnap">
             <Button
               variant="hardware"
@@ -116,72 +112,72 @@ export function TransportDock() {
             </Button>
           </Tooltip>
         </div>
-      </div>
 
-      <TempoModule />
+        <TempoModule />
 
-      {/* Speed over pitch, like two strips of a mixer: the dock fits the narrowest window */}
-      <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-2 py-1.5 lg:px-3">
-        {/* Track and click levels first: lower the track to hear the click over a loud mix */}
-        <VolumeStrip />
-        <div className="grid gap-1">
-          <div className="flex items-center gap-1">
-            <Slider
-              label={t.transport.speed}
-              value={speed}
-              defaultValue={SPEED.default}
-              min={SPEED.min}
-              max={SPEED.max}
-              step={SPEED.step}
-              onChange={setSpeed}
-              format={formatPercent}
-              parse={parsePercent}
-              labelClassName={LABEL}
-              trackClassName={TRACK}
-            />
-            {SPEED_PRESETS.map((preset) => (
-              <Chip
-                key={preset}
-                active={speed === preset}
-                onClick={() => setSpeed(preset)}
-                aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
-                className="hidden h-[22px] px-1.5 font-mono text-[10px] tabular min-[1800px]:inline-block"
-              >
-                {formatPercent(preset)}
-              </Chip>
-            ))}
-          </div>
+        {/* Speed over pitch, like two strips of a mixer: the dock fits the narrowest window */}
+        <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-2 py-1.5 lg:px-3">
+          {/* Track and click levels first: lower the track to hear the click over a loud mix */}
+          <VolumeStrip />
+          <div className="grid gap-1">
+            <div className="flex items-center gap-1">
+              <Slider
+                label={t.transport.speed}
+                value={speed}
+                defaultValue={SPEED.default}
+                min={SPEED.min}
+                max={SPEED.max}
+                step={SPEED.step}
+                onChange={setSpeed}
+                format={formatPercent}
+                parse={parsePercent}
+                labelClassName={LABEL}
+                trackClassName={TRACK}
+              />
+              {SPEED_PRESETS.map((preset) => (
+                <Chip
+                  key={preset}
+                  active={speed === preset}
+                  onClick={() => setSpeed(preset)}
+                  aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
+                  className="h-[22px] px-1.5 font-mono text-[10px] tabular"
+                >
+                  {formatPercent(preset)}
+                </Chip>
+              ))}
+            </div>
 
-          <div className="flex items-center gap-1">
-            <Slider
-              label={t.transport.pitch}
-              value={semitones}
-              defaultValue={SEMITONES.default}
-              min={SEMITONES.min}
-              max={SEMITONES.max}
-              step={SEMITONES.step}
-              onChange={(value) => setPitch(value, cents)}
-              format={(value) => signed(value, t.transport.semitones)}
-              labelClassName={LABEL}
-              trackClassName={TRACK}
-            />
-            <Tooltip label={t.transport.fineTune}>
-              <span>
-                <NumberField
-                  label={t.transport.fineTune}
-                  value={cents}
-                  min={CENTS.min}
-                  max={CENTS.max}
-                  step={CENTS.step}
-                  onChange={(value) => setPitch(semitones, value)}
-                  format={(value) => signed(value, t.transport.cents)}
-                />
-              </span>
-            </Tooltip>
-            <TuningPicker />
+            <div className="flex items-center gap-1">
+              <Slider
+                label={t.transport.pitch}
+                value={semitones}
+                defaultValue={SEMITONES.default}
+                min={SEMITONES.min}
+                max={SEMITONES.max}
+                step={SEMITONES.step}
+                onChange={(value) => setPitch(value, cents)}
+                format={(value) => signed(value, t.transport.semitones)}
+                labelClassName={LABEL}
+                trackClassName={TRACK}
+              />
+              <Tooltip label={t.transport.fineTune}>
+                <span>
+                  <NumberField
+                    label={t.transport.fineTune}
+                    value={cents}
+                    min={CENTS.min}
+                    max={CENTS.max}
+                    step={CENTS.step}
+                    onChange={(value) => setPitch(semitones, value)}
+                    format={(value) => signed(value, t.transport.cents)}
+                  />
+                </span>
+              </Tooltip>
+              <TuningPicker />
+            </div>
           </div>
         </div>
-      </div>
+      </FitBar>
     </footer>
   );
 }

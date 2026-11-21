@@ -1,6 +1,7 @@
 import { Check, ChevronDown, Music2 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Chip } from "@/components/ui/Chip";
+import { useCompact } from "@/components/ui/FitBar";
 import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
@@ -16,6 +17,7 @@ const tr = t.transport;
  * tuning plays along as it is.
  */
 export function TuningPicker() {
+  const compact = useCompact();
   const semitones = usePlayerStore((s) => s.semitones);
   const cents = usePlayerStore((s) => s.cents);
   const chosen = cents === 0 ? TUNINGS.find(([, shift]) => shift === semitones) : undefined;
@@ -26,11 +28,10 @@ export function TuningPicker() {
           <Chip
             active={chosen !== undefined && chosen[1] !== 0}
             aria-label={tr.tuning}
-            className="hidden h-[22px] items-center gap-0.5 px-1.5 text-[10px] xl:inline-flex"
+            className="inline-flex h-[22px] items-center gap-0.5 px-1.5 text-[10px]"
           >
-            {/* The name only in wide windows: elsewhere a note icon, the tooltip names it */}
-            <Music2 className="size-3 2xl:hidden" />
-            <span className="hidden 2xl:inline">{tr.tuning}</span>
+            {/* In a crowded dock a note icon, the tooltip names it */}
+            {compact ? <Music2 className="size-3" /> : <span>{tr.tuning}</span>}
             <ChevronDown className="size-3" />
           </Chip>
         </DropdownMenu.Trigger>

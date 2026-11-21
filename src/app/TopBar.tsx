@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
+import { FitBar, useCompact } from "@/components/ui/FitBar";
 import { Kbd } from "@/components/ui/Kbd";
 import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -73,6 +74,7 @@ function RecentMenu() {
 /** Undo / redo keys, dimmed when there is nothing to undo or redo. */
 /** Shows or hides the score panel; the lamp is lit while the song has a score linked. */
 function ScoreKey() {
+  const compact = useCompact();
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const linked = useScoreStore((s) => s.link !== null);
   const shown = useScoreStore((s) => (s.link ? !s.collapsed : s.asking));
@@ -88,7 +90,7 @@ function ScoreKey() {
         className={shown ? "text-accent" : undefined}
       >
         <FileMusic className="size-4" />
-        <span className="hidden xl:inline">{t.score.title}</span>
+        {!compact && <span>{t.score.title}</span>}
         <span
           aria-hidden
           className={
@@ -146,129 +148,155 @@ export function TopBar() {
   const metronomeOpen = useMetronomeStore((s) => s.open);
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-3 border-b border-edge bg-[linear-gradient(var(--color-topbar-from),var(--color-topbar-to))] px-3 shadow-[inset_0_-1px_0_var(--color-sheen)]">
-      <div className="flex h-6 items-center gap-2 border-r border-border pr-3">
-        <AudioLines className="size-4 text-accent" aria-hidden />
-        <span className="text-[11px] font-bold tracking-[0.18em] text-fg">LOOPLAB</span>
-      </div>
-      <Tooltip label={t.shortcuts.openFile} shortcut="openFile">
-        <Button
-          variant="hardware"
-          className="rounded-r-none"
-          onClick={() => void pickAndOpenFile()}
-        >
-          <FolderOpen className="size-4" />
-          {t.app.open}
-        </Button>
-      </Tooltip>
-      <RecentMenu />
+    <header className="shrink-0 border-b border-edge bg-[linear-gradient(var(--color-topbar-from),var(--color-topbar-to))] px-3 py-1 shadow-[inset_0_-1px_0_var(--color-sheen)]">
+      {/* Every key stays: names give way to icons first, then a second row */}
+      <FitBar className="min-h-9 gap-x-3">
+        <div className="flex h-6 items-center gap-2 border-r border-border pr-3">
+          <AudioLines className="size-4 text-accent" aria-hidden />
+          <BrandName />
+        </div>
+        <Tooltip label={t.shortcuts.openFile} shortcut="openFile">
+          <Button
+            variant="hardware"
+            className="rounded-r-none"
+            onClick={() => void pickAndOpenFile()}
+          >
+            <FolderOpen className="size-4" />
+            <OpenLabel />
+          </Button>
+        </Tooltip>
+        <RecentMenu />
 
-      {/* Small display with the open track; the lamp is lit while a track is loaded */}
-      <div className="well flex h-7 min-w-0 flex-1 items-center gap-2 rounded-control px-3 lg:max-w-80">
-        <span
-          aria-hidden
-          className={
-            trackName
-              ? "size-1.5 shrink-0 rounded-full bg-loop shadow-[0_0_6px_var(--color-loop)]"
-              : "size-1.5 shrink-0 rounded-full bg-led-off"
-          }
-        />
-        <span
-          className={
-            trackName
-              ? "truncate font-mono text-xs text-fg"
-              : "truncate font-mono text-xs text-fg-subtle"
-          }
-        >
-          {trackName ?? t.app.noFile}
-        </span>
-      </div>
-      <HistoryKeys />
-      <ScoreKey />
-      <Tooltip label={t.export.title} shortcut="exportAudio">
-        <Button
-          variant="hardware"
-          size="icon"
-          disabled={!trackName || !complete}
-          onClick={() => useUiStore.getState().openExport()}
-          aria-label={t.export.title}
-        >
-          <Download className="size-4" />
-        </Button>
-      </Tooltip>
+        {/* Small display with the open track; the lamp is lit while a track is loaded */}
+        <div className="well flex h-7 min-w-0 flex-1 items-center gap-2 rounded-control px-3 lg:max-w-80">
+          <span
+            aria-hidden
+            className={
+              trackName
+                ? "size-1.5 shrink-0 rounded-full bg-loop shadow-[0_0_6px_var(--color-loop)]"
+                : "size-1.5 shrink-0 rounded-full bg-led-off"
+            }
+          />
+          <span
+            className={
+              trackName
+                ? "truncate font-mono text-xs text-fg"
+                : "truncate font-mono text-xs text-fg-subtle"
+            }
+          >
+            {trackName ?? t.app.noFile}
+          </span>
+        </div>
+        <HistoryKeys />
+        <ScoreKey />
+        <Tooltip label={t.export.title} shortcut="exportAudio">
+          <Button
+            variant="hardware"
+            size="icon"
+            disabled={!trackName || !complete}
+            onClick={() => useUiStore.getState().openExport()}
+            aria-label={t.export.title}
+          >
+            <Download className="size-4" />
+          </Button>
+        </Tooltip>
 
-      <button
-        type="button"
-        onClick={() => openDialog("palette")}
-        className="mx-auto flex h-7 w-56 shrink-0 lg:w-80 items-center gap-2 rounded-control border border-border bg-field px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
-      >
-        <Search className="size-3.5" />
-        {t.app.searchActions}
-        <span className="ml-auto">
-          <Kbd shortcut="commandPalette" />
-        </span>
-      </button>
+        <SearchBox onOpen={() => openDialog("palette")} />
 
-      <Tooltip
-        label={metronomeOpen ? t.metronome.close : t.metronome.open}
-        shortcut="toggleMetronomeMode"
-      >
-        <Button
-          variant="hardware"
-          size="icon"
-          active={metronomeOpen}
-          onClick={() => useMetronomeStore.getState().setOpen(!metronomeOpen)}
-          aria-label={t.metronome.open}
-          aria-pressed={metronomeOpen}
+        <Tooltip
+          label={metronomeOpen ? t.metronome.close : t.metronome.open}
+          shortcut="toggleMetronomeMode"
         >
-          <Metronome className="size-4" />
-        </Button>
-      </Tooltip>
-      <Tooltip label={t.shortcuts.openSettings} shortcut="openSettings">
-        <Button
-          variant="hardware"
-          size="icon"
-          onClick={() => openDialog("settings")}
-          aria-label={t.shortcuts.openSettings}
-        >
-          <Settings className="size-4" />
-        </Button>
-      </Tooltip>
-      <Tooltip label={t.notes.show} shortcut="toggleNotes">
-        <Button
-          variant="hardware"
-          size="icon"
-          active={notesOpen}
-          onClick={useNotesStore.getState().toggle}
-          aria-label={t.notes.show}
-          aria-pressed={notesOpen}
-        >
-          <Piano className="size-4" />
-        </Button>
-      </Tooltip>
-      <Tooltip label={t.mini.enter} shortcut="toggleMini">
-        <Button
-          variant="hardware"
-          size="icon"
-          disabled={!trackName}
-          onClick={toggleMini}
-          aria-label={t.mini.enter}
-        >
-          <PictureInPicture2 className="size-4" />
-        </Button>
-      </Tooltip>
-      <Tooltip label={t.app.toggleSidePanel}>
-        <Button
-          variant="hardware"
-          size="icon"
-          active={sidePanelOpen}
-          onClick={toggleSidePanel}
-          aria-label={t.app.toggleSidePanel}
-          aria-pressed={sidePanelOpen}
-        >
-          <PanelRight className="size-4" />
-        </Button>
-      </Tooltip>
+          <Button
+            variant="hardware"
+            size="icon"
+            active={metronomeOpen}
+            onClick={() => useMetronomeStore.getState().setOpen(!metronomeOpen)}
+            aria-label={t.metronome.open}
+            aria-pressed={metronomeOpen}
+          >
+            <Metronome className="size-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip label={t.shortcuts.openSettings} shortcut="openSettings">
+          <Button
+            variant="hardware"
+            size="icon"
+            onClick={() => openDialog("settings")}
+            aria-label={t.shortcuts.openSettings}
+          >
+            <Settings className="size-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip label={t.notes.show} shortcut="toggleNotes">
+          <Button
+            variant="hardware"
+            size="icon"
+            active={notesOpen}
+            onClick={useNotesStore.getState().toggle}
+            aria-label={t.notes.show}
+            aria-pressed={notesOpen}
+          >
+            <Piano className="size-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip label={t.mini.enter} shortcut="toggleMini">
+          <Button
+            variant="hardware"
+            size="icon"
+            disabled={!trackName}
+            onClick={toggleMini}
+            aria-label={t.mini.enter}
+          >
+            <PictureInPicture2 className="size-4" />
+          </Button>
+        </Tooltip>
+        <Tooltip label={t.app.toggleSidePanel}>
+          <Button
+            variant="hardware"
+            size="icon"
+            active={sidePanelOpen}
+            onClick={toggleSidePanel}
+            aria-label={t.app.toggleSidePanel}
+            aria-pressed={sidePanelOpen}
+          >
+            <PanelRight className="size-4" />
+          </Button>
+        </Tooltip>
+      </FitBar>
     </header>
+  );
+}
+
+/** The app's name next to its mark: only the mark in a crowded bar. */
+function BrandName() {
+  const compact = useCompact();
+  if (compact) return null;
+  return <span className="text-[11px] font-bold tracking-[0.18em] text-fg">LOOPLAB</span>;
+}
+
+/** The Open key's name: only its icon in a crowded bar (the tooltip names it). */
+function OpenLabel() {
+  const compact = useCompact();
+  return compact ? <span className="sr-only">{t.app.open}</span> : t.app.open;
+}
+
+/** The actions search: a wide field, or its magnifier and shortcut in a crowded bar. */
+function SearchBox({ onOpen }: { onOpen: () => void }) {
+  const compact = useCompact();
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={t.app.searchActions}
+      className="mx-auto flex h-7 shrink-0 items-center gap-2 rounded-control border border-border bg-field px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
+      style={{ width: compact ? undefined : "clamp(14rem, 22vw, 20rem)" }}
+    >
+      <Search className="size-3.5" />
+      {!compact && t.app.searchActions}
+      <span className="ml-auto">
+        <Kbd shortcut="commandPalette" />
+      </span>
+    </button>
   );
 }
