@@ -28,7 +28,7 @@
 | 23  | Spartiti PDF               | ✅ provata (19/11/2026)    |
 | 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
 | 25  | Lezione: video e tab       | 🔜 da fare                 |
-| 26  | Più file, basi al volo     | 🔜 da fare                 |
+| 26  | Inquadrature, basi, file   | 🔜 da fare                 |
 | 27  | Home delle lezioni         | 🔜 da fare                 |
 
 ## 1. Fondamenta ✅
@@ -867,10 +867,17 @@ velocità, synth e manico. Bozza mostrata in chat il 21/11/2026, da confermare.
 - In testa il nome della lezione (corso e modulo, se viene dalla Home) e i tasti «Con chitarra / Solo base».
 - Prestazioni: video, tab e cursore fluidi insieme a 60 fps anche rallentati; misura della CPU come nelle fasi 21-23.
 
-## 26. Stesso esercizio, più file: sincronia condivisa e basi 🔜
+## 26. Stesso esercizio, più file: inquadrature, basi e sincronia condivisa 🔜
 
-**Obiettivo:** video, mp3 e base dello stesso esercizio sono una cosa sola: la tab sincronizzata una volta vale
-per tutti, e si passa dalla registrazione alla base al volo.
+**Obiettivo:** video (anche più inquadrature), mp3 e base dello stesso esercizio sono una cosa sola: la tab
+sincronizzata una volta vale per tutti, si cambia inquadratura e si passa alla base al volo.
+
+- **Inquadrature (file separati)**: i video della stessa lezione con nomi simili («Lezione 01 - Wide.mp4»,
+  «Lezione 01 - Close up.mp4», «… Mano destra») sono angoli della stessa lezione. Se ne vede uno grande; tasti
+  1-9 o il menu «Angolo» cambiano inquadratura all'istante, allo stesso punto (gli altri restano pronti in pausa,
+  senza decodifica: il PC lavora per un video solo). Ogni angolo si allinea agli altri dal suo audio, come qui
+  sotto; un angolo senza audio si allinea a mano con «Sposta» (±1 fotogramma / ±0,1 s). Nomi degli angoli
+  modificabili; l'ultimo angolo scelto si ricorda per lezione.
 
 - **Spostamento automatico** tra audio del video e mp3 (confronto dei suoni, precisione al millisecondo): la
   sincronia della tab, i marker e i loop si traducono da un file all'altro. Se i due file non combaciano (versioni
@@ -894,6 +901,9 @@ per tutti, e si passa dalla registrazione alla base al volo.
 - Su ogni lezione: stato della tab (sincronizzata / da sincronizzare), ultima apertura e minuti di pratica (dal
   diario), cerca per nome; «Ultime aperte» in cima.
 - Anche aprendo un file da fuori (trascinato o Apri) Looplab cerca accanto la sua tab e la collega.
+
+**Prova e unione (fasi 21-27):** tutto si prova nel worktree del ramo `tab` (`scripts-dev.cmd` del worktree);
+solo dopo la prova completa dell'utente il ramo si unisce in main.
 
 ## Dopo la prima versione
 
