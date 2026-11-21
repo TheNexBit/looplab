@@ -657,7 +657,8 @@ export const it = {
     detach: "Apri in una finestra separata",
     besideOn: "Affianca allo spartito (video e tab insieme, forme d'onda sotto)",
     besideOff: "Torna ai pannelli di sempre",
-    resizeBeside: "Trascina per dividere lo spazio tra video e spartito (doppio clic: metà e metà)",
+    resizeBeside:
+      "Trascina per dividere lo spazio tra video e spartito (doppio clic: di nuovo come all'inizio)",
     resizeLesson:
       "Trascina per dividere lo spazio tra lezione e forme d'onda (doppio clic: di nuovo come all'inizio)",
     dockTop: "Aggancia sopra",

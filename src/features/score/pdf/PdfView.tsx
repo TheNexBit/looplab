@@ -103,7 +103,8 @@ function Page({
     }
     let stale = false;
     const timer = setTimeout(() => {
-      if (!stale) void drawPage(doc, index, canvas, width);
+      // A drawing cancelled (the view changed, the page scrolled away) is no error
+      if (!stale) drawPage(doc, index, canvas, width).catch(() => {});
     }, 30);
     return () => {
       stale = true;

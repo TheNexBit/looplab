@@ -36,8 +36,13 @@ export async function detachVideo() {
   await window?.setFocus();
 }
 
+/** The hidden window's video stops: it would go on decoding for nothing. */
+const pauseDetached = () =>
+  emitTo(VIDEO_WINDOW, VIDEO_SYNC_EVENT, { ...payload(), playing: false, wait: 0 });
+
 export async function dockVideo() {
   useVideoStore.getState().setDetached(false);
+  await pauseDetached();
   await (await WebviewWindow.getByLabel(VIDEO_WINDOW))?.hide();
 }
 
@@ -58,9 +63,10 @@ export function feedDetachedVideo(): () => void {
     useVideoStore.subscribe(send),
   ];
   // Closing the detached window only hides it: dock the video again
-  const unlisten = events.videoWindowHidden.listen(() =>
-    useVideoStore.getState().setDetached(false),
-  );
+  const unlisten = events.videoWindowHidden.listen(() => {
+    useVideoStore.getState().setDetached(false);
+    void pauseDetached();
+  });
   return () => {
     clearInterval(timer);
     for (const stop of stops) stop();

@@ -377,7 +377,7 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
   const ready = useScoreStore((s) => s.status === "ready");
   const tapping = useScoreStore((s) => s.tapping);
   return (
-    <header className="flex h-9 shrink-0 items-center gap-2 px-3 text-xs">
+    <header className="@container flex h-9 shrink-0 items-center gap-2 px-3 text-xs">
       {/* Left: what a narrow window can drop (all of it is also in the "…" menu) */}
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
         <PanelTitle />
@@ -386,10 +386,10 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
         {tapping === null && !collapsed && (
           <>
             {notation && (
-              <span className="hidden h-4 w-px shrink-0 bg-border lg:block" aria-hidden />
+              <span className="hidden h-4 w-px shrink-0 bg-border @min-[58rem]:block" aria-hidden />
             )}
             {notation && (
-              <div className="hidden lg:block">
+              <div className="hidden @min-[58rem]:block">
                 <ChoiceKeys
                   label={t.score.staves}
                   value={link.staves}
@@ -403,10 +403,10 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
               </div>
             )}
             {notation && (
-              <span className="hidden h-4 w-px shrink-0 bg-border xl:block" aria-hidden />
+              <span className="hidden h-4 w-px shrink-0 bg-border @min-[76rem]:block" aria-hidden />
             )}
             {notation && (
-              <div className="hidden xl:block">
+              <div className="hidden @min-[76rem]:block">
                 <ChoiceKeys
                   label={t.score.layout}
                   value={link.layout}
@@ -418,10 +418,10 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
                 />
               </div>
             )}
-            <div className="hidden lg:block">
+            <div className="hidden @min-[46rem]:block">
               <FollowMenu link={link} />
             </div>
-            <div className="hidden xl:block">
+            <div className="hidden @min-[76rem]:block">
               <Stepper
                 label={t.score.zoom}
                 value={link.zoom}

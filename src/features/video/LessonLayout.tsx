@@ -11,7 +11,9 @@ const WAVEFORMS_MIN_HEIGHT = 170;
 /** Narrowest the video and the score columns get, in CSS pixels. */
 const VIDEO_MIN_WIDTH = 200;
 const SCORE_MIN_WIDTH = 340;
-const HANDLE_PX = 4;
+/** Thickness of the bars: the one between the columns, the one over the waveforms. */
+const SIDE_BAR_PX = 6;
+const ROW_BAR_PX = 4;
 
 /**
  * A lesson, as in JTC's player: the video and the score side by side on top, the waveforms
@@ -27,8 +29,8 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
   const tallest = () =>
     (layoutRef.current?.clientHeight ?? Number.POSITIVE_INFINITY) -
     WAVEFORMS_MIN_HEIGHT -
-    HANDLE_PX;
-  const rowWidth = () => (rowRef.current?.clientWidth ?? 1000) - HANDLE_PX;
+    ROW_BAR_PX;
+  const rowWidth = () => (rowRef.current?.clientWidth ?? 1000) - SIDE_BAR_PX;
   // What is on screen, so a drag never first makes up a size the window cannot show
   const shownHeight = () => Math.min(useVideoStore.getState().lessonHeight, tallest());
   const videoWidth = () => {
@@ -43,14 +45,14 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
         ref={rowRef}
         className="flex shrink-0 overflow-hidden"
         style={{
-          height: `max(${LESSON_HEIGHT.min}px, min(${height}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px)))`,
+          height: `max(${LESSON_HEIGHT.min}px, min(${height}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT + ROW_BAR_PX}px)))`,
         }}
       >
         <section
           aria-label={t.video.title}
           className="flex shrink-0 flex-col overflow-hidden"
           style={{
-            width: `clamp(${VIDEO_MIN_WIDTH}px, ${split * 100}%, calc(100% - ${SCORE_MIN_WIDTH}px))`,
+            width: `clamp(${VIDEO_MIN_WIDTH}px, ${split * 100}%, calc(100% - ${SCORE_MIN_WIDTH + SIDE_BAR_PX}px))`,
           }}
         >
           <VideoHeader>

@@ -26,15 +26,34 @@ interface Prefs {
 }
 
 /** Layout preferences are a per-machine convenience: kept in the WebView's local storage. */
-const loadPrefs = (): Prefs =>
-  readPrefs<Prefs>(PREFS_KEY, {
-    dock: "top",
-    size: VIDEO_SIZE.default,
-    collapsed: false,
-    beside: true,
-    split: LESSON_SPLIT.default,
-    lessonHeight: LESSON_HEIGHT.default,
-  });
+const DEFAULT_PREFS: Prefs = {
+  dock: "top",
+  size: VIDEO_SIZE.default,
+  collapsed: false,
+  beside: true,
+  split: LESSON_SPLIT.default,
+  lessonHeight: LESSON_HEIGHT.default,
+};
+
+/** Stored preferences, each one checked: a damaged value falls back to its default. */
+function loadPrefs(): Prefs {
+  const stored = readPrefs<Prefs>(PREFS_KEY, DEFAULT_PREFS);
+  const number = (value: unknown, min: number, max: number, fallback: number) =>
+    typeof value === "number" && Number.isFinite(value) ? clamp(value, min, max) : fallback;
+  return {
+    dock: stored.dock === "side" ? "side" : "top",
+    size: number(stored.size, VIDEO_SIZE.min, VIDEO_SIZE.max, DEFAULT_PREFS.size),
+    collapsed: stored.collapsed === true,
+    beside: stored.beside !== false,
+    split: number(stored.split, LESSON_SPLIT.min, LESSON_SPLIT.max, LESSON_SPLIT.default),
+    lessonHeight: number(
+      stored.lessonHeight,
+      LESSON_HEIGHT.min,
+      LESSON_HEIGHT.max,
+      LESSON_HEIGHT.default,
+    ),
+  };
+}
 
 interface VideoState extends Prefs {
   status: VideoStatus;
