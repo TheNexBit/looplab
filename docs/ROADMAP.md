@@ -864,6 +864,15 @@ velocità, synth e manico. Bozza mostrata in chat e approvata il 21/11/2026.
 `lessonHeight` nel video store (per PC); tasto «Affianca allo spartito» nella barra del video. Il collegamento
 della lezione alla Home e i tasti «Con chitarra / Solo base» arrivano con le fasi 26-27.
 
+**Barre che si adattano** (regola dell'utente, 21/11/2026: mai togliere o nascondere comandi per mancanza di
+spazio): `components/ui/FitBar.tsx` misura lo spazio reale e passa da tasti con nome → compatti (icona + spia, nome
+nel suggerimento) → due righe. Usata da barra in alto, barra dello spartito e trasporto (prima F/Z/G, Batti,
+Conteggio, 50/75/100 %, Accordatura sparivano nelle finestre strette). Con video e tab, nei pannelli di sempre il
+video si aggancia a lato (scelta ricordata a parte); nella lezione la colonna della tab è larga almeno 400 px; sotto
+860 px di pagina la lezione si mette in verticale. Verificato dal collaudatore (nessun comando mancante, nessun
+tremolio). Casi limite noti: video rimesso sopra a 900×700 → onda dettagliata ~32 px; 900 px con pannello laterale
+aperto → video piccolo.
+
 - **Vista affiancata**: video a sinistra, spartito a destra, divisorio trascinabile (si ricorda la proporzione);
   sotto, a tutta larghezza, la forma d'onda in una fascia ridimensionabile; trasporto come adesso.
 - Si attiva da sola quando il brano aperto ha video e spartito; un tasto passa a «Sopra/sotto» o al layout di
