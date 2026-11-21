@@ -12,6 +12,21 @@
 | 8   | Strumenti di pratica       | ✅ completata              |
 | 9   | Comodità mentre suoni      | ✅ completata              |
 | 10  | Esportare e vedere le note | ✅ completata — da provare |
+| 11  | Scorciatoie per lo studio  | ✅ completata               |
+| 12  | Versione portable          | ✅ completata               |
+| 13  | Finestra mini              | ✅ completata               |
+| 14  | Appunti su loop e sezioni  | ✅ completata               |
+| 15  | Sezioni come region        | ✅ completata               |
+| 16  | Nota di riferimento        | ✅ completata               |
+| M   | Metronomo integrato        | ✅ completata               |
+| 17  | Mappa del tempo            | ✅ da perfezionare          |
+| 18  | Separazione strumenti      | ✅ completata               |
+| 19  | Archivio unico e backup    | ✅ completata               |
+| 20  | Esporta tracce separate    | ✅ completata               |
+| 21  | Tab Guitar Pro             | ✅ provata (19/11/2026)     |
+| 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)     |
+| 23  | Spartiti PDF               | ✅ provata (19/11/2026)     |
+| 24  | Extra dello spartito       | ✅ provata (21/11/2026)     |
 
 ## 1. Fondamenta ✅
 
