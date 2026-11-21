@@ -3,6 +3,7 @@ import { type ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { SCORE_MIN_VISIBLE } from "@/features/score/ScoreLayout";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { playbackClock } from "@/stores/player";
@@ -22,9 +23,9 @@ const WAVEFORMS_MIN_WIDTH = 420;
 const HANDLE_PX = 4;
 
 /** The chosen size, shrunk when the window is too small, so the video never pushes the waveforms out. */
-const panelSize = (top: boolean, size: number) =>
+const panelSize = (top: boolean, size: number, below: number) =>
   top
-    ? { height: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px))` }
+    ? { height: `min(${size}px, calc(100% - ${below}px))` }
     : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
 
 /** The video panel's title bar; `children` are its keys, on the right. */
@@ -102,13 +103,15 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   const layoutRef = useRef<HTMLDivElement>(null);
   if (video.status === "none" || video.detached) return children;
   const top = video.dock === "top";
+  // Under the video: the waveforms, and the score's least height when one is shown
+  const below = WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : 0);
 
   // Largest panel the window allows now (the CSS of `panelSize` keeps it so on screen)
   const largest = () => {
     const layout = layoutRef.current;
     if (!layout) return Number.POSITIVE_INFINITY;
     return top
-      ? layout.clientHeight - WAVEFORMS_MIN_HEIGHT - HANDLE_PX
+      ? layout.clientHeight - below - HANDLE_PX
       : layout.clientWidth - WAVEFORMS_MIN_WIDTH - HANDLE_PX;
   };
   // The size on screen, not the one asked for: a larger one saved earlier would make the
@@ -119,7 +122,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
     <section
       aria-label={t.video.title}
       className="flex shrink-0 flex-col overflow-hidden"
-      style={video.collapsed ? undefined : panelSize(top, video.size)}
+      style={video.collapsed ? undefined : panelSize(top, video.size, below)}
     >
       <VideoHeader>
         {hasScore && <BesideKey beside={false} />}

@@ -15,7 +15,7 @@ const SCORE_MIN_WIDTH = 340;
 /** Thickness of the bars: the one between the columns, the one over the waveforms. */
 const SIDE_BAR_PX = 6;
 const ROW_BAR_PX = 4;
-/** Narrower than this, the lesson stands upright: video over the score (hysteresis on the way back). */
+/** A page narrower than this (the interface enlarged), the lesson stands upright: video over the score (hysteresis on the way back). */
 const UPRIGHT_BELOW = 860;
 const UPRIGHT_HYSTERESIS = 24;
 /** Upright, the shortest the video and the score get, in CSS pixels. */
@@ -38,16 +38,15 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
   // In a very narrow page (the interface enlarged) the columns would be too thin: the video
   // goes over the score instead, and back beside it as soon as there is room
   useEffect(() => {
-    const element = layoutRef.current;
-    if (!element) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const width = entry?.contentRect.width ?? 0;
+    const check = () => {
+      const width = document.documentElement.clientWidth;
       setUpright((was) =>
         was ? width < UPRIGHT_BELOW + UPRIGHT_HYSTERESIS : width < UPRIGHT_BELOW,
       );
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   const tallest = () =>

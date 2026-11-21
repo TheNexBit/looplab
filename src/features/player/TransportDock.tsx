@@ -3,13 +3,14 @@ import { Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Fader } from "@/components/ui/Fader";
-import { FitBar } from "@/components/ui/FitBar";
+import { FitBar, useCompact } from "@/components/ui/FitBar";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
+import { cn } from "@/lib/cn";
 import { formatPercent, signed } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
@@ -26,15 +27,15 @@ const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
 /** Speed and pitch faders line up one under the other */
 const LABEL = "w-16";
 const TRACK = "w-12 lg:w-16 2xl:w-20 min-[1800px]:w-24";
+/** In a crowded dock: a shorter label column and faders (every control stays) */
+const LABEL_COMPACT = "w-9";
+const TRACK_COMPACT = "w-12";
 
 /** Bottom dock: transport, loop, tempo and click (like every DAW), speed and pitch. */
 export function TransportDock() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const playing = usePlayerStore((s) => s.playing);
-  const speed = usePlayerStore((s) => s.speed);
-  const semitones = usePlayerStore((s) => s.semitones);
-  const cents = usePlayerStore((s) => s.cents);
-  const { togglePlay, setSpeed, setPitch } = usePlayerStore.getState();
+  const { togglePlay } = usePlayerStore.getState();
   const snap = useSettingsStore((s) => s.snap);
   // While Shift suspends it during a drag, the magnet's lamp goes out
   const suspended = useSnapHoldStore((s) => s.shift && s.pressing);
@@ -45,7 +46,7 @@ export function TransportDock() {
   return (
     <footer className="shrink-0 border-t border-edge bg-[linear-gradient(var(--color-dock-from),var(--color-dock-to))] px-2 py-1.5 2xl:px-4 shadow-[inset_0_1px_0_var(--color-sheen)]">
       {/* Every key stays: in a narrow window the keys get compact, then the dock takes two rows */}
-      <FitBar className="min-h-[76px] gap-x-1 lg:gap-x-2 2xl:gap-x-2.5">
+      <FitBar className="min-h-[76px] gap-x-1 lg:gap-x-2 2xl:gap-x-2.5 data-[fit=compact]:gap-x-1 data-[fit=wrap]:gap-x-1">
         <div className={GROUP}>
           <Tooltip label={playLabel} shortcut="playPause">
             <Button
@@ -115,70 +116,84 @@ export function TransportDock() {
 
         <TempoModule />
 
-        {/* Speed over pitch, like two strips of a mixer: the dock fits the narrowest window */}
-        <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-2 py-1.5 lg:px-3">
-          {/* Track and click levels first: lower the track to hear the click over a loud mix */}
-          <VolumeStrip />
-          <div className="grid gap-1">
-            <div className="flex items-center gap-1">
-              <Slider
-                label={t.transport.speed}
-                value={speed}
-                defaultValue={SPEED.default}
-                min={SPEED.min}
-                max={SPEED.max}
-                step={SPEED.step}
-                onChange={setSpeed}
-                format={formatPercent}
-                parse={parsePercent}
-                labelClassName={LABEL}
-                trackClassName={TRACK}
-              />
-              {SPEED_PRESETS.map((preset) => (
-                <Chip
-                  key={preset}
-                  active={speed === preset}
-                  onClick={() => setSpeed(preset)}
-                  aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
-                  className="h-[22px] px-1.5 font-mono text-[10px] tabular"
-                >
-                  {formatPercent(preset)}
-                </Chip>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Slider
-                label={t.transport.pitch}
-                value={semitones}
-                defaultValue={SEMITONES.default}
-                min={SEMITONES.min}
-                max={SEMITONES.max}
-                step={SEMITONES.step}
-                onChange={(value) => setPitch(value, cents)}
-                format={(value) => signed(value, t.transport.semitones)}
-                labelClassName={LABEL}
-                trackClassName={TRACK}
-              />
-              <Tooltip label={t.transport.fineTune}>
-                <span>
-                  <NumberField
-                    label={t.transport.fineTune}
-                    value={cents}
-                    min={CENTS.min}
-                    max={CENTS.max}
-                    step={CENTS.step}
-                    onChange={(value) => setPitch(semitones, value)}
-                    format={(value) => signed(value, t.transport.cents)}
-                  />
-                </span>
-              </Tooltip>
-              <TuningPicker />
-            </div>
-          </div>
-        </div>
+        {/* Speed over pitch, like two strips of a mixer */}
+        <SpeedPitch />
       </FitBar>
     </footer>
+  );
+}
+
+/** Speed and pitch faders with their quick keys: narrower in a crowded dock, never fewer. */
+function SpeedPitch() {
+  const speed = usePlayerStore((s) => s.speed);
+  const semitones = usePlayerStore((s) => s.semitones);
+  const cents = usePlayerStore((s) => s.cents);
+  const { setSpeed, setPitch } = usePlayerStore.getState();
+  const compact = useCompact();
+  const label = compact ? LABEL_COMPACT : LABEL;
+  const track = compact ? TRACK_COMPACT : TRACK;
+  return (
+    <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-2 py-1.5 lg:px-3">
+      {/* Track and click levels first: lower the track to hear the click over a loud mix */}
+      <VolumeStrip />
+      <div className="grid gap-1">
+        <div className="flex items-center gap-1">
+          <Slider
+            label={t.transport.speed}
+            value={speed}
+            defaultValue={SPEED.default}
+            min={SPEED.min}
+            max={SPEED.max}
+            step={SPEED.step}
+            onChange={setSpeed}
+            format={formatPercent}
+            parse={parsePercent}
+            labelClassName={label}
+            trackClassName={track}
+          />
+          {SPEED_PRESETS.map((preset) => (
+            <Chip
+              key={preset}
+              active={speed === preset}
+              onClick={() => setSpeed(preset)}
+              aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
+              className={cn("h-[22px] font-mono text-[10px] tabular", compact ? "px-1" : "px-1.5")}
+            >
+              {compact ? Math.round(preset * 100) : formatPercent(preset)}
+            </Chip>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-1">
+          <Slider
+            label={t.transport.pitch}
+            value={semitones}
+            defaultValue={SEMITONES.default}
+            min={SEMITONES.min}
+            max={SEMITONES.max}
+            step={SEMITONES.step}
+            onChange={(value) => setPitch(value, cents)}
+            format={(value) => signed(value, t.transport.semitones)}
+            labelClassName={label}
+            trackClassName={track}
+          />
+          <Tooltip label={t.transport.fineTune}>
+            <span>
+              <NumberField
+                label={t.transport.fineTune}
+                value={cents}
+                min={CENTS.min}
+                max={CENTS.max}
+                step={CENTS.step}
+                onChange={(value) => setPitch(semitones, value)}
+                format={(value) => signed(value, t.transport.cents)}
+              />
+            </span>
+          </Tooltip>
+          <TuningPicker />
+        </div>
+      </div>
+    </div>
   );
 }
 

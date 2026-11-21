@@ -79,7 +79,7 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
 
   return (
     <DropdownMenu.Root onOpenChange={(open) => open && setOffer(offerAt(currentPosition()))}>
-      <Tooltip label={synced ? t.score.synced(count) : t.score.unsynced}>
+      <Tooltip label={`${t.score.sync} · ${synced ? t.score.synced(count) : t.score.unsynced}`}>
         <DropdownMenu.Trigger asChild>
           <Button variant="hardware" options disabled={disabled} aria-label={t.score.sync}>
             <span

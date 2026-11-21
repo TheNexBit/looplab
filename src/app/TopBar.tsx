@@ -285,18 +285,20 @@ function OpenLabel() {
 function SearchBox({ onOpen }: { onOpen: () => void }) {
   const compact = useCompact();
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={t.app.searchActions}
-      className="mx-auto flex h-7 shrink-0 items-center gap-2 rounded-control border border-border bg-field px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
-      style={{ width: compact ? undefined : "clamp(14rem, 22vw, 20rem)" }}
-    >
-      <Search className="size-3.5" />
-      {!compact && t.app.searchActions}
-      <span className="ml-auto">
-        <Kbd shortcut="commandPalette" />
-      </span>
-    </button>
+    <Tooltip label={t.app.searchActions} shortcut="commandPalette">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={t.app.searchActions}
+        className="mx-auto flex h-7 shrink-0 items-center gap-2 rounded-control border border-border bg-field px-2.5 text-xs text-fg-subtle transition-colors hover:border-accent/50 hover:text-fg-muted"
+        style={{ width: compact ? undefined : "clamp(14rem, 22vw, 20rem)" }}
+      >
+        <Search className="size-3.5" />
+        {!compact && t.app.searchActions}
+        <span className="ml-auto">
+          <Kbd shortcut="commandPalette" />
+        </span>
+      </button>
+    </Tooltip>
   );
 }

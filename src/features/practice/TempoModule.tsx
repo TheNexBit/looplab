@@ -13,6 +13,7 @@ import { Popover } from "radix-ui";
 import { type ReactNode, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { useCompact } from "@/components/ui/FitBar";
 import { Kbd } from "@/components/ui/Kbd";
 import { NumberField, parsePercent } from "@/components/ui/NumberField";
 import { OptionsKey, OptionsPanel, useOptions } from "@/components/ui/OptionsKey";
@@ -353,6 +354,7 @@ function ClickOptions() {
  * bars it will count shown on it); a right-click opens its options.
  */
 function CountInKey() {
+  const compact = useCompact();
   const on = useSettingsStore((s) => s.countIn);
   const bars = useSettingsStore((s) => s.countInBars);
   const short = bars === 1 ? p.oneBar : `${bars} ${p.bars}`;
@@ -365,7 +367,7 @@ function CountInKey() {
       panelClassName="w-72 space-y-3 p-3"
       led="amber"
       active={on}
-      className="w-16"
+      className={compact ? "w-12" : "w-16"}
       aria-label={`${p.countIn}: ${short}`}
       aria-pressed={on}
       onClick={() => useSettingsStore.getState().update({ countIn: !on })}

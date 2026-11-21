@@ -42,6 +42,8 @@ const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.Pdf
 
 /** Space always left to the waveforms under the score (CSS pixels). */
 const WAVEFORMS_MIN_HEIGHT = 230;
+/** Least height of the score panel (bar on two rows and a readable stave): the waveforms give way first. */
+export const SCORE_MIN_VISIBLE = 200;
 const HANDLE_PX = 4;
 
 /**
@@ -69,7 +71,11 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
         aria-label={t.score.title}
         className="flex shrink-0 flex-col overflow-hidden"
         style={
-          open ? { height: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px))` } : undefined
+          open
+            ? {
+                height: `max(min(${SCORE_MIN_VISIBLE}px, 100%), min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px)))`,
+              }
+            : undefined
         }
       >
         {link ? <ScoreToolbar link={link} /> : <EmptyHeader />}
@@ -469,18 +475,20 @@ function ViewKeys({ link }: { link: ProjectScore }) {
         />
       )}
       <FollowMenu link={link} />
-      <div className="shrink-0">
-        <Stepper
-          label={t.score.zoom}
-          value={link.zoom}
-          min={SCORE_ZOOM.min}
-          max={SCORE_ZOOM.max}
-          step={SCORE_ZOOM.step}
-          defaultValue={SCORE_ZOOM.default}
-          format={(zoom) => `${Math.round(zoom * 100)}%`}
-          onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
-        />
-      </div>
+      <Tooltip label={t.score.zoomHint}>
+        <div className="shrink-0">
+          <Stepper
+            label={t.score.zoom}
+            value={link.zoom}
+            min={SCORE_ZOOM.min}
+            max={SCORE_ZOOM.max}
+            step={SCORE_ZOOM.step}
+            defaultValue={SCORE_ZOOM.default}
+            format={(zoom) => `${Math.round(zoom * 100)}%`}
+            onChange={(zoom) => store.zoomBy(Math.round((zoom - link.zoom) / SCORE_ZOOM.step))}
+          />
+        </div>
+      </Tooltip>
     </>
   );
 }

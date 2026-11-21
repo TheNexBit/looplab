@@ -705,6 +705,7 @@ export const it = {
     followPaged: "Una schermata alla volta",
     followOff: "Fermo",
     zoom: "Grandezza",
+    zoomHint: "Grandezza dello spartito (anche Ctrl + rotella sulla tab)",
     zoomIn: "Più grande",
     zoomOut: "Più piccolo",
     sync: "Sincronizza",
@@ -767,12 +768,13 @@ export const it = {
     autoCheckFirst:
       "Sincronizzato, ma la battuta 1 è incerta (le note si ripetono uguali). Se non è giusta: metti la testina sul suo primo battito, Sincronizza → «La battuta 1 inizia qui», poi rifai «Sincronizza dalle note».",
     synth: "Synth",
-    synthHint: "Suona le note della tab sopra la registrazione, a tempo anche rallentata",
+    synthHint: "Synth: suona le note della tab sopra la registrazione, a tempo anche rallentata",
     synthRightClick: "volume del synth",
     synthLevel: "Volume del synth",
     synthTrack: "Suona la traccia scelta nella barra (con la trasposizione del brano)",
     neck: "Manico",
-    neckHint: "Mostra sul manico le note che stai sentendo, e più tenui quelle che arrivano",
+    neckHint:
+      "Manico: mostra sul manico le note che stai sentendo, e più tenui quelle che arrivano",
     neckEmpty: "Questa traccia non ha corde: il manico resta spento.",
     neckFret: (fret: number) => `tasto ${fret}`,
     dismiss: "Chiudi",
