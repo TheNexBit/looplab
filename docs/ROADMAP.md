@@ -860,7 +860,7 @@ Cosa c'è:
 **Obiettivo:** una video lezione si studia come su JTC Guitar: video e tab insieme, sincronizzati, con loop,
 velocità, synth e manico. Bozza mostrata in chat e approvata il 21/11/2026.
 
-**Fatto** (da verificare e provare): `features/video/LessonLayout.tsx`; preferenze `beside`, `split`,
+**Fatto** (verificato dal collaudatore in due giri, 33 controlli Ok; da provare dall'utente): `features/video/LessonLayout.tsx`; preferenze `beside`, `split`,
 `lessonHeight` nel video store (per PC); tasto «Affianca allo spartito» nella barra del video. Il collegamento
 della lezione alla Home e i tasti «Con chitarra / Solo base» arrivano con le fasi 26-27.
 
