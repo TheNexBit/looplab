@@ -890,7 +890,7 @@ export type Project_Deserialize = {
 	score?: ProjectScore_Deserialize | null,
 	/**
 	 *  Seconds since 1970: when the parts shared with the other files of the exercise (score,
-	 *  markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
+	 *  markers, sections, loops, tempo, practice speed) last changed. Set on saving; what the UI sends is ignored
 	 */
 	sharedAt?: number | null,
 	/**
@@ -943,7 +943,7 @@ export type Project_Serialize = {
 	score: ProjectScore_Serialize | null,
 	/**
 	 *  Seconds since 1970: when the parts shared with the other files of the exercise (score,
-	 *  markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
+	 *  markers, sections, loops, tempo, practice speed) last changed. Set on saving; what the UI sends is ignored
 	 */
 	sharedAt: number | null,
 	/**

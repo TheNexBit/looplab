@@ -265,7 +265,7 @@ pub struct Project {
     /// The linked score (tab, notation or PDF), if any
     pub score: Option<ProjectScore>,
     /// Seconds since 1970: when the parts shared with the other files of the exercise (score,
-    /// markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
+    /// markers, sections, loops, tempo, practice speed) last changed. Set on saving; what the UI sends is ignored
     pub shared_at: f64,
     /// When the shared parts are a copy from another file of the take: that file's path, and
     /// the seconds its times were moved by. `None` when they were made on this file
@@ -480,12 +480,18 @@ fn shared_parts(p: &Project) -> serde_json::Value {
         p.beats_per_bar,
         p.beat_unit,
         p.tempo_map,
-        p.score
+        p.score,
+        p.speed
     ])
 }
 
 /// True when the project holds something worth sharing with the other files of the take.
 pub fn has_shared(p: &Project) -> bool {
+    has_shared_marks(p) || (p.speed - 1.0).abs() > 1e-9
+}
+
+/// The shared parts that existed before the speed was shared: score, markers, loops, tempo.
+fn has_shared_marks(p: &Project) -> bool {
     p.score.is_some()
         || !p.markers.is_empty()
         || !p.sections.is_empty()
@@ -509,6 +515,7 @@ pub fn take_shared(into: &Project, from: &Project, delta: f64) -> Project {
         beat_unit: from.beat_unit,
         tempo_map: from.tempo_map.clone(),
         score: from.score.clone(),
+        speed: from.speed,
         shared_at: from.shared_at,
         shared_delta: delta,
         ..into.clone()
@@ -543,7 +550,9 @@ pub fn shared_time(conn: &Connection, track: &str, project: &Project) -> f64 {
     if project.shared_at > 0.0 {
         return project.shared_at;
     }
-    if !has_shared(project) {
+    // A project saved before `shared_at` counts only for what it shared then: a speed set on
+    // it alone must not empty the markers of another file
+    if !has_shared_marks(project) {
         return 0.0;
     }
     conn.query_row(
@@ -653,6 +662,25 @@ pub(crate) mod tests {
         assert_eq!(plain(load(&conn, &song, &dir).unwrap()), Some(sample()));
         let upper = song.to_uppercase();
         assert_eq!(plain(load(&conn, &upper, &dir).unwrap()), Some(sample()));
+    }
+
+    #[test]
+    fn an_old_project_with_only_a_speed_shares_nothing() {
+        let dir = temp_dir("project-old-speed");
+        let conn = memory();
+        let song = track(&dir, "Old.mp4", b"video");
+        // Saved before `shared_at` existed: only its speed was changed
+        let old = Project {
+            speed: 0.75,
+            ..Project::default()
+        };
+        store(&conn, &song, &old).unwrap();
+        assert_eq!(shared_time(&conn, &song, &old), 0.0);
+        // A speed changed now counts
+        let changed = Project { speed: 0.5, ..old };
+        save(&conn, &song, &changed).unwrap();
+        let saved = find(&conn, &song).unwrap().unwrap();
+        assert!(shared_time(&conn, &song, &saved) > 0.0);
     }
 
     #[test]

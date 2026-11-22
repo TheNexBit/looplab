@@ -89,7 +89,7 @@ function resume(position: number) {
   if (position < view.start || position > view.start + view.span) view.centerOn(position);
 }
 
-/** Only the parts shared by the files of a take: the file's own speed, mix and place stay. */
+/** Only the parts shared by the files of a take (and the practice speed): pitch, mix and place stay. */
 function applyShared(data: ProjectData) {
   useMarkersStore.getState().replace(data.markers, data.sections);
   useLoopStore.getState().restore(data.loop);
@@ -102,6 +102,7 @@ function applyShared(data: ProjectData) {
     practice.setTimeSignature(data.beatsPerBar, data.beatUnit);
   }
   useScoreStore.getState().restore(data.score);
+  usePlayerStore.getState().setSpeed(data.speed);
 }
 
 /** Set by `syncProject`: takes in a project another file of the take brought (already saved). */

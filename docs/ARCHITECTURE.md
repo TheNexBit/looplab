@@ -161,7 +161,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   progetto valide per tutta la ripresa (tab e sincronia, marker, sezioni, loop, mappa del tempo) passano tra i
   file: `Project.shared_at` si aggiorna solo quando cambiano, `exercise::share` (in `load_project` e dopo
   l'allineamento) prende la versione più recente di un altro file e la sposta della differenza degli `shift`.
-  Velocità, tonalità, EQ, mix e posizione restano del file.
+  Anche la velocità di studio passa tra i file (richiesta dalla prova); tonalità, EQ, mix e posizione restano
+  del file.
 - **Inquadrature e base al volo (fase 26)**: `features/exercise/exerciseSync.ts` segue il brano aperto
   (`open_exercise`, poi `align_exercise`), sceglie l'angolo (`useExerciseStore.angle`; `videoLoader` carica
   quello, anche aprendo l'mp3) e passa al video lo spostamento (`useVideoStore.shift`, aggiunto all'orologio

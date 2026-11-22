@@ -622,8 +622,8 @@ mod tests {
         project::save(&conn, &video, &synced).unwrap();
         let got = share(&conn, &audio, None).unwrap().unwrap();
         assert!((got.markers[0].time - 9.5).abs() < 1e-9);
-        // Speed is the file's own
-        assert_eq!(got.speed, 1.0);
+        // The practice speed is the lesson's, like the markers
+        assert_eq!(got.speed, 0.5);
         // Now both are as new: nothing more to share either way
         assert!(share(&conn, &audio, Some(&got)).unwrap().is_none());
         let video_project = project::find(&conn, &video).unwrap().unwrap();

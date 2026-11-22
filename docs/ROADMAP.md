@@ -894,7 +894,8 @@ in alto. Scelte prese:
   decimi; il PC decodifica un video solo.
 - **«Sposta»**: ±1 fotogramma (1/30 s) e ±0,1 s per gli angoli, ±10 ms e ±0,1 s per la base; tasto destro sul
   commutatore per scegliere la base, segnare un file audio come base, spostarla o riallinearla.
-- **Condivisione**: vince l'ultima modifica delle parti condivise; le impostazioni del file restano sue.
+- **Condivisione**: vince l'ultima modifica delle parti condivise, velocità di studio compresa (dopo la prova
+  dell'utente); tonalità, EQ, mix e posizione restano del file.
 - Il corso JTC non ha basi: il commutatore compare comunque (tasto destro per segnare un file come base).
 
 **Piano di partenza:**
