@@ -267,6 +267,10 @@ pub struct Project {
     /// Seconds since 1970: when the parts shared with the other files of the exercise (score,
     /// markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
     pub shared_at: f64,
+    /// When the shared parts are a copy from another file of the take: that file's path, and
+    /// the seconds its times were moved by. `None` when they were made on this file
+    pub shared_from: Option<String>,
+    pub shared_delta: f64,
 }
 
 impl Default for Project {
@@ -292,6 +296,8 @@ impl Default for Project {
             stem_mix: Vec::new(),
             score: None,
             shared_at: 0.0,
+            shared_from: None,
+            shared_delta: 0.0,
         }
     }
 }
@@ -428,16 +434,21 @@ pub fn load(
 /// Saves the project of a track. `shared_at` moves on only when a shared part changed.
 pub fn save(conn: &Connection, track: &str, project: &Project) -> Result<(), LibraryError> {
     let old = find(conn, track).ok().flatten();
-    let shared_at = match &old {
-        Some(old) if shared_parts(old) == shared_parts(project) => old.shared_at,
-        _ if has_shared(project) => now(),
-        _ => 0.0,
+    // Unchanged shared parts keep where they came from; changed ones are this file's own now
+    let (shared_at, shared_from, shared_delta) = match &old {
+        Some(old) if shared_parts(old) == shared_parts(project) => {
+            (old.shared_at, old.shared_from.clone(), old.shared_delta)
+        }
+        _ if has_shared(project) => (now(), None, 0.0),
+        _ => (0.0, None, 0.0),
     };
     store(
         conn,
         track,
         &Project {
             shared_at,
+            shared_from,
+            shared_delta,
             ..project.clone()
         },
     )
@@ -497,6 +508,7 @@ pub fn take_shared(into: &Project, from: &Project, delta: f64) -> Project {
         tempo_map: from.tempo_map.clone(),
         score: from.score.clone(),
         shared_at: from.shared_at,
+        shared_delta: delta,
         ..into.clone()
     };
     for m in &mut out.markers {

@@ -182,8 +182,11 @@ export const commands = {
 	 *  track is alone.
 	 */
 	openExercise: (track: string) => typedError<Exercise_Serialize | null, AppError>(__TAURI_INVOKE("open_exercise", { track })),
-	/**  Saves names, hand-set shifts, roles and the chosen angle. */
-	saveExercise: (exercise: Exercise_Deserialize) => typedError<Exercise_Serialize, AppError>(__TAURI_INVOKE("save_exercise", { exercise })),
+	/**
+	 *  Saves names, hand-set shifts, roles and the chosen angle; a file moved by hand may bring
+	 *  the open track's shared parts (score sync, markers…) to other times.
+	 */
+	saveExercise: (track: string, exercise: Exercise_Deserialize) => typedError<LinedUp_Serialize, AppError>(__TAURI_INVOKE("save_exercise", { track, exercise })),
 	/**
 	 *  Lines up, from their sound, the files of the open track's exercise not compared yet (and
 	 *  `redo`, compared again). Then shares the newest score sync, markers and loops of the take
@@ -890,6 +893,12 @@ export type Project_Deserialize = {
 	 *  markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
 	 */
 	sharedAt?: number | null,
+	/**
+	 *  When the shared parts are a copy from another file of the take: that file's path, and
+	 *  the seconds its times were moved by. `None` when they were made on this file
+	 */
+	sharedFrom?: string | null,
+	sharedDelta?: number | null,
 };
 
 /**
@@ -937,6 +946,12 @@ export type Project_Serialize = {
 	 *  markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
 	 */
 	sharedAt: number | null,
+	/**
+	 *  When the shared parts are a copy from another file of the take: that file's path, and
+	 *  the seconds its times were moved by. `None` when they were made on this file
+	 */
+	sharedFrom: string | null,
+	sharedDelta: number | null,
 };
 
 export type RecentFile = RecentFile_Serialize | RecentFile_Deserialize;

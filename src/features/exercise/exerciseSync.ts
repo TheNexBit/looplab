@@ -41,11 +41,13 @@ function showAngle(path: string | null) {
 const usableAngles = (exercise: Exercise | null) =>
   anglesOf(exercise).filter((f) => f.lineUp !== "mismatch");
 
-function pickAngle(exercise: Exercise, path: string): string | null {
+function pickAngle(exercise: Exercise, path: string, first: boolean): string | null {
   const angles = usableAngles(exercise);
+  // At the opening the angle chosen last time wins over the track's own picture
+  const remembered = angles.find((f) => samePath(f.path, exercise.angle));
+  if (first && remembered) return remembered.path;
   const current = store().angle;
   if (current && angles.some((f) => samePath(f.path, current))) return current;
-  const remembered = angles.find((f) => samePath(f.path, exercise.angle));
   if (remembered) return remembered.path;
   if (isVideoPath(path)) return path;
   return angles[0]?.path ?? null;
@@ -65,6 +67,11 @@ async function loadOther(path: string | null) {
   const forTrack = track;
   const shift = shiftTo(path);
   store().set({ other: path, otherLoading: path !== null });
+  if (path === null && store().otherOn) {
+    // No other take any more: back to the track
+    store().set({ otherOn: false });
+    void commands.setOtherTakeOn(false);
+  }
   const result = await commands.setOtherTake(shift === null ? null : path, shift ?? 0);
   if (track !== forTrack || store().other !== path) return;
   store().set({ otherLoading: false });
@@ -78,11 +85,11 @@ async function loadOther(path: string | null) {
 }
 
 /** Takes in a new version of the exercise: angle, switch and picture shift follow it. */
-function adopt(exercise: Exercise, path: string) {
+function adopt(exercise: Exercise, path: string, first = false) {
   const current = store().other;
   const previousShift = shiftTo(current);
   store().set({ exercise });
-  showAngle(pickAngle(exercise, path));
+  showAngle(pickAngle(exercise, path, first));
   const takes = otherTakes(exercise, path);
   const next = takes.find((f) => samePath(f.path, current))?.path ?? takes[0]?.path ?? null;
   // Reloaded when the take or its shift changed
@@ -116,13 +123,18 @@ async function follow(path: string) {
   showAngle(isVideoPath(path) ? path : null);
   const opened = await commands.openExercise(path);
   if (track !== path || opened.status === "error" || !opened.data) return;
-  adopt(opened.data, path);
+  adopt(opened.data, path, true);
   if (opened.data.files.some((f) => f.lineUp === "pending")) await align(path, null);
 }
 
 async function save(exercise: Exercise) {
-  const result = await commands.saveExercise(exercise);
-  if (result.status === "ok" && track) adopt(result.data, track);
+  const path = track;
+  if (!path) return;
+  const result = await commands.saveExercise(path, exercise);
+  if (result.status !== "ok" || track !== path) return;
+  adopt(result.data.exercise, path);
+  // A file moved by hand: the shared times of this track follow
+  if (result.data.project) adoptSharedProject(path, result.data.project);
 }
 
 /** Changes one file of the take and saves it. */

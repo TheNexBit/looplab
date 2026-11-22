@@ -27,16 +27,22 @@ pub fn open_exercise(
     Ok(library.with(|conn| exercise::open(conn, &track))?)
 }
 
-/// Saves names, hand-set shifts, roles and the chosen angle.
+/// Saves names, hand-set shifts, roles and the chosen angle; a file moved by hand may bring
+/// the open track's shared parts (score sync, markers…) to other times.
 #[tauri::command]
 #[specta::specta]
 pub fn save_exercise(
     library: State<'_, Library>,
+    track: String,
     exercise: Exercise,
-) -> Result<Exercise, AppError> {
+) -> Result<LinedUp, AppError> {
     let mut exercise = exercise;
-    library.with(|conn| exercise::save(conn, &mut exercise))?;
-    Ok(exercise)
+    let project = library.with(|conn| {
+        exercise::save(conn, &mut exercise)?;
+        let own = crate::project::find(conn, &track)?;
+        exercise::share(conn, &track, own.as_ref())
+    })?;
+    Ok(LinedUp { exercise, project })
 }
 
 #[derive(Serialize, specta::Type)]

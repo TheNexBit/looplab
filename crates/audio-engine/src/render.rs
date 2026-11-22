@@ -234,6 +234,9 @@ struct Mark {
     gap: u64,
 }
 
+/// Largest change of a mix input's gain in one block (8 blocks from silent to full).
+const GLIDE_STEP: f32 = 0.125;
+
 pub(crate) struct Renderer {
     commands: rtrb::Consumer<Command>,
     garbage: rtrb::Producer<Garbage>,
@@ -634,9 +637,14 @@ impl Renderer {
             tempo: &self.tempo,
             notes,
         };
-        let to = self
+        let target = self
             .stem_levels
             .inputs(self.stems.as_deref(), self.other_on && self.other.is_some());
+        // At most this much per block: a switch to the backing glides over ~40 ms
+        let mut to = self.stem_gains;
+        for (gain, aim) in to.iter_mut().zip(target) {
+            *gain += (aim - *gain).clamp(-GLIDE_STEP, GLIDE_STEP);
+        }
         let source = Source {
             track: self.track.as_deref(),
             stems: self.stems.as_deref(),

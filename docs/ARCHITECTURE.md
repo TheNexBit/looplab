@@ -148,6 +148,29 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   video e spartito (video non staccato, preferenza `beside`): video e `ScorePanel` affiancati sopra, forme d'onda
   sotto a tutta larghezza; altrimenti `VideoLayout` → `ScoreLayout` come prima. I pezzi riusati sono
   `VideoHeader`/`VideoBox`/`DetachKey`/`BesideKey` (VideoLayout.tsx) e `ScorePanel` (ScoreLayout.tsx).
+- **Esercizio (fase 26)**: `exercise.rs` raggruppa i file della stessa ripresa nella cartella del brano per
+  nome (`name_parts`: estensioni anche doppie, parole finali di angolo/base/altro come «Second Angle»,
+  «Backing», «Camera 2»; chiave uguale = stessa lezione). In `libreria.db` (schema 2) `exercises` (JSON:
+  file, nome, tipo, `backing`, `shift`, `line_up`, angolo scelto) e `exercise_files` (percorso → esercizio,
+  con impronta: una cartella spostata si ritrova). Ogni file ha uno `shift` sull'orologio dell'esercizio
+  (quello che si sente a `t` è a `t + shift` nel file; il primo file vale 0). L'allineamento è
+  `audio-engine/offset.rs` (comando `align_exercise`, in sottofondo): curva degli attacchi ogni 10 ms a
+  22,05 kHz, correlazione con una FFT entro ±90 s, picco tra due passi con una parabola, poi confronto delle
+  forme d'onda ±12 ms sui pezzi più forti (precisione < 1 ms); somiglianza bassa o picco non distinto =
+  `mismatch` (un'altra versione: tenuta separata), nessun suono = `noSound` (si sposta a mano). Le parti del
+  progetto valide per tutta la ripresa (tab e sincronia, marker, sezioni, loop, mappa del tempo) passano tra i
+  file: `Project.shared_at` si aggiorna solo quando cambiano, `exercise::share` (in `load_project` e dopo
+  l'allineamento) prende la versione più recente di un altro file e la sposta della differenza degli `shift`.
+  Velocità, tonalità, EQ, mix e posizione restano del file.
+- **Inquadrature e base al volo (fase 26)**: `features/exercise/exerciseSync.ts` segue il brano aperto
+  (`open_exercise`, poi `align_exercise`), sceglie l'angolo (`useExerciseStore.angle`; `videoLoader` carica
+  quello, anche aprendo l'mp3) e passa al video lo spostamento (`useVideoStore.shift`, aggiunto all'orologio
+  da `videoClock` e dalla finestra staccata). Un solo `<video>`: il cambio d'angolo cambia sorgente e
+  `useVideoSync` salta allo stesso punto. La base è un ingresso in più del mixer del motore
+  (`stems.rs::OtherTake`, letta con lo stesso scarto in fotogrammi): `set_other_take` la carica (cache come i
+  brani), `set_other_take_on` passa da uno all'altro con la stessa dissolvenza delle tracce separate, prima
+  dello stretch (velocità, tonalità, EQ e loop restano). UI: `AngleMenu.tsx` (pannello video), `TakeSwitch.tsx`
+  (barra in alto), `TakeControls.tsx` (stato e «Sposta»).
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

@@ -416,8 +416,11 @@ pub fn of_track(conn: &Connection, track: &str) -> Result<Option<Exercise>, Libr
     }
 }
 
-/// The shared parts of a project of another file of the take, if one changed after `own`'s:
-/// moved onto this file's times, saved, and returned.
+/// The shared parts of another file of the take, moved onto this file's times, saved and
+/// returned, when they are newer than `own`'s, or when `own` is a copy of them made with
+/// another shift between the two files (one of them was moved by hand since).
+///
+/// Only parts made on a file count as a source (never a copy of a copy).
 pub fn share(
     conn: &Connection,
     track: &str,
@@ -434,7 +437,8 @@ pub fn share(
         return Ok(None);
     };
     let own_time = own.map_or(0.0, |p| project::shared_time(conn, track, p));
-    let mut best: Option<(f64, Project, f64)> = None;
+    let own_from = own.and_then(|p| p.shared_from.as_deref());
+    let mut best: Option<(f64, Project, &ExerciseFile)> = None;
     for file in exercise.files.iter().filter(|f| f.lined_up()) {
         if same(Path::new(track), &file.path) {
             continue;
@@ -442,17 +446,28 @@ pub fn share(
         let Some(other) = project::find(conn, &file.path)? else {
             continue;
         };
+        if other.shared_from.is_some() {
+            continue;
+        }
         let time = project::shared_time(conn, &file.path, &other);
-        if time > own_time && best.as_ref().is_none_or(|(t, _, _)| time > *t) {
-            best = Some((time, other, file.shift));
+        if best.as_ref().is_none_or(|(t, _, _)| time > *t) {
+            best = Some((time, other, file));
         }
     }
-    let Some((time, other, other_shift)) = best else {
+    let Some((time, other, source)) = best else {
         return Ok(None);
     };
+    let delta = me.shift - source.shift;
+    let copied_from_it = own_from.is_some_and(|from| path_key(from) == path_key(&source.path));
+    let stale = copied_from_it
+        && own.is_some_and(|p| (p.shared_delta - delta).abs() > 1e-6 || time > own_time);
+    if !(time > own_time || stale) || time == 0.0 {
+        return Ok(None);
+    }
     let base = own.cloned().unwrap_or_default();
-    let mut shared = project::take_shared(&base, &other, me.shift - other_shift);
+    let mut shared = project::take_shared(&base, &other, delta);
     shared.shared_at = time;
+    shared.shared_from = Some(source.path.clone());
     project::store(conn, track, &shared)?;
     Ok(Some(shared))
 }

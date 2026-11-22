@@ -880,7 +880,24 @@ aperto → video piccolo.
 - In testa il nome della lezione (corso e modulo, se viene dalla Home) e i tasti «Con chitarra / Solo base».
 - Prestazioni: video, tab e cursore fluidi insieme a 60 fps anche rallentati; misura della CPU come nelle fasi 21-23.
 
-## 26. Stesso esercizio, più file: inquadrature, basi e sincronia condivisa 🔜
+## 26. Stesso esercizio, più file: inquadrature, basi e sincronia condivisa ✅ (da provare)
+
+**Fatto** (22/11/2026; dettagli in ARCHITECTURE «Esercizio» e «Inquadrature e base al volo»): file della lezione
+riconosciuti per nome nella cartella, allineati dal suono in sottofondo (sui file JTC: seconda inquadratura
++0,173 s, mp3 −0,018 s, ~60 ms a file; un mp3 di un altro esercizio è scartato), sincronia della tab, marker,
+loop e tempo condivisi tra i file, menu «Inquadratura» nel pannello video, «Con chitarra / Solo base» nella barra
+in alto. Scelte prese:
+
+- **Tasti**: Ctrl+1…9 per gli angoli (1-9 sono già i loop salvati, Alt+1-9 le sezioni), V angolo successivo,
+  A «Con chitarra / Solo base»; tutti riassegnabili nelle impostazioni.
+- **Un solo video alla volta** (niente angoli in pausa caricati): il cambio salta allo stesso punto in pochi
+  decimi; il PC decodifica un video solo.
+- **«Sposta»**: ±1 fotogramma (1/30 s) e ±0,1 s per gli angoli, ±10 ms e ±0,1 s per la base; tasto destro sul
+  commutatore per scegliere la base, segnare un file audio come base, spostarla o riallinearla.
+- **Condivisione**: vince l'ultima modifica delle parti condivise; le impostazioni del file restano sue.
+- Il corso JTC non ha basi: il commutatore compare comunque (tasto destro per segnare un file come base).
+
+**Piano di partenza:**
 
 **Obiettivo:** video (anche più inquadrature), mp3 e base dello stesso esercizio sono una cosa sola: la tab
 sincronizzata una volta vale per tutti, si cambia inquadratura e si passa alla base al volo.
