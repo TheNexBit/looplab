@@ -63,6 +63,10 @@ export interface Settings {
   scoreSynthLevel: number;
   /** Neck under the tab, lighting the notes being played */
   scoreNeck: boolean;
+  /** Dark paper under the score (white ink on the theme's stage); off = light paper, black ink */
+  scoreDark: boolean;
+  /** The overview strip with the whole track above the sections; off leaves a thin strip to reopen it */
+  showOverview: boolean;
   /** Media keys reach Looplab even while another program has the focus */
   globalMediaKeys: boolean;
   /** Beat and bar lines on the waveform (when the tempo is known); the magnet uses them */
@@ -188,6 +192,8 @@ const DEFAULTS: Settings = {
   scoreSynth: false,
   scoreSynthLevel: 0.5,
   scoreNeck: false,
+  scoreDark: false,
+  showOverview: true,
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",

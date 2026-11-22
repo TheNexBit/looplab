@@ -1,4 +1,4 @@
-import { AudioLines, Guitar } from "lucide-react";
+import { AudioLines, Guitar, Moon } from "lucide-react";
 import { Popover } from "radix-ui";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { formatPercent } from "@/lib/format";
+import type { ShortcutId } from "@/lib/shortcuts";
 import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
 
 /** A key of the score's bar with its lamp, lit while on (like the Follow key). */
@@ -18,11 +19,13 @@ function LampKey({
   label,
   hint,
   rightClick,
+  shortcut,
   onToggle,
   onContextMenu,
   icon,
   children,
 }: {
+  shortcut?: ShortcutId;
   icon: ReactNode;
   on: boolean;
   label: string;
@@ -35,7 +38,7 @@ function LampKey({
   // In a crowded bar the key keeps its icon and lamp; its name stays in the hint
   const compact = useCompact();
   return (
-    <Tooltip label={hint} rightClick={rightClick}>
+    <Tooltip label={hint} shortcut={shortcut} rightClick={rightClick}>
       <Button
         variant="hardware"
         options={rightClick !== undefined}
@@ -102,6 +105,21 @@ export function SynthKey() {
         <p className="text-[11px] text-fg-subtle">{t.score.synthTrack}</p>
       </OptionsPanel>
     </Popover.Root>
+  );
+}
+
+/** Paper key: light paper (like printed, the start) or dark, for the tab and the PDF alike. */
+export function PaperKey() {
+  const on = useSettingsStore((s) => s.scoreDark);
+  return (
+    <LampKey
+      on={on}
+      label={t.score.paper}
+      hint={t.score.paperHint}
+      shortcut="toggleScorePaper"
+      icon={<Moon className="size-3.5" />}
+      onToggle={() => useSettingsStore.getState().update({ scoreDark: !on })}
+    />
   );
 }
 

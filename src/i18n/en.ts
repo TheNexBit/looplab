@@ -581,6 +581,8 @@ export const en = {
   },
   waveform: {
     overview: "Track overview",
+    hideOverview: "Hide the overview (a thin strip stays to reopen it)",
+    showOverview: "Show the track overview",
     detail: "Waveform",
   },
   markers: {
@@ -849,6 +851,8 @@ export const en = {
     synthRightClick: "synth volume",
     synthLevel: "Synth volume",
     synthTrack: "Plays the track chosen in the bar (with the song's transposition)",
+    paper: "Dark paper",
+    paperHint: "Score paper: on = dark, off = light (like printed)",
     neck: "Neck",
     neckHint: "Neck: shows on the neck the notes you are hearing, and fainter the ones coming next",
     neckEmpty: "This track has no strings: the neck stays dark.",
@@ -1020,6 +1024,8 @@ export const en = {
         CornersId,
         string
       >,
+      overviewShown: "Overview shown",
+      overviewShownHint: "Off, a thin strip stays to reopen it (also Shift+O)",
       overview: "Overview",
       overviewHint: "Height of the strip with the whole track",
       overviewHeights: { low: "Low", normal: "Normal", tall: "Tall" } satisfies Record<
@@ -1257,6 +1263,8 @@ export const en = {
     nextAngle: "Next camera angle",
     toggleBacking: "With guitar / Backing only",
     toggleHome: "Lessons (course Home)",
+    toggleScorePaper: "Score: light / dark paper",
+    toggleOverview: "Track overview: show / hide",
   },
   keys: {
     Space: "Space",

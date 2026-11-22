@@ -618,6 +618,17 @@
   --color-key-black: #2a2520;
 }
 
+/*
+ * A highlighted menu item has an amber background: anything amber inside it (the chosen
+ * item, a mark, an icon) turns to the on-accent ink, so it never vanishes. Unlayered on
+ * purpose, so it beats any text-accent utility in every menu and every theme.
+ */
+[data-highlighted].text-accent,
+[data-highlighted] .text-accent,
+[data-highlighted][data-state="checked"] {
+  color: var(--color-on-accent);
+}
+
 @layer base {
   html,
   body,
@@ -743,6 +754,15 @@
    box of its own, which would catch the click even with the hint itself click-through */
 [data-radix-popper-content-wrapper]:has(> [data-hint]) {
   pointer-events: none;
+}
+
+/* Light paper under a Guitar Pro score: printed black ink on warm white, in every theme */
+.score-paper {
+  background: #fbf9f4;
+}
+/* Dark paper for a PDF page: negative, with the hues turned back (red marks stay red) */
+.pdf-dark {
+  filter: invert(0.9) hue-rotate(180deg);
 }
 
 /* Score (alphaTab): the bar playing is lit softly, the beat line glows in the theme's accent */

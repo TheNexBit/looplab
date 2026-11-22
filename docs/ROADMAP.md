@@ -948,6 +948,29 @@ sincronizzata una volta vale per tutti, si cambia inquadratura e si passa alla b
 **Prova e unione (fasi 21-27):** tutto si prova nel worktree del ramo `tab` (`scripts-dev.cmd` del worktree);
 solo dopo la prova completa dell'utente il ramo si unisce in main.
 
+**Unione:** il 22/11/2026 il ramo `tab` (fasi 21-27, tutte provate) è stato unito in main; worktree tolto.
+
+## 28. Rifinitura grafica 🔧 (ramo `fase-28`)
+
+**Obiettivo:** togliere i difetti di aspetto trovati usando le fasi 21-27 e rendere più severo il collaudo grafico.
+
+- **Voci di menu leggibili:** una voce scelta, col puntatore sopra, era arancione su arancione. Ora una regola
+  unica (`theme.css`) mette l'inchiostro «su accento» a tutto ciò che è arancione dentro una voce evidenziata, in
+  ogni menu e tema; le scelte dei menu dello spartito hanno una spunta (`components/ui/MenuChoice.tsx`).
+- **Titolo delle tab .gp:** i 27 file del corso JTC hanno un «a capo» nel titolo («Module 02⏎Exercise 03…») e
+  alphaTab lo disegnava come una riga sola, sopra le righe sotto. Ora la prima riga resta il titolo e le altre
+  diventano il sottotitolo (`features/score/scoreHeader.ts`, con test); il blocco grande di alphaTab resta.
+- **Carta chiara/scura:** lo spartito parte sempre su carta chiara (inchiostro nero come una stampa, uguale in
+  ogni tema); il tasto «Carta scura» nella barra dello spartito (e **Maiusc+P**, riassegnabile) passa allo scuro
+  coi colori del tema. Il PDF scuro è la pagina in negativo con i colori girati (`invert + hue-rotate`). La scelta
+  si ricorda (`scoreDark`).
+- **Panoramica nascondibile:** tasto sulla striscia (compare col puntatore sopra), **Maiusc+O**, comando in
+  Ctrl+K e interruttore in Impostazioni → Aspetto. Nascosta resta una striscia sottile per riaprirla. Si ricorda
+  (`showOverview`). La corsia delle sezioni resta: serve a disegnarle.
+- **Collaudatore:** controlli grafici obbligatori (foto ingrandite sui testi, menu con voce scelta e puntatore
+  sopra, tutti i temi, titolo degli spartiti a più zoom, 1280 px).
+- **Da fare:** controllo grafico completo con le foto di ogni schermata; l'utente sceglie cosa correggere.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

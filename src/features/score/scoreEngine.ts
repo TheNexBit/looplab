@@ -4,7 +4,9 @@ import bravuraWoff2 from "@coderline/alphatab/font/Bravura.woff2?url";
 import type { AlignedBar } from "@/lib/bindings";
 import { themeColor } from "@/lib/theme";
 import type { ProjectScore, ScoreTrack, SyncPoint } from "@/stores/score";
+import { useSettingsStore } from "@/stores/settings";
 import { BarSync } from "./barSync";
+import { tidyHeader } from "./scoreHeader";
 import {
   alignBars,
   type NeckChord,
@@ -84,7 +86,20 @@ function color(css: string, alpha = 1): alphaTab.model.Color {
   return new alphaTab.model.Color(r, g, b, Math.round(255 * a * alpha));
 }
 
+/** Ink on light paper: like a printed page, the same in every theme. */
+const PRINTED = { main: "#1b1917", secondary: "#4a4540", lines: "#8c857c", numbers: "#7a736a" };
+
+/** Dark paper takes the theme's own ink; light paper is printed black (see `.score-paper`). */
 function themeResources(resources: alphaTab.RenderingResources) {
+  if (!useSettingsStore.getState().scoreDark) {
+    resources.mainGlyphColor = color(PRINTED.main);
+    resources.secondaryGlyphColor = color(PRINTED.secondary);
+    resources.scoreInfoColor = color(PRINTED.main);
+    resources.staffLineColor = color(PRINTED.lines);
+    resources.barSeparatorColor = color(PRINTED.lines);
+    resources.barNumberColor = color(PRINTED.numbers);
+    return;
+  }
   resources.mainGlyphColor = color(themeColor("fg"));
   resources.secondaryGlyphColor = color(themeColor("fg-muted"));
   resources.scoreInfoColor = color(themeColor("fg"));
@@ -143,6 +158,7 @@ export class ScoreEngine extends BarSync {
 
     this.api.scoreLoaded.on((score) => {
       if (this.destroyed) return;
+      tidyHeader(score);
       const tracks: ScoreTrack[] = score.tracks.map((track) => ({
         index: track.index,
         name: track.name || track.shortName || `Traccia ${track.index + 1}`,
@@ -341,7 +357,7 @@ export class ScoreEngine extends BarSync {
     if (view.sync !== this.sync) this.applySync(view.sync);
   }
 
-  /** New theme colours: drawn again. */
+  /** New theme colours or paper: drawn again. */
   retheme() {
     themeResources(this.api.settings.display.resources);
     this.api.updateSettings();

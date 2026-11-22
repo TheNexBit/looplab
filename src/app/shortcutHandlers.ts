@@ -182,4 +182,12 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   nextAngle,
   toggleBacking: toggleOther,
   toggleHome: () => useLessonsStore.getState().toggle(),
+  toggleScorePaper: () => {
+    const { scoreDark, update } = useSettingsStore.getState();
+    update({ scoreDark: !scoreDark });
+  },
+  toggleOverview: () => {
+    const { showOverview, update } = useSettingsStore.getState();
+    update({ showOverview: !showOverview });
+  },
 };

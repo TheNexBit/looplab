@@ -584,6 +584,8 @@ export const it = {
   },
   waveform: {
     overview: "Panoramica del brano",
+    hideOverview: "Nascondi la panoramica (resta una striscia sottile per riaprirla)",
+    showOverview: "Mostra la panoramica del brano",
     detail: "Forma d'onda",
   },
   markers: {
@@ -857,6 +859,8 @@ export const it = {
     synthRightClick: "volume del synth",
     synthLevel: "Volume del synth",
     synthTrack: "Suona la traccia scelta nella barra (con la trasposizione del brano)",
+    paper: "Carta scura",
+    paperHint: "Carta dello spartito: accesa = scura, spenta = chiara (come stampata)",
     neck: "Manico",
     neckHint:
       "Manico: mostra sul manico le note che stai sentendo, e più tenui quelle che arrivano",
@@ -1031,6 +1035,8 @@ export const it = {
         CornersId,
         string
       >,
+      overviewShown: "Panoramica visibile",
+      overviewShownHint: "Spenta resta una striscia sottile per riaprirla (anche Maiusc+O)",
       overview: "Panoramica",
       overviewHint: "Altezza della striscia con tutto il brano",
       overviewHeights: { low: "Bassa", normal: "Normale", tall: "Alta" } satisfies Record<
@@ -1263,6 +1269,8 @@ export const it = {
     nextAngle: "Inquadratura successiva",
     toggleBacking: "Con chitarra / Solo base",
     toggleHome: "Lezioni (Home dei corsi)",
+    toggleScorePaper: "Spartito: carta chiara / scura",
+    toggleOverview: "Panoramica del brano: mostra / nascondi",
   },
   keys: {
     Space: "Spazio",

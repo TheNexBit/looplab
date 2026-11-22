@@ -1,11 +1,13 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useEffect, useRef, useState } from "react";
 import { commands } from "@/lib/bindings";
+import { cn } from "@/lib/cn";
 import { onThemeChange } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useLoopStore } from "@/stores/loop";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { type ProjectScore, useScoreStore } from "@/stores/score";
+import { useSettingsStore } from "@/stores/settings";
 import { activeScore } from "./activeScore";
 import { type Rect, ScoreEngine } from "./scoreEngine";
 import { startScoreExtras } from "./scoreExtras";
@@ -42,6 +44,7 @@ export function ScoreView({ link }: { link: ProjectScore }) {
   const engineRef = useRef<ScoreEngine | null>(null);
   const extrasRef = useRef<ReturnType<typeof startScoreExtras> | null>(null);
   const [bands, setBands] = useState<Bands>(NO_BANDS);
+  const dark = useSettingsStore((s) => s.scoreDark);
   const [drag, setDrag] = useState<Span>(null);
   const loop = useLoopSpan();
   const shown = drag ?? loop;
@@ -107,10 +110,14 @@ export function ScoreView({ link }: { link: ProjectScore }) {
       if (state.playing !== previous.playing) engine.setPlaying(state.playing);
     });
     const stopTheme = onThemeChange(() => engine.retheme());
+    const stopPaper = useSettingsStore.subscribe((state, previous) => {
+      if (state.scoreDark !== previous.scoreDark) engine.retheme();
+    });
     return () => {
       cancelled = true;
       stopPlayer();
       stopTheme();
+      stopPaper();
       extras.stop();
       extrasRef.current = null;
       engine.destroy();
@@ -197,7 +204,10 @@ export function ScoreView({ link }: { link: ProjectScore }) {
   return (
     <div
       ref={scrollRef}
-      className="score-scroll relative isolate h-full overflow-auto overscroll-contain bg-stage"
+      className={cn(
+        "score-scroll relative isolate h-full overflow-auto overscroll-contain",
+        dark ? "bg-stage" : "score-paper",
+      )}
     >
       <div
         className="relative min-h-full cursor-pointer select-none"
@@ -215,7 +225,10 @@ export function ScoreView({ link }: { link: ProjectScore }) {
           {bands.outside.map((r) => (
             <div
               key={`o${r.x},${r.y}`}
-              className="absolute bg-stage/55 transition-opacity duration-150"
+              className={cn(
+                "absolute transition-opacity duration-150",
+                dark ? "bg-stage/55" : "bg-[#fbf9f4]/60",
+              )}
               style={{ left: r.x, top: r.y, width: r.w, height: r.h }}
             />
           ))}

@@ -98,6 +98,9 @@ export const shortcuts = {
   nextAngle: "V",
   toggleBacking: "A",
   toggleHome: "Ctrl+L",
+  // Light or dark paper under the score, and the overview strip on / off
+  toggleScorePaper: "Shift+P",
+  toggleOverview: "Shift+O",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

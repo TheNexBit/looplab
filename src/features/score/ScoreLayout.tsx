@@ -18,6 +18,7 @@ import { lazy, type ReactNode, Suspense, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
 import { FitBar, useCompact, useFitMode } from "@/components/ui/FitBar";
+import { MenuChoice } from "@/components/ui/MenuChoice";
 import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Stepper } from "@/components/ui/Stepper";
@@ -30,7 +31,7 @@ import { usePlayerStore } from "@/stores/player";
 import { type ProjectScore, SCORE_ZOOM, useScoreStore } from "@/stores/score";
 import { useSettingsStore } from "@/stores/settings";
 import { activeScore } from "./activeScore";
-import { NeckKey, SynthKey } from "./ExtrasKeys";
+import { NeckKey, PaperKey, SynthKey } from "./ExtrasKeys";
 import { pickScore } from "./pickScore";
 import { SyncMenu } from "./SyncMenu";
 import { stopTapping } from "./syncActions";
@@ -161,16 +162,12 @@ function TrackMenu({ link }: { link: ProjectScore }) {
             onValueChange={(value) => useScoreStore.getState().setTracks([Number(value)])}
           >
             {tracks.map((track) => (
-              <DropdownMenu.RadioItem
-                key={track.index}
-                value={String(track.index)}
-                className={cn(menuItem, "data-[state=checked]:text-accent")}
-              >
+              <MenuChoice key={track.index} value={String(track.index)}>
                 <span className="w-5 text-right font-mono text-[11px] text-fg-subtle tabular">
                   {track.index + 1}
                 </span>
                 <span className="truncate">{track.name}</span>
-              </DropdownMenu.RadioItem>
+              </MenuChoice>
             ))}
           </DropdownMenu.RadioGroup>
         </DropdownMenu.Content>
@@ -213,13 +210,9 @@ function FollowMenu({ link }: { link: ProjectScore }) {
             }
           >
             {(Object.keys(names) as (keyof typeof names)[]).map((mode) => (
-              <DropdownMenu.RadioItem
-                key={mode}
-                value={mode}
-                className={cn(menuItem, "data-[state=checked]:text-accent")}
-              >
+              <MenuChoice key={mode} value={mode}>
                 {names[mode]}
-              </DropdownMenu.RadioItem>
+              </MenuChoice>
             ))}
           </DropdownMenu.RadioGroup>
         </DropdownMenu.Content>
@@ -235,7 +228,6 @@ function FileMenu({ link }: { link: ProjectScore }) {
   const store = useScoreStore.getState();
   // A PDF is a picture: no tracks, staves or layout to choose
   const notation = link.kind === "notation";
-  const radio = cn(menuItem, "data-[state=checked]:text-accent");
   return (
     <DropdownMenu.Root>
       <Tooltip label={link.name}>
@@ -255,15 +247,9 @@ function FileMenu({ link }: { link: ProjectScore }) {
               value={link.staves}
               onValueChange={(value) => store.setStaves(value as ProjectScore["staves"])}
             >
-              <DropdownMenu.RadioItem value="tab" className={radio}>
-                {t.score.stavesTab}
-              </DropdownMenu.RadioItem>
-              <DropdownMenu.RadioItem value="notation" className={radio}>
-                {t.score.stavesNotation}
-              </DropdownMenu.RadioItem>
-              <DropdownMenu.RadioItem value="both" className={radio}>
-                {t.score.stavesBoth}
-              </DropdownMenu.RadioItem>
+              <MenuChoice value="tab">{t.score.stavesTab}</MenuChoice>
+              <MenuChoice value="notation">{t.score.stavesNotation}</MenuChoice>
+              <MenuChoice value="both">{t.score.stavesBoth}</MenuChoice>
             </DropdownMenu.RadioGroup>
           )}
           {notation && (
@@ -274,12 +260,8 @@ function FileMenu({ link }: { link: ProjectScore }) {
               value={link.layout}
               onValueChange={(value) => store.setLayout(value as ProjectScore["layout"])}
             >
-              <DropdownMenu.RadioItem value="page" className={radio}>
-                {t.score.layoutPage}
-              </DropdownMenu.RadioItem>
-              <DropdownMenu.RadioItem value="horizontal" className={radio}>
-                {t.score.layoutHorizontal}
-              </DropdownMenu.RadioItem>
+              <MenuChoice value="page">{t.score.layoutPage}</MenuChoice>
+              <MenuChoice value="horizontal">{t.score.layoutHorizontal}</MenuChoice>
             </DropdownMenu.RadioGroup>
           )}
           <DropdownMenu.Label className={menuLabel}>{t.score.follow}</DropdownMenu.Label>
@@ -287,15 +269,9 @@ function FileMenu({ link }: { link: ProjectScore }) {
             value={link.follow}
             onValueChange={(value) => store.setFollow(value as ProjectScore["follow"])}
           >
-            <DropdownMenu.RadioItem value="continuous" className={radio}>
-              {t.score.followContinuous}
-            </DropdownMenu.RadioItem>
-            <DropdownMenu.RadioItem value="paged" className={radio}>
-              {t.score.followPaged}
-            </DropdownMenu.RadioItem>
-            <DropdownMenu.RadioItem value="off" className={radio}>
-              {t.score.followOff}
-            </DropdownMenu.RadioItem>
+            <MenuChoice value="continuous">{t.score.followContinuous}</MenuChoice>
+            <MenuChoice value="paged">{t.score.followPaged}</MenuChoice>
+            <MenuChoice value="off">{t.score.followOff}</MenuChoice>
           </DropdownMenu.RadioGroup>
           <DropdownMenu.Label className={menuLabel}>
             {t.score.zoom} · {Math.round(link.zoom * 100)}%
@@ -415,6 +391,11 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
           <>
             <SynthKey />
             <NeckKey />
+          </>
+        )}
+        {tapping === null && (
+          <>
+            <PaperKey />
             <Separator />
           </>
         )}

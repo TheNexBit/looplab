@@ -2,6 +2,7 @@ import { Check, Pipette, RotateCcw } from "lucide-react";
 import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
+import { OnOffKey } from "@/components/ui/OnOffKey";
 import { Stepper } from "@/components/ui/Stepper";
 import { t } from "@/i18n";
 import {
@@ -18,6 +19,7 @@ import { isHex } from "@/lib/color";
 import { formatPercent } from "@/lib/format";
 import { THEMES, type ThemeId } from "@/lib/theme";
 import { useAppearanceStore } from "@/stores/appearance";
+import { useSettingsStore } from "@/stores/settings";
 import { SettingGroup, SettingRow } from "./SettingLayout";
 
 const a = t.settings.appearance;
@@ -174,6 +176,7 @@ function ColorRow({ color }: { color: CustomColor }) {
 /** Settings → Appearance: theme, colours and sizes of this PC, applied at once. */
 export function AppearanceSettings() {
   const appearance = useAppearanceStore();
+  const showOverview = useSettingsStore((s) => s.showOverview);
   const changed = Object.keys(appearance.colors[appearance.theme] ?? {}).length > 0;
   return (
     <div className="space-y-2 px-4 pb-4">
@@ -231,6 +234,13 @@ export function AppearanceSettings() {
                 (corners) => [corners, a.cornerNames[corners]] as const,
               )}
               onChange={(corners) => appearance.update({ corners })}
+            />
+          </SettingRow>
+          <SettingRow label={a.overviewShown} hint={a.overviewShownHint}>
+            <OnOffKey
+              label={a.overviewShown}
+              on={showOverview}
+              onChange={(on) => useSettingsStore.getState().update({ showOverview: on })}
             />
           </SettingRow>
           <SettingRow label={a.overview} hint={a.overviewHint}>

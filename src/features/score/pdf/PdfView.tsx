@@ -7,10 +7,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { menuContent, menuItem } from "@/components/ui/menu";
 import { t } from "@/i18n";
 import { commands } from "@/lib/bindings";
+import { cn } from "@/lib/cn";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useLoopStore } from "@/stores/loop";
 import { currentPosition, trackDuration, usePlayerStore } from "@/stores/player";
 import { type PdfBar, type ProjectScore, useScoreStore } from "@/stores/score";
+import { useSettingsStore } from "@/stores/settings";
 import { activeScore } from "../activeScore";
 import { useWheelZoom } from "../useWheelZoom";
 import { detectBars, toGray } from "./detectBars";
@@ -93,6 +95,7 @@ function Page({
   near: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dark = useSettingsStore((s) => s.scoreDark);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -116,7 +119,8 @@ function Page({
     <canvas
       ref={canvasRef}
       aria-label={t.score.pdfPage(index + 1)}
-      className="block size-full rounded-[2px] bg-white"
+      // Dark paper: the page turned negative, hues kept (red stays red), see theme.css
+      className={cn("block size-full rounded-[2px] bg-white", dark && "pdf-dark")}
       style={near ? undefined : { visibility: "hidden" }}
       width={1}
       height={Math.max(1, Math.round(aspect))}
