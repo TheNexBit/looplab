@@ -331,11 +331,12 @@ export function PdfView({ link }: { link: ProjectScore }) {
       const bottom = top + scroller.clientHeight;
       const outside = box.y < top || box.y + box.h > bottom;
       const first = behavior === "auto";
-      // A bar that fits in the upper part of the view from the top of its own page is shown
-      // from that page's top: the page opens whole (title in sight, no line cut in half), also
-      // when the first bar is on page 2 behind a cover
+      // The first bar, and any bar that fits in the upper part of the view from the top of its
+      // own page, is shown from that page's top: the piece opens like a printed sheet (title and
+      // heading whole, no line cut in half), also behind a cover. The user's choice (22/11/2026):
+      // the heading first, the view reaches bar 1 once the music moves on
       const pageTop = Math.max(0, (layout.tops[bar.page] ?? 0) - GAP);
-      const fromTop = box.y + box.h - pageTop <= scroller.clientHeight * 0.75;
+      const fromTop = at.index === 0 || box.y + box.h - pageTop <= scroller.clientHeight * 0.75;
       const glide = fromTop ? pageTop : Math.max(0, box.y - scroller.clientHeight * 0.25);
       if (follow !== "off" && first && outside) {
         scroller.scrollTo({ top: glide, behavior });
