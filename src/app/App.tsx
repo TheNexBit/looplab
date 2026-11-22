@@ -130,8 +130,7 @@ export function App() {
                 {info.name} {info.version} · {t.app.engine} {info.engineVersion}
               </span>
             )}
-            {/* Over the track, which stays loaded underneath: leaving finds it as it was */}
-            {/* The lesson Home over the track, which stays loaded underneath */}
+            {/* The lesson Home over the track, which stays loaded underneath: leaving finds it as it was */}
             {homeOpen && hasTrack && !loading && (
               <div className="absolute inset-0 z-10 bg-stage">
                 <EmptyState hovering={false} overTrack />
@@ -143,7 +142,8 @@ export function App() {
               </div>
             )}
           </main>
-          {!metronomeOpen && <SidePanel />}
+          {/* The Home over a track takes the whole width: the side panel is the track's */}
+          {!metronomeOpen && !(homeOpen && hasTrack && !loading) && <SidePanel />}
         </div>
         {!metronomeOpen && <TransportDock />}
         {infoBar && <InfoBar />}

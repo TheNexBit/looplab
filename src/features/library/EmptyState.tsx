@@ -142,10 +142,11 @@ export function EmptyState({
           {t.metronome.title}
           <Kbd shortcut="toggleMetronomeMode" />
         </Button>
-        <p className="flex shrink-0 items-center gap-1.5 text-[11px] text-fg-subtle">
-          <Lightbulb className="size-3 shrink-0" aria-hidden />
-          <span className="font-medium">{t.recent.tipLabel}</span>
-          <span className="truncate">{tip}</span>
+        {/* The whole tip, wrapping if it must: never cut */}
+        <p className="shrink-0 text-[11px] leading-snug text-fg-subtle">
+          <Lightbulb className="mr-1.5 inline size-3 align-[-2px]" aria-hidden />
+          <span className="mr-1.5 font-medium whitespace-nowrap">{t.recent.tipLabel}</span>
+          {tip}
         </p>
       </div>
     </div>

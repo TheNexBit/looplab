@@ -331,18 +331,19 @@ export function PdfView({ link }: { link: ProjectScore }) {
       const bottom = top + scroller.clientHeight;
       const outside = box.y < top || box.y + box.h > bottom;
       const first = behavior === "auto";
+      // A bar that fits in the upper part of the view from the very top is shown from the top:
+      // the page opens whole, never with its top line cut in half
+      const fromTop = box.y + box.h <= scroller.clientHeight * 0.75;
+      const glide = fromTop ? 0 : Math.max(0, box.y - scroller.clientHeight * 0.25);
       if (follow !== "off" && first && outside) {
-        scroller.scrollTo({ top: Math.max(0, box.y - scroller.clientHeight * 0.25), behavior });
+        scroller.scrollTo({ top: glide, behavior });
       } else if (
         follow === "continuous" &&
         (outside || box.y > top + scroller.clientHeight * 0.55)
       ) {
-        scroller.scrollTo({
-          top: Math.max(0, box.y - scroller.clientHeight * 0.25),
-          behavior,
-        });
+        scroller.scrollTo({ top: glide, behavior });
       } else if (follow === "paged" && outside) {
-        scroller.scrollTo({ top: Math.max(0, box.y - GAP), behavior });
+        scroller.scrollTo({ top: fromTop ? 0 : Math.max(0, box.y - GAP), behavior });
       }
     }
   });

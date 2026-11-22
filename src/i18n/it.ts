@@ -1270,7 +1270,7 @@ export const it = {
     toggleBacking: "Con chitarra / Solo base",
     toggleHome: "Lezioni (Home dei corsi)",
     toggleScorePaper: "Spartito: carta chiara / scura",
-    toggleOverview: "Panoramica del brano: mostra / nascondi",
+    toggleOverview: "Panoramica: mostra / nascondi",
   },
   keys: {
     Space: "Spazio",

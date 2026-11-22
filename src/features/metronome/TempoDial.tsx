@@ -398,13 +398,15 @@ export function TempoDial({ compact = false }: { compact?: boolean }) {
                     type="button"
                     aria-label={m.tempoBase}
                     onDoubleClick={(event) => event.stopPropagation()}
-                    className="flex cursor-pointer items-center gap-0.5 rounded-sm px-1 text-[9px] font-medium tracking-[0.16em] text-lcd-dim uppercase hover:text-lcd-fg focus-visible:outline-none"
+                    // Tall enough to catch a click anywhere on its line: WebView2 hit-tests a scaled
+                    // foreignObject a few pixels off, and the big number below must not take it
+                    className="relative z-10 -my-1 flex cursor-pointer items-center gap-0.5 rounded-sm px-1 py-1 text-[9px] font-medium tracking-[0.16em] text-lcd-dim uppercase hover:text-lcd-fg focus-visible:outline-none"
                   >
                     BPM {counted}
                     <ChevronDown className="size-2.5" />
                   </button>
                 </DropdownMenu.Trigger>
-                <span className="font-mono text-[50px] leading-none font-medium text-lcd-fg tabular lcd-glow">
+                <span className="pointer-events-none font-mono text-[50px] leading-none font-medium text-lcd-fg tabular lcd-glow">
                   {rounded}
                 </span>
                 <span className="font-mono text-[10px] text-lcd-dim">{tempoMarking(rounded)}</span>

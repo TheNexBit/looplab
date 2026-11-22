@@ -6,7 +6,7 @@ import { themeColor } from "@/lib/theme";
 import type { ProjectScore, ScoreTrack, SyncPoint } from "@/stores/score";
 import { useSettingsStore } from "@/stores/settings";
 import { BarSync } from "./barSync";
-import { tidyHeader } from "./scoreHeader";
+import { tidyHeader, tidyTexts } from "./scoreHeader";
 import {
   alignBars,
   type NeckChord,
@@ -156,9 +156,17 @@ export class ScoreEngine extends BarSync {
     this.output = this.api.player?.output as unknown as alphaTab.synth.IExternalMediaSynthOutput;
     this.output.handler = this.handler();
 
+    // A bar that fits in the upper half of the view with the page at its very top is shown from
+    // the top: the title stays in sight at opening, instead of a scroll down to the first system
+    const ui = this.api.uiFacade;
+    const scrollToY = ui.scrollToY.bind(ui);
+    ui.scrollToY = (container, offset, speed) =>
+      scrollToY(container, offset < scroller.clientHeight * 0.5 ? 0 : offset, speed);
+
     this.api.scoreLoaded.on((score) => {
       if (this.destroyed) return;
       tidyHeader(score);
+      tidyTexts(score);
       const tracks: ScoreTrack[] = score.tracks.map((track) => ({
         index: track.index,
         name: track.name || track.shortName || `Traccia ${track.index + 1}`,

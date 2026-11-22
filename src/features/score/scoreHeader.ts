@@ -43,3 +43,28 @@ export function tidyHeader(score: ScoreHeader) {
     if (/[\r\n]/.test(score[field])) score[field] = split(score[field]).join(" · ");
   }
 }
+
+/** The parts of a score that carry free text over the staves (alphaTab's model, read loosely). */
+export interface ScoreTexts {
+  masterBars: { section?: { text: string; marker: string } | null }[];
+  tracks: { staves: { bars: { voices: { beats: { text?: string | null }[] }[] }[] }[] }[];
+}
+
+/**
+ * Same trouble over the staves: a beat's text or a section name with line breaks ("Position
+ * shifts!⏎…") is spaced as one line, so its lines touch. They are joined on one line.
+ */
+export function tidyTexts(score: ScoreTexts) {
+  const oneLine = (text: string) => (/[\r\n]/.test(text) ? split(text).join(" ") : text);
+  for (const bar of score.masterBars) {
+    if (bar.section) {
+      bar.section.text = oneLine(bar.section.text);
+      bar.section.marker = oneLine(bar.section.marker);
+    }
+  }
+  for (const track of score.tracks)
+    for (const staff of track.staves)
+      for (const bar of staff.bars)
+        for (const voice of bar.voices)
+          for (const beat of voice.beats) if (beat.text) beat.text = oneLine(beat.text);
+}

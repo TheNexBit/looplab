@@ -65,8 +65,9 @@ function ActionRow({
   };
 
   return (
-    <li className="group flex h-9 items-center gap-2 rounded-control px-2 hover:bg-well">
-      <span className="flex-1 truncate text-sm text-fg">{shortcutLabel(id)}</span>
+    <li className="group flex min-h-9 items-center gap-2 rounded-control px-2 py-0.5 hover:bg-well">
+      {/* Long names wrap onto a second line instead of being cut */}
+      <span className="min-w-0 flex-1 text-sm leading-snug text-fg">{shortcutLabel(id)}</span>
       <button
         type="button"
         onClick={() => onRecord(recording ? null : id)}

@@ -52,7 +52,7 @@ function Exercise({
         </Tooltip>
         <OnOffKey label={title} on={on} onChange={onChange} />
       </div>
-      <div className={cn("space-y-1.5", !on && "opacity-60")}>{children}</div>
+      <div className={cn("space-y-1.5", !on && "opacity-80")}>{children}</div>
     </section>
   );
 }

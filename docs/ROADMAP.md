@@ -969,7 +969,12 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   (`showOverview`). La corsia delle sezioni resta: serve a disegnarle.
 - **Collaudatore:** controlli grafici obbligatori (foto ingrandite sui testi, menu con voce scelta e puntatore
   sopra, tutti i temi, titolo degli spartiti a più zoom, 1280 px).
-- **Da fare:** controllo grafico completo con le foto di ogni schermata; l'utente sceglie cosa correggere.
+- **Giro grafico** (collaudatore, 5 temi, 1920 e 1280 px; l'utente ha chiesto di correggere tutto):
+  testo grigio nelle voci di menu evidenziate; nomi dei tasti rapidi a capo invece che tagliati; annotazioni e nomi
+  di sezione su più righe messi su una riga (`tidyTexts`); spartito e PDF all'apertura restano in cima se la prima
+  battuta ci sta (titolo visibile, niente riga tagliata); avviso «Tab collegata» in basso; Home sopra un brano a
+  tutta larghezza (pannello laterale tolto); «Lo sapevi?» va a capo intero; trainer spenti più leggibili; menu
+  «BPM ♩» cliccabile su tutta la riga. La barra in alto a 1280 px era già a posto.
 
 ## Dopo la prima versione
 

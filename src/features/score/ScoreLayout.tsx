@@ -565,7 +565,8 @@ function NoticeToast() {
   return (
     <div
       role="status"
-      className="absolute top-2 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
+      // Low over the score, above the warnings: at the top it would cover the title just opened
+      className="absolute bottom-2 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
     >
       <AlertCircle className="size-3.5 shrink-0 text-red-400" />
       <span>{problemText(notice)}</span>
@@ -594,7 +595,8 @@ function InfoToast() {
   return (
     <div
       role="status"
-      className="absolute top-2 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
+      // Low over the score, above the warnings: at the top it would cover the title just opened
+      className="absolute bottom-12 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
     >
       <Sparkles className="size-3.5 shrink-0 text-accent" />
       <span>{info}</span>

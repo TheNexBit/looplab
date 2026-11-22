@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type ScoreHeader, tidyHeader } from "./scoreHeader";
+import { type ScoreHeader, tidyHeader, tidyTexts } from "./scoreHeader";
 
 const header = (fields: Partial<ScoreHeader>): ScoreHeader => ({
   title: "",
@@ -37,5 +37,20 @@ describe("tidyHeader", () => {
       artist: "One · Two",
       album: "Album",
     });
+  });
+});
+
+describe("tidyTexts", () => {
+  it("joins beat texts and section names on one line", () => {
+    const beat = { text: "Position shifts!\r\nKeep it light" };
+    const plain = { text: "Slow" };
+    const section = { text: "Intro\nA", marker: "A" };
+    tidyTexts({
+      masterBars: [{ section }, { section: null }],
+      tracks: [{ staves: [{ bars: [{ voices: [{ beats: [beat, plain, { text: null }] }] }] }] }],
+    });
+    expect(beat.text).toBe("Position shifts! Keep it light");
+    expect(plain.text).toBe("Slow");
+    expect(section).toEqual({ text: "Intro A", marker: "A" });
   });
 });
