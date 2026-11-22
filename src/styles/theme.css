@@ -619,12 +619,14 @@
 }
 
 /*
- * A highlighted menu item has an amber background: anything amber inside it (the chosen
+ * A highlighted menu item has an amber background: anything amber or grey inside it (the chosen
  * item, a mark, an icon) turns to the on-accent ink, so it never vanishes. Unlayered on
  * purpose, so it beats any text-accent utility in every menu and every theme.
  */
 [data-highlighted].text-accent,
 [data-highlighted] .text-accent,
+[data-highlighted] .text-fg-muted,
+[data-highlighted] .text-fg-subtle,
 [data-highlighted][data-state="checked"] {
   color: var(--color-on-accent);
 }
