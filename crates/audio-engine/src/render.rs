@@ -17,7 +17,7 @@ use crate::engine::{Command, Garbage, LoopSettings, MAX_SPEED, Shared};
 use crate::metronome::Metronome;
 use crate::pattern::ClickKind;
 use crate::pcm::{CHANNELS, Pcm};
-use crate::stems::{INPUTS, Source, StemLevels, Stems};
+use crate::stems::{INPUTS, OtherTake, Source, StemLevels, Stems};
 use crate::synth::{Note, NoteQueue, Synth};
 use crate::tempo_map::TempoMap;
 use crate::tone::ToneVoice;
@@ -244,6 +244,9 @@ pub(crate) struct Renderer {
     stems: Option<Arc<Stems>>,
     stem_levels: StemLevels,
     stem_gains: [f32; INPUTS],
+    /// Another take of the song (the backing track), and whether it is heard instead
+    other: Option<Arc<OtherTake>>,
+    other_on: bool,
     reader: Reader,
     stretch: Stretch,
     eq: Eq,
@@ -316,7 +319,9 @@ impl Renderer {
             track: None,
             stems: None,
             stem_levels: StemLevels::default(),
-            stem_gains: StemLevels::default().inputs(None),
+            stem_gains: StemLevels::default().inputs(None, false),
+            other: None,
+            other_on: false,
             reader: Reader::new(sample_rate),
             stretch,
             eq: Eq::new(sample_rate),
@@ -398,6 +403,20 @@ impl Renderer {
         }
     }
 
+    fn drop_other(&mut self) {
+        if let Some(old) = self.other.take()
+            && let Err(rtrb::PushError::Full(old)) = self.garbage.push(Garbage::Other(old))
+        {
+            std::mem::forget(old);
+        }
+    }
+
+    /// Gains of the mix's inputs as asked for now.
+    fn input_gains(&self) -> [f32; INPUTS] {
+        let other = self.other_on && self.other.is_some();
+        self.stem_levels.inputs(self.stems.as_deref(), other)
+    }
+
     fn track_frames(&self) -> Option<u64> {
         self.track.as_ref().map(|t| t.frames())
     }
@@ -420,8 +439,10 @@ impl Renderer {
                     }
                     // The separated tracks were of the song before
                     self.drop_stems();
+                    self.drop_other();
+                    self.other_on = false;
                     self.stem_levels = StemLevels::default();
-                    self.stem_gains = self.stem_levels.inputs(None);
+                    self.stem_gains = self.input_gains();
                     self.playing = false;
                     self.gain = 0.0;
                     self.settings = LoopSettings::default();
@@ -432,6 +453,11 @@ impl Renderer {
                     self.stems = stems;
                 }
                 Command::SetStemLevels(levels) => self.stem_levels = levels,
+                Command::SetOtherTake(other) => {
+                    self.drop_other();
+                    self.other = other;
+                }
+                Command::SetOtherTakeOn(on) => self.other_on = on,
                 Command::Play => self.play(),
                 Command::Pause => {
                     self.playing = false;
@@ -608,10 +634,13 @@ impl Renderer {
             tempo: &self.tempo,
             notes,
         };
-        let to = self.stem_levels.inputs(self.stems.as_deref());
+        let to = self
+            .stem_levels
+            .inputs(self.stems.as_deref(), self.other_on && self.other.is_some());
         let source = Source {
             track: self.track.as_deref(),
             stems: self.stems.as_deref(),
+            other: self.other.as_deref(),
             from: self.stem_gains,
             to,
         };
@@ -664,6 +693,7 @@ impl Renderer {
         let source = Source {
             track: self.track.as_deref(),
             stems: self.stems.as_deref(),
+            other: self.other.as_deref(),
             from: self.stem_gains,
             to: self.stem_gains,
         };

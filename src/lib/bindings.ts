@@ -177,6 +177,27 @@ export const commands = {
 	 *  already applied. All at 1 plays the original song.
 	 */
 	setStemLevels: (levels: (number | null)[]) => typedError<null, AppError>(__TAURI_INVOKE("set_stem_levels", { levels })),
+	/**
+	 *  The exercise of the open track (its other files found in its folder), or `null` when the
+	 *  track is alone.
+	 */
+	openExercise: (track: string) => typedError<Exercise_Serialize | null, AppError>(__TAURI_INVOKE("open_exercise", { track })),
+	/**  Saves names, hand-set shifts, roles and the chosen angle. */
+	saveExercise: (exercise: Exercise_Deserialize) => typedError<Exercise_Serialize, AppError>(__TAURI_INVOKE("save_exercise", { exercise })),
+	/**
+	 *  Lines up, from their sound, the files of the open track's exercise not compared yet (and
+	 *  `redo`, compared again). Then shares the newest score sync, markers and loops of the take
+	 *  with the open track.
+	 */
+	alignExercise: (track: string, redo: string | null) => typedError<LinedUp_Serialize | null, AppError>(__TAURI_INVOKE("align_exercise", { track, redo })),
+	/**
+	 *  Gives the engine another take of the open song, heard instead of it with
+	 *  `set_other_take_on`: things are heard `shift` seconds later in that file than in the song.
+	 *  `None` removes it.
+	 */
+	setOtherTake: (path: string | null, shift: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_other_take", { path, shift })),
+	/**  Hear the other take instead of the song (or back), at the same point, loop, speed and pitch. */
+	setOtherTakeOn: (on: boolean) => typedError<null, AppError>(__TAURI_INVOKE("set_other_take_on", { on })),
 };
 
 /** Events */
@@ -439,6 +460,36 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 /**  The library's copy of a linked score is gone */
 "scoreMissing" | "internal";
 
+export type Exercise = Exercise_Serialize | Exercise_Deserialize;
+
+export type ExerciseFile = {
+	path: string,
+	/**  Shown name: «Second Angle», «Backing»… (editable; empty = the main file) */
+	name: string,
+	kind: TakeKind,
+	/**  A take without the player (heard with «Solo base») */
+	backing: boolean,
+	/**  Seconds on the exercise's clock (see the module notes); 0 until lined up */
+	shift: number | null,
+	lineUp: LineUp,
+};
+
+export type Exercise_Deserialize = {
+	/**  Row of the `exercises` table */
+	id: number,
+	files: ExerciseFile[],
+	/**  The camera angle chosen last (a path), shown again at the next opening */
+	angle?: string | null,
+};
+
+export type Exercise_Serialize = {
+	/**  Row of the `exercises` table */
+	id: number,
+	files: ExerciseFile[],
+	/**  The camera angle chosen last (a path), shown again at the next opening */
+	angle: string | null,
+};
+
 /**  The exercises, each off when absent. */
 export type ExercisesRequest = ExercisesRequest_Serialize | ExercisesRequest_Deserialize;
 
@@ -508,6 +559,39 @@ export type GapRequest = {
 	playBars: number,
 	silentBars: number,
 	grow: boolean,
+};
+
+/**  How a file's shift was found. */
+export type LineUp = 
+/**  Not compared yet */
+"pending" | 
+/**  From its sound */
+"sound" | 
+/**  Set by hand */
+"hand" | 
+/**  It has no sound to compare: line it up by hand */
+"noSound" | 
+/**  Its sound is another take (another version of the lesson): kept apart */
+"mismatch";
+
+export type LinedUp = LinedUp_Serialize | LinedUp_Deserialize;
+
+export type LinedUp_Deserialize = {
+	exercise: Exercise_Deserialize,
+	/**
+	 *  The open track's project, when another file of the take brought a newer score sync,
+	 *  markers or loops (already moved onto this file's times and saved)
+	 */
+	project?: Project_Deserialize | null,
+};
+
+export type LinedUp_Serialize = {
+	exercise: Exercise_Serialize,
+	/**
+	 *  The open track's project, when another file of the take brought a newer score sync,
+	 *  markers or loops (already moved onto this file's times and saved)
+	 */
+	project: Project_Serialize | null,
 };
 
 /**  Loop region and options, in seconds. */
@@ -801,6 +885,11 @@ export type Project_Deserialize = {
 	stemMix?: StemChannel[],
 	/**  The linked score (tab, notation or PDF), if any */
 	score?: ProjectScore_Deserialize | null,
+	/**
+	 *  Seconds since 1970: when the parts shared with the other files of the exercise (score,
+	 *  markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
+	 */
+	sharedAt?: number | null,
 };
 
 /**
@@ -843,6 +932,11 @@ export type Project_Serialize = {
 	stemMix: StemChannel[],
 	/**  The linked score (tab, notation or PDF), if any */
 	score: ProjectScore_Serialize | null,
+	/**
+	 *  Seconds since 1970: when the parts shared with the other files of the exercise (score,
+	 *  markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
+	 */
+	sharedAt: number | null,
 };
 
 export type RecentFile = RecentFile_Serialize | RecentFile_Deserialize;
@@ -1088,6 +1182,8 @@ export type SyncPoint_Serialize = {
 	/**  Seconds in the recording */
 	time: number | null,
 };
+
+export type TakeKind = "video" | "audio";
 
 /**
  *  A tempo marker, like those of Reaper: from `time` (a first beat of a bar) on, this tempo and

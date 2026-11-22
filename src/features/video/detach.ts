@@ -23,8 +23,9 @@ export interface VideoSyncPayload {
 }
 
 function payload(): VideoSyncPayload {
-  const { src, status, progress } = useVideoStore.getState();
-  return { src, status, progress, ...playbackClock() };
+  const { src, status, progress, shift } = useVideoStore.getState();
+  const clock = playbackClock();
+  return { src, status, progress, ...clock, position: clock.position + shift };
 }
 
 /** Shows the pre-created video window (instant: it already exists, hidden). */

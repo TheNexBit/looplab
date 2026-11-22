@@ -264,6 +264,9 @@ pub struct Project {
     pub stem_mix: Vec<StemChannel>,
     /// The linked score (tab, notation or PDF), if any
     pub score: Option<ProjectScore>,
+    /// Seconds since 1970: when the parts shared with the other files of the exercise (score,
+    /// markers, sections, loops, tempo) last changed. Set on saving; what the UI sends is ignored
+    pub shared_at: f64,
 }
 
 impl Default for Project {
@@ -288,6 +291,7 @@ impl Default for Project {
             channels: ChannelMode::Stereo,
             stem_mix: Vec::new(),
             score: None,
+            shared_at: 0.0,
         }
     }
 }
@@ -421,8 +425,26 @@ pub fn load(
     find_by_content(conn, track)
 }
 
-/// Saves the project of a track.
+/// Saves the project of a track. `shared_at` moves on only when a shared part changed.
 pub fn save(conn: &Connection, track: &str, project: &Project) -> Result<(), LibraryError> {
+    let old = find(conn, track).ok().flatten();
+    let shared_at = match &old {
+        Some(old) if shared_parts(old) == shared_parts(project) => old.shared_at,
+        _ if has_shared(project) => now(),
+        _ => 0.0,
+    };
+    store(
+        conn,
+        track,
+        &Project {
+            shared_at,
+            ..project.clone()
+        },
+    )
+}
+
+/// Writes the project as it is (its `shared_at` included).
+pub fn store(conn: &Connection, track: &str, project: &Project) -> Result<(), LibraryError> {
     let project = Project {
         version: VERSION,
         ..project.clone()
@@ -430,6 +452,92 @@ pub fn save(conn: &Connection, track: &str, project: &Project) -> Result<(), Lib
     let data = serde_json::to_string(&project)?;
     insert(conn, track, fingerprint(Path::new(track)).as_deref(), &data)?;
     Ok(())
+}
+
+/// The parts of a project that hold for every file of the same take, as one comparable value.
+fn shared_parts(p: &Project) -> serde_json::Value {
+    serde_json::json!([
+        p.markers,
+        p.sections,
+        p.loop_,
+        p.loops,
+        p.playlist,
+        p.bpm,
+        p.beat_offset,
+        p.beats_per_bar,
+        p.beat_unit,
+        p.tempo_map,
+        p.score
+    ])
+}
+
+/// True when the project holds something worth sharing with the other files of the take.
+pub fn has_shared(p: &Project) -> bool {
+    p.score.is_some()
+        || !p.markers.is_empty()
+        || !p.sections.is_empty()
+        || !p.loops.is_empty()
+        || !p.tempo_map.is_empty()
+}
+
+/// `into` with the shared parts of `from`, every time moved by `delta` seconds (`from`'s file
+/// hears things `delta` seconds earlier than `into`'s file).
+pub fn take_shared(into: &Project, from: &Project, delta: f64) -> Project {
+    let at = |t: f64| (t + delta).max(0.0);
+    let mut out = Project {
+        markers: from.markers.clone(),
+        sections: from.sections.clone(),
+        loop_: from.loop_.clone(),
+        loops: from.loops.clone(),
+        playlist: from.playlist.clone(),
+        bpm: from.bpm,
+        beat_offset: from.beat_offset.map(at),
+        beats_per_bar: from.beats_per_bar,
+        beat_unit: from.beat_unit,
+        tempo_map: from.tempo_map.clone(),
+        score: from.score.clone(),
+        shared_at: from.shared_at,
+        ..into.clone()
+    };
+    for m in &mut out.markers {
+        m.time = at(m.time);
+    }
+    for s in &mut out.sections {
+        s.start = at(s.start);
+        s.end = s.end.map(at);
+    }
+    out.loop_.start = out.loop_.start.map(at);
+    out.loop_.end = out.loop_.end.map(at);
+    for l in &mut out.loops {
+        l.start = at(l.start);
+        l.end = at(l.end);
+    }
+    for t in &mut out.tempo_map {
+        t.time = at(t.time);
+    }
+    if let Some(score) = &mut out.score {
+        for p in &mut score.sync {
+            p.time = at(p.time);
+        }
+    }
+    out
+}
+
+/// When a project's shared parts last changed: `shared_at`, or for projects saved before it
+/// existed, when the project was saved.
+pub fn shared_time(conn: &Connection, track: &str, project: &Project) -> f64 {
+    if !has_shared(project) {
+        return 0.0;
+    }
+    if project.shared_at > 0.0 {
+        return project.shared_at;
+    }
+    conn.query_row(
+        "SELECT updated_at FROM projects WHERE path_key = ?1",
+        [path_key(track)],
+        |row| row.get::<_, f64>(0),
+    )
+    .unwrap_or(0.0)
 }
 
 #[cfg(test)]
@@ -504,15 +612,33 @@ pub(crate) mod tests {
         path.to_string_lossy().into_owned()
     }
 
+    /// A loaded project without the time its shared parts changed (set on saving).
+    fn plain(project: Option<Project>) -> Option<Project> {
+        project.map(|p| Project {
+            shared_at: 0.0,
+            ..p
+        })
+    }
+
     #[test]
     fn saves_and_loads_by_path_ignoring_case() {
         let dir = temp_dir("project-path");
         let conn = memory();
         let song = track(&dir, "Song.mp3", b"audio");
         save(&conn, &song, &sample()).unwrap();
-        assert_eq!(load(&conn, &song, &dir).unwrap(), Some(sample()));
+        let first = find(&conn, &song).unwrap().unwrap().shared_at;
+        assert!(first > 0.0, "markers and loops are shared parts");
+        // Saving again with only the position changed keeps the time
+        let moved = Project {
+            position: 1.0,
+            ..sample()
+        };
+        save(&conn, &song, &moved).unwrap();
+        assert_eq!(find(&conn, &song).unwrap().unwrap().shared_at, first);
+        save(&conn, &song, &sample()).unwrap();
+        assert_eq!(plain(load(&conn, &song, &dir).unwrap()), Some(sample()));
         let upper = song.to_uppercase();
-        assert_eq!(load(&conn, &upper, &dir).unwrap(), Some(sample()));
+        assert_eq!(plain(load(&conn, &upper, &dir).unwrap()), Some(sample()));
     }
 
     #[test]
@@ -531,7 +657,7 @@ pub(crate) mod tests {
         save(&conn, &old, &sample()).unwrap();
         let new = dir.join("renamed.mp3").to_string_lossy().into_owned();
         fs::rename(&old, &new).unwrap();
-        assert_eq!(load(&conn, &new, &dir).unwrap(), Some(sample()));
+        assert_eq!(plain(load(&conn, &new, &dir).unwrap()), Some(sample()));
         let rows: i64 = conn
             .query_row("SELECT COUNT(*) FROM projects", [], |r| r.get(0))
             .unwrap();
@@ -546,9 +672,9 @@ pub(crate) mod tests {
         let first = track(&dir, "a.mp3", b"same take");
         save(&conn, &first, &sample()).unwrap();
         let copy = track(&dir, "b.mp3", b"same take");
-        assert_eq!(load(&conn, &copy, &dir).unwrap(), Some(sample()));
-        assert_eq!(find(&conn, &first).unwrap(), Some(sample()));
-        assert_eq!(find(&conn, &copy).unwrap(), Some(sample()));
+        assert_eq!(plain(load(&conn, &copy, &dir).unwrap()), Some(sample()));
+        assert_eq!(plain(find(&conn, &first).unwrap()), Some(sample()));
+        assert_eq!(plain(find(&conn, &copy).unwrap()), Some(sample()));
     }
 
     #[test]

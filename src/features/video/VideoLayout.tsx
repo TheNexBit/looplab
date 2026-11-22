@@ -3,6 +3,7 @@ import { type ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { AngleMenu } from "@/features/exercise/AngleMenu";
 import { SCORE_MIN_VISIBLE } from "@/features/score/ScoreLayout";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
@@ -37,6 +38,7 @@ export function VideoHeader({ children }: { children: ReactNode }) {
   return (
     <header className="flex h-8 shrink-0 items-center gap-1 px-3 text-xs text-fg-subtle">
       <span className="mr-auto font-medium tracking-wide uppercase">{t.video.title}</span>
+      <AngleMenu />
       {children}
     </header>
   );
@@ -76,6 +78,12 @@ export function BesideKey({ beside }: { beside: boolean }) {
   );
 }
 
+/** The player's clock moved onto the picture's file (another angle of the take). */
+export const videoClock = () => {
+  const clock = playbackClock();
+  return { ...clock, position: clock.position + useVideoStore.getState().shift };
+};
+
 /** The picture, in its dark frame, following the player's clock. */
 export function VideoBox() {
   const video = useVideoStore();
@@ -87,7 +95,7 @@ export function VideoBox() {
           status={video.status}
           progress={video.progress}
           error={video.error}
-          clock={playbackClock}
+          clock={videoClock}
           onUnsupported={() => void fallBackToProxy()}
           onNoPicture={() => video.setStatus("none", { src: null })}
           onReady={() => video.setStatus("ready")}

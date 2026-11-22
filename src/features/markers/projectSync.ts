@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { resetTempoAnalysis } from "@/features/practice/tempoAnalysis";
-import { commands } from "@/lib/bindings";
+import { commands, type Project_Serialize } from "@/lib/bindings";
 import { useEqStore } from "@/stores/eq";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
@@ -89,6 +89,29 @@ function resume(position: number) {
   if (position < view.start || position > view.start + view.span) view.centerOn(position);
 }
 
+/** Only the parts shared by the files of a take: the file's own speed, mix and place stay. */
+function applyShared(data: ProjectData) {
+  useMarkersStore.getState().replace(data.markers, data.sections);
+  useLoopStore.getState().restore(data.loop);
+  useSavedLoopsStore.getState().replace(data.loops);
+  usePlaylistStore.getState().replace(data.playlist);
+  const practice = usePracticeStore.getState();
+  practice.setTempoMap(data.tempoMap);
+  if (data.tempoMap.length === 0) {
+    practice.setBeatOffset(data.beatOffset);
+    practice.setTimeSignature(data.beatsPerBar, data.beatUnit);
+  }
+  useScoreStore.getState().restore(data.score);
+}
+
+/** Set by `syncProject`: takes in a project another file of the take brought (already saved). */
+let adoptShared: ((path: string, file: Project_Serialize) => void) | null = null;
+
+/** The open track's project, as brought by another file of its take (see `features/exercise`). */
+export function adoptSharedProject(path: string, file: Project_Serialize) {
+  adoptShared?.(path, file);
+}
+
 let defaults: Promise<ProjectData> | null = null;
 
 /** Settings of a track with no project yet, asked once to Rust (the only copy of the defaults). */
@@ -159,6 +182,16 @@ export function syncProject(): () => void {
     void useRecentStore.getState().refresh();
   };
 
+  adoptShared = (path, file) => {
+    if (track !== path || !writable) return;
+    applying = true;
+    clearTimeout(timer);
+    applyShared(fromFile(file, usePlayerStore.getState().track?.duration ?? 0));
+    lastSaved = JSON.stringify(snapshot());
+    applying = false;
+    useHistoryStore.getState().reset();
+  };
+
   const stops = [
     usePlayerStore.subscribe((state, previous) => {
       if (state.track && state.track.path !== previous.track?.path) void open(state.track.path);
@@ -207,6 +240,7 @@ export function syncProject(): () => void {
   const unlistenClose = getCurrentWindow().onCloseRequested(() => save());
 
   return () => {
+    adoptShared = null;
     for (const stop of stops) stop();
     void unlistenClose.then((stop) => stop());
     clearTimeout(timer);

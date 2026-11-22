@@ -6,6 +6,7 @@ mod archive;
 mod click_sounds;
 mod data;
 mod error;
+mod exercise;
 mod export;
 mod library;
 mod metronome;
@@ -97,6 +98,11 @@ pub fn builder() -> Builder<tauri::Wry> {
             stems::cancel_stems,
             stems::export_stems,
             stems::set_stem_levels,
+            exercise::open_exercise,
+            exercise::save_exercise,
+            exercise::align_exercise,
+            exercise::set_other_take,
+            exercise::set_other_take_on,
         ])
         .events(collect_events![
             PlaybackStatus,

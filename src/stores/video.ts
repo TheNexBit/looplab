@@ -67,6 +67,9 @@ interface VideoState extends Prefs {
   progress: number;
   error: AppError | null;
   detached: boolean;
+  /** Seconds the picture's file runs ahead of the track (another angle of the take) */
+  shift: number;
+  setShift: (shift: number) => void;
   setStatus: (
     status: VideoStatus,
     extra?: Partial<Pick<VideoState, "src" | "progress" | "error">>,
@@ -102,6 +105,8 @@ export const useVideoStore = create<VideoState>((set, get) => {
     progress: 0,
     error: null,
     detached: false,
+    shift: 0,
+    setShift: (shift) => set({ shift }),
     setStatus: (status, extra) => set({ status, ...extra }),
     setDock: (dock) => prefs({ dock }),
     setDockWithScore: (dockWithScore) => prefs({ dockWithScore }),

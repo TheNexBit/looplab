@@ -18,7 +18,7 @@ use crate::metronome::{MetronomeSettings, Sequence};
 use crate::pattern::ClickKind;
 use crate::pcm::Pcm;
 use crate::render::Renderer;
-use crate::stems::{StemLevels, Stems};
+use crate::stems::{OtherTake, StemLevels, Stems};
 use crate::synth::{Note, SynthSettings};
 use crate::tempo_map::TempoMap;
 use crate::tone::ToneSettings;
@@ -74,6 +74,10 @@ pub(crate) enum Command {
     SetStems(Option<Arc<Stems>>),
     /// Their levels, mute and solo applied
     SetStemLevels(StemLevels),
+    /// Another take of the song, lined up with it (None removes it)
+    SetOtherTake(Option<Arc<OtherTake>>),
+    /// Hear the other take instead of the song
+    SetOtherTakeOn(bool),
     SetClick(ClickSettings),
     /// Plays one click of a kind now, to hear its sound (also while paused)
     PreviewClick(ClickKind),
@@ -105,6 +109,7 @@ pub(crate) enum Garbage {
     Samples(#[allow(dead_code)] Arc<ClickSamples>),
     TempoMap(#[allow(dead_code)] Arc<TempoMap>),
     Stems(#[allow(dead_code)] Arc<Stems>),
+    Other(#[allow(dead_code)] Arc<OtherTake>),
     Notes(#[allow(dead_code)] Arc<Vec<Note>>),
 }
 
@@ -280,6 +285,17 @@ impl Engine {
             *g = g.clamp(0.0, 1.0);
         }
         self.send(Command::SetStemLevels(levels));
+    }
+
+    /// Another take of the open song (its backing track), lined up with it; None removes it.
+    /// Opening another song removes it too.
+    pub fn set_other_take(&self, other: Option<Arc<OtherTake>>) {
+        self.send(Command::SetOtherTake(other));
+    }
+
+    /// Hear the other take instead of the song (crossfaded), at the same point, speed and pitch.
+    pub fn set_other_take_on(&self, on: bool) {
+        self.send(Command::SetOtherTakeOn(on));
     }
 
     /// Tempo, metronome and count-in.

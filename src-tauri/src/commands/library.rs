@@ -30,7 +30,11 @@ pub fn load_project(
     track: String,
 ) -> Result<Option<Project>, AppError> {
     let old_files = legacy::old_files_dir(library.places());
-    Ok(library.with(|conn| project::load(conn, &track, &old_files))?)
+    Ok(library.with(|conn| {
+        let own = project::load(conn, &track, &old_files)?;
+        // Another file of the same take may have a newer score sync, markers or loops
+        Ok(crate::exercise::share(conn, &track, own.as_ref())?.or(own))
+    })?)
 }
 
 /// Saves the project of a track.

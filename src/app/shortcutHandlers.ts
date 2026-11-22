@@ -1,3 +1,4 @@
+import { angleByIndex, nextAngle, toggleOther } from "@/features/exercise/exerciseSync";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { loopSection } from "@/features/markers/sectionActions";
 import { toggleMetronomeRun } from "@/features/metronome/metronomeEngine";
@@ -168,4 +169,15 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   recallSection7: () => recallSection(6),
   recallSection8: () => recallSection(7),
   recallSection9: () => recallSection(8),
+  angle1: () => angleByIndex(0),
+  angle2: () => angleByIndex(1),
+  angle3: () => angleByIndex(2),
+  angle4: () => angleByIndex(3),
+  angle5: () => angleByIndex(4),
+  angle6: () => angleByIndex(5),
+  angle7: () => angleByIndex(6),
+  angle8: () => angleByIndex(7),
+  angle9: () => angleByIndex(8),
+  nextAngle,
+  toggleBacking: toggleOther,
 };

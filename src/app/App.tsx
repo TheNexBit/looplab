@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TooltipProvider } from "@/components/ui/Tooltip";
+import { followExercise } from "@/features/exercise/exerciseSync";
 import { ExportDialog } from "@/features/export/ExportDialog";
 import { DropOverlay } from "@/features/library/DropOverlay";
 import { EmptyState } from "@/features/library/EmptyState";
@@ -69,6 +70,7 @@ export function App() {
     const stopEngineSync = syncWithEngine();
     const stopProjectSync = syncProject();
     const stopVideo = followTrackVideo();
+    const stopExercise = followExercise();
     const stopDetached = feedDetachedVideo();
     const stopTrainer = startTrainer();
     const stopPlaylist = runPlaylist();
@@ -84,6 +86,7 @@ export function App() {
       stopEngineSync();
       stopProjectSync();
       stopVideo();
+      stopExercise();
       stopDetached();
       stopTrainer();
       stopPlaylist();

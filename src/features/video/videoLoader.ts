@@ -1,7 +1,7 @@
 import { Channel, convertFileSrc } from "@tauri-apps/api/core";
 import { isVideoPath } from "@/features/library/formats";
 import { commands } from "@/lib/bindings";
-import { usePlayerStore } from "@/stores/player";
+import { useExerciseStore } from "@/stores/exercise";
 import { useVideoStore } from "@/stores/video";
 
 let current: string | null = null;
@@ -13,13 +13,13 @@ let proxyPath: string | null = null;
 /** Cache files on screen right now: emptying the cache must leave them alone. */
 export const cacheFilesInUse = (): string[] => (proxyPath ? [proxyPath] : []);
 
-/** Shows the picture of a newly opened video file; audio files hide the panel. */
-async function load(path: string) {
+/** Shows the picture of a video file (an angle of the take); `null` hides the panel. */
+async function load(path: string | null) {
   current = path;
   proxied = false;
   proxyPath = null;
   const video = useVideoStore.getState();
-  if (!isVideoPath(path)) {
+  if (!path || !isVideoPath(path)) {
     video.setStatus("none", { src: null, error: null });
     return;
   }
@@ -60,9 +60,13 @@ export async function fallBackToProxy() {
   } else video.setStatus("error", { error: result.error });
 }
 
-/** Follows the open track. Started once by the app shell; returns the function that stops it. */
+/**
+ * Follows the angle chosen for the open track (the track itself, another camera of its take,
+ * or the lesson's video when an mp3 is open). Started once by the app shell; returns the
+ * function that stops it.
+ */
 export function followTrackVideo(): () => void {
-  return usePlayerStore.subscribe((state, previous) => {
-    if (state.track && state.track.path !== previous.track?.path) void load(state.track.path);
+  return useExerciseStore.subscribe((state, previous) => {
+    if (state.angle !== previous.angle) void load(state.angle);
   });
 }

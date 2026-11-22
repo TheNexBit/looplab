@@ -43,6 +43,25 @@ pub struct TrackLoading {
     pub error: Option<ErrorKind>,
 }
 
+/// Where the decoded audio of `source` is cached at `rate`: one entry per file and output rate,
+/// "<hash>-48000.pcm" and "<hash>-48000.peaks". Makes room for it (estimated from the file
+/// size: decoded audio is never smaller than ten times an mp3) and marks its files as just used.
+pub(super) fn decoded_cache_stem(
+    cache: &Path,
+    source: &Path,
+    rate: u32,
+) -> Result<PathBuf, AppError> {
+    let folder = crate::cache::CacheKind::Decoded.folder();
+    let stem = media::cache_path(cache, folder, source, &format!("-{rate}"))
+        .map_err(AppError::internal)?;
+    let size = std::fs::metadata(source).map_or(0, |m| m.len());
+    crate::cache::trim_decoded(cache, size.saturating_mul(10));
+    let (audio, peaks) = audio_engine::load::cache_files(&stem);
+    crate::cache::touch(&audio);
+    crate::cache::touch(&peaks);
+    Ok(stem)
+}
+
 /// Opens a file and makes it the current track (paused at the start), like Reaper: it returns
 /// after the first seconds, the rest loads in the background (`TrackLoading` events), and the
 /// decoded audio stays in the cache so the next opening is instant.
@@ -86,21 +105,7 @@ pub async fn open_file(
     };
 
     let opened = tauri::async_runtime::spawn_blocking(move || -> Result<_, AppError> {
-        let stem = |source: &Path| -> Result<PathBuf, AppError> {
-            // One cache entry per track and output rate: "<hash>-48000.pcm", "<hash>-48000.peaks"
-            let folder = crate::cache::CacheKind::Decoded.folder();
-            let stem = media::cache_path(&cache, folder, source, &format!("-{output_rate}"))
-                .map_err(AppError::internal)?;
-            // Room for this track (estimated from the file size: decoded audio is never
-            // smaller than ten times an mp3), then mark its files as just used
-            let size = std::fs::metadata(source).map_or(0, |m| m.len());
-            crate::cache::trim_decoded(&cache, size.saturating_mul(10));
-            let (audio, peaks) = audio_engine::load::cache_files(&stem);
-            crate::cache::touch(&audio);
-            crate::cache::touch(&peaks);
-            Ok(stem)
-        };
-        let cache_stem = stem(&file)?;
+        let cache_stem = decoded_cache_stem(&cache, &file, output_rate)?;
         match audio_engine::open(
             &file,
             output_rate,

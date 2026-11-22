@@ -19,6 +19,7 @@ import { FitBar, useCompact } from "@/components/ui/FitBar";
 import { Kbd } from "@/components/ui/Kbd";
 import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { TakeSwitch } from "@/features/exercise/TakeSwitch";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
@@ -189,6 +190,7 @@ export function TopBar() {
         </div>
         <HistoryKeys />
         <ScoreKey />
+        <TakeSwitch />
         <Tooltip label={t.export.title} shortcut="exportAudio">
           <Button
             variant="hardware"

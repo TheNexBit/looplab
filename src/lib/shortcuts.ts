@@ -85,6 +85,18 @@ export const shortcuts = {
   recallSection7: "Alt+7",
   recallSection8: "Alt+8",
   recallSection9: "Alt+9",
+  // Camera angles of a lesson (the plain numbers are the saved loops)
+  angle1: "Ctrl+1",
+  angle2: "Ctrl+2",
+  angle3: "Ctrl+3",
+  angle4: "Ctrl+4",
+  angle5: "Ctrl+5",
+  angle6: "Ctrl+6",
+  angle7: "Ctrl+7",
+  angle8: "Ctrl+8",
+  angle9: "Ctrl+9",
+  nextAngle: "V",
+  toggleBacking: "A",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;
