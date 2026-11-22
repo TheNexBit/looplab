@@ -565,8 +565,7 @@ function NoticeToast() {
   return (
     <div
       role="status"
-      // Low over the score, above the warnings: at the top it would cover the title just opened
-      className="absolute bottom-2 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
+      className="pointer-events-auto flex max-w-full items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
     >
       <AlertCircle className="size-3.5 shrink-0 text-red-400" />
       <span>{problemText(notice)}</span>
@@ -596,7 +595,7 @@ function InfoToast() {
     <div
       role="status"
       // Low over the score, above the warnings: at the top it would cover the title just opened
-      className="absolute bottom-12 left-1/2 z-10 flex max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
+      className="pointer-events-auto flex max-w-full items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]"
     >
       <Sparkles className="size-3.5 shrink-0 text-accent" />
       <span>{info}</span>
@@ -641,8 +640,11 @@ function ScoreBody({ link }: { link: ProjectScore }) {
         </div>
         {neck && status === "ready" && <TabNeck />}
       </div>
-      <NoticeToast />
-      <InfoToast />
+      {/* Notices stack at the foot of the score, never over each other nor over the title */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex flex-col items-center gap-1.5 px-[5%]">
+        <InfoToast />
+        <NoticeToast />
+      </div>
       {aligning !== null && status === "ready" && (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex justify-center">
           <span className="flex items-center gap-2 rounded-panel border border-edge bg-bg-from px-3 py-1.5 text-xs text-fg shadow-[0_6px_18px_rgb(0_0_0/0.5)]">

@@ -331,10 +331,12 @@ export function PdfView({ link }: { link: ProjectScore }) {
       const bottom = top + scroller.clientHeight;
       const outside = box.y < top || box.y + box.h > bottom;
       const first = behavior === "auto";
-      // A bar that fits in the upper part of the view from the very top is shown from the top:
-      // the page opens whole, never with its top line cut in half
-      const fromTop = box.y + box.h <= scroller.clientHeight * 0.75;
-      const glide = fromTop ? 0 : Math.max(0, box.y - scroller.clientHeight * 0.25);
+      // A bar that fits in the upper part of the view from the top of its own page is shown
+      // from that page's top: the page opens whole (title in sight, no line cut in half), also
+      // when the first bar is on page 2 behind a cover
+      const pageTop = Math.max(0, (layout.tops[bar.page] ?? 0) - GAP);
+      const fromTop = box.y + box.h - pageTop <= scroller.clientHeight * 0.75;
+      const glide = fromTop ? pageTop : Math.max(0, box.y - scroller.clientHeight * 0.25);
       if (follow !== "off" && first && outside) {
         scroller.scrollTo({ top: glide, behavior });
       } else if (
@@ -343,7 +345,7 @@ export function PdfView({ link }: { link: ProjectScore }) {
       ) {
         scroller.scrollTo({ top: glide, behavior });
       } else if (follow === "paged" && outside) {
-        scroller.scrollTo({ top: fromTop ? 0 : Math.max(0, box.y - GAP), behavior });
+        scroller.scrollTo({ top: fromTop ? pageTop : Math.max(0, box.y - GAP), behavior });
       }
     }
   });

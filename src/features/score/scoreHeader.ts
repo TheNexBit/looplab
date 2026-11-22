@@ -50,12 +50,21 @@ export interface ScoreTexts {
   tracks: { staves: { bars: { voices: { beats: { text?: string | null }[] }[] }[] }[] }[];
 }
 
+/** Longest annotation joined on one line: a longer one would run past the page and be cut. */
+export const ONE_LINE_MAX = 40;
+
 /**
- * Same trouble over the staves: a beat's text or a section name with line breaks ("Position
- * shifts!⏎…") is spaced as one line, so its lines touch. They are joined on one line.
+ * Same trouble over the staves: a beat's text or a section name with line breaks is spaced
+ * tightly, so its lines touch. A short one is joined on one line; a long one ("Position
+ * shifts!⏎…") keeps its lines, since alphaTab never wraps and clips what runs past the page:
+ * lines that touch still read, words cut off do not.
  */
 export function tidyTexts(score: ScoreTexts) {
-  const oneLine = (text: string) => (/[\r\n]/.test(text) ? split(text).join(" ") : text);
+  const oneLine = (text: string) => {
+    if (!/[\r\n]/.test(text)) return text;
+    const joined = split(text).join(" ");
+    return joined.length <= ONE_LINE_MAX ? joined : text;
+  };
   for (const bar of score.masterBars) {
     if (bar.section) {
       bar.section.text = oneLine(bar.section.text);

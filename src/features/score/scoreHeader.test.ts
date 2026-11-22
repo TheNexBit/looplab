@@ -41,16 +41,20 @@ describe("tidyHeader", () => {
 });
 
 describe("tidyTexts", () => {
-  it("joins beat texts and section names on one line", () => {
+  it("joins short beat texts and section names on one line, keeps long ones", () => {
     const beat = { text: "Position shifts!\r\nKeep it light" };
     const plain = { text: "Slow" };
+    const long = { text: "Marco hammers on the 2nd string,\nbut picks every note on the 1st" };
     const section = { text: "Intro\nA", marker: "A" };
     tidyTexts({
       masterBars: [{ section }, { section: null }],
-      tracks: [{ staves: [{ bars: [{ voices: [{ beats: [beat, plain, { text: null }] }] }] }] }],
+      tracks: [
+        { staves: [{ bars: [{ voices: [{ beats: [beat, plain, long, { text: null }] }] }] }] },
+      ],
     });
     expect(beat.text).toBe("Position shifts! Keep it light");
     expect(plain.text).toBe("Slow");
+    expect(long.text).toBe("Marco hammers on the 2nd string,\nbut picks every note on the 1st");
     expect(section).toEqual({ text: "Intro A", marker: "A" });
   });
 });
