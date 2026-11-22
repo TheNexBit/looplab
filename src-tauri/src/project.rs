@@ -439,8 +439,10 @@ pub fn save(conn: &Connection, track: &str, project: &Project) -> Result<(), Lib
         Some(old) if shared_parts(old) == shared_parts(project) => {
             (old.shared_at, old.shared_from.clone(), old.shared_delta)
         }
-        _ if has_shared(project) => (now(), None, 0.0),
-        _ => (0.0, None, 0.0),
+        // Changed, even emptied: an edit like any other, the other files of the take follow it
+        Some(_) => (now(), None, 0.0),
+        None if has_shared(project) => (now(), None, 0.0),
+        None => (0.0, None, 0.0),
     };
     store(
         conn,
@@ -538,11 +540,11 @@ pub fn take_shared(into: &Project, from: &Project, delta: f64) -> Project {
 /// When a project's shared parts last changed: `shared_at`, or for projects saved before it
 /// existed, when the project was saved.
 pub fn shared_time(conn: &Connection, track: &str, project: &Project) -> f64 {
-    if !has_shared(project) {
-        return 0.0;
-    }
     if project.shared_at > 0.0 {
         return project.shared_at;
+    }
+    if !has_shared(project) {
+        return 0.0;
     }
     conn.query_row(
         "SELECT updated_at FROM projects WHERE path_key = ?1",

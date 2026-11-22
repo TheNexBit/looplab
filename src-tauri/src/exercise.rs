@@ -320,6 +320,41 @@ pub fn save(conn: &Connection, exercise: &mut Exercise) -> Result<(), LibraryErr
     Ok(())
 }
 
+/// Saves the exercise after files were moved (by hand, or lined up again): the shared parts
+/// made on a moved file move with it, so only that file shifts against the others (a camera
+/// angle set right does not drag the markers of the whole take along).
+pub fn save_moved(conn: &Connection, exercise: &mut Exercise) -> Result<(), LibraryError> {
+    let before = if exercise.id > 0 {
+        load(conn, exercise.id)?
+    } else {
+        None
+    };
+    for file in &exercise.files {
+        let Some(old) = before.as_ref().and_then(|b| {
+            b.files
+                .iter()
+                .find(|f| path_key(&f.path) == path_key(&file.path))
+        }) else {
+            continue;
+        };
+        let moved = file.shift - old.shift;
+        if moved.abs() < 1e-9 || !old.lined_up() {
+            continue;
+        }
+        if let Some(own) = project::find(conn, &file.path)?
+            && own.shared_from.is_none()
+            && project::has_shared(&own)
+        {
+            let mut shifted = project::take_shared(&own, &own, moved);
+            shifted.shared_at = own.shared_at;
+            shifted.shared_from = None;
+            shifted.shared_delta = 0.0;
+            project::store(conn, &file.path, &shifted)?;
+        }
+    }
+    save(conn, exercise)
+}
+
 /// The exercise of `track`, brought up to date with its folder (new files join it, moved
 /// ones are found by content, deleted ones leave); `None` when the track is alone.
 pub fn open(conn: &Connection, track: &str) -> Result<Option<Exercise>, LibraryError> {
@@ -597,5 +632,61 @@ mod tests {
                 .unwrap()
                 .is_none()
         );
+
+        // The mp3 moved by hand: its copy follows, the video's own times stay
+        let mp3 = ex.files.iter_mut().find(|f| f.path == audio).unwrap();
+        mp3.shift = -0.4;
+        mp3.line_up = LineUp::Hand;
+        save_moved(&conn, &mut ex).unwrap();
+        let again = share(&conn, &audio, Some(&got)).unwrap().unwrap();
+        assert!((again.markers[0].time - 9.6).abs() < 1e-9);
+        let video_project = project::find(&conn, &video).unwrap().unwrap();
+        assert!((video_project.markers[0].time - 10.0).abs() < 1e-9);
+
+        // Moving the video, source of its own markers, moves only the video: its markers go
+        // with it, the copy on the mp3 stays where it was
+        let vid = ex.files.iter_mut().find(|f| f.path == video).unwrap();
+        vid.shift = 0.25;
+        vid.line_up = LineUp::Hand;
+        save_moved(&conn, &mut ex).unwrap();
+        let video_project = project::find(&conn, &video).unwrap().unwrap();
+        assert!((video_project.markers[0].time - 10.25).abs() < 1e-9);
+        let same = share(&conn, &audio, Some(&again))
+            .unwrap()
+            .map_or(9.6, |p| p.markers[0].time);
+        assert!(
+            (same - 9.6).abs() < 1e-9,
+            "the mp3's copy stays where it was: {same}"
+        );
+        let again = project::find(&conn, &audio).unwrap().unwrap();
+        let vid = ex.files.iter_mut().find(|f| f.path == video).unwrap();
+        vid.shift = 0.0;
+        save_moved(&conn, &mut ex).unwrap();
+        let video_project = project::find(&conn, &video).unwrap().unwrap();
+
+        // An edit on the mp3 makes it the source: the video gets it, moved back
+        let edited = Project {
+            markers: vec![Marker {
+                time: 20.0,
+                ..again.markers[0].clone()
+            }],
+            ..again
+        };
+        project::save(&conn, &audio, &edited).unwrap();
+        let back = share(&conn, &video, Some(&video_project)).unwrap().unwrap();
+        assert!((back.markers[0].time - 20.4).abs() < 1e-9);
+        assert_eq!(back.speed, 0.5);
+
+        // Emptied on the video: the mp3 is emptied too, nothing comes back
+        let emptied = Project {
+            markers: Vec::new(),
+            ..back
+        };
+        project::save(&conn, &video, &emptied).unwrap();
+        let own = project::find(&conn, &video).unwrap().unwrap();
+        assert!(share(&conn, &video, Some(&own)).unwrap().is_none());
+        let mp3 = project::find(&conn, &audio).unwrap().unwrap();
+        let cleared = share(&conn, &audio, Some(&mp3)).unwrap().unwrap();
+        assert!(cleared.markers.is_empty());
     }
 }

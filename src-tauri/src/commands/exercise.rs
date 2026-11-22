@@ -38,7 +38,7 @@ pub fn save_exercise(
 ) -> Result<LinedUp, AppError> {
     let mut exercise = exercise;
     let project = library.with(|conn| {
-        exercise::save(conn, &mut exercise)?;
+        exercise::save_moved(conn, &mut exercise)?;
         let own = crate::project::find(conn, &track)?;
         exercise::share(conn, &track, own.as_ref())
     })?;
@@ -132,7 +132,7 @@ pub async fn align_exercise(
                 _ => file.line_up = LineUp::NoSound,
             }
         }
-        library.with(|conn| exercise::save(conn, &mut ex))?;
+        library.with(|conn| exercise::save_moved(conn, &mut ex))?;
     }
     let project = library.with(|conn| {
         let own = crate::project::find(conn, &track)?;
