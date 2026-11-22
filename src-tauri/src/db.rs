@@ -17,7 +17,7 @@ use crate::{backup, legacy, log};
 /// The library file, in the user folder.
 pub const FILE: &str = "libreria.db";
 /// Bumped (with a step in `upgrade`) whenever the tables change.
-const SCHEMA: i32 = 2;
+const SCHEMA: i32 = 3;
 
 const SCHEMA_1: &str = "
 CREATE TABLE projects (
@@ -106,6 +106,21 @@ CREATE TABLE exercise_files (
 CREATE INDEX exercise_files_by_print ON exercise_files (fingerprint);
 ";
 
+/// Version 3: the course folders of the lesson Home, their listings and the user's choices.
+const SCHEMA_3: &str = "
+CREATE TABLE lesson_roots (
+    path_key   TEXT PRIMARY KEY,    -- full path, lower case
+    path       TEXT NOT NULL,
+    added_at   REAL NOT NULL,
+    idx        TEXT NOT NULL,       -- every folder as last read, JSON (lessons.rs)
+    scanned_at REAL
+);
+CREATE TABLE lesson_choices (
+    id   TEXT PRIMARY KEY,          -- folder + lesson name
+    data TEXT NOT NULL              -- the LessonChoice as JSON
+);
+";
+
 /// Opens a library file only to read it (a backup being checked).
 pub fn open_read_only(path: &Path) -> rusqlite::Result<Connection> {
     Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
@@ -130,6 +145,11 @@ fn upgrade(conn: &Connection) -> Result<(), OpenError> {
     if version < 2 {
         conn.execute_batch(&format!(
             "BEGIN; {SCHEMA_2} PRAGMA user_version = 2; COMMIT;"
+        ))?;
+    }
+    if version < 3 {
+        conn.execute_batch(&format!(
+            "BEGIN; {SCHEMA_3} PRAGMA user_version = 3; COMMIT;"
         ))?;
     }
     Ok(())

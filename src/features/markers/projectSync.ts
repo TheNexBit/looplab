@@ -1,4 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { autoLinkScore } from "@/features/lessons/openLesson";
 import { resetTempoAnalysis } from "@/features/practice/tempoAnalysis";
 import { commands, type Project_Serialize } from "@/lib/bindings";
 import { useEqStore } from "@/stores/eq";
@@ -177,6 +178,8 @@ export function syncProject(): () => void {
     }
     lastSaved = JSON.stringify(snapshot());
     applying = false;
+    // No tab yet: the one beside the track (or picked on the lesson Home) is linked
+    if (writable) void autoLinkScore(path);
     // Undo never reaches back into the previous track
     useHistoryStore.getState().reset();
     resetTempoAnalysis();

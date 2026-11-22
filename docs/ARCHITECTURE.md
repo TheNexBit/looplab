@@ -172,6 +172,18 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   brani), `set_other_take_on` passa da uno all'altro con la stessa dissolvenza delle tracce separate, prima
   dello stretch (velocità, tonalità, EQ e loop restano). UI: `AngleMenu.tsx` (pannello video), `TakeSwitch.tsx`
   (barra in alto), `TakeControls.tsx` (stato e «Sposta»).
+- **Home delle lezioni (fase 27)**: `lessons.rs` legge le cartelle dei corsi scelte dall'utente (`libreria.db`
+  schema 3: `lesson_roots` con l'elenco di ogni cartella in `idx`, `lesson_choices` con le correzioni per
+  lezione). In ogni cartella i media con la stessa chiave di `exercise::name_parts` fanno una lezione; le tab
+  (Guitar Pro > MusicXML > Capella > PDF, parole finali «tab», «score»… tolte) vanno alla lezione con lo stesso
+  nome o all'unica della cartella; cartelle con solo PDF sono documenti (aperti col visore di sistema). Titoli:
+  le cartelle tra il corso e la lezione, senza il numero d'ordine iniziale; ordine «naturale» (9 prima di 10).
+  `scan_lessons` rilegge in sottofondo solo le cartelle con data di modifica cambiata; una cartella sparita
+  tiene il vecchio elenco (disco scollegato). Stato tab, ultima apertura e minuti di pratica escono da
+  `projects`, `recent` e `diary`. UI: `features/lessons/LessonHome.tsx` (sinistra della schermata iniziale, o
+  sopra il brano con Ctrl+L), `openLesson.ts`: `autoLinkScore` (chiamato da `projectSync` dopo il caricamento)
+  collega la tab accanto a un brano che non ne ha, anche aperto da fuori; togliere la tab lo ricorda
+  (`forget_score_beside`).
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

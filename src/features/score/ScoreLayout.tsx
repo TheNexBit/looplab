@@ -22,6 +22,7 @@ import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Stepper } from "@/components/ui/Stepper";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { forgetScoreBeside } from "@/features/lessons/openLesson";
 import { t } from "@/i18n";
 import type { AppError } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
@@ -327,7 +328,13 @@ function FileMenu({ link }: { link: ProjectScore }) {
             <FileMusic className="size-3.5" />
             {t.score.change}
           </DropdownMenu.Item>
-          <DropdownMenu.Item className={menuItem} onSelect={() => store.unlink()}>
+          <DropdownMenu.Item
+            className={menuItem}
+            onSelect={() => {
+              store.unlink();
+              forgetScoreBeside();
+            }}
+          >
             <Link2Off className="size-3.5" />
             {t.score.unlink}
           </DropdownMenu.Item>

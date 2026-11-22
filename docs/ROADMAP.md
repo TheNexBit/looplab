@@ -28,8 +28,8 @@
 | 23  | Spartiti PDF               | ✅ provata (19/11/2026)    |
 | 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
 | 25  | Lezione: video e tab       | ✅ provata (21/11/2026)    |
-| 26  | Inquadrature, basi, file   | 🔜 da fare                 |
-| 27  | Home delle lezioni         | 🔜 da fare                 |
+| 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)    |
+| 27  | Home delle lezioni         | ✅ da provare              |
 
 ## 1. Fondamenta ✅
 
@@ -918,7 +918,19 @@ sincronizzata una volta vale per tutti, si cambia inquadratura e si passa alla b
 - Dati: un «esercizio» in `libreria.db` raggruppa i suoi file (impronte, non percorsi soltanto: i file spostati si
   ritrovano), nessun file scritto accanto ai media.
 
-## 27. Home delle lezioni 🔜
+## 27. Home delle lezioni ✅ (da provare)
+
+**Fatto** (22/11/2026; dettagli in ARCHITECTURE «Home delle lezioni»). Scelte prese:
+
+- La Home sta a sinistra della schermata iniziale (a destra restano recenti, metronomo e suggerimento); con un
+  brano aperto si apre sopra di lui con il tasto «Lezioni» o **Ctrl+L** (Esc torna al brano, che resta caricato).
+- Aggiornamento da solo: rilettura in sottofondo quando la Home compare e quando la finestra torna in primo piano
+  (solo le cartelle cambiate), senza programmi che sorvegliano il disco.
+- «Apri» apre il video principale (non le altre inquadrature né la base); tasto destro: scegliere il file da
+  aprire, la tab (o nessuna), tornare agli abbinamenti automatici, mostrare nella cartella.
+- Le cartelle con solo PDF (guide di studio) sono «Documento» e si aprono nel visore PDF del sistema.
+
+**Piano di partenza:**
 
 **Obiettivo:** le cartelle dei corsi diventano una libreria: si sceglie una lezione e si apre già pronta.
 

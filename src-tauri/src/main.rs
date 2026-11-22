@@ -10,6 +10,7 @@ mod exercise;
 mod hash;
 mod json_file;
 mod legacy;
+mod lessons;
 mod log;
 mod media;
 mod media_keys;

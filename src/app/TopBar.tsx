@@ -4,6 +4,7 @@ import {
   Download,
   FileMusic,
   FolderOpen,
+  GraduationCap,
   Metronome,
   PanelRight,
   Piano,
@@ -23,6 +24,7 @@ import { TakeSwitch } from "@/features/exercise/TakeSwitch";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
+import { useLessonsStore } from "@/stores/lessons";
 import { useMetronomeStore } from "@/stores/metronome";
 import { useNotesStore } from "@/stores/notes";
 import { usePlayerStore } from "@/stores/player";
@@ -30,6 +32,30 @@ import { useRecentStore } from "@/stores/recent";
 import { useScoreStore } from "@/stores/score";
 import { useUiStore } from "@/stores/ui";
 import { toggleMini } from "./miniMode";
+
+/** Opens the lesson Home over the track (lit while it is shown). */
+function HomeKey() {
+  const open = useLessonsStore((s) => s.open);
+  const hasTrack = usePlayerStore((s) => s.track !== null);
+  return (
+    <Tooltip label={t.shortcuts.toggleHome} shortcut="toggleHome">
+      <Button
+        variant="hardware"
+        active={open}
+        disabled={!hasTrack}
+        onClick={() => useLessonsStore.getState().toggle()}
+      >
+        <GraduationCap className="size-4" />
+        <HomeLabel />
+      </Button>
+    </Tooltip>
+  );
+}
+
+function HomeLabel() {
+  const compact = useCompact();
+  return compact ? <span className="sr-only">{t.lessons.home}</span> : t.lessons.home;
+}
 
 function RecentMenu() {
   const files = useRecentStore((s) => s.files);
@@ -147,11 +173,12 @@ export function TopBar() {
   const notesOpen = useNotesStore((s) => s.open);
   const complete = usePlayerStore((s) => s.track?.complete ?? false);
   const metronomeOpen = useMetronomeStore((s) => s.open);
+  const homeOpen = useLessonsStore((s) => s.open);
 
   return (
     <header className="shrink-0 border-b border-edge bg-[linear-gradient(var(--color-topbar-from),var(--color-topbar-to))] px-3 py-1 shadow-[inset_0_-1px_0_var(--color-sheen)]">
       {/* Every key stays: names give way to icons first, then a second row */}
-      <FitBar className="min-h-9 gap-x-3">
+      <FitBar className="min-h-9 gap-x-3" resetKey={homeOpen ? "home" : "track"}>
         <div className="flex h-6 items-center gap-2 border-r border-border pr-3">
           <AudioLines className="size-4 text-accent" aria-hidden />
           <BrandName />
@@ -167,6 +194,7 @@ export function TopBar() {
           </Button>
         </Tooltip>
         <RecentMenu />
+        <HomeKey />
 
         {/* Small display with the open track; the lamp is lit while a track is loaded */}
         <div className="well flex h-7 min-w-0 flex-1 items-center gap-2 rounded-control px-3 lg:max-w-80">

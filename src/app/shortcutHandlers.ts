@@ -9,6 +9,7 @@ import { togglePlaylist } from "@/features/practice/playlist";
 import { isTapping, tapSync } from "@/features/score/syncActions";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
+import { useLessonsStore } from "@/stores/lessons";
 import {
   type LoopRegion,
   resizedRegion,
@@ -180,4 +181,5 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   angle9: () => angleByIndex(8),
   nextAngle,
   toggleBacking: toggleOther,
+  toggleHome: () => useLessonsStore.getState().toggle(),
 };

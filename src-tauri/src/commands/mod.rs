@@ -8,6 +8,7 @@ mod data;
 mod error;
 mod exercise;
 mod export;
+mod lessons;
 mod library;
 mod metronome;
 mod player;
@@ -103,6 +104,14 @@ pub fn builder() -> Builder<tauri::Wry> {
             exercise::align_exercise,
             exercise::set_other_take,
             exercise::set_other_take_on,
+            lessons::lesson_library,
+            lessons::scan_lessons,
+            lessons::add_lesson_root,
+            lessons::remove_lesson_root,
+            lessons::set_lesson_choice,
+            lessons::score_beside,
+            lessons::forget_score_beside,
+            lessons::open_document,
         ])
         .events(collect_events![
             PlaybackStatus,

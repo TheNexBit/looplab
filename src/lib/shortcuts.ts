@@ -97,6 +97,7 @@ export const shortcuts = {
   angle9: "Ctrl+9",
   nextAngle: "V",
   toggleBacking: "A",
+  toggleHome: "Ctrl+L",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

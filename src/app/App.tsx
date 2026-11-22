@@ -27,6 +27,7 @@ import { WaveformPanel } from "@/features/waveform/WaveformPanel";
 import { t } from "@/i18n";
 import { type AppInfo, commands, events } from "@/lib/bindings";
 import { useShortcuts } from "@/lib/useShortcuts";
+import { useLessonsStore } from "@/stores/lessons";
 import { useMetronomeStore } from "@/stores/metronome";
 import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
@@ -49,6 +50,7 @@ export function App() {
   const loading = usePlayerStore((s) => s.load.kind === "loading");
   const mini = useUiStore((s) => s.mini);
   const metronomeOpen = useMetronomeStore((s) => s.open);
+  const homeOpen = useLessonsStore((s) => s.open);
   const infoBar = useSettingsStore((s) => s.infoBar);
   const hovering = useFileDrop(openDroppedFiles);
 
@@ -129,6 +131,12 @@ export function App() {
               </span>
             )}
             {/* Over the track, which stays loaded underneath: leaving finds it as it was */}
+            {/* The lesson Home over the track, which stays loaded underneath */}
+            {homeOpen && hasTrack && !loading && (
+              <div className="absolute inset-0 z-10 bg-stage">
+                <EmptyState hovering={false} overTrack />
+              </div>
+            )}
             {metronomeOpen && (
               <div className="absolute inset-0 z-10 bg-stage">
                 <MetronomeView />

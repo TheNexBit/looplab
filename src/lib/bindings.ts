@@ -201,6 +201,22 @@ export const commands = {
 	setOtherTake: (path: string | null, shift: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_other_take", { path, shift })),
 	/**  Hear the other take instead of the song (or back), at the same point, loop, speed and pitch. */
 	setOtherTakeOn: (on: boolean) => typedError<null, AppError>(__TAURI_INVOKE("set_other_take_on", { on })),
+	/**  The lessons as last read: shown at once, then `scan_lessons` brings them up to date. */
+	lessonLibrary: () => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("lesson_library")),
+	/**  Reads the course folders again in the background (only the changed folders are listed). */
+	scanLessons: () => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("scan_lessons")),
+	/**  Adds a course folder and reads it. */
+	addLessonRoot: (path: string) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("add_lesson_root", { path })),
+	/**  Takes a course folder off the Home; its files are not touched. */
+	removeLessonRoot: (path: string) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("remove_lesson_root", { path })),
+	/**  Remembers which file a lesson opens and which tab goes with it. */
+	setLessonChoice: (id: string, choice: LessonChoice_Deserialize) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("set_lesson_choice", { id, choice })),
+	/**  The score beside `track` (same folder, same name), to link when its project has none. */
+	scoreBeside: (track: string) => typedError<string | null, AppError>(__TAURI_INVOKE("score_beside", { track })),
+	/**  The user removed the tab of `track`: it is not linked again by itself. */
+	forgetScoreBeside: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_score_beside", { track })),
+	/**  Opens a lesson's document (a PDF study guide) in the system's own viewer. */
+	openDocument: (path: string) => typedError<null, AppError>(__TAURI_INVOKE("open_document", { path })),
 };
 
 /** Events */
@@ -562,6 +578,110 @@ export type GapRequest = {
 	playBars: number,
 	silentBars: number,
 	grow: boolean,
+};
+
+export type Lesson = Lesson_Serialize | Lesson_Deserialize;
+
+/**  What the user picked for one lesson. */
+export type LessonChoice = LessonChoice_Serialize | LessonChoice_Deserialize;
+
+/**  What the user picked for one lesson. */
+export type LessonChoice_Deserialize = {
+	/**  The file «Open» opens */
+	main?: string | null,
+	/**  The tab linked at the opening */
+	score?: string | null,
+	/**  No tab is linked by itself (the user removed it) */
+	noScore?: boolean,
+};
+
+/**  What the user picked for one lesson. */
+export type LessonChoice_Serialize = {
+	/**  The file «Open» opens */
+	main: string | null,
+	/**  The tab linked at the opening */
+	score: string | null,
+	/**  No tab is linked by itself (the user removed it) */
+	noScore: boolean,
+};
+
+export type LessonFile = {
+	path: string,
+	kind: LessonFileKind,
+	/**  What tells it apart from the lesson's other files: «Second Angle», «Backing», «Tab»… */
+	label: string,
+	/**  A take without the player */
+	backing: boolean,
+};
+
+export type LessonFileKind = "video" | "audio" | "score" | "pdf";
+
+export type LessonLibrary = LessonLibrary_Serialize | LessonLibrary_Deserialize;
+
+export type LessonLibrary_Deserialize = {
+	roots: LessonRoot[],
+	lessons: Lesson_Deserialize[],
+};
+
+export type LessonLibrary_Serialize = {
+	roots: LessonRoot[],
+	lessons: Lesson_Serialize[],
+};
+
+export type LessonRoot = {
+	path: string,
+	name: string,
+	/**  False when the folder is gone (a disconnected drive): its lessons are kept */
+	exists: boolean,
+	lessons: number,
+};
+
+export type Lesson_Deserialize = {
+	/**  Folder + name: the key of the user's choices */
+	id: string,
+	/**  The course folder it was found in */
+	root: string,
+	/**  The folders between the course and the lesson («Module 02 Technique»), for headings */
+	group: string,
+	name: string,
+	folder: string,
+	/**  Videos first, then audio, then scores */
+	files: LessonFile[],
+	/**  What «Open» opens; `None` for a lesson of documents only (a study guide) */
+	main?: string | null,
+	/**  The score linked at the opening; `None` = none */
+	score?: string | null,
+	/**  The user chose what opens or which tab goes with it */
+	chosen: boolean,
+	tab: TabState,
+	/**  Last opening of any of its files (seconds since 1970) */
+	openedAt?: number | null,
+	/**  Seconds practised in all, from the diary */
+	practice: number | null,
+};
+
+export type Lesson_Serialize = {
+	/**  Folder + name: the key of the user's choices */
+	id: string,
+	/**  The course folder it was found in */
+	root: string,
+	/**  The folders between the course and the lesson («Module 02 Technique»), for headings */
+	group: string,
+	name: string,
+	folder: string,
+	/**  Videos first, then audio, then scores */
+	files: LessonFile[],
+	/**  What «Open» opens; `None` for a lesson of documents only (a study guide) */
+	main: string | null,
+	/**  The score linked at the opening; `None` = none */
+	score: string | null,
+	/**  The user chose what opens or which tab goes with it */
+	chosen: boolean,
+	tab: TabState,
+	/**  Last opening of any of its files (seconds since 1970) */
+	openedAt: number | null,
+	/**  Seconds practised in all, from the diary */
+	practice: number | null,
 };
 
 /**  How a file's shift was found. */
@@ -1197,6 +1317,17 @@ export type SyncPoint_Serialize = {
 	/**  Seconds in the recording */
 	time: number | null,
 };
+
+/**  How far the lesson's tab is. */
+export type TabState = 
+/**  No score beside it */
+"none" | 
+/**  A score is beside it, linked at the first opening */
+"found" | 
+/**  Linked, not synced with the recording yet */
+"linked" | 
+/**  Linked and synced */
+"synced";
 
 export type TakeKind = "video" | "audio";
 

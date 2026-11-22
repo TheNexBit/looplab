@@ -122,13 +122,13 @@ pub struct Exercise {
 
 /// A name split into what all files of the take share and what tells this one apart.
 #[derive(Debug, PartialEq)]
-struct NameParts {
-    key: String,
-    label: String,
-    backing: bool,
+pub(crate) struct NameParts {
+    pub key: String,
+    pub label: String,
+    pub backing: bool,
 }
 
-fn media_kind(path: &Path) -> Option<TakeKind> {
+pub(crate) fn media_kind(path: &Path) -> Option<TakeKind> {
     let ext = path.extension()?.to_str()?.to_lowercase();
     if VIDEO.contains(&ext.as_str()) {
         Some(TakeKind::Video)
@@ -140,7 +140,7 @@ fn media_kind(path: &Path) -> Option<TakeKind> {
 }
 
 /// «Exercise 02 Twist Second Angle.mp4.mp4» → key «exercise 02 twist», label «Second Angle».
-fn name_parts(file_name: &str) -> NameParts {
+pub(crate) fn name_parts(file_name: &str) -> NameParts {
     // Extensions, even doubled ones
     let mut stem = file_name;
     while let Some((head, ext)) = stem.rsplit_once('.') {

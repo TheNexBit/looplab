@@ -31,12 +31,26 @@ const ORDER: readonly FitMode[] = ["full", "compact", "wrap"];
  * (not the window's width) and steps down to compact keys, then to two rows; it steps back up
  * as soon as the width it measured for a fuller mode is there again.
  */
-export function FitBar({ className, children }: { className?: string; children: ReactNode }) {
+export function FitBar({
+  className,
+  children,
+  resetKey,
+}: {
+  className?: string;
+  children: ReactNode;
+  /** When it changes, widths measured before are forgotten and fuller modes are tried again */
+  resetKey?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<FitMode>("full");
   // Width each mode needed when it was last on screen in one row
   const needs = useRef<Partial<Record<FitMode, number>>>({});
   const [, setTick] = useState(0);
+  const lastReset = useRef(resetKey);
+  if (lastReset.current !== resetKey) {
+    lastReset.current = resetKey;
+    needs.current = {};
+  }
 
   useEffect(() => {
     const element = ref.current;

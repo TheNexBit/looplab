@@ -1,9 +1,11 @@
-import { FolderOpen, Lightbulb, Metronome, Music, Upload } from "lucide-react";
+import { ArrowLeft, FolderOpen, Lightbulb, Metronome, Music, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
+import { LessonHome } from "@/features/lessons/LessonHome";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
+import { useLessonsStore } from "@/stores/lessons";
 import { useMetronomeStore } from "@/stores/metronome";
 import { useRecentStore } from "@/stores/recent";
 import { formatsLabel } from "./formats";
@@ -67,44 +69,85 @@ function DropStrip({ hovering }: { hovering: boolean }) {
   );
 }
 
-/** Start screen: the recent tracks first, a way to open more, one tip. */
-export function EmptyState({ hovering }: { hovering: boolean }) {
+/**
+ * Start screen: the lessons of the course folders, and beside them the recent tracks, a way to
+ * open more, one tip. Also shown over an open track (`overTrack`), with the way back to it.
+ */
+export function EmptyState({
+  hovering,
+  overTrack = false,
+}: {
+  hovering: boolean;
+  overTrack?: boolean;
+}) {
   const files = useRecentStore((s) => s.files);
 
   useEffect(() => {
     void useRecentStore.getState().refresh();
   }, []);
 
+  // Over a track, Esc goes back to it
+  useEffect(() => {
+    if (!overTrack) return;
+    const onKey = (event: KeyboardEvent) => {
+      // An open menu takes its own Esc
+      if (event.key !== "Escape" || document.querySelector('[role="menu"]')) return;
+      // Only back to the track: Esc must not also clear its loop
+      event.stopPropagation();
+      event.preventDefault();
+      useLessonsStore.getState().setOpen(false);
+    };
+    // Before the shortcuts (same window, bubbling)
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [overTrack]);
+
   const last = files[0]?.exists ? files[0] : undefined;
   return (
-    <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4 px-6 pt-8 pb-10">
-      {files.length === 0 ? (
-        <div className="flex flex-1 items-center">
-          <FirstDrop hovering={hovering} />
-        </div>
-      ) : (
-        <>
-          {last && <ResumeRow file={last} />}
-          <div className="flex min-h-0 flex-1 flex-col">
-            <RecentList />
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-6 overflow-y-auto px-6 pt-8 pb-10 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
+      <div className="flex min-h-0 flex-col gap-3">
+        {overTrack && (
+          <Button
+            variant="hardware"
+            className="h-8 shrink-0 self-start px-3"
+            onClick={() => useLessonsStore.getState().setOpen(false)}
+          >
+            <ArrowLeft className="size-4" />
+            {t.lessons.back}
+            <Kbd shortcut="toggleHome" />
+          </Button>
+        )}
+        <LessonHome />
+      </div>
+      <div className="flex min-h-0 flex-col gap-4">
+        {files.length === 0 ? (
+          <div className="flex flex-1 items-center">
+            <FirstDrop hovering={hovering} />
           </div>
-          <DropStrip hovering={hovering} />
-        </>
-      )}
-      <Button
-        variant="hardware"
-        className="h-9 shrink-0 self-start px-3"
-        onClick={() => useMetronomeStore.getState().setOpen(true)}
-      >
-        <Metronome className="size-4" />
-        {t.metronome.title}
-        <Kbd shortcut="toggleMetronomeMode" />
-      </Button>
-      <p className="flex shrink-0 items-center gap-1.5 text-[11px] text-fg-subtle">
-        <Lightbulb className="size-3 shrink-0" aria-hidden />
-        <span className="font-medium">{t.recent.tipLabel}</span>
-        <span className="truncate">{tip}</span>
-      </p>
+        ) : (
+          <>
+            {last && <ResumeRow file={last} />}
+            <div className="flex min-h-0 flex-1 flex-col">
+              <RecentList />
+            </div>
+            <DropStrip hovering={hovering} />
+          </>
+        )}
+        <Button
+          variant="hardware"
+          className="h-9 shrink-0 self-start px-3"
+          onClick={() => useMetronomeStore.getState().setOpen(true)}
+        >
+          <Metronome className="size-4" />
+          {t.metronome.title}
+          <Kbd shortcut="toggleMetronomeMode" />
+        </Button>
+        <p className="flex shrink-0 items-center gap-1.5 text-[11px] text-fg-subtle">
+          <Lightbulb className="size-3 shrink-0" aria-hidden />
+          <span className="font-medium">{t.recent.tipLabel}</span>
+          <span className="truncate">{tip}</span>
+        </p>
+      </div>
     </div>
   );
 }
