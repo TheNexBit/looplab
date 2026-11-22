@@ -338,7 +338,11 @@ export function PdfView({ link }: { link: ProjectScore }) {
       const pageTop = Math.max(0, (layout.tops[bar.page] ?? 0) - GAP);
       const fromTop = at.index === 0 || box.y + box.h - pageTop <= scroller.clientHeight * 0.75;
       const glide = fromTop ? pageTop : Math.max(0, box.y - scroller.clientHeight * 0.25);
-      if (follow !== "off" && first && outside) {
+      if (follow !== "off" && at.index === 0) {
+        // Back to bar 1 (opening, Home, a loop starting over): always the page's top, also when
+        // bar 1 is still in sight, so the heading is whole again
+        scroller.scrollTo({ top: pageTop, behavior });
+      } else if (follow !== "off" && first && outside) {
         scroller.scrollTo({ top: glide, behavior });
       } else if (
         follow === "continuous" &&
