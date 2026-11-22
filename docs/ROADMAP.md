@@ -29,7 +29,7 @@
 | 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
 | 25  | Lezione: video e tab       | ✅ provata (21/11/2026)    |
 | 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)    |
-| 27  | Home delle lezioni         | ✅ da provare              |
+| 27  | Home delle lezioni         | ✅ provata (22/11/2026)    |
 
 ## 1. Fondamenta ✅
 
@@ -880,7 +880,7 @@ aperto → video piccolo.
 - In testa il nome della lezione (corso e modulo, se viene dalla Home) e i tasti «Con chitarra / Solo base».
 - Prestazioni: video, tab e cursore fluidi insieme a 60 fps anche rallentati; misura della CPU come nelle fasi 21-23.
 
-## 26. Stesso esercizio, più file: inquadrature, basi e sincronia condivisa ✅ (da provare)
+## 26. Stesso esercizio, più file: inquadrature, basi e sincronia condivisa ✅ (provata 22/11/2026)
 
 **Fatto** (22/11/2026; dettagli in ARCHITECTURE «Esercizio» e «Inquadrature e base al volo»): file della lezione
 riconosciuti per nome nella cartella, allineati dal suono in sottofondo (sui file JTC: seconda inquadratura
@@ -918,7 +918,7 @@ sincronizzata una volta vale per tutti, si cambia inquadratura e si passa alla b
 - Dati: un «esercizio» in `libreria.db` raggruppa i suoi file (impronte, non percorsi soltanto: i file spostati si
   ritrovano), nessun file scritto accanto ai media.
 
-## 27. Home delle lezioni ✅ (da provare)
+## 27. Home delle lezioni ✅ (provata 22/11/2026)
 
 **Fatto** (22/11/2026; dettagli in ARCHITECTURE «Home delle lezioni»). Scelte prese:
 
