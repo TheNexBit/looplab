@@ -44,6 +44,9 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
   della forma d'onda, quello del click nel modulo del metronomo, velocità e tonalità nella barra in basso.
   Nuovi tasti «M» per silenziare il brano o il click senza perdere il livello. Preset di velocità, intonazione
   fine e accordatura col tasto destro sulle manopole.
+- Nella Home ogni lezione mostra tutti i suoi file (video, inquadrature, audio, base, tab) e ognuno si apre da
+  solo; tasto «Solo base» sulla riga della lezione. Dentro la lezione il selettore «Ascolti: Chitarra + base /
+  Solo base» dice chiaramente cosa senti.
 
 ### Corretto
 

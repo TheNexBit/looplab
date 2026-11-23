@@ -15,7 +15,7 @@ import { chooseOther, otherTakes, setBacking, setOtherOn } from "./exerciseSync"
 import { NudgeRow } from "./TakeControls";
 
 /**
- * «Con chitarra / Solo base»: two keys, the one heard lit, like the mode keys of a DAW. The
+ * «Ascolti: Chitarra + base / Solo base»: two keys, the one heard lit, like the mode keys of a DAW. The
  * backing (or, from a backing, the full take) takes over at the same point, loop, speed and
  * pitch (key A). The right button chooses which file it is, marks the backings and moves it.
  * Shown when the open track has other files in its lesson.
@@ -48,9 +48,15 @@ export function TakeSwitch() {
         <div
           role="radiogroup"
           aria-label={t.exercise.switchLabel}
-          className="inline-flex shrink-0 gap-1"
+          className="inline-flex shrink-0 items-center gap-1"
           onContextMenu={onContextMenu}
         >
+          {/* What the keys choose, said on the bar: what you hear, the video stays */}
+          {!compact && (
+            <span className="mr-0.5 text-[10px] font-medium tracking-[0.1em] text-fg-subtle uppercase">
+              {t.exercise.listening}
+            </span>
+          )}
           {keys.map(([backing, name, Icon]) => (
             <Tooltip
               key={name}

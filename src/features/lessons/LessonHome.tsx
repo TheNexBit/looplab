@@ -48,6 +48,7 @@ import { fileNameOf, formatAgo, samePath } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
+import { BackingKey, backingOf, LessonFiles, toggleFiles } from "./LessonFiles";
 import { MarkItems } from "./LessonNav";
 import { lessonAround, progressOf, toggleDone } from "./lessonOrder";
 import { openLesson } from "./openLesson";
@@ -267,12 +268,27 @@ function LessonRow({
 }) {
   const Icon = lessonIcon(lesson);
   const videos = lesson.files.filter((f) => f.kind === "video").length;
-  const backing = lesson.files.some((f) => f.backing);
+  const filesOpen = useSettingsStore((s) => s.lessonFilesOpen.includes(lesson.id));
+  const Fold = filesOpen ? ChevronDown : ChevronRight;
   const minutes = Math.round((lesson.practice ?? 0) / 60);
   return (
     <li className="border-t border-border first:border-t-0">
       <LessonMenu lesson={lesson}>
         <div className="flex items-center gap-1">
+          {lesson.files.length > 1 ? (
+            <button
+              type="button"
+              onClick={() => toggleFiles(lesson.id)}
+              aria-expanded={filesOpen}
+              title={filesOpen ? l.hideFiles : l.showFiles}
+              aria-label={filesOpen ? l.hideFiles : l.showFiles}
+              className="grid size-6 shrink-0 place-items-center rounded-control text-fg-subtle hover:bg-surface-hover hover:text-fg"
+            >
+              <Fold className="size-3.5" />
+            </button>
+          ) : (
+            <span className="size-6 shrink-0" aria-hidden />
+          )}
           <MarkKey lesson={lesson} />
           <button
             type="button"
@@ -305,7 +321,6 @@ function LessonRow({
             <span className="flex items-center gap-3 text-[11px] text-fg-subtle tabular">
               {!lesson.main && <span>{l.document}</span>}
               {videos > 1 && <span className="whitespace-nowrap">{l.angles(videos)}</span>}
-              {backing && <span>{l.backing}</span>}
               <TabLamp state={lesson.tab} />
               {minutes > 0 && (
                 <span className="whitespace-nowrap text-readout" title={l.practiceHint}>
@@ -317,8 +332,10 @@ function LessonRow({
               </span>
             </span>
           </button>
+          <BackingKey lesson={lesson} disabled={missing} />
         </div>
       </LessonMenu>
+      {filesOpen && <LessonFiles lesson={lesson} missing={missing} />}
     </li>
   );
 }
@@ -793,7 +810,10 @@ export function LessonHome() {
   const found = useMemo(
     () =>
       library.lessons.filter((lesson) =>
-        matches(`${lesson.name} ${lesson.group} ${courseNames.get(lesson.root) ?? ""}`, words),
+        matches(
+          `${lesson.name} ${lesson.group} ${courseNames.get(lesson.root) ?? ""} ${backingOf(lesson) ? l.backingWords : ""}`,
+          words,
+        ),
       ),
     [library, courseNames, words],
   );

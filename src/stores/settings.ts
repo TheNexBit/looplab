@@ -72,6 +72,8 @@ export interface Settings {
   showOverview: boolean;
   /** What is folded in the lesson Home: course folders, and folder + newline + module name */
   lessonFolds: string[];
+  /** Lessons of the Home showing their files (by lesson id) */
+  lessonFilesOpen: string[];
   /** PDFs whose bars differ from their Guitar Pro twin and are fine as they are: file + ":" + bars */
   pdfBarsAccepted: string[];
   /** Media keys reach Looplab even while another program has the focus */
@@ -205,6 +207,7 @@ const DEFAULTS: Settings = {
   showOverview: true,
   lessonFolds: [],
   pdfBarsAccepted: [],
+  lessonFilesOpen: [],
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",
@@ -260,6 +263,7 @@ export function sanitize(values: Partial<Settings>): Settings {
   // Lists of strings only (an old or damaged file may hold anything)
   result.lessonFolds = strings(values.lessonFolds);
   result.pdfBarsAccepted = strings(values.pdfBarsAccepted);
+  result.lessonFilesOpen = strings(values.lessonFilesOpen);
   // Before the on/off key, 0 bars meant off: keep an existing count-in on
   if (typeof values.countIn !== "boolean" && typeof values.countInBars === "number") {
     result.countIn = values.countInBars > 0;

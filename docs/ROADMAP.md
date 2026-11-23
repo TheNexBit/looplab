@@ -1062,6 +1062,12 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   e mute nel modulo del metronomo accanto a K, velocità e tonalità nella barra in basso (preset di velocità,
   intonazione fine e accordatura col tasto destro). `trackMuted`/`clickMuted` nelle impostazioni: il motore riceve
   0, il livello resta. Tolti i fader TRK/CLK e il volume doppio nel pannello del count-in.
+- **File della lezione:** nella Home la freccia di una lezione mostra tutti i suoi file per ruolo (Video:
+  principale, inquadrature; Audio: chitarra + base, solo base; Tab: Guitar Pro, PDF), `LessonFiles.tsx`. «Apri»
+  apre quel file come brano a sé senza cambiare cosa apre la lezione; «Usa» collega quella tab. Sulla riga il tasto
+  «Solo base» apre la base; la ricerca trova «base»/«backing». Le lezioni aperte si ricordano (`lessonFilesOpen`).
+- **Ascolti:** il selettore dentro la lezione si chiama «Ascolti: Chitarra + base / Solo base», con la spiegazione
+  (il video resta, cambia solo l'audio).
 
 **Rimandato (utente 23/11):** testi più chiari per l'avviso delle battute del PDF: avviso «Nel PDF ho riconosciuto
 7 battute, ma la tab .gp della lezione ne ha 8: probabilmente una battuta del PDF non è stata riconosciuta, e lo
