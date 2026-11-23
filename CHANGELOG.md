@@ -18,7 +18,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
   con la sua sincronizzazione; Alt+T passa alla successiva. Le tab usate prima con un brano restano
   ricordate.
 - Tasto per togliere un corso dalla Home (i file restano sul disco), con conferma.
-- Moduli dei corsi richiudibili uno per uno, con «Chiudi / Apri tutti i moduli»; la scelta si ricorda.
+- Moduli dei corsi richiudibili uno per uno; tasto «Comprimi tutto / Espandi tutto» per tutti i corsi
+  (accanto a «Aggiungi corso») e per ogni corso (sulla sua riga). La scelta si ricorda.
 - «Ritrova le battute» nel menu di sincronizzazione dei PDF: le cerca di nuovo nelle pagine.
 
 ### Corretto

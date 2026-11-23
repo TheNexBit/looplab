@@ -713,6 +713,8 @@ export const en = {
     keep: "Keep",
     foldModules: "Fold all modules",
     unfoldModules: "Open all modules",
+    foldAll: "Collapse all",
+    unfoldAll: "Expand all",
     rightClick: "choose the file to open or the right tab",
     courseRightClick: "update, show in folder, fold or open the modules, remove from Home",
     tabLinked: (name: string) => `Tab linked: ${name}`,

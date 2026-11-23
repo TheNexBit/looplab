@@ -716,6 +716,8 @@ export const it = {
     keep: "Lascia",
     foldModules: "Chiudi tutti i moduli",
     unfoldModules: "Apri tutti i moduli",
+    foldAll: "Comprimi tutto",
+    unfoldAll: "Espandi tutto",
     rightClick: "scegli il file da aprire o la tab giusta",
     courseRightClick: "aggiorna, mostra nella cartella, chiudi o apri i moduli, togli dalla Home",
     tabLinked: (name: string) => `Tab collegata: ${name}`,
