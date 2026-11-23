@@ -196,8 +196,9 @@ export function TopBar() {
         <RecentMenu />
         <HomeKey />
 
-        {/* Small display with the open track; the lamp is lit while a track is loaded */}
-        <div className="well flex h-7 min-w-0 flex-1 items-center gap-2 rounded-control px-3 lg:max-w-80">
+        {/* Small display with the open track; the lamp is lit while a track is loaded. Its least
+            width makes the bar turn keys into icons (then wrap) before the name is squeezed */}
+        <div className="well flex h-7 min-w-40 flex-1 items-center gap-2 rounded-control px-3 lg:max-w-80">
           <span
             aria-hidden
             className={

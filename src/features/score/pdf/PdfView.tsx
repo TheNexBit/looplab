@@ -270,8 +270,10 @@ export function PdfView({ link }: { link: ProjectScore }) {
       cancelAnimationFrame(frame);
     };
   }, []);
+  // Zoom 100% fits the panel (at most PAGE_WIDTH); above it the page grows past the panel and
+  // the view scrolls sideways too
   const pageWidth = Math.round(
-    Math.min(containerWidth - 2 * GAP, PAGE_WIDTH * link.zoom * (containerWidth > 0 ? 1 : 0)),
+    Math.min(containerWidth - 2 * GAP, PAGE_WIDTH) * link.zoom * (containerWidth > 0 ? 1 : 0),
   );
   const layout = useMemo(
     () => layoutPages(aspects, Math.max(200, pageWidth), containerWidth),
@@ -338,19 +340,23 @@ export function PdfView({ link }: { link: ProjectScore }) {
       const pageTop = Math.max(0, (layout.tops[bar.page] ?? 0) - GAP);
       const fromTop = at.index === 0 || box.y + box.h - pageTop <= scroller.clientHeight * 0.75;
       const glide = fromTop ? pageTop : Math.max(0, box.y - scroller.clientHeight * 0.25);
+      // A page wider than the panel (zoom above 100%): the bar is kept in sight sideways as well
+      const viewLeft = scroller.scrollLeft;
+      const sideways = box.x < viewLeft || box.x + box.w > viewLeft + scroller.clientWidth;
+      const left = sideways ? Math.max(0, box.x - scroller.clientWidth * 0.1) : viewLeft;
       if (follow !== "off" && at.index === 0) {
         // Back to bar 1 (opening, Home, a loop starting over): always the page's top, also when
         // bar 1 is still in sight, so the heading is whole again
-        scroller.scrollTo({ top: pageTop, behavior });
+        scroller.scrollTo({ top: pageTop, left, behavior });
       } else if (follow !== "off" && first && outside) {
-        scroller.scrollTo({ top: glide, behavior });
+        scroller.scrollTo({ top: glide, left, behavior });
       } else if (
         follow === "continuous" &&
         (outside || box.y > top + scroller.clientHeight * 0.55)
       ) {
-        scroller.scrollTo({ top: glide, behavior });
+        scroller.scrollTo({ top: glide, left, behavior });
       } else if (follow === "paged" && outside) {
-        scroller.scrollTo({ top: fromTop ? pageTop : Math.max(0, box.y - GAP), behavior });
+        scroller.scrollTo({ top: fromTop ? pageTop : Math.max(0, box.y - GAP), left, behavior });
       }
     }
   });
@@ -458,7 +464,10 @@ export function PdfView({ link }: { link: ProjectScore }) {
         >
           <div
             className="relative cursor-pointer select-none"
-            style={{ height: contentHeight }}
+            style={{
+              height: contentHeight,
+              width: Math.max(containerWidth, layout.width + 2 * GAP),
+            }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
