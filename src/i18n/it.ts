@@ -878,6 +878,9 @@ export const it = {
     barsDiffer: (pdf: number, gp: number, name: string) =>
       `Il PDF ha ${pdf} battute, la tab «${name}» ne ha ${gp}: lo spartito potrebbe non seguire bene la musica.`,
     barsAccept: "Va bene così",
+    barsFound: (n: number) =>
+      n === 1 ? "Trovata 1 battuta nel PDF" : `Trovate ${n} battute nel PDF`,
+    pdfBarCount: (n: number) => (n === 1 ? "Il PDF ha 1 battuta" : `Il PDF ha ${n} battute`),
     barsAcceptHint: "Non avvisare più per questo PDF con queste battute",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",
     autoSync: "Sincronizza dalle note",

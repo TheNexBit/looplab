@@ -16,6 +16,21 @@ const stem = (path: string) =>
     .replace(/\.[^.]+$/, "")
     .toLowerCase();
 
+/**
+ * «Find the bars again»: looks for them anew in the pages, and forgets an «It's fine» given to
+ * this PDF (the bars start over, so a difference found later is told again).
+ */
+export function findBarsAgain() {
+  const link = useScoreStore.getState().link;
+  if (link?.kind !== "pdf") return;
+  const { pdfBarsAccepted, update } = useSettingsStore.getState();
+  const mine = `${link.file}:`;
+  if (pdfBarsAccepted.some((key) => key.startsWith(mine))) {
+    update({ pdfBarsAccepted: pdfBarsAccepted.filter((key) => !key.startsWith(mine)) });
+  }
+  useScoreStore.getState().findPdfBarsAgain();
+}
+
 /** The PDF's Guitar Pro twin in its lesson: the one with its name, else the only one. */
 function twinOf(pdfName: string, files: LessonFile[]): LessonFile | null {
   const tabs = files.filter((file) => file.kind === "score");
@@ -62,11 +77,7 @@ export function PdfBarCheck({ link }: { link: ProjectScore }) {
     >
       <AlertTriangle className="size-3.5 shrink-0 text-cue" />
       <span className="min-w-0 flex-1">{s.barsDiffer(found, twin.bars, twin.name)}</span>
-      <Button
-        variant="hardware"
-        title={s.findBarsAgainHint}
-        onClick={() => useScoreStore.getState().findPdfBarsAgain()}
-      >
+      <Button variant="hardware" title={s.findBarsAgainHint} onClick={findBarsAgain}>
         <ScanSearch className="size-3.5" />
         {s.findBarsAgain}
       </Button>

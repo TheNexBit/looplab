@@ -870,6 +870,8 @@ export const en = {
     barsDiffer: (pdf: number, gp: number, name: string) =>
       `The PDF has ${pdf} bars, the tab «${name}» has ${gp}: the score may not follow the music well.`,
     barsAccept: "It's fine",
+    barsFound: (n: number) => (n === 1 ? "Found 1 bar in the PDF" : `Found ${n} bars in the PDF`),
+    pdfBarCount: (n: number) => (n === 1 ? "The PDF has 1 bar" : `The PDF has ${n} bars`),
     barsAcceptHint: "Stop warning about this PDF with these bars",
     clickHint: "Click a note: jump there · Drag over notes: loop",
     autoSync: "Sync from the notes",

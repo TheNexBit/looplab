@@ -1045,7 +1045,8 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
 - **Avviso battute del PDF:** `pdf/PdfBarCheck.tsx` conta le battute del .gp gemello (stesso nome, o l'unico
   della lezione; `guitarProBars`, comando `prepare_guitar_pro` che apre solo quel file .gp) e avvisa se
   sono diverse da quelle trovate nel PDF. «Va bene così» si ricorda per quel PDF con quel numero di battute
-  (`pdfBarsAccepted` nelle impostazioni).
+  (`pdfBarsAccepted` nelle impostazioni); «Ritrova le battute» (`findBarsAgain`) lo dimentica e riparte da
+  capo. Dopo la ricerca un messaggio dice quante battute ha trovato; il menu Sincronia del PDF le mostra sempre.
 
 ## Dopo la prima versione
 

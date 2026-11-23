@@ -24,6 +24,7 @@ import { currentPosition } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { type ProjectScore, type SyncPoint, useScoreStore } from "@/stores/score";
 import { activeScore } from "./activeScore";
+import { findBarsAgain } from "./pdf/PdfBarCheck";
 import { autoSync, startTapping, syncToGrid, tempoMapFromScore } from "./syncActions";
 
 /** Steps of "Move all", seconds: fine and coarse, earlier and later. */
@@ -210,10 +211,12 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
             <DropdownMenu.Separator className={menuSeparator} />
           )}
           {link.kind === "pdf" && (
-            <DropdownMenu.Item
-              className={cn(menuItem, "items-start")}
-              onSelect={() => useScoreStore.getState().findPdfBarsAgain()}
-            >
+            <DropdownMenu.Label className={menuLabel}>
+              {t.score.pdfBarCount(link.pdfBars.length)}
+            </DropdownMenu.Label>
+          )}
+          {link.kind === "pdf" && (
+            <DropdownMenu.Item className={cn(menuItem, "items-start")} onSelect={findBarsAgain}>
               <ScanSearch className="mt-0.5 size-3.5 shrink-0" />
               <span className="flex flex-col">
                 {t.score.findBarsAgain}

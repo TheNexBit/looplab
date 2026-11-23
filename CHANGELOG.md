@@ -35,7 +35,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - «Riprendi da dove eri» in cima alla Home: riapre l'ultima lezione com'era (file, punto, loop,
   velocità e tab); se è già fatta, propone la successiva.
 - Avviso sopra un PDF quando le sue battute non sono quante quelle della tab .gp gemella, con
-  «Ritrova le battute» e «Va bene così».
+  «Ritrova le battute» e «Va bene così». Il numero di battute del PDF si legge nel menu Sincronia e in un
+  messaggio dopo ogni ricerca.
 
 ### Corretto
 

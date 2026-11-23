@@ -228,7 +228,10 @@ export function PdfView({ link }: { link: ProjectScore }) {
         const found = await findBars(doc, (done) =>
           useScoreStore.setState({ detecting: { done, of: doc.numPages } }),
         );
-        if (!cancelled) useScoreStore.getState().setPdfBars(found);
+        if (!cancelled) {
+          useScoreStore.getState().setPdfBars(found);
+          useScoreStore.getState().setInfo(t.score.barsFound(found.length));
+        }
       } catch {
         if (!cancelled) {
           useScoreStore.getState().setStatus("error", { kind: "corruptFile", detail: "pdf" });
