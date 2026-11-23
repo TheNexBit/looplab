@@ -22,16 +22,29 @@ const toggleOverview = () => {
 
 const appearance = () => useAppearanceStore.getState();
 
+/** Saves the heights once a drag ends (while dragging they are only shown). */
+const saveHeights = () => {
+  const { overviewHeight, detailHeight, update } = appearance();
+  update({ overviewHeight, detailHeight });
+};
+
 /**
- * The detailed view's edge: dragging it moves the border with the panel above (score, video
- * or the lesson's row), which gives or takes the same room. Its height is also the least the
- * panels above leave to it, so it never gets squeezed.
+ * The detailed view's height while its edge is dragged: what the drag asked for, read at once
+ * (the screen follows a frame later, and reading it would make the edge lag behind the hand).
  */
-function resizeDetail(height: number, shown: number) {
+let draggedDetail: number | null = null;
+
+/**
+ * Moves the detailed view's edge from `from` to `height`: the panel above (score, video or the
+ * lesson's row) gives or takes the same room. The height is also the least the panels above
+ * leave to it, so it never gets squeezed. Returns the height reached.
+ */
+function moveDetailEdge(height: number, from: number): number {
   const next = Math.round(clamp(height, DETAIL_HEIGHT.min, DETAIL_HEIGHT.max));
   const neighbour = useWavesStore.getState().neighbour;
-  neighbour?.resize(neighbour.shown() - (next - shown));
-  appearance().update({ detailHeight: next });
+  neighbour?.resize(neighbour.shown() - (next - from));
+  appearance().dragHeight({ detailHeight: next });
+  return next;
 }
 
 /**
@@ -44,6 +57,7 @@ export function WaveformPanel() {
   const trackPath = usePlayerStore((s) => s.track?.path);
   const showOverview = useSettingsStore((s) => s.showOverview);
   const detailHeight = useAppearanceStore((s) => s.detailHeight);
+  const overviewHeight = useAppearanceStore((s) => s.overviewHeight);
   const hasNeighbour = useWavesStore((s) => s.neighbour !== null);
   const panelRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
@@ -67,7 +81,7 @@ export function WaveformPanel() {
     for (const child of panel.children) observer.observe(child);
     measure();
     return () => observer.disconnect();
-  }, [showOverview, notesOpen, hasNeighbour, detailHeight]);
+  }, [showOverview, notesOpen, hasNeighbour, detailHeight, overviewHeight]);
 
   return (
     <div
@@ -91,11 +105,8 @@ export function WaveformPanel() {
             vertical
             label={t.waveform.resizeOverview}
             size={() => appearance().overviewHeight}
-            onResize={(height) =>
-              appearance().update({
-                overviewHeight: Math.round(clamp(height, OVERVIEW_HEIGHT.min, OVERVIEW_HEIGHT.max)),
-              })
-            }
+            onResize={(height) => appearance().dragHeight({ overviewHeight: height })}
+            onEnd={saveHeights}
             onReset={() => appearance().update({ overviewHeight: OVERVIEW_HEIGHT.default })}
           />
         </div>
@@ -113,9 +124,21 @@ export function WaveformPanel() {
           <ResizeHandle
             vertical
             label={t.waveform.resizeDetail}
-            size={detailShown}
-            onResize={(height) => resizeDetail(height, detailShown())}
-            onReset={() => resizeDetail(DETAIL_HEIGHT.default, detailShown())}
+            size={() => draggedDetail ?? detailShown()}
+            onStart={() => {
+              draggedDetail = detailShown();
+            }}
+            onResize={(height) => {
+              draggedDetail = moveDetailEdge(height, draggedDetail ?? detailShown());
+            }}
+            onEnd={() => {
+              draggedDetail = null;
+              saveHeights();
+            }}
+            onReset={() => {
+              moveDetailEdge(DETAIL_HEIGHT.default, detailShown());
+              saveHeights();
+            }}
           />
         )}
       </div>

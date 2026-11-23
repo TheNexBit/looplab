@@ -93,6 +93,11 @@ interface AppearanceState extends Appearance {
       Pick<Appearance, "font" | "corners" | "overviewHeight" | "detailHeight" | "uiScale">
     >,
   ) => void;
+  /**
+   * A height while its edge is being dragged: shown at once, nothing else redrawn or saved
+   * (`update` saves it when the drag ends).
+   */
+  dragHeight: (patch: Partial<Pick<Appearance, "overviewHeight" | "detailHeight">>) => void;
   /** Font, corners, sizes back to default (theme and colours stay) */
   resetLayout: () => void;
 }
@@ -144,6 +149,10 @@ export const useAppearanceStore = create<AppearanceState>((set, get) => {
       save({ colors: rest });
     },
     update: (patch) => save(patch),
+    dragHeight: (patch) => {
+      const { overviewHeight, detailHeight } = sanitizeAppearance({ ...pick(get()), ...patch });
+      set({ overviewHeight, detailHeight });
+    },
     resetLayout: () => {
       const { font, corners, overviewHeight, detailHeight, uiScale } = DEFAULT_APPEARANCE;
       save({ font, corners, overviewHeight, detailHeight, uiScale });

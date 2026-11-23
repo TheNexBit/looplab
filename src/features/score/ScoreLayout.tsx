@@ -64,7 +64,6 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
   const size = useScoreStore((s) => s.size);
   const reserve = useWavesStore((s) => s.reserve);
   const layoutRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
   // No tab yet: one row (pick or drop a file), the waveforms keep their room
   const open = link !== null && !collapsed;
 
@@ -72,7 +71,9 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
     (layoutRef.current?.clientHeight ?? Number.POSITIVE_INFINITY) -
     useWavesStore.getState().reserve -
     HANDLE_PX;
-  const shown = () => sectionRef.current?.offsetHeight ?? useScoreStore.getState().size;
+  // The height on screen, as the section's CSS gives it (read at once while dragging)
+  const shown = () =>
+    Math.max(0, Math.min(Math.max(SCORE_MIN_VISIBLE, useScoreStore.getState().size), largest()));
 
   // Open, the score sits right above the waveforms: dragging their edge moves this border
   // biome-ignore lint/correctness/useExhaustiveDependencies: `shown` and `largest` read refs and stores
@@ -89,7 +90,6 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
   return (
     <div ref={layoutRef} className="flex h-full flex-col overflow-hidden">
       <section
-        ref={sectionRef}
         aria-label={t.score.title}
         className="flex shrink-0 flex-col overflow-hidden"
         style={

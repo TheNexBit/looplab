@@ -147,7 +147,6 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   const scoreOpen = useScoreStore((s) => s.link !== null && !s.collapsed);
   const reserve = useWavesStore((s) => s.reserve);
   const layoutRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLElement>(null);
   const visible = status !== "none" && !detached;
   // With a score the video has its own place (beside it by default), so both stay large
   const dock = hasScore ? dockWithScore : dockAlone;
@@ -162,7 +161,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!neighbour) return;
     return useWavesStore.getState().claimNeighbour({
-      shown: () => panelRef.current?.offsetHeight ?? useVideoStore.getState().size,
+      shown,
       resize: (size) => useVideoStore.getState().setSize(Math.min(size, largest())),
     });
   }, [neighbour]);
@@ -179,11 +178,14 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   };
   // The size on screen, not the one asked for: a larger one saved earlier would make the
   // first part of a drag move nothing while it shrinks down to what fits
-  const shown = () => Math.min(useVideoStore.getState().size, largest());
+  // The size on screen, as the panel's CSS gives it (read at once while dragging)
+  const shown = () => {
+    const size = useVideoStore.getState().size;
+    return Math.max(0, Math.min(top ? Math.max(VIDEO_MIN_VISIBLE, size) : size, largest()));
+  };
 
   const panel = (
     <section
-      ref={panelRef}
       aria-label={t.video.title}
       className="flex shrink-0 flex-col overflow-hidden"
       style={collapsed ? undefined : panelSize(top, size, below)}

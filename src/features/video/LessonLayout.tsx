@@ -61,7 +61,10 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
       : (rowRef.current?.clientWidth ?? 1000) - SIDE_BAR_PX;
   // What is on screen, so a drag never first makes up a size the window cannot show
   const shownHeight = () =>
-    rowRef.current?.offsetHeight ?? Math.min(useVideoStore.getState().lessonHeight, tallest());
+    Math.max(
+      0,
+      Math.min(Math.max(LESSON_HEIGHT.min, useVideoStore.getState().lessonHeight), tallest()),
+    );
 
   // The row sits right above the waveforms: dragging their edge moves this border
   // biome-ignore lint/correctness/useExhaustiveDependencies: `shownHeight` and `tallest` read refs and stores
