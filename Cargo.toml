@@ -3,7 +3,7 @@ resolver = "3"
 members = ["src-tauri", "crates/audio-engine", "crates/beat-detect", "crates/stem-split"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.28.0"
 edition = "2024"
 rust-version = "1.99"
 
