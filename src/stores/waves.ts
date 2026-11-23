@@ -20,7 +20,7 @@ interface WavesState {
 }
 
 /** Before the waveforms are measured once: title, normal overview, sections and a default detail. */
-const FIRST_GUESS = 280;
+const FIRST_GUESS = 240;
 
 /** The room of the waveforms under score and video (`WaveformPanel` measures it). */
 export const useWavesStore = create<WavesState>((set, get) => ({

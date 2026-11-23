@@ -1049,7 +1049,7 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   capo. Dopo la ricerca un messaggio dice quante battute ha trovato; il menu Sincronia del PDF le mostra sempre.
 - **Barre della forma d'onda regolabili:** panoramica e forma d'onda grande hanno un bordo inferiore da
   trascinare (doppio clic: misura normale), salvato in `appearance` (`overviewHeight` 36-240 px, i passi
-  Bassa/Normale/Alta restano nelle impostazioni; `detailHeight` 96-600 px). La forma d'onda grande non scende mai
+  Bassa/Normale/Alta restano nelle impostazioni; `detailHeight` 96-600 px, di base 96: la minima). La forma d'onda grande non scende mai
   sotto la sua misura: `WaveformPanel` misura lo spazio che serve alle barre (`stores/waves.ts`, `reserve`) e
   spartito, video e riga della lezione lo lasciano libero, rimpicciolendosi per primi (prima tre numeri fissi
   diversi: 230, 260 e 170 px, e la lezione schiacciava la forma d'onda). Trascinare il bordo della forma d'onda

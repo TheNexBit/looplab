@@ -48,6 +48,6 @@ describe("a stored appearance", () => {
     expect(sanitizeAppearance({ overviewHeight: 71.6 }).overviewHeight).toBe(72);
     expect(sanitizeAppearance({ overviewHeight: 5 }).overviewHeight).toBe(36);
     expect(sanitizeAppearance({ detailHeight: 9999 }).detailHeight).toBe(600);
-    expect(sanitizeAppearance({ detailHeight: "big" }).detailHeight).toBe(140);
+    expect(sanitizeAppearance({ detailHeight: "big" }).detailHeight).toBe(96);
   });
 });

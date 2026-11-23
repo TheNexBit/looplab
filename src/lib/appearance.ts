@@ -70,9 +70,10 @@ export const OVERVIEW_STEPS = { low: 36, normal: 56, tall: 88 } as const;
 export type OverviewStep = keyof typeof OVERVIEW_STEPS;
 /**
  * Least height of the detailed waveform, ruler included (CSS pixels): its bottom edge drags it.
- * Score and video give way before it goes below; with room to spare it grows.
+ * Score and video give way before it goes below; with room to spare it grows. By default the
+ * least of all (user's choice): the video and the score get the most room.
  */
-export const DETAIL_HEIGHT = { min: 96, max: 600, default: 140 } as const;
+export const DETAIL_HEIGHT = { min: 96, max: 600, default: 96 } as const;
 
 /** Size of the whole interface, like the zoom of a browser. */
 export const UI_SCALE = { min: 0.8, max: 1.5, step: 0.1, default: 1 } as const;
