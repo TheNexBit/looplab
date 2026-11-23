@@ -143,7 +143,8 @@ export function App() {
             )}
           </main>
           {/* The Home over a track takes the whole width: the side panel is the track's */}
-          {!metronomeOpen && !(homeOpen && hasTrack && !loading) && <SidePanel />}
+          {/* Sections, practice, EQ and tracks are a track's: none open, no panel */}
+          {!metronomeOpen && hasTrack && !(homeOpen && !loading) && <SidePanel />}
         </div>
         {!metronomeOpen && <TransportDock />}
         {infoBar && <InfoBar />}

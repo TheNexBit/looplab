@@ -679,7 +679,7 @@ export const it = {
     pickCourse: "Cartella del corso",
     emptyTitle: "I tuoi corsi in un posto solo",
     emptyText:
-      "Aggiungi la cartella di un corso (es. JTC): ogni lezione si apre già pronta, con le inquadrature, la base e la tab collegata.",
+      "Aggiungi la cartella di un corso di chitarra o di qualsiasi video e brani: ogni lezione si apre già pronta, con le inquadrature, la base e la tab collegata.",
     search: "Cerca lezione, modulo o corso…",
     searchHint:
       "Scrivi una o più parole, in qualsiasi ordine: «legato 02», «funk timing». Esc svuota la ricerca",
@@ -956,6 +956,11 @@ export const it = {
     snapHint:
       "Trascinando, loop, marker e sezioni si agganciano ai punti vicini (tasto G). Tieni premuto Maiusc per sospenderlo e spostare liberamente, come in Reaper",
     reset: "Valori predefiniti",
+    factoryReset: "Ripristina tutto",
+    factoryResetAsk: "Riportare Looplab come alla prima apertura?",
+    factoryResetHint:
+      "Tornano di fabbrica impostazioni, aspetto, tasti, misure dei pannelli e metronomo. Restano corsi, brani, loop, marker, sezioni, diario, backup e i ritmi salvati del metronomo.",
+    factoryResetCancel: "Annulla",
     waveform: "Forma d'onda",
     behaviour: "Comportamento",
     mouse: "Mouse",

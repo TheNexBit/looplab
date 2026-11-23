@@ -1,11 +1,14 @@
-import { Tabs } from "radix-ui";
+import { RotateCcw } from "lucide-react";
+import { Popover, Tabs } from "radix-ui";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
 import { Dialog } from "@/components/ui/Dialog";
-import { tabTrigger } from "@/components/ui/menu";
+import { floatingPanel, tabTrigger } from "@/components/ui/menu";
 import { OnOffKey } from "@/components/ui/OnOffKey";
 import { Stepper } from "@/components/ui/Stepper";
 import { t } from "@/i18n";
+import { factoryReset } from "@/lib/factoryReset";
 import { formatPercent } from "@/lib/format";
 import {
   SETTING_CHOICES,
@@ -150,6 +153,41 @@ const WAVEFORM: readonly (keyof Settings)[] = [
 ];
 
 /** Ctrl+,: preferences of this PC. */
+/** Back to the factory state, asking first and saying what stays. */
+function FactoryReset() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <Button title={s.factoryResetHint}>
+          <RotateCcw className="size-4" />
+          {s.factoryReset}
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="top"
+          align="end"
+          sideOffset={6}
+          className={`${floatingPanel} w-80 p-3`}
+        >
+          <p className="text-sm font-medium text-fg">{s.factoryResetAsk}</p>
+          <p className="mt-1 text-xs text-fg-subtle">{s.factoryResetHint}</p>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="hardware" onClick={() => setOpen(false)}>
+              {s.factoryResetCancel}
+            </Button>
+            <Button variant="hardware" onClick={() => void factoryReset()}>
+              <RotateCcw className="size-4" />
+              {s.factoryReset}
+            </Button>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
 export function SettingsDialog() {
   const open = useUiStore((state) => state.dialog === "settings");
   const close = useUiStore((state) => state.closeDialog);
@@ -205,7 +243,8 @@ export function SettingsDialog() {
             <Amount setting="fineSeekStep" format={seconds} defaultValue={1} />
             <Amount setting="speedStep" format={formatPercent} defaultValue={0.05} />
           </SettingGroup>
-          <div className="flex justify-end pt-3">
+          <div className="flex justify-end gap-2 pt-3">
+            <FactoryReset />
             <Button onClick={() => resetSome(GENERAL)}>{s.reset}</Button>
           </div>
         </Tabs.Content>

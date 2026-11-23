@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { readPrefs, readStored, startStorage, writeStored } from "./storage";
+import { forgetAllBut, readPrefs, readStored, startStorage, writeStored } from "./storage";
 
 const saved: [string, string | null][] = [];
 beforeEach(() => {
@@ -31,5 +31,17 @@ describe("stored preferences", () => {
       ["x", "true"],
       ["x", null],
     ]);
+  });
+
+  it("a factory reset forgets every preference but those kept, in the library too", async () => {
+    writeStored("looplab.settings", { a: 1 });
+    writeStored("looplab.metronomeLibrary", [1]);
+    saved.length = 0;
+    await forgetAllBut(new Set(["looplab.metronomeLibrary"]));
+    expect(readStored("looplab.settings")).toBeUndefined();
+    expect(readStored("number")).toBeUndefined();
+    expect(readStored("looplab.metronomeLibrary")).toEqual([1]);
+    expect(saved).toContainEqual(["looplab.settings", null]);
+    expect(saved).not.toContainEqual(["looplab.metronomeLibrary", null]);
   });
 });

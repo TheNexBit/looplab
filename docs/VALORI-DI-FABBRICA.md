@@ -1,6 +1,6 @@
 # Valori di fabbrica
 
-Come si presenta Looplab alla prima apertura (o dopo «Ripristina tutto»). Scelti con l'utente il 23/11/2026.
+Come si presenta Looplab alla prima apertura, o dopo «Ripristina tutto» (Impostazioni → Generale). Scelti con l'utente il 23/11/2026.
 Si vedono dal vivo con `scripts\12-prova-da-zero.cmd`, che apre l'app con una cartella dati vuota e la
 cancella alla chiusura. Il test `src/stores/settings.test.ts` controlla che le impostazioni partano da qui.
 
@@ -11,15 +11,15 @@ finestra `create_main` (`src-tauri/src/window.rs`), tasti `shortcuts` (`src/lib/
 
 ## Finestra e avvio
 
-| Cosa                         | Valore                    |
-| ---------------------------- | ------------------------- |
-| Finestra alla prima apertura | 1280 × 800, centrata      |
-| Lingua                       | Italiano                  |
-| Tema                         | «Rack» (scuro, ambra)     |
-| All'avvio                    | Schermata vuota (la Home) |
-| Pannello laterale            | Aperto                    |
-| Barra informazioni in basso  | Spenta                    |
-| Grandezza interfaccia        | 100%                      |
+| Cosa                         | Valore                     |
+| ---------------------------- | -------------------------- |
+| Finestra alla prima apertura | 1280 × 800, centrata       |
+| Lingua                       | Italiano                   |
+| Tema                         | «Rack» (scuro, ambra)      |
+| All'avvio                    | Schermata vuota (la Home)  |
+| Pannello laterale            | Aperto (solo con un brano) |
+| Barra informazioni in basso  | Spenta                     |
+| Grandezza interfaccia        | 100%                       |
 
 ## Ascolto
 

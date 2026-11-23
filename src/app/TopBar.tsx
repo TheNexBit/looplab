@@ -286,7 +286,8 @@ export function TopBar() {
           <Button
             variant="hardware"
             size="icon"
-            active={sidePanelOpen}
+            active={sidePanelOpen && !!trackName}
+            disabled={!trackName}
             onClick={toggleSidePanel}
             aria-label={t.app.toggleSidePanel}
             aria-pressed={sidePanelOpen}

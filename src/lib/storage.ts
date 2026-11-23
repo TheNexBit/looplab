@@ -5,7 +5,8 @@
  * the app still starts, with the defaults.
  */
 
-type Persist = (key: string, json: string | null) => void;
+/** Sends a change to the library; its promise says when it is written. */
+type Persist = (key: string, json: string | null) => unknown;
 
 let values = new Map<string, string>();
 let persist: Persist = () => {};
@@ -38,6 +39,16 @@ export function writeStored(key: string, value: unknown) {
   if (values.get(key) === text) return;
   values.set(key, text);
   persist(key, text);
+}
+
+/**
+ * Forgets every stored preference but `keep` (the factory state), and resolves once the library
+ * has them all written: the app is then reloaded to start from its factory values.
+ */
+export async function forgetAllBut(keep: ReadonlySet<string>): Promise<void> {
+  const gone = [...values.keys()].filter((key) => !keep.has(key));
+  for (const key of gone) values.delete(key);
+  await Promise.all(gone.map((key) => persist(key, null)));
 }
 
 /** Stored preferences over `fallback`: missing fields keep their default. */

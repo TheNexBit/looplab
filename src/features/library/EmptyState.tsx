@@ -115,9 +115,8 @@ export function EmptyState({
       <div className="flex min-h-0 flex-col gap-4">
         <NowCard overTrack={overTrack} />
         {files.length === 0 && !overTrack ? (
-          <div className="flex flex-1 items-center">
-            <FirstDrop hovering={hovering} />
-          </div>
+          // At the top, level with the courses' invitation beside it
+          <FirstDrop hovering={hovering} />
         ) : (
           <>
             <div className="flex min-h-0 flex-1 flex-col">

@@ -34,6 +34,6 @@ async function storedPrefs(): Promise<Record<string, string>> {
 storedPrefs()
   .catch(() => ({}))
   .then((values) => {
-    startStorage(values, (key, json) => void commands.setPref(key, json));
+    startStorage(values, (key, json) => commands.setPref(key, json));
     return import("./boot");
   });

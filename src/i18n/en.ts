@@ -676,7 +676,7 @@ export const en = {
     pickCourse: "Course folder",
     emptyTitle: "All your courses in one place",
     emptyText:
-      "Add a course folder (e.g. JTC): every lesson opens ready, with its camera angles, its backing and its tab linked.",
+      "Add the folder of a guitar course, or of any videos and songs: every lesson opens ready, with its camera angles, its backing and its tab linked.",
     search: "Search a lesson, module or course…",
     searchHint:
       "Type one or more words, in any order: «legato 02», «funk timing». Esc clears the search",
@@ -944,6 +944,11 @@ export const en = {
     snapHint:
       "While dragging, loops, markers and sections snap to nearby points (G key). Hold Shift to suspend it and move freely, as in Reaper",
     reset: "Default values",
+    factoryReset: "Reset everything",
+    factoryResetAsk: "Bring Looplab back to how it was at the first start?",
+    factoryResetHint:
+      "Settings, look, keys, panel sizes and the metronome go back to factory values. Courses, tracks, loops, markers, sections, diary, backups and the metronome's saved rhythms stay.",
+    factoryResetCancel: "Cancel",
     waveform: "Waveform",
     behaviour: "Behaviour",
     mouse: "Mouse",
