@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { SectionLane } from "@/features/markers/SectionLane";
 import { NoteView } from "@/features/notes/NoteView";
@@ -21,33 +21,31 @@ export function WaveformPanel() {
   const showOverview = useSettingsStore((s) => s.showOverview);
   return (
     <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden bg-stage p-2.5">
-      {showOverview ? (
-        // The hide key sits beside the strip, not in it: the strip's own presses seek
-        <div className="group/overview relative shrink-0">
+      {/* One header, always in the same place with the same arrow (as the course headings of the
+          lesson Home): down = open, right = folded. A click anywhere on it, or Shift+O */}
+      <Tooltip
+        label={showOverview ? t.waveform.hideOverview : t.waveform.showOverview}
+        shortcut="toggleOverview"
+      >
+        <button
+          type="button"
+          aria-expanded={showOverview}
+          aria-label={showOverview ? t.waveform.hideOverview : t.waveform.showOverview}
+          onClick={toggleOverview}
+          className="flex h-4 shrink-0 items-center gap-1 self-start rounded-control pr-1.5 text-fg-subtle transition-colors hover:text-fg"
+        >
+          {showOverview ? (
+            <ChevronDown className="size-3.5" aria-hidden />
+          ) : (
+            <ChevronRight className="size-3.5" aria-hidden />
+          )}
+          <span className="panel-label">{t.waveform.overview}</span>
+        </button>
+      </Tooltip>
+      {showOverview && (
+        <div className="shrink-0">
           <Overview />
-          <Tooltip label={t.waveform.hideOverview} shortcut="toggleOverview">
-            <button
-              type="button"
-              aria-label={t.waveform.hideOverview}
-              onClick={toggleOverview}
-              className="hw absolute top-1 right-1 flex size-5 items-center justify-center rounded-control text-fg-muted opacity-0 transition-opacity group-hover/overview:opacity-100 hover:text-fg focus-visible:opacity-100"
-            >
-              <ChevronUp className="size-3.5" />
-            </button>
-          </Tooltip>
         </div>
-      ) : (
-        // Hidden: a thin strip stays, so the overview is one click away
-        <Tooltip label={t.waveform.showOverview} shortcut="toggleOverview">
-          <button
-            type="button"
-            aria-label={t.waveform.showOverview}
-            onClick={toggleOverview}
-            className="well flex h-3 shrink-0 items-center justify-center rounded-control text-fg-subtle transition-colors hover:text-fg"
-          >
-            <ChevronDown className="size-3" />
-          </button>
-        </Tooltip>
       )}
       <SectionLane />
       <DetailView />

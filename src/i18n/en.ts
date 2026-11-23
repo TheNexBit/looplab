@@ -580,8 +580,8 @@ export const en = {
   },
   waveform: {
     overview: "Track overview",
-    hideOverview: "Hide the overview (a thin strip stays to reopen it)",
-    showOverview: "Show the track overview",
+    hideOverview: "Hide the overview",
+    showOverview: "Show the overview",
     detail: "Waveform",
   },
   markers: {

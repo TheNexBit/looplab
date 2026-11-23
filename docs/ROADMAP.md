@@ -1010,6 +1010,9 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   .wave, .m4b, .mka e .oga. Una cartella con un solo file è la lezione solo quando si chiama come lei
   (`folder_is_lesson`); altrimenti resta un titolo. Profondità fino a 16 cartelle. Test con una cartella
   qualsiasi di video e canzoni.
+- **Panoramica più semplice:** al posto del tasto che compariva solo col puntatore (in alto a destra) e
+  della striscia con la freccia al centro, un solo titolo «Panoramica del brano» sempre visibile, allo
+  stesso posto, con la freccia giù/destra come i corsi della Home (`WaveformPanel.tsx`); Maiusc+O resta.
 - **Svuotare i recenti:** tasto gomma accanto ad «Aperti di recente» e a «Ultime aperte» (`ClearRecent`),
   con conferma: «Svuota tutto» o «Solo i file spariti» (`recent::clear`, comando `clear_recent`, con test).
   Si toglie solo l'elenco: progetti, diario e file restano.

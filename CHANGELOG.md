@@ -41,6 +41,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ### Modificato
 
+- Panoramica: un solo titolo «Panoramica del brano» sempre allo stesso posto, con la freccia giù
+  (aperta) o a destra (chiusa), come i corsi della Home; prima c'erano due tasti diversi in due posti.
 - La Home occupa tutta la finestra anche al primo avvio.
 - Con «Torna al punto di partenza» lo stop lascia il playhead dove sei arrivato; ripartendo si
   riparte dalla linea tratteggiata.

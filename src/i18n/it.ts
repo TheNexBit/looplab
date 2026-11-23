@@ -583,8 +583,8 @@ export const it = {
   },
   waveform: {
     overview: "Panoramica del brano",
-    hideOverview: "Nascondi la panoramica (resta una striscia sottile per riaprirla)",
-    showOverview: "Mostra la panoramica del brano",
+    hideOverview: "Nascondi la panoramica",
+    showOverview: "Mostra la panoramica",
     detail: "Forma d'onda",
   },
   markers: {
