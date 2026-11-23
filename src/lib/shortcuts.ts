@@ -96,7 +96,6 @@ export const shortcuts = {
   angle8: "Ctrl+8",
   angle9: "Ctrl+9",
   nextAngle: "V",
-  toggleBacking: "A",
   toggleHome: "Ctrl+L",
   // Light or dark paper under the score, and the overview strip on / off
   toggleScorePaper: "Shift+P",

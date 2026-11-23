@@ -1,4 +1,4 @@
-import { angleByIndex, nextAngle, toggleOther } from "@/features/exercise/exerciseSync";
+import { angleByIndex, nextAngle } from "@/features/exercise/exerciseSync";
 import { stepLesson, toggleOpenLessonDone } from "@/features/lessons/lessonOrder";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { loopSection } from "@/features/markers/sectionActions";
@@ -182,7 +182,6 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
   angle8: () => angleByIndex(7),
   angle9: () => angleByIndex(8),
   nextAngle,
-  toggleBacking: toggleOther,
   toggleHome: () => useLessonsStore.getState().toggle(),
   toggleScorePaper: () => {
     const { scoreDark, update } = useSettingsStore.getState();

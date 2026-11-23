@@ -1066,8 +1066,10 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   principale, inquadrature; Audio: chitarra + base, solo base; Tab: Guitar Pro, PDF), `LessonFiles.tsx`. «Apri»
   apre quel file come brano a sé senza cambiare cosa apre la lezione; «Usa» collega quella tab. Sulla riga il tasto
   «Solo base» apre la base; la ricerca trova «base»/«backing». Le lezioni aperte si ricordano (`lessonFilesOpen`).
-- **Ascolti:** il selettore dentro la lezione si chiama «Ascolti: Chitarra + base / Solo base», con la spiegazione
-  (il video resta, cambia solo l'audio).
+- **Tolto il cambio al volo «Con chitarra / Solo base»** (fase 26) su richiesta dell'utente: inutile per lui, ora
+  che la base si apre dalla Home. Tolti il selettore, il tasto A, l'ingresso della base nel mixer del motore
+  (`OtherTake`), i comandi `set_other_take`/`set_other_take_on` e il segno `backing` dei file dell'esercizio.
+  Restano le inquadrature (Ctrl+1-9, V) e l'allineamento dei file.
 - **Home unificata:** a sinistra solo l'albero dei corsi; a destra un solo riquadro (`NowCard`: «Stai suonando»
   con «Torna al brano» sopra un brano aperto, altrimenti «Riprendi da dove eri», con la lezione successiva se è
   fatta), un solo elenco dei recenti per lezioni e file (ognuno dice «corso · modulo» o «file», e si apre dalla

@@ -93,8 +93,6 @@ pub struct ExerciseFile {
     /// Shown name: «Second Angle», «Backing»… (editable; empty = the main file)
     pub name: String,
     pub kind: TakeKind,
-    /// A take without the player (heard with «Solo base»)
-    pub backing: bool,
     /// Seconds on the exercise's clock (see the module notes); 0 until lined up
     pub shift: f64,
     pub line_up: LineUp,
@@ -245,7 +243,6 @@ fn new_file(path: &Path) -> Option<ExerciseFile> {
         path: path.to_string_lossy().into_owned(),
         name: parts.label,
         kind,
-        backing: parts.backing && kind == TakeKind::Audio,
         shift: 0.0,
         line_up: LineUp::Pending,
     })
@@ -570,7 +567,7 @@ mod tests {
         assert!(
             ex.files
                 .iter()
-                .any(|f| f.backing && f.kind == TakeKind::Audio)
+                .any(|f| f.name == "Backing" && f.kind == TakeKind::Audio)
         );
         // Opening another file of it finds the same exercise
         let other = dir.join("Ex 01 Backing.mp3").to_string_lossy().into_owned();

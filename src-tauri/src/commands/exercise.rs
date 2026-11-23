@@ -1,11 +1,9 @@
-//! The files of one take (see `crate::exercise`): found, lined up from their sound, and the
-//! other take (the backing track) heard instead of the song.
+//! The files of one take (see `crate::exercise`): found and lined up from their sound.
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
+use audio_engine::LoadError;
 use audio_engine::offset::{self, Sound};
-use audio_engine::{LoadError, OtherTake};
 use serde::Serialize;
 use tauri::{AppHandle, State};
 
@@ -14,7 +12,6 @@ use crate::db::{Library, path_key};
 use crate::exercise::{self, Exercise, ExerciseFile, LineUp};
 use crate::media;
 use crate::project::Project;
-use crate::state::AppState;
 
 /// The exercise of the open track (its other files found in its folder), or `null` when the
 /// track is alone.
@@ -142,52 +139,4 @@ pub async fn align_exercise(
         exercise: ex,
         project,
     }))
-}
-
-/// Gives the engine another take of the open song, heard instead of it with
-/// `set_other_take_on`: things are heard `shift` seconds later in that file than in the song.
-/// `None` removes it.
-#[tauri::command]
-#[specta::specta]
-pub async fn set_other_take(
-    app: AppHandle,
-    state: State<'_, AppState>,
-    path: Option<String>,
-    shift: f64,
-) -> Result<(), AppError> {
-    let engine = state.engine()?;
-    let Some(path) = path else {
-        engine.set_other_take(None);
-        return Ok(());
-    };
-    let rate = engine.sample_rate();
-    let cache = super::cache_dir(&app)?;
-    let cancel = state.new_other_load();
-    let file = PathBuf::from(&path);
-    let pcm = tauri::async_runtime::spawn_blocking(move || -> Result<_, AppError> {
-        let stem = super::player::decoded_cache_stem(&cache, &file, rate)?;
-        let opened = match audio_engine::open(&file, rate, &stem, cancel.clone(), |_| {}) {
-            Err(LoadError::UnsupportedCodec | LoadError::UnsupportedFormat)
-                if media::ffmpeg().is_some() =>
-            {
-                let extracted = media::extract_audio(&cache, &file, |_| {})?;
-                audio_engine::open(&extracted, rate, &stem, cancel, |_| {})?
-            }
-            other => other?,
-        };
-        Ok(opened.pcm)
-    })
-    .await
-    .map_err(AppError::internal)??;
-    let frames = (shift * f64::from(rate)).round() as i64;
-    engine.set_other_take(Some(Arc::new(OtherTake::new(pcm, frames))));
-    Ok(())
-}
-
-/// Hear the other take instead of the song (or back), at the same point, loop, speed and pitch.
-#[tauri::command]
-#[specta::specta]
-pub fn set_other_take_on(state: State<'_, AppState>, on: bool) -> Result<(), AppError> {
-    state.engine()?.set_other_take_on(on);
-    Ok(())
 }

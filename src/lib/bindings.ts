@@ -200,14 +200,6 @@ export const commands = {
 	 *  with the open track.
 	 */
 	alignExercise: (track: string, redo: string | null) => typedError<LinedUp_Serialize | null, AppError>(__TAURI_INVOKE("align_exercise", { track, redo })),
-	/**
-	 *  Gives the engine another take of the open song, heard instead of it with
-	 *  `set_other_take_on`: things are heard `shift` seconds later in that file than in the song.
-	 *  `None` removes it.
-	 */
-	setOtherTake: (path: string | null, shift: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_other_take", { path, shift })),
-	/**  Hear the other take instead of the song (or back), at the same point, loop, speed and pitch. */
-	setOtherTakeOn: (on: boolean) => typedError<null, AppError>(__TAURI_INVOKE("set_other_take_on", { on })),
 	/**  The lessons as last read: shown at once, then `scan_lessons` brings them up to date. */
 	lessonLibrary: () => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("lesson_library")),
 	/**  Reads the course folders again in the background (only the changed folders are listed). */
@@ -505,8 +497,6 @@ export type ExerciseFile = {
 	/**  Shown name: «Second Angle», «Backing»… (editable; empty = the main file) */
 	name: string,
 	kind: TakeKind,
-	/**  A take without the player (heard with «Solo base») */
-	backing: boolean,
 	/**  Seconds on the exercise's clock (see the module notes); 0 until lined up */
 	shift: number | null,
 	lineUp: LineUp,

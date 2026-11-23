@@ -165,15 +165,13 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   l'allineamento) prende la versione più recente di un altro file e la sposta della differenza degli `shift`.
   Anche la velocità di studio passa tra i file (richiesta dalla prova); tonalità, EQ, mix e posizione restano
   del file.
-- **Inquadrature e base al volo (fase 26)**: `features/exercise/exerciseSync.ts` segue il brano aperto
+- **Inquadrature (fase 26)**: `features/exercise/exerciseSync.ts` segue il brano aperto
   (`open_exercise`, poi `align_exercise`), sceglie l'angolo (`useExerciseStore.angle`; `videoLoader` carica
   quello, anche aprendo l'mp3) e passa al video lo spostamento (`useVideoStore.shift`, aggiunto all'orologio
   da `videoClock` e dalla finestra staccata). Un solo `<video>`: il cambio d'angolo cambia sorgente e
-  `useVideoSync` salta allo stesso punto. La base è un ingresso in più del mixer del motore
-  (`stems.rs::OtherTake`, letta con lo stesso scarto in fotogrammi): `set_other_take` la carica (cache come i
-  brani), `set_other_take_on` passa da uno all'altro con la stessa dissolvenza delle tracce separate, prima
-  dello stretch (velocità, tonalità, EQ e loop restano). UI: `AngleMenu.tsx` (pannello video), `TakeSwitch.tsx`
-  (barra in alto), `TakeControls.tsx` (stato e «Sposta»).
+  `useVideoSync` salta allo stesso punto. UI: `AngleMenu.tsx` (pannello video), `TakeControls.tsx` (stato e
+  «Sposta»). Il cambio al volo «Con chitarra / Solo base» (base come ingresso del mixer del motore) è stato
+  tolto nella fase 29 su richiesta dell'utente: la base si apre dalla Home come brano a sé.
 - **Home delle lezioni (fase 27)**: `lessons.rs` legge le cartelle dei corsi scelte dall'utente (`libreria.db`
   schema 3: `lesson_roots` con l'elenco di ogni cartella in `idx`, `lesson_choices` con le correzioni per
   lezione). In ogni cartella i media con la stessa chiave di `exercise::name_parts` fanno una lezione; le tab

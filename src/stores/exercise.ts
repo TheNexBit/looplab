@@ -11,23 +11,14 @@ interface ExerciseState {
   aligning: boolean;
   /** Path of the video on screen (an angle of the take, or the track itself) */
   angle: string | null;
-  /** Path of the other take the switch plays (backing track, or the full take from a backing) */
-  other: string | null;
-  /** The other take is heard instead of the track */
-  otherOn: boolean;
-  /** The other take is still being loaded into the engine */
-  otherLoading: boolean;
   set: (patch: Partial<Omit<ExerciseState, "set">>) => void;
 }
 
-/** The take of the open track: its files, the angle shown and the backing switch. */
+/** The take of the open track: its files and the angle shown. */
 export const useExerciseStore = create<ExerciseState>((set) => ({
   exercise: null,
   aligning: false,
   angle: null,
-  other: null,
-  otherOn: false,
-  otherLoading: false,
   set: (patch) => set(patch),
 }));
 

@@ -104,8 +104,6 @@ pub fn builder() -> Builder<tauri::Wry> {
             exercise::open_exercise,
             exercise::save_exercise,
             exercise::align_exercise,
-            exercise::set_other_take,
-            exercise::set_other_take_on,
             lessons::lesson_library,
             lessons::scan_lessons,
             lessons::add_lesson_root,

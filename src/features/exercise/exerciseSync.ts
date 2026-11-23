@@ -47,47 +47,10 @@ function pickAngle(exercise: Exercise, path: string, first: boolean): string | n
   return angles[0]?.path ?? null;
 }
 
-/** Takes the switch can go to: lined up, and with the player when the track has none or back. */
-export function otherTakes(exercise: Exercise | null, path: string | null): ExerciseFile[] {
-  const own = fileOf(exercise, path);
-  if (!exercise || !linedUp(own)) return [];
-  return exercise.files
-    .filter((f) => !samePath(f.path, path) && linedUp(f) && f.backing !== own.backing)
-    .sort((a, b) => Number(a.kind === "video") - Number(b.kind === "video"));
-}
-
-/** Hands the other take to the engine, lined up with the track. */
-async function loadOther(path: string | null) {
-  const forTrack = track;
-  const shift = shiftTo(path);
-  store().set({ other: path, otherLoading: path !== null });
-  if (path === null && store().otherOn) {
-    // No other take any more: back to the track
-    store().set({ otherOn: false });
-    void commands.setOtherTakeOn(false);
-  }
-  const result = await commands.setOtherTake(shift === null ? null : path, shift ?? 0);
-  if (track !== forTrack || store().other !== path) return;
-  store().set({ otherLoading: false });
-  if (result.status === "error") {
-    store().set({ other: null, otherOn: false });
-    usePlayerStore.getState().reportError(path ?? "", result.error);
-    return;
-  }
-  // Still asked for while it loaded
-  if (store().otherOn) void commands.setOtherTakeOn(true);
-}
-
-/** Takes in a new version of the exercise: angle, switch and picture shift follow it. */
+/** Takes in a new version of the exercise: the angle and the picture's shift follow it. */
 function adopt(exercise: Exercise, path: string, first = false) {
-  const current = store().other;
-  const previousShift = shiftTo(current);
   store().set({ exercise });
   showAngle(pickAngle(exercise, path, first));
-  const takes = otherTakes(exercise, path);
-  const next = takes.find((f) => samePath(f.path, current))?.path ?? takes[0]?.path ?? null;
-  // Reloaded when the take or its shift changed
-  if (next !== current || (next && shiftTo(next) !== previousShift)) void loadOther(next);
 }
 
 async function align(path: string, redo: string | null) {
@@ -107,13 +70,7 @@ async function align(path: string, redo: string | null) {
 
 async function follow(path: string) {
   track = path;
-  store().set({
-    exercise: null,
-    aligning: false,
-    other: null,
-    otherOn: false,
-    otherLoading: false,
-  });
+  store().set({ exercise: null, aligning: false });
   showAngle(isVideoPath(path) ? path : null);
   const opened = await commands.openExercise(path);
   if (track !== path || opened.status === "error" || !opened.data) return;
@@ -181,27 +138,6 @@ export function realign(path: string) {
 
 export function renameTake(path: string, name: string) {
   change(path, (f) => ({ ...f, name }));
-}
-
-/** Marks a file as a take without the player (heard with «Solo base»), or not. */
-export function setBacking(path: string, backing: boolean) {
-  change(path, (f) => ({ ...f, backing }));
-}
-
-/** Hear the other take instead of the track (or back): same point, loop, speed and pitch. */
-export function setOtherOn(on: boolean) {
-  const { other, otherOn } = store();
-  if (!other || on === otherOn) return;
-  store().set({ otherOn: on });
-  void commands.setOtherTakeOn(on);
-}
-
-export const toggleOther = () => setOtherOn(!store().otherOn);
-
-/** The take the switch plays. */
-export function chooseOther(path: string) {
-  if (samePath(path, store().other)) return;
-  void loadOther(path);
 }
 
 /** Follows the open track. Started once by the app shell; returns the function that stops it. */

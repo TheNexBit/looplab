@@ -19,8 +19,6 @@ pub struct AppState {
     peaks_bytes: Mutex<Option<Arc<Vec<u8>>>>,
     /// Stops the background loading of the open track when another one is opened
     load_cancel: Mutex<Option<Arc<AtomicBool>>>,
-    /// Same for the other take of the song (its backing track)
-    other_cancel: Mutex<Option<Arc<AtomicBool>>>,
     /// Audio of the open track (shared with the engine), for exports and the spectrum
     track: Mutex<Option<Arc<Pcm>>>,
     /// Set to stop the export in progress
@@ -112,15 +110,6 @@ impl AppState {
     pub fn new_load(&self) -> Arc<AtomicBool> {
         let flag = Arc::new(AtomicBool::new(false));
         if let Some(previous) = lock(&self.load_cancel).replace(Arc::clone(&flag)) {
-            previous.store(true, Ordering::Relaxed);
-        }
-        flag
-    }
-
-    /// Like `new_load`, for the other take of the song.
-    pub fn new_other_load(&self) -> Arc<AtomicBool> {
-        let flag = Arc::new(AtomicBool::new(false));
-        if let Some(previous) = lock(&self.other_cancel).replace(Arc::clone(&flag)) {
             previous.store(true, Ordering::Relaxed);
         }
         flag
