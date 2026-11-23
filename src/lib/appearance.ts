@@ -64,9 +64,15 @@ export const CORNERS = {
 } as const;
 export type CornersId = keyof typeof CORNERS;
 
-/** Height of the overview strip, in CSS pixels. */
-export const OVERVIEW_HEIGHTS = { low: 36, normal: 56, tall: 88 } as const;
-export type OverviewHeight = keyof typeof OVERVIEW_HEIGHTS;
+/** Height of the overview strip, in CSS pixels: its bottom edge drags it, the settings offer steps. */
+export const OVERVIEW_HEIGHT = { min: 36, max: 240, default: 56 } as const;
+export const OVERVIEW_STEPS = { low: 36, normal: 56, tall: 88 } as const;
+export type OverviewStep = keyof typeof OVERVIEW_STEPS;
+/**
+ * Least height of the detailed waveform, ruler included (CSS pixels): its bottom edge drags it.
+ * Score and video give way before it goes below; with room to spare it grows.
+ */
+export const DETAIL_HEIGHT = { min: 96, max: 600, default: 140 } as const;
 
 /** Size of the whole interface, like the zoom of a browser. */
 export const UI_SCALE = { min: 0.8, max: 1.5, step: 0.1, default: 1 } as const;
@@ -77,7 +83,10 @@ export interface Appearance {
   colors: Partial<Record<ThemeId, CustomColors>>;
   font: FontId;
   corners: CornersId;
-  overviewHeight: OverviewHeight;
+  /** CSS pixels, within `OVERVIEW_HEIGHT` */
+  overviewHeight: number;
+  /** CSS pixels, within `DETAIL_HEIGHT` */
+  detailHeight: number;
   uiScale: number;
 }
 

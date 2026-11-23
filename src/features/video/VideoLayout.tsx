@@ -1,5 +1,5 @@
 import { Columns2, ExternalLink, Film, PanelLeft, PanelTop } from "lucide-react";
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { PanelTitle } from "@/components/ui/PanelTitle";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
@@ -11,26 +11,26 @@ import { cn } from "@/lib/cn";
 import { playbackClock } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
 import { useVideoStore } from "@/stores/video";
+import { useWavesStore } from "@/stores/waves";
 import { detachVideo } from "./detach";
 import { VideoView } from "./VideoView";
 import { fallBackToProxy } from "./videoLoader";
 
-/**
- * Space always left to the waveforms, in CSS pixels: overview, section lane and a usable
- * detailed view on top; a readable waveform width at the side.
- */
-const WAVEFORMS_MIN_HEIGHT = 260;
-/** The picture never shrinks to its title bar alone. */
+/** The picture is kept at least this tall while there is room (the waveforms come first). */
 const VIDEO_MIN_VISIBLE = 140;
+/** A readable waveform width beside a video docked at the side. */
 const WAVEFORMS_MIN_WIDTH = 420;
 /** The drag bar between the video and the waveforms. */
 const HANDLE_PX = 4;
 
-/** The chosen size, shrunk when the window is too small, so the video never pushes the waveforms out. */
+/**
+ * The chosen size, shrunk when the window is too small: the video gives way first, so it never
+ * pushes the waveforms (and the score) under their least height.
+ */
 const panelSize = (top: boolean, size: number, below: number) =>
   top
     ? {
-        height: `max(min(${VIDEO_MIN_VISIBLE}px, 100%), min(${size}px, calc(100% - ${below}px)))`,
+        height: `max(0px, min(max(${VIDEO_MIN_VISIBLE}px, ${size}px), calc(100% - ${below}px)))`,
       }
     : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
 
@@ -144,14 +144,30 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   const { setDock, setDockWithScore, toggleCollapsed } = useVideoStore.getState();
   const hasScore = useScoreStore((s) => s.link !== null);
   const askingScore = useScoreStore((s) => s.asking);
+  const scoreOpen = useScoreStore((s) => s.link !== null && !s.collapsed);
+  const reserve = useWavesStore((s) => s.reserve);
   const layoutRef = useRef<HTMLDivElement>(null);
-  if (status === "none" || detached) return children;
+  const panelRef = useRef<HTMLElement>(null);
+  const visible = status !== "none" && !detached;
   // With a score the video has its own place (beside it by default), so both stay large
   const dock = hasScore ? dockWithScore : dockAlone;
   const top = dock === "top";
   // Under the video: the waveforms, and the score's least height when one is shown
-  const below =
-    WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : askingScore ? SCORE_ROW_HEIGHT : 0);
+  const below = reserve + (hasScore ? SCORE_MIN_VISIBLE : askingScore ? SCORE_ROW_HEIGHT : 0);
+
+  // On top with no open score between, the video sits right above the waveforms: dragging
+  // their edge moves this border
+  const neighbour = visible && top && !collapsed && !scoreOpen;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `largest` reads refs and stores
+  useEffect(() => {
+    if (!neighbour) return;
+    return useWavesStore.getState().claimNeighbour({
+      shown: () => panelRef.current?.offsetHeight ?? useVideoStore.getState().size,
+      resize: (size) => useVideoStore.getState().setSize(Math.min(size, largest())),
+    });
+  }, [neighbour]);
+
+  if (!visible) return children;
 
   // Largest panel the window allows now (the CSS of `panelSize` keeps it so on screen)
   const largest = () => {
@@ -167,6 +183,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
 
   const panel = (
     <section
+      ref={panelRef}
       aria-label={t.video.title}
       className="flex shrink-0 flex-col overflow-hidden"
       style={collapsed ? undefined : panelSize(top, size, below)}

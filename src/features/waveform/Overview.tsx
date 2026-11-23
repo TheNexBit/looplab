@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { t } from "@/i18n";
-import { OVERVIEW_HEIGHTS } from "@/lib/appearance";
 import { themeColor } from "@/lib/theme";
 import { clamp } from "@/lib/time";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
@@ -20,7 +19,7 @@ import { useCanvas } from "./useCanvas";
 export function Overview() {
   const peaks = usePlayerStore((s) => s.peaks);
   const duration = usePlayerStore((s) => s.track?.duration ?? 0);
-  const stripHeight = useAppearanceStore((s) => OVERVIEW_HEIGHTS[s.overviewHeight]);
+  const stripHeight = useAppearanceStore((s) => s.overviewHeight);
   const containerRef = useRef<HTMLDivElement>(null);
   const windowRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);

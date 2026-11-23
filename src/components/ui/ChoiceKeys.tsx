@@ -2,7 +2,8 @@ import { Chip } from "./Chip";
 
 interface ChoiceKeysProps<T extends string> {
   label: string;
-  value: T;
+  /** `null`: none is lit (the value was set another way, e.g. by dragging) */
+  value: T | null;
   /** Every choice with its name, in order */
   choices: readonly (readonly [T, string])[];
   onChange: (value: T) => void;

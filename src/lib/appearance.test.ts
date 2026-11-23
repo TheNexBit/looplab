@@ -42,4 +42,12 @@ describe("a stored appearance", () => {
   it("starts from the defaults when nothing is stored", () => {
     expect(sanitizeAppearance(undefined)).toEqual(DEFAULT_APPEARANCE);
   });
+
+  it("reads the old overview steps as pixels and keeps dragged heights within their limits", () => {
+    expect(sanitizeAppearance({ overviewHeight: "tall" }).overviewHeight).toBe(88);
+    expect(sanitizeAppearance({ overviewHeight: 71.6 }).overviewHeight).toBe(72);
+    expect(sanitizeAppearance({ overviewHeight: 5 }).overviewHeight).toBe(36);
+    expect(sanitizeAppearance({ detailHeight: 9999 }).detailHeight).toBe(600);
+    expect(sanitizeAppearance({ detailHeight: "big" }).detailHeight).toBe(140);
+  });
 });

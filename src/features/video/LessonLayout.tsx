@@ -5,10 +5,9 @@ import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import type { ProjectScore } from "@/stores/score";
 import { LESSON_HEIGHT, LESSON_SPLIT, useVideoStore } from "@/stores/video";
+import { useWavesStore } from "@/stores/waves";
 import { BesideKey, DetachKey, VideoBox, VideoHeader } from "./VideoLayout";
 
-/** Room always left to the waveforms under a lesson (overview and a usable detailed view). */
-const WAVEFORMS_MIN_HEIGHT = 170;
 /** Narrowest the video and the score columns get, in CSS pixels. */
 const VIDEO_MIN_WIDTH = 200;
 const SCORE_MIN_WIDTH = 400;
@@ -31,6 +30,7 @@ const SCORE_MIN_HEIGHT = 200;
 export function LessonLayout({ link, children }: { link: ProjectScore; children: ReactNode }) {
   const split = useVideoStore((s) => s.split);
   const height = useVideoStore((s) => s.lessonHeight);
+  const reserve = useWavesStore((s) => s.reserve);
   const layoutRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
   const [upright, setUpright] = useState(false);
@@ -49,9 +49,10 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  // The waveforms keep their least height (`useWavesStore.reserve`): the row gives way first
   const tallest = () =>
     (layoutRef.current?.clientHeight ?? Number.POSITIVE_INFINITY) -
-    WAVEFORMS_MIN_HEIGHT -
+    useWavesStore.getState().reserve -
     ROW_BAR_PX;
   // The room shared by video and score: the row's width, or its height when upright
   const rowSpan = () =>
@@ -59,7 +60,19 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
       ? (rowRef.current?.clientHeight ?? 600) - ROW_BAR_PX
       : (rowRef.current?.clientWidth ?? 1000) - SIDE_BAR_PX;
   // What is on screen, so a drag never first makes up a size the window cannot show
-  const shownHeight = () => Math.min(useVideoStore.getState().lessonHeight, tallest());
+  const shownHeight = () =>
+    rowRef.current?.offsetHeight ?? Math.min(useVideoStore.getState().lessonHeight, tallest());
+
+  // The row sits right above the waveforms: dragging their edge moves this border
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `shownHeight` and `tallest` read refs and stores
+  useEffect(
+    () =>
+      useWavesStore.getState().claimNeighbour({
+        shown: shownHeight,
+        resize: (next) => useVideoStore.getState().setLessonHeight(Math.min(next, tallest())),
+      }),
+    [],
+  );
   const videoSpan = () => {
     const span = rowSpan();
     const wanted = useVideoStore.getState().split * span;
@@ -82,7 +95,7 @@ export function LessonLayout({ link, children }: { link: ProjectScore; children:
         ref={rowRef}
         className={cn("flex shrink-0 overflow-hidden", upright && "flex-col")}
         style={{
-          height: `max(${LESSON_HEIGHT.min}px, min(${height}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT + ROW_BAR_PX}px)))`,
+          height: `max(0px, min(max(${LESSON_HEIGHT.min}px, ${height}px), calc(100% - ${reserve + ROW_BAR_PX}px)))`,
         }}
       >
         <section

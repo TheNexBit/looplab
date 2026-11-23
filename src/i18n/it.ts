@@ -1,4 +1,4 @@
-import type { CornersId, CustomColor, FontId, OverviewHeight } from "@/lib/appearance";
+import type { CornersId, CustomColor, FontId, OverviewStep } from "@/lib/appearance";
 import type { BackupKind, CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
 import type { SETTING_CHOICES } from "@/stores/settings";
@@ -584,6 +584,9 @@ export const it = {
   waveform: {
     overview: "Panoramica del brano",
     hideOverview: "Nascondi la panoramica",
+    resizeOverview: "Trascina per cambiare l'altezza della panoramica (doppio clic: normale)",
+    resizeDetail:
+      "Trascina per cambiare l'altezza della forma d'onda: spartito e video fanno spazio (doppio clic: normale)",
     showOverview: "Mostra la panoramica",
     detail: "Forma d'onda",
   },
@@ -1081,9 +1084,10 @@ export const it = {
       overviewShown: "Panoramica visibile",
       overviewShownHint: "Spenta resta una striscia sottile per riaprirla (anche Maiusc+O)",
       overview: "Panoramica",
-      overviewHint: "Altezza della striscia con tutto il brano",
+      overviewHint:
+        "Altezza della striscia con tutto il brano; si regola anche trascinando il suo bordo inferiore",
       overviewHeights: { low: "Bassa", normal: "Normale", tall: "Alta" } satisfies Record<
-        OverviewHeight,
+        OverviewStep,
         string
       >,
       resetLayout: "Valori predefiniti",

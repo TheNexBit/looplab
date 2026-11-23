@@ -11,7 +11,8 @@ import {
   type CustomColor,
   colorVariables,
   FONTS,
-  OVERVIEW_HEIGHTS,
+  OVERVIEW_STEPS,
+  type OverviewStep,
   UI_SCALE,
 } from "@/lib/appearance";
 import { cn } from "@/lib/cn";
@@ -173,6 +174,9 @@ function ColorRow({ color }: { color: CustomColor }) {
   );
 }
 
+/** The overview's height steps; a height dragged by hand lights none. */
+const STEP_NAMES = Object.keys(OVERVIEW_STEPS) as OverviewStep[];
+
 /** Settings → Appearance: theme, colours and sizes of this PC, applied at once. */
 export function AppearanceSettings() {
   const theme = useAppearanceStore((s) => s.theme);
@@ -248,11 +252,9 @@ export function AppearanceSettings() {
           <SettingRow label={a.overview} hint={a.overviewHint}>
             <ChoiceKeys
               label={a.overview}
-              value={overviewHeight}
-              choices={(Object.keys(OVERVIEW_HEIGHTS) as (keyof typeof OVERVIEW_HEIGHTS)[]).map(
-                (height) => [height, a.overviewHeights[height]] as const,
-              )}
-              onChange={(overviewHeight) => update({ overviewHeight })}
+              value={STEP_NAMES.find((step) => OVERVIEW_STEPS[step] === overviewHeight) ?? null}
+              choices={STEP_NAMES.map((step) => [step, a.overviewHeights[step]] as const)}
+              onChange={(step) => update({ overviewHeight: OVERVIEW_STEPS[step] })}
             />
           </SettingRow>
         </div>

@@ -37,6 +37,9 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - Avviso sopra un PDF quando le sue battute non sono quante quelle della tab .gp gemella, con
   «Ritrova le battute» e «Va bene così». Il numero di battute del PDF si legge nel menu Sincronia e in un
   messaggio dopo ogni ricerca.
+- Panoramica e forma d'onda grande si regolano trascinando il loro bordo inferiore (doppio clic: misura
+  normale). La forma d'onda grande ha una misura minima uguale in ogni brano: spartito e video si
+  rimpiccioliscono prima di lei.
 
 ### Corretto
 
@@ -48,6 +51,7 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - Battute dei PDF: travature, parentesi delle terzine e linee 8va lunghe venivano prese per righe del
   pentagramma, e alcune battute andavano perse (Exercise 03 ne aveva 7 su 8). Ora i 27 PDF del corso
   JTC hanno tutti le stesse battute dei loro file .gp.
+- Nelle lezioni con video e spartito la forma d'onda grande poteva ridursi a pochi pixel.
 
 ### Modificato
 

@@ -1047,6 +1047,19 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   sono diverse da quelle trovate nel PDF. «Va bene così» si ricorda per quel PDF con quel numero di battute
   (`pdfBarsAccepted` nelle impostazioni); «Ritrova le battute» (`findBarsAgain`) lo dimentica e riparte da
   capo. Dopo la ricerca un messaggio dice quante battute ha trovato; il menu Sincronia del PDF le mostra sempre.
+- **Barre della forma d'onda regolabili:** panoramica e forma d'onda grande hanno un bordo inferiore da
+  trascinare (doppio clic: misura normale), salvato in `appearance` (`overviewHeight` 36-240 px, i passi
+  Bassa/Normale/Alta restano nelle impostazioni; `detailHeight` 96-600 px). La forma d'onda grande non scende mai
+  sotto la sua misura: `WaveformPanel` misura lo spazio che serve alle barre (`stores/waves.ts`, `reserve`) e
+  spartito, video e riga della lezione lo lasciano libero, rimpicciolendosi per primi (prima tre numeri fissi
+  diversi: 230, 260 e 170 px, e la lezione schiacciava la forma d'onda). Trascinare il bordo della forma d'onda
+  sposta il confine col pannello sopra (`claimNeighbour`); senza pannello sopra la forma d'onda riempie lo spazio
+  e il bordo non c'è.
+
+**Rimandato (utente 23/11):** testi più chiari per l'avviso delle battute del PDF: avviso «Nel PDF ho riconosciuto
+7 battute, ma la tab .gp della lezione ne ha 8: probabilmente una battuta del PDF non è stata riconosciuta, e lo
+spartito potrebbe andare fuori tempo con la musica»; tasti «Riconosci di nuovo le battute» (anche nel menu
+Sincronizza) e «Il PDF è giusto, non avvisare più»; «Battute riconosciute nel PDF: 8» nel menu e nel messaggio.
 
 ## Dopo la prima versione
 

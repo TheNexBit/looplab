@@ -28,8 +28,10 @@ import { cn } from "@/lib/cn";
 import { usePlayerStore } from "@/stores/player";
 import { type ProjectScore, SCORE_ZOOM, useScoreStore } from "@/stores/score";
 import { useSettingsStore } from "@/stores/settings";
+import { useWavesStore } from "@/stores/waves";
 import { activeScore } from "./activeScore";
 import { NeckKey, PaperKey, SynthKey } from "./ExtrasKeys";
+import { PdfBarCheck } from "./pdf/PdfBarCheck";
 import { pickScore } from "./pickScore";
 import { SyncMenu } from "./SyncMenu";
 import { stopTapping } from "./syncActions";
@@ -40,13 +42,12 @@ import { TabNeck } from "./TabNeck";
 const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.ScoreView })));
 
 /** pdf.js too loads only when a PDF is first shown. */
-import { PdfBarCheck } from "./pdf/PdfBarCheck";
-
 const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.PdfView })));
 
-/** Space always left to the waveforms under the score (CSS pixels). */
-const WAVEFORMS_MIN_HEIGHT = 230;
-/** Least height of the score panel (bar on two rows and a readable stave): the waveforms give way first. */
+/**
+ * Least height of the score panel (bar on two rows and a readable stave), kept while there is
+ * room: the waveforms' own least height (`useWavesStore.reserve`) comes first.
+ */
 export const SCORE_MIN_VISIBLE = 200;
 /** Height of the one row shown while no tab is linked (it may wrap to two). */
 export const SCORE_ROW_HEIGHT = 56;
@@ -61,26 +62,40 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
   const asking = useScoreStore((s) => s.asking);
   const collapsed = useScoreStore((s) => s.collapsed);
   const size = useScoreStore((s) => s.size);
+  const reserve = useWavesStore((s) => s.reserve);
   const layoutRef = useRef<HTMLDivElement>(null);
-  if (!link && !asking) return children;
+  const sectionRef = useRef<HTMLElement>(null);
   // No tab yet: one row (pick or drop a file), the waveforms keep their room
   const open = link !== null && !collapsed;
 
   const largest = () =>
     (layoutRef.current?.clientHeight ?? Number.POSITIVE_INFINITY) -
-    WAVEFORMS_MIN_HEIGHT -
+    useWavesStore.getState().reserve -
     HANDLE_PX;
-  const shown = () => Math.min(useScoreStore.getState().size, largest());
+  const shown = () => sectionRef.current?.offsetHeight ?? useScoreStore.getState().size;
+
+  // Open, the score sits right above the waveforms: dragging their edge moves this border
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `shown` and `largest` read refs and stores
+  useEffect(() => {
+    if (!open) return;
+    return useWavesStore.getState().claimNeighbour({
+      shown,
+      resize: (size) => useScoreStore.getState().setSize(Math.min(size, largest())),
+    });
+  }, [open]);
+
+  if (!link && !asking) return children;
 
   return (
     <div ref={layoutRef} className="flex h-full flex-col overflow-hidden">
       <section
+        ref={sectionRef}
         aria-label={t.score.title}
         className="flex shrink-0 flex-col overflow-hidden"
         style={
           open
             ? {
-                height: `max(min(${SCORE_MIN_VISIBLE}px, 100%), min(${size}px, calc(100% - ${WAVEFORMS_MIN_HEIGHT}px)))`,
+                height: `max(0px, min(max(${SCORE_MIN_VISIBLE}px, ${size}px), calc(100% - ${reserve + HANDLE_PX}px)))`,
               }
             : undefined
         }

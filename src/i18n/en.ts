@@ -1,4 +1,4 @@
-import type { CornersId, CustomColor, FontId, OverviewHeight } from "@/lib/appearance";
+import type { CornersId, CustomColor, FontId, OverviewStep } from "@/lib/appearance";
 import type { BackupKind, CacheKind, ClickSound, ErrorKind } from "@/lib/bindings";
 import type { ThemeId } from "@/lib/theme";
 import type { SETTING_CHOICES } from "@/stores/settings";
@@ -581,6 +581,9 @@ export const en = {
   waveform: {
     overview: "Track overview",
     hideOverview: "Hide the overview",
+    resizeOverview: "Drag to change the overview's height (double-click: normal)",
+    resizeDetail:
+      "Drag to change the waveform's height: score and video make room (double-click: normal)",
     showOverview: "Show the overview",
     detail: "Waveform",
   },
@@ -1068,9 +1071,9 @@ export const en = {
       overviewShown: "Overview shown",
       overviewShownHint: "Off, a thin strip stays to reopen it (also Shift+O)",
       overview: "Overview",
-      overviewHint: "Height of the strip with the whole track",
+      overviewHint: "Height of the strip with the whole track; its bottom edge drags it too",
       overviewHeights: { low: "Low", normal: "Normal", tall: "Tall" } satisfies Record<
-        OverviewHeight,
+        OverviewStep,
         string
       >,
       resetLayout: "Default values",

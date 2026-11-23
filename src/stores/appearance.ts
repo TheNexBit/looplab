@@ -7,8 +7,10 @@ import {
   CUSTOM_COLORS,
   type CustomColor,
   type CustomColors,
+  DETAIL_HEIGHT,
   FONTS,
-  OVERVIEW_HEIGHTS,
+  OVERVIEW_HEIGHT,
+  OVERVIEW_STEPS,
   UI_SCALE,
 } from "@/lib/appearance";
 import { isHex } from "@/lib/color";
@@ -23,12 +25,25 @@ export const DEFAULT_APPEARANCE: Appearance = {
   colors: {},
   font: "inter",
   corners: "normal",
-  overviewHeight: "normal",
+  overviewHeight: OVERVIEW_HEIGHT.default,
+  detailHeight: DETAIL_HEIGHT.default,
   uiScale: UI_SCALE.default,
 };
 
 const oneOf = <T extends string>(choices: Record<T, unknown>, value: unknown, fallback: T): T =>
   typeof value === "string" && value in choices ? (value as T) : fallback;
+
+/** A height in CSS pixels within its limits; an older file's step name («low»…) is read as its pixels. */
+function height(
+  value: unknown,
+  limits: { min: number; max: number; default: number },
+  steps: Record<string, number> = {},
+): number {
+  const px = typeof value === "string" ? steps[value] : value;
+  return typeof px === "number" && Number.isFinite(px)
+    ? Math.round(clamp(px, limits.min, limits.max))
+    : limits.default;
+}
 
 /** Keeps only valid values of a stored appearance (an older or damaged one gets defaults). */
 export function sanitizeAppearance(value: unknown): Appearance {
@@ -49,7 +64,8 @@ export function sanitizeAppearance(value: unknown): Appearance {
     colors,
     font: oneOf(FONTS, stored.font, DEFAULT_APPEARANCE.font),
     corners: oneOf(CORNERS, stored.corners, DEFAULT_APPEARANCE.corners),
-    overviewHeight: oneOf(OVERVIEW_HEIGHTS, stored.overviewHeight, "normal"),
+    overviewHeight: height(stored.overviewHeight, OVERVIEW_HEIGHT, OVERVIEW_STEPS),
+    detailHeight: height(stored.detailHeight, DETAIL_HEIGHT),
     uiScale: Math.round(clamp(scale, UI_SCALE.min, UI_SCALE.max) * 10) / 10,
   };
 }
@@ -73,7 +89,9 @@ interface AppearanceState extends Appearance {
   /** Every custom colour of the current theme back to the theme's own */
   resetColors: () => void;
   update: (
-    patch: Partial<Pick<Appearance, "font" | "corners" | "overviewHeight" | "uiScale">>,
+    patch: Partial<
+      Pick<Appearance, "font" | "corners" | "overviewHeight" | "detailHeight" | "uiScale">
+    >,
   ) => void;
   /** Font, corners, sizes back to default (theme and colours stay) */
   resetLayout: () => void;
@@ -85,6 +103,7 @@ const pick = ({
   font,
   corners,
   overviewHeight,
+  detailHeight,
   uiScale,
 }: Appearance): Appearance => ({
   theme,
@@ -92,6 +111,7 @@ const pick = ({
   font,
   corners,
   overviewHeight,
+  detailHeight,
   uiScale,
 });
 
@@ -125,8 +145,8 @@ export const useAppearanceStore = create<AppearanceState>((set, get) => {
     },
     update: (patch) => save(patch),
     resetLayout: () => {
-      const { font, corners, overviewHeight, uiScale } = DEFAULT_APPEARANCE;
-      save({ font, corners, overviewHeight, uiScale });
+      const { font, corners, overviewHeight, detailHeight, uiScale } = DEFAULT_APPEARANCE;
+      save({ font, corners, overviewHeight, detailHeight, uiScale });
     },
   };
 });

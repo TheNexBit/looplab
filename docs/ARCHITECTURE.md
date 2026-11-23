@@ -195,6 +195,11 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   `features/lessons/lessonOrder.ts` trova la lezione di un brano tra quelle della Home e le sue vicine nello
   stesso corso (`ensure` legge l'elenco salvato una volta, anche se la Home non è mai stata aperta);
   `LessonNav.tsx` sta nella barra in alto.
+- **Spazio delle forme d'onda (fase 29)**: `WaveformPanel` misura le sue parti (titolo, panoramica, sezioni,
+  note) più `detailHeight` e lo scrive in `useWavesStore.reserve`; `ScoreLayout`, `VideoLayout` e `LessonLayout`
+  danno ai loro pannelli al massimo `100% - reserve`, quindi si rimpiccioliscono per primi. Il pannello subito
+  sopra le forme d'onda si registra con `claimNeighbour`: il bordo della forma d'onda grande sposta il confine
+  con lui.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 
