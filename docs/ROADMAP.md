@@ -1057,9 +1057,9 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   e il bordo non c'è.
 - **Manopole e mute:** un solo comando per volumi, velocità e tonalità, `components/ui/Knob.tsx` (manopola
   stile Reaper con display ambrato: trascina su/giù, Maiusc fine, rotella, frecce, doppio clic = normale, tasto
-  destro = menu; quelle «centrate» hanno il valore normale a ore 12, `knobTurn.ts` con test). Volume del brano +
+  destro = menu; quelle «centrate» hanno il valore normale a ore 12, `knobTurn.ts` con test). Volume del brano e
   mute sul titolo della forma d'onda (come il volume sull'intestazione della traccia in Reaper), volume del click
-  + mute nel modulo del metronomo accanto a K, velocità e tonalità nella barra in basso (preset di velocità,
+  e mute nel modulo del metronomo accanto a K, velocità e tonalità nella barra in basso (preset di velocità,
   intonazione fine e accordatura col tasto destro). `trackMuted`/`clickMuted` nelle impostazioni: il motore riceve
   0, il livello resta. Tolti i fader TRK/CLK e il volume doppio nel pannello del count-in.
 
