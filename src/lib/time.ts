@@ -15,6 +15,15 @@ export function formatLength(seconds: number): string {
   return hours > 0 ? `${hours}:${String(minutes).padStart(2, "0")}:${rest}` : `${minutes}:${rest}`;
 }
 
+/**
+ * Time on a running clock: "3:07". Rounds down (187.9 s is still "3:07"), unlike
+ * `formatLength`, which rounds to the nearest second and adds hours.
+ */
+export function formatElapsed(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
+
 /** Short label for ruler ticks: "1:05" for whole seconds, "1:05.5" otherwise. */
 export function formatTick(seconds: number, withTenths: boolean): string {
   return withTenths ? formatTime(seconds) : formatTime(seconds).slice(0, -2);

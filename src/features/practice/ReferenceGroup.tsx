@@ -60,11 +60,14 @@ function TuningMenu() {
  * another click or another string stops it; it also stops when the tab is left.
  */
 export function ReferenceGroup() {
-  const settings = useSettingsStore();
-  const { referencePitch: a4, referenceLevel: level } = settings;
+  const instrument = useSettingsStore((s) => s.referenceInstrument);
+  const tuning = useSettingsStore((s) => s.referenceTuning);
+  const a4 = useSettingsStore((s) => s.referencePitch);
+  const level = useSettingsStore((s) => s.referenceLevel);
+  const { update } = useSettingsStore.getState();
   /** MIDI note sounding, or null */
   const [playing, setPlaying] = useState<number | null>(null);
-  const strings = openStrings(settings.referenceInstrument, settings.referenceTuning);
+  const strings = openStrings(instrument, tuning);
 
   /** Whether a note was ever started: until then the audio device is left alone */
   const used = useRef(false);
@@ -105,9 +108,9 @@ export function ReferenceGroup() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <ChoiceKeys
           label={p.instrument}
-          value={settings.referenceInstrument}
+          value={instrument}
           choices={INSTRUMENTS.map((id) => [id, p.instruments[id]] as const)}
-          onChange={(referenceInstrument) => settings.update({ referenceInstrument })}
+          onChange={(referenceInstrument) => update({ referenceInstrument })}
         />
         <TuningMenu />
       </div>
@@ -155,7 +158,7 @@ export function ReferenceGroup() {
           max={L.referencePitch.max}
           step={L.referencePitch.step}
           defaultValue={L.referencePitch.default}
-          onChange={(referencePitch) => settings.update({ referencePitch })}
+          onChange={(referencePitch) => update({ referencePitch })}
           format={(hz) => `${hz} Hz`}
         />
       </div>
@@ -168,7 +171,7 @@ export function ReferenceGroup() {
           max={L.referenceLevel.max}
           step={L.referenceLevel.step}
           defaultValue={0.5}
-          onChange={(referenceLevel) => settings.update({ referenceLevel })}
+          onChange={(referenceLevel) => update({ referenceLevel })}
           format={(value) => `${Math.round(value * 100)}%`}
         />
       </div>

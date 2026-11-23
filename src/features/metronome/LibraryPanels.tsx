@@ -9,9 +9,9 @@ import { Stepper } from "@/components/ui/Stepper";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
+import { formatElapsed } from "@/lib/time";
 import { type MetronomeSetup, useMetronomeStore } from "@/stores/metronome";
 import { PART_BARS, partSeconds, toPlayed, useLibraryStore } from "@/stores/metronomeLibrary";
-import { formatElapsed } from "./meterChoices";
 
 const l = t.metronome.library;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatAgo, signed } from "./format";
+import { formatAgo, samePath, signed } from "./format";
 import { formatLength } from "./time";
 
 describe("signed", () => {
@@ -38,5 +38,18 @@ describe("formatLength", () => {
   it("writes minutes and seconds, and hours when there are any", () => {
     expect(formatLength(252)).toBe("4:12");
     expect(formatLength(3725)).toBe("1:02:05");
+  });
+});
+
+describe("samePath", () => {
+  it("ignores case, as Windows does", () => {
+    expect(samePath("C:\\Music\\Song.mp3", "c:\\music\\song.MP3")).toBe(true);
+    expect(samePath("C:\\a.mp3", "C:\\b.mp3")).toBe(false);
+  });
+
+  it("never matches a missing or empty path", () => {
+    expect(samePath("", "")).toBe(false);
+    expect(samePath(null, null)).toBe(false);
+    expect(samePath(undefined, "C:\\a.mp3")).toBe(false);
   });
 });

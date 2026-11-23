@@ -175,30 +175,32 @@ function ColorRow({ color }: { color: CustomColor }) {
 
 /** Settings → Appearance: theme, colours and sizes of this PC, applied at once. */
 export function AppearanceSettings() {
-  const appearance = useAppearanceStore();
+  const theme = useAppearanceStore((s) => s.theme);
+  const uiScale = useAppearanceStore((s) => s.uiScale);
+  const font = useAppearanceStore((s) => s.font);
+  const corners = useAppearanceStore((s) => s.corners);
+  const overviewHeight = useAppearanceStore((s) => s.overviewHeight);
+  const changed = useAppearanceStore((s) => Object.keys(s.colors[s.theme] ?? {}).length > 0);
   const showOverview = useSettingsStore((s) => s.showOverview);
-  const changed = Object.keys(appearance.colors[appearance.theme] ?? {}).length > 0;
+  const { update, resetColors, resetLayout } = useAppearanceStore.getState();
   return (
     <div className="space-y-2 px-4 pb-4">
       <SettingGroup title={a.theme} hint={a.themeHint}>
         <div className="grid grid-cols-3 gap-2.5">
-          {THEMES.map((theme) => (
-            <ThemeCard key={theme} theme={theme} selected={theme === appearance.theme} />
+          {THEMES.map((card) => (
+            <ThemeCard key={card} theme={card} selected={card === theme} />
           ))}
         </div>
       </SettingGroup>
 
-      <SettingGroup
-        title={`${a.colorsTitle} · ${a.themes[appearance.theme].name}`}
-        hint={a.colorsHint}
-      >
+      <SettingGroup title={`${a.colorsTitle} · ${a.themes[theme].name}`} hint={a.colorsHint}>
         <div className="divide-y divide-border">
           {CUSTOM_COLORS.map((color) => (
             <ColorRow key={color} color={color} />
           ))}
         </div>
         <div className="flex justify-end">
-          <Button disabled={!changed} onClick={appearance.resetColors}>
+          <Button disabled={!changed} onClick={resetColors}>
             {a.resetColors}
           </Button>
         </div>
@@ -209,31 +211,31 @@ export function AppearanceSettings() {
           <SettingRow label={a.uiScale} hint={a.uiScaleHint}>
             <Stepper
               label={a.uiScale}
-              value={appearance.uiScale}
+              value={uiScale}
               {...UI_SCALE}
               defaultValue={UI_SCALE.default}
-              onChange={(uiScale) => appearance.update({ uiScale })}
+              onChange={(uiScale) => update({ uiScale })}
               format={formatPercent}
             />
           </SettingRow>
           <SettingRow label={a.font} hint={a.fontHint}>
             <ChoiceKeys
               label={a.font}
-              value={appearance.font}
+              value={font}
               choices={(Object.keys(FONTS) as (keyof typeof FONTS)[]).map(
                 (font) => [font, a.fonts[font]] as const,
               )}
-              onChange={(font) => appearance.update({ font })}
+              onChange={(font) => update({ font })}
             />
           </SettingRow>
           <SettingRow label={a.corners} hint={a.cornersHint}>
             <ChoiceKeys
               label={a.corners}
-              value={appearance.corners}
+              value={corners}
               choices={(Object.keys(CORNERS) as (keyof typeof CORNERS)[]).map(
                 (corners) => [corners, a.cornerNames[corners]] as const,
               )}
-              onChange={(corners) => appearance.update({ corners })}
+              onChange={(corners) => update({ corners })}
             />
           </SettingRow>
           <SettingRow label={a.overviewShown} hint={a.overviewShownHint}>
@@ -246,16 +248,16 @@ export function AppearanceSettings() {
           <SettingRow label={a.overview} hint={a.overviewHint}>
             <ChoiceKeys
               label={a.overview}
-              value={appearance.overviewHeight}
+              value={overviewHeight}
               choices={(Object.keys(OVERVIEW_HEIGHTS) as (keyof typeof OVERVIEW_HEIGHTS)[]).map(
                 (height) => [height, a.overviewHeights[height]] as const,
               )}
-              onChange={(overviewHeight) => appearance.update({ overviewHeight })}
+              onChange={(overviewHeight) => update({ overviewHeight })}
             />
           </SettingRow>
         </div>
         <div className="flex justify-end">
-          <Button onClick={appearance.resetLayout}>{a.resetLayout}</Button>
+          <Button onClick={resetLayout}>{a.resetLayout}</Button>
         </div>
       </SettingGroup>
     </div>

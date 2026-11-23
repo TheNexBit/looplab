@@ -20,11 +20,19 @@ const p = t.practice;
 const FIELD = "well h-6 w-16 rounded-control";
 
 function TrainerGroup() {
-  const settings = useSettingsStore();
+  const trainer = useSettingsStore((s) => s.trainer);
+  const trainerFrom = useSettingsStore((s) => s.trainerFrom);
+  const trainerTo = useSettingsStore((s) => s.trainerTo);
+  const trainerStep = useSettingsStore((s) => s.trainerStep);
+  const trainerEvery = useSettingsStore((s) => s.trainerEvery);
+  const { update } = useSettingsStore.getState();
   const repetitions = usePracticeStore((s) => s.repetitions);
   const speed = usePlayerStore((s) => s.speed);
   const hasLoop = useLoopStore((s) => s.enabled && s.region() !== null);
-  const toNext = repetitionsToNextStep(trainerPlan(settings), repetitions);
+  const toNext = repetitionsToNextStep(
+    trainerPlan({ trainerFrom, trainerTo, trainerStep, trainerEvery }),
+    repetitions,
+  );
   const L = SETTING_LIMITS;
 
   const percentField = (key: "trainerFrom" | "trainerTo" | "trainerStep", label: string) => (
@@ -32,11 +40,11 @@ function TrainerGroup() {
       <span className="text-xs text-fg-muted">{label}</span>
       <NumberField
         label={`${p.trainer}: ${label}`}
-        value={settings[key]}
+        value={{ trainerFrom, trainerTo, trainerStep }[key]}
         min={L[key].min}
         max={L[key].max}
         step={L[key].step}
-        onChange={(value) => settings.update({ [key]: value })}
+        onChange={(value) => update({ [key]: value })}
         format={formatPercent}
         parse={parsePercent}
         className={FIELD}
@@ -49,11 +57,7 @@ function TrainerGroup() {
       title={p.trainer}
       hint={p.trainerHint}
       action={
-        <Chip
-          active={settings.trainer}
-          aria-pressed={settings.trainer}
-          onClick={() => settings.update({ trainer: !settings.trainer })}
-        >
+        <Chip active={trainer} aria-pressed={trainer} onClick={() => update({ trainer: !trainer })}>
           {p.trainerOn}
         </Chip>
       }
@@ -66,11 +70,11 @@ function TrainerGroup() {
           <span className="text-xs text-fg-muted">{p.every}</span>
           <NumberField
             label={`${p.trainer}: ${p.every}`}
-            value={settings.trainerEvery}
+            value={trainerEvery}
             min={L.trainerEvery.min}
             max={L.trainerEvery.max}
             step={L.trainerEvery.step}
-            onChange={(value) => settings.update({ trainerEvery: Math.round(value) })}
+            onChange={(value) => update({ trainerEvery: Math.round(value) })}
             format={(value) => `${value} ${p.repetitionsUnit}`}
             className={FIELD}
           />
@@ -83,7 +87,7 @@ function TrainerGroup() {
             <p className="text-readout">
               {p.repetition} {repetitions + 1} · {formatPercent(speed)}
             </p>
-            {settings.trainer && (
+            {trainer && (
               <p className="text-readout-dim">
                 {toNext === null ? p.atTarget : `${p.nextStep} ${toNext} ${p.repetitionsUnit}`}
               </p>

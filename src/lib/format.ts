@@ -2,6 +2,15 @@
 export const fileNameOf = (path: string) => path.split(/[\\/]/).pop() ?? path;
 
 /**
+ * The same file: Windows paths ignore case. A missing or empty path is never the same as
+ * anything (not even another empty one). The copies this replaced in `openLesson.ts` and
+ * `diaryStats.ts` said "same" for two empty paths, but every one of their calls has a
+ * non-empty path on at least one side, so nothing changes for them.
+ */
+export const samePath = (a: string | null | undefined, b: string | null | undefined) =>
+  !!a && !!b && a.toLowerCase() === b.toLowerCase();
+
+/**
  * A value with its sign always shown when not zero, as on the pitch and gain readouts of
  * DAWs: 2 → "+2", -3 → "-3", 0 → "0". With a unit: "+2 st".
  */

@@ -1,14 +1,8 @@
 import { isVideoPath } from "@/features/library/formats";
 import { adoptSharedProject } from "@/features/markers/projectSync";
 import { commands, type Exercise } from "@/lib/bindings";
-import {
-  anglesOf,
-  type ExerciseFile,
-  fileOf,
-  linedUp,
-  samePath,
-  useExerciseStore,
-} from "@/stores/exercise";
+import { samePath } from "@/lib/format";
+import { anglesOf, type ExerciseFile, fileOf, linedUp, useExerciseStore } from "@/stores/exercise";
 import { usePlayerStore } from "@/stores/player";
 import { useVideoStore } from "@/stores/video";
 

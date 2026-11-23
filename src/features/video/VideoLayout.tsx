@@ -86,19 +86,23 @@ const videoClock = () => {
 
 /** The picture, in its dark frame, following the player's clock. */
 export function VideoBox() {
-  const video = useVideoStore();
+  const src = useVideoStore((s) => s.src);
+  const status = useVideoStore((s) => s.status);
+  const progress = useVideoStore((s) => s.progress);
+  const error = useVideoStore((s) => s.error);
+  const { setStatus } = useVideoStore.getState();
   return (
     <div className="min-h-0 flex-1 px-4 pb-2">
       <div className="size-full overflow-hidden rounded-panel border border-border bg-black">
         <VideoView
-          src={video.src}
-          status={video.status}
-          progress={video.progress}
-          error={video.error}
+          src={src}
+          status={status}
+          progress={progress}
+          error={error}
           clock={videoClock}
           onUnsupported={() => void fallBackToProxy()}
-          onNoPicture={() => video.setStatus("none", { src: null })}
-          onReady={() => video.setStatus("ready")}
+          onNoPicture={() => setStatus("none", { src: null })}
+          onReady={() => setStatus("ready")}
         />
       </div>
     </div>
@@ -110,12 +114,18 @@ export function VideoBox() {
  * collapsible. Without a video, or while it is detached, only `children` is shown.
  */
 export function VideoLayout({ children }: { children: ReactNode }) {
-  const video = useVideoStore();
+  const status = useVideoStore((s) => s.status);
+  const detached = useVideoStore((s) => s.detached);
+  const dockAlone = useVideoStore((s) => s.dock);
+  const dockWithScore = useVideoStore((s) => s.dockWithScore);
+  const collapsed = useVideoStore((s) => s.collapsed);
+  const size = useVideoStore((s) => s.size);
+  const { setDock, setDockWithScore, toggleCollapsed } = useVideoStore.getState();
   const hasScore = useScoreStore((s) => s.link !== null);
   const layoutRef = useRef<HTMLDivElement>(null);
-  if (video.status === "none" || video.detached) return children;
+  if (status === "none" || detached) return children;
   // With a score the video has its own place (beside it by default), so both stay large
-  const dock = hasScore ? video.dockWithScore : video.dock;
+  const dock = hasScore ? dockWithScore : dockAlone;
   const top = dock === "top";
   // Under the video: the waveforms, and the score's least height when one is shown
   const below = WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : 0);
@@ -136,7 +146,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
     <section
       aria-label={t.video.title}
       className="flex shrink-0 flex-col overflow-hidden"
-      style={video.collapsed ? undefined : panelSize(top, video.size, below)}
+      style={collapsed ? undefined : panelSize(top, size, below)}
     >
       <VideoHeader>
         {hasScore && <BesideKey beside={false} />}
@@ -146,31 +156,25 @@ export function VideoLayout({ children }: { children: ReactNode }) {
             className="size-6"
             aria-label={top ? t.video.dockSide : t.video.dockTop}
             onClick={() =>
-              hasScore
-                ? video.setDockWithScore(top ? "side" : "top")
-                : video.setDock(top ? "side" : "top")
+              hasScore ? setDockWithScore(top ? "side" : "top") : setDock(top ? "side" : "top")
             }
           >
             {top ? <PanelLeft className="size-3.5" /> : <PanelTop className="size-3.5" />}
           </Button>
         </Tooltip>
         <DetachKey />
-        <Tooltip label={video.collapsed ? t.video.expand : t.video.collapse}>
+        <Tooltip label={collapsed ? t.video.expand : t.video.collapse}>
           <Button
             size="icon"
             className="size-6"
-            aria-label={video.collapsed ? t.video.expand : t.video.collapse}
-            onClick={video.toggleCollapsed}
+            aria-label={collapsed ? t.video.expand : t.video.collapse}
+            onClick={toggleCollapsed}
           >
-            {video.collapsed ? (
-              <ChevronDown className="size-3.5" />
-            ) : (
-              <ChevronUp className="size-3.5" />
-            )}
+            {collapsed ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
           </Button>
         </Tooltip>
       </VideoHeader>
-      {!video.collapsed && <VideoBox />}
+      {!collapsed && <VideoBox />}
     </section>
   );
 
@@ -180,7 +184,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
       className={cn("flex h-full overflow-hidden", top ? "flex-col" : "flex-row")}
     >
       {panel}
-      {!video.collapsed && (
+      {!collapsed && (
         <ResizeHandle
           vertical={top}
           label={t.video.resize}

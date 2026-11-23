@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Exercise, ExerciseFile } from "@/lib/bindings";
+import { samePath } from "@/lib/format";
 
 export type { Exercise, ExerciseFile };
 
@@ -29,10 +30,6 @@ export const useExerciseStore = create<ExerciseState>((set) => ({
   otherLoading: false,
   set: (patch) => set(patch),
 }));
-
-/** Windows paths ignore case. */
-export const samePath = (a: string | null | undefined, b: string | null | undefined) =>
-  !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
 /** The file of the take at `path`. */
 export const fileOf = (exercise: Exercise | null, path: string | null) =>

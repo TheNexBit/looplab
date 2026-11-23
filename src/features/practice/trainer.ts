@@ -4,7 +4,9 @@ import { usePracticeStore } from "@/stores/practice";
 import { type Settings, useSettingsStore } from "@/stores/settings";
 import { type TrainerPlan, trainerSpeed } from "./tempo";
 
-export const trainerPlan = (settings: Settings): TrainerPlan => ({
+export const trainerPlan = (
+  settings: Pick<Settings, "trainerFrom" | "trainerTo" | "trainerStep" | "trainerEvery">,
+): TrainerPlan => ({
   from: settings.trainerFrom,
   to: settings.trainerTo,
   step: settings.trainerStep,

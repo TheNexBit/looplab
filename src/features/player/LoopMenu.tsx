@@ -20,8 +20,15 @@ const formatSeconds = (value: number) => `${value.toFixed(1)} ${t.transport.seco
 
 /** Loop on/off, plus a menu with lead-in, gap between repetitions and removal. */
 export function LoopMenu({ disabled }: { disabled: boolean }) {
-  const loop = useLoopStore();
-  const region = loop.region();
+  const enabled = useLoopStore((s) => s.enabled);
+  // The usable region as two numbers (a selector must not build a new object)
+  const regionStart = useLoopStore((s) => s.region()?.start ?? null);
+  const regionEnd = useLoopStore((s) => s.region()?.end ?? null);
+  const region =
+    regionStart !== null && regionEnd !== null ? { start: regionStart, end: regionEnd } : null;
+  const leadIn = useLoopStore((s) => s.leadIn);
+  const gap = useLoopStore((s) => s.gap);
+  const { toggle, setLeadIn, setGap, clear } = useLoopStore.getState();
   const repetitions = usePracticeStore((s) => s.repetitions);
   const afterLoop = useSettingsStore((s) => s.afterLoop);
   // Both the ▾ key and a right-click on the Loop key open the options
@@ -40,11 +47,11 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           led="green"
           options
           disabled={disabled || !region}
-          active={loop.enabled && region !== null}
-          onClick={loop.toggle}
+          active={enabled && region !== null}
+          onClick={toggle}
           onContextMenu={onContextMenu}
           aria-label={t.transport.loop}
-          aria-pressed={loop.enabled}
+          aria-pressed={enabled}
           className="rounded-r-none"
         >
           <Repeat className="size-4" />
@@ -88,12 +95,12 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           <div className="space-y-1">
             <Slider
               label={t.transport.leadIn}
-              value={loop.leadIn}
+              value={leadIn}
               defaultValue={LEAD_IN.default}
               min={LEAD_IN.min}
               max={LEAD_IN.max}
               step={LEAD_IN.step}
-              onChange={loop.setLeadIn}
+              onChange={setLeadIn}
               format={formatSeconds}
               trackClassName="flex-1"
               className="justify-between"
@@ -103,12 +110,12 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
           <div className="space-y-1">
             <Slider
               label={t.transport.gap}
-              value={loop.gap}
+              value={gap}
               defaultValue={GAP.default}
               min={GAP.min}
               max={GAP.max}
               step={GAP.step}
-              onChange={loop.setGap}
+              onChange={setGap}
               format={formatSeconds}
               trackClassName="flex-1"
               className="justify-between"
@@ -136,7 +143,7 @@ export function LoopMenu({ disabled }: { disabled: boolean }) {
               <BookmarkPlus className="size-4" />
               {t.savedLoops.save}
             </Button>
-            <Button variant="hardware" onClick={loop.clear} disabled={!region}>
+            <Button variant="hardware" onClick={clear} disabled={!region}>
               <Trash2 className="size-4" />
               {t.transport.clearLoop}
             </Button>

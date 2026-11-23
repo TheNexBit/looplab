@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clamp, formatTick, formatTime } from "./time";
+import { clamp, formatElapsed, formatTick, formatTime } from "./time";
 
 describe("formatTime", () => {
   it("shows minutes, seconds and tenths", () => {
@@ -29,5 +29,12 @@ describe("clamp", () => {
     expect(clamp(5, 0, 3)).toBe(3);
     expect(clamp(-1, 0, 3)).toBe(0);
     expect(clamp(2, 0, 3)).toBe(2);
+  });
+});
+
+describe("formatElapsed", () => {
+  it("rounds down, as a running clock does", () => {
+    expect(formatElapsed(187.9)).toBe("3:07");
+    expect(formatElapsed(-1)).toBe("0:00");
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeSetup } from "@/stores/metronome";
-import { barAndPulse, formatElapsed, groupingChoices, tempoMarking } from "./meterChoices";
+import { barAndPulse, groupingChoices, tempoMarking } from "./meterChoices";
 
 describe("metronome choices", () => {
   it("groups a bar in every way of twos, threes and fours, fewest groups first", () => {
@@ -28,7 +28,6 @@ describe("metronome choices", () => {
     expect(barAndPulse(0, 7)).toEqual({ bar: 1, pulse: 0 });
     expect(barAndPulse(9.5, 7)).toEqual({ bar: 2, pulse: 2 });
     expect(barAndPulse(-3, 4)).toEqual({ bar: 0, pulse: 1 });
-    expect(formatElapsed(187.9)).toBe("3:07");
   });
 
   it("keeps a stored setup usable", () => {

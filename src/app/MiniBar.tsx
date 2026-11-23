@@ -22,8 +22,12 @@ export function MiniBar() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const name = usePlayerStore((s) => s.track?.name);
   const speed = usePlayerStore((s) => s.speed);
-  const loop = useLoopStore();
-  const region = loop.region();
+  const enabled = useLoopStore((s) => s.enabled);
+  // The usable region as two numbers (a selector must not build a new object)
+  const regionStart = useLoopStore((s) => s.region()?.start ?? null);
+  const regionEnd = useLoopStore((s) => s.region()?.end ?? null);
+  const region =
+    regionStart !== null && regionEnd !== null ? { start: regionStart, end: regionEnd } : null;
   const { togglePlay, setSpeed } = usePlayerStore.getState();
   const step = useSettingsStore((s) => s.speedStep);
   const playLabel = playing ? t.transport.pause : t.transport.play;
@@ -54,10 +58,10 @@ export function MiniBar() {
           size="key"
           led="green"
           disabled={!region}
-          active={loop.enabled && region !== null}
-          onClick={loop.toggle}
+          active={enabled && region !== null}
+          onClick={useLoopStore.getState().toggle}
           aria-label={t.transport.loop}
-          aria-pressed={loop.enabled}
+          aria-pressed={enabled}
         >
           <Repeat className="size-4" />
         </Button>

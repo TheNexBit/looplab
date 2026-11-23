@@ -1,12 +1,10 @@
 import { linkScore } from "@/features/score/pickScore";
 import { t } from "@/i18n";
 import { commands, type Lesson_Serialize } from "@/lib/bindings";
-import { fileNameOf } from "@/lib/format";
+import { fileNameOf, samePath } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
 import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
-
-const samePath = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 /** The tab the user picked on the Home for the track being opened (wins over a linked one). */
 let picked: { track: string; score: string | null; clear: boolean } | null = null;

@@ -6,6 +6,7 @@ import { OptionsKey } from "@/components/ui/OptionsKey";
 import { Stepper } from "@/components/ui/Stepper";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
+import { formatElapsed } from "@/lib/time";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { useFretboardStore } from "@/stores/fretboard";
 import {
@@ -15,7 +16,7 @@ import {
   shownSetup,
   useMetronomeStore,
 } from "@/stores/metronome";
-import { barAndPulse, formatElapsed } from "./meterChoices";
+import { barAndPulse } from "./meterChoices";
 import { toggleMetronomeRun } from "./metronomeEngine";
 
 const m = t.metronome;

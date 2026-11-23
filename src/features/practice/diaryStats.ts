@@ -1,3 +1,4 @@
+import { samePath } from "@/lib/format";
 import type { DiaryRecord } from "@/stores/diary";
 
 /** Local date as the diary stores it: "2026-11-06". */
@@ -14,8 +15,6 @@ export function lastDays(today: Date, count: number): string[] {
     return localDay(day);
   });
 }
-
-const samePath = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 interface TrackSummary {
   /** Seconds practised today */
