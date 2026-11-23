@@ -675,8 +675,14 @@ export const en = {
     emptyTitle: "All your courses in one place",
     emptyText:
       "Add a course folder (e.g. JTC): every lesson opens ready, with its camera angles, its backing and its tab linked.",
-    search: "Search a lesson",
-    noMatch: "No lesson with this name",
+    search: "Search a lesson, module or course…",
+    searchHint:
+      "Type one or more words, in any order: «legato 02», «funk timing». Esc clears the search",
+    clearSearch: "Clear the search",
+    noMatch: (query: string) => `No lesson found for «${query}»`,
+    noMatchHint: "Try fewer words or part of the name (e.g. «legato» instead of «legato 03»)",
+    found: (lessons: number, courses: number) =>
+      `${lessons === 1 ? "1 lesson found" : `${lessons} lessons found`} in ${courses === 1 ? "1 course" : `${courses} courses`}`,
     scanning: "Updating the lessons…",
     lastOpened: "Recently opened",
     lessonsCount: (n: number) => (n === 1 ? "1 lesson" : `${n} lessons`),

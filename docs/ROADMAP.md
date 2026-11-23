@@ -1003,6 +1003,10 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   file…». Alt+T (riassegnabile, anche in Ctrl+K) passa alla successiva. Ogni progetto tiene le tab
   usate prima con la loro sincronizzazione (`Project.other_scores`, «scaffale» nello store dello
   spartito); la pulizia dei file in `spartiti\` le conserva.
+- **Ricerca delle lezioni** (`features/lessons/search.ts`, con test): più parole in qualsiasi ordine,
+  accenti e maiuscole a parte; risultati per corso e modulo come nella Home, parole evidenziate, conteggio
+  «N lezioni trovate in M corsi», tasto × ed Esc per svuotarla (il primo Esc svuota, il secondo torna al
+  brano). Le «Ultime aperte» mostrano «corso · modulo».
 - **Battute dei PDF:** il riconoscimento (`features/score/pdf/detectBars.ts`) prendeva travature, parentesi
   delle terzine e linee 8va per righe del pentagramma: il pentagramma risultava storto e le sue stanghette
   si perdevano (Exercise 03 Basic Shapes: 7 battute su 8, la sincronia non seguiva più dalla terza). Ora

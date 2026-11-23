@@ -678,8 +678,15 @@ export const it = {
     emptyTitle: "I tuoi corsi in un posto solo",
     emptyText:
       "Aggiungi la cartella di un corso (es. JTC): ogni lezione si apre già pronta, con le inquadrature, la base e la tab collegata.",
-    search: "Cerca una lezione",
-    noMatch: "Nessuna lezione con questo nome",
+    search: "Cerca lezione, modulo o corso…",
+    searchHint:
+      "Scrivi una o più parole, in qualsiasi ordine: «legato 02», «funk timing». Esc svuota la ricerca",
+    clearSearch: "Svuota la ricerca",
+    noMatch: (query: string) => `Nessuna lezione trovata per «${query}»`,
+    noMatchHint:
+      "Prova con meno parole o con una parte del nome (es. «legato» invece di «legato 03»)",
+    found: (lessons: number, courses: number) =>
+      `${lessons === 1 ? "1 lezione trovata" : `${lessons} lezioni trovate`} in ${courses === 1 ? "1 corso" : `${courses} corsi`}`,
     scanning: "Aggiorno le lezioni…",
     lastOpened: "Ultime aperte",
     lessonsCount: (n: number) => (n === 1 ? "1 lezione" : `${n} lezioni`),

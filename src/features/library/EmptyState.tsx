@@ -92,6 +92,9 @@ export function EmptyState({
     const onKey = (event: KeyboardEvent) => {
       // An open menu takes its own Esc
       if (event.key !== "Escape" || document.querySelector('[role="menu"]')) return;
+      // A search being typed takes the first Esc (it empties it)
+      const typing = document.activeElement;
+      if (typing instanceof HTMLInputElement && typing.value !== "") return;
       // Only back to the track: Esc must not also clear its loop
       event.stopPropagation();
       event.preventDefault();

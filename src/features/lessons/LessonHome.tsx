@@ -43,6 +43,7 @@ import { fileNameOf, formatAgo } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
 import { useSettingsStore } from "@/stores/settings";
 import { openLesson } from "./openLesson";
+import { litParts, matches, searchWords } from "./search";
 
 type Lesson = Lesson_Serialize;
 const l = t.lessons;
@@ -198,11 +199,15 @@ function LessonMenu({ lesson, children }: { lesson: Lesson; children: ReactNode 
 /** One lesson: name, what it holds, its tab, practice and last opening; click opens it. */
 function LessonRow({
   lesson,
-  showGroup = false,
+  from,
+  words = [],
   missing = false,
 }: {
   lesson: Lesson;
-  showGroup?: boolean;
+  /** Where it comes from (course · module), under its name: for lists that mix courses */
+  from?: string;
+  /** Words searched, lit in its name */
+  words?: string[];
   /** Its course folder is gone (a disconnected drive): shown, not opened */
   missing?: boolean;
 }) {
@@ -231,10 +236,10 @@ function LessonRow({
         >
           <Icon className="size-4 shrink-0" aria-hidden />
           <span className="min-w-0">
-            <span className="block truncate text-fg">{lesson.name}</span>
-            {showGroup && lesson.group && (
-              <span className="block truncate text-[11px] text-fg-subtle">{lesson.group}</span>
-            )}
+            <span className="block truncate text-fg">
+              <Lit text={lesson.name} words={words} />
+            </span>
+            {from && <span className="block truncate text-[11px] text-fg-subtle">{from}</span>}
           </span>
           <span className="flex items-center gap-3 text-[11px] text-fg-subtle tabular">
             {!lesson.main && <span>{l.document}</span>}
@@ -256,7 +261,6 @@ function LessonRow({
   );
 }
 
-/** Right-click on a course: read it again, show it, take it off the Home. */
 /** Keys of what is folded in the Home, remembered: a course is its folder, a module its folder plus name. */
 const groupKey = (root: string, group: string) => `${root}\n${group}`;
 
@@ -323,6 +327,7 @@ function FoldAllKey({
   );
 }
 
+/** Right-click on a course: read it again, show it, fold its modules, take it off the Home. */
 function CourseMenu({
   root,
   groups,
@@ -532,6 +537,102 @@ function Invite() {
  * a search; opening a lesson brings its angles, backing and tab. Read again in the background
  * when shown and when the window comes back to the front.
  */
+/** `text` with the searched words lit, so the eye finds why it matched. */
+function Lit({ text, words }: { text: string; words: string[] }) {
+  if (words.length === 0) return <>{text}</>;
+  const parts = litParts(text, words);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.lit ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed text
+          <mark key={i} className="rounded-sm bg-accent/25 text-fg">
+            {part.text}
+          </mark>
+        ) : (
+          // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed text
+          <span key={i}>{part.text}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+/**
+ * What a search found, laid out as the Home is: each course with its name, its modules as
+ * headings, the lessons below, the searched words lit. Above, how many and where.
+ */
+function SearchResults({
+  query,
+  words,
+  found,
+  roots,
+  missing,
+}: {
+  query: string;
+  words: string[];
+  found: Lesson[];
+  roots: LessonRoot[];
+  missing: Set<string>;
+}) {
+  if (found.length === 0) {
+    return (
+      <div className="flex flex-col items-start gap-1 px-2 py-4">
+        <p className="text-sm text-fg">{l.noMatch(query)}</p>
+        <p className="text-xs text-fg-subtle">{l.noMatchHint}</p>
+      </div>
+    );
+  }
+  const courses = roots
+    .map((root) => ({ root, lessons: found.filter((lesson) => lesson.root === root.path) }))
+    .filter((course) => course.lessons.length > 0);
+  return (
+    <>
+      <p className="px-1 text-xs text-fg-subtle">{l.found(found.length, courses.length)}</p>
+      {courses.map(({ root, lessons }) => {
+        const groups: { name: string; lessons: Lesson[] }[] = [];
+        for (const lesson of lessons) {
+          const last = groups.at(-1);
+          if (last && last.name === lesson.group) last.lessons.push(lesson);
+          else groups.push({ name: lesson.group, lessons: [lesson] });
+        }
+        return (
+          <section key={root.path} className="well rounded-panel px-2 py-1.5">
+            <h3 className="flex items-center gap-2 px-1 py-1">
+              <GraduationCap className="size-4 shrink-0 text-accent" aria-hidden />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-fg">
+                <Lit text={root.name} words={words} />
+              </span>
+              <span className="text-[11px] text-fg-subtle tabular">
+                {l.lessonsCount(lessons.length)}
+              </span>
+            </h3>
+            {groups.map((group) => (
+              <div key={`${group.name}-${group.lessons[0]?.id}`} className="mt-1">
+                {group.name && (
+                  <h4 className="panel-label px-2 pt-1.5 pb-0.5 text-fg-subtle">
+                    <Lit text={group.name} words={words} />
+                  </h4>
+                )}
+                <ul>
+                  {group.lessons.map((lesson) => (
+                    <LessonRow
+                      key={lesson.id}
+                      lesson={lesson}
+                      words={words}
+                      missing={missing.has(lesson.root)}
+                    />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
 export function LessonHome() {
   const library = useLessonsStore((s) => s.library);
   const scanning = useLessonsStore((s) => s.scanning);
@@ -556,16 +657,18 @@ export function LessonHome() {
     () => new Set(library.roots.filter((r) => !r.exists).map((r) => r.path)),
     [library],
   );
-  const needle = query.trim().toLowerCase();
-  const found = useMemo(() => {
-    if (!needle) return [];
-    const courses = new Map(library.roots.map((r) => [r.path, r.name]));
-    return library.lessons.filter((lesson) =>
-      `${lesson.name} ${lesson.group} ${courses.get(lesson.root) ?? ""}`
-        .toLowerCase()
-        .includes(needle),
-    );
-  }, [library, needle]);
+  const words = useMemo(() => searchWords(query), [query]);
+  const needle = words.length > 0;
+  const courseNames = useMemo(() => new Map(library.roots.map((r) => [r.path, r.name])), [library]);
+  const found = useMemo(
+    () =>
+      library.lessons.filter((lesson) =>
+        matches(`${lesson.name} ${lesson.group} ${courseNames.get(lesson.root) ?? ""}`, words),
+      ),
+    [library, courseNames, words],
+  );
+  const from = (lesson: Lesson) =>
+    [courseNames.get(lesson.root), lesson.group].filter(Boolean).join(" · ");
 
   if (library.roots.length === 0) return <Invite />;
 
@@ -579,16 +682,37 @@ export function LessonHome() {
             {l.scanning}
           </span>
         )}
-        <label className="well flex h-7 w-56 items-center gap-1.5 rounded-control px-2 text-fg-subtle focus-within:text-fg">
+        <label
+          className="well flex h-7 w-72 items-center gap-1.5 rounded-control px-2 text-fg-subtle focus-within:text-fg"
+          title={l.searchHint}
+        >
           <Search className="size-3.5 shrink-0" aria-hidden />
           <input
-            type="search"
+            type="text"
             value={query}
             onChange={(event) => store().setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              // Esc empties the search first (a second one goes back to the track)
+              if (event.key === "Escape" && query) {
+                event.stopPropagation();
+                store().setQuery("");
+              }
+            }}
             placeholder={l.search}
             aria-label={l.search}
             className="min-w-0 flex-1 bg-transparent text-xs text-fg outline-none placeholder:text-fg-subtle"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => store().setQuery("")}
+              title={l.clearSearch}
+              aria-label={l.clearSearch}
+              className="shrink-0 rounded-control text-fg-subtle hover:text-fg"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </label>
         {!needle && <FoldAllKey modules={modulesByCourse(library.lessons)} labelled />}
         <Button variant="hardware" onClick={() => void addCourse()} title={l.addCourseHint}>
@@ -598,20 +722,13 @@ export function LessonHome() {
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
         {needle ? (
-          found.length === 0 ? (
-            <p className="px-2 text-sm text-fg-subtle">{l.noMatch}</p>
-          ) : (
-            <ul className="well rounded-panel px-2 py-1.5">
-              {found.map((lesson) => (
-                <LessonRow
-                  key={lesson.id}
-                  lesson={lesson}
-                  showGroup
-                  missing={missing.has(lesson.root)}
-                />
-              ))}
-            </ul>
-          )
+          <SearchResults
+            query={query.trim()}
+            words={words}
+            found={found}
+            roots={library.roots}
+            missing={missing}
+          />
         ) : (
           <>
             {recent.length > 0 && (
@@ -622,7 +739,7 @@ export function LessonHome() {
                     <LessonRow
                       key={lesson.id}
                       lesson={lesson}
-                      showGroup
+                      from={from(lesson)}
                       missing={missing.has(lesson.root)}
                     />
                   ))}
