@@ -281,15 +281,12 @@ impl SpokenWord {
             return 0.0;
         }
         let samples = self.bank.samples(self.word);
-        match samples.get(self.at) {
-            Some(&sample) => {
-                self.at += 1;
-                sample * self.level * volume
-            }
-            None => {
-                self.playing = false;
-                0.0
-            }
+        if let Some(&sample) = samples.get(self.at) {
+            self.at += 1;
+            sample * self.level * volume
+        } else {
+            self.playing = false;
+            0.0
         }
     }
 }

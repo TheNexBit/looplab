@@ -11,7 +11,7 @@ const SETTLE_MS = 400;
 const LIMIT = 100;
 
 /** What undo and redo restore: the editing work on the timeline. */
-export interface EditState {
+interface EditState {
   markers: MarkerData[];
   sections: SectionData[];
   loop: { start: number | null; end: number | null; enabled: boolean };

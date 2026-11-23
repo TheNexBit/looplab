@@ -45,13 +45,13 @@ export function tidyHeader(score: ScoreHeader) {
 }
 
 /** The parts of a score that carry free text over the staves (alphaTab's model, read loosely). */
-export interface ScoreTexts {
+interface ScoreTexts {
   masterBars: { section?: { text: string; marker: string } | null }[];
   tracks: { staves: { bars: { voices: { beats: { text?: string | null }[] }[] }[] }[] }[];
 }
 
 /** Longest annotation joined on one line: a longer one would run past the page and be cut. */
-export const ONE_LINE_MAX = 40;
+const ONE_LINE_MAX = 40;
 
 /**
  * Same trouble over the staves: a beat's text or a section name with line breaks is spaced

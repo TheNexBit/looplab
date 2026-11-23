@@ -9,7 +9,7 @@ import type { NeckChord } from "./scoreNotes";
 import { type TimedBar, tempoMapFromBars } from "./syncTools";
 
 /** What the extras read of a tab on screen (its engine), without pulling alphaTab in. */
-export interface TabSource {
+interface TabSource {
   synthNotes(semitones: number): ScoreNote[];
   neckChords(): NeckChord[];
   tuning(): number[];

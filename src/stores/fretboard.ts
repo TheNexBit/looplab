@@ -19,7 +19,7 @@ export type FretDisplay = "degrees" | "notes";
 export const FRET_CHOICES = [12, 15, 22, 24] as const;
 export const SPAN_CHOICES = [0, 4, 5, 6] as const;
 
-export interface FretboardConfig {
+interface FretboardConfig {
   /** The neck is drawn under the metronome */
   enabled: boolean;
   shape: MusicalShape;

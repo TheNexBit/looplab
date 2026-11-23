@@ -231,8 +231,7 @@ mod tests {
         fs::write(
             places.legacy.join("recent.json"),
             format!(
-                r#"{{ "entries": [ {{ "path": {:?}, "duration": 60 }}, {{ "path": {:?} }} ] }}"#,
-                beside, read_only
+                r#"{{ "entries": [ {{ "path": {beside:?}, "duration": 60 }}, {{ "path": {read_only:?} }} ] }}"#
             ),
         )
         .unwrap();

@@ -120,13 +120,13 @@ export const SETTING_CHOICES = {
   afterLoop: ["stay", "start", "play"],
 } as const;
 export type Language = (typeof SETTING_CHOICES.language)[number];
-export type WaveStyle = (typeof SETTING_CHOICES.waveStyle)[number];
+type WaveStyle = (typeof SETTING_CHOICES.waveStyle)[number];
 export type Startup = (typeof SETTING_CHOICES.startup)[number];
-export type WheelAction = (typeof SETTING_CHOICES.wheel)[number];
-export type DoubleClick = (typeof SETTING_CHOICES.doubleClick)[number];
-export type FollowMode = (typeof SETTING_CHOICES.followMode)[number];
-export type OpenView = (typeof SETTING_CHOICES.openView)[number];
-export type AfterLoop = (typeof SETTING_CHOICES.afterLoop)[number];
+type WheelAction = (typeof SETTING_CHOICES.wheel)[number];
+type DoubleClick = (typeof SETTING_CHOICES.doubleClick)[number];
+type FollowMode = (typeof SETTING_CHOICES.followMode)[number];
+type OpenView = (typeof SETTING_CHOICES.openView)[number];
+type AfterLoop = (typeof SETTING_CHOICES.afterLoop)[number];
 type ChoiceSetting = keyof typeof SETTING_CHOICES;
 
 type NumericSetting = {

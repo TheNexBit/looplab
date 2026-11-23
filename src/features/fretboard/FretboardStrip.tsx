@@ -19,7 +19,7 @@ const toolKey =
   "hw flex h-7 items-center gap-1.5 rounded-control px-2.5 text-xs text-fg hover:brightness-125 data-[state=open]:text-accent";
 
 /** Italian name of a scale or chord (the theory files keep MetroFlow's English ones). */
-export function shapeLabel(kind: "scale" | "chord", id: string, fallback: string): string {
+function shapeLabel(kind: "scale" | "chord", id: string, fallback: string): string {
   return (kind === "scale" ? n.scaleNames[id] : n.chordNames[id]) ?? fallback;
 }
 

@@ -10,7 +10,7 @@
  */
 
 /** A rectangle, in pixels of the analysed image or in 0..1 of the page. */
-export interface Box {
+interface Box {
   x: number;
   y: number;
   w: number;

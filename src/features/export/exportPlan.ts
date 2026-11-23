@@ -19,14 +19,14 @@ export const FORMATS: { id: ExportFormat; extension: string; needsFfmpeg: boolea
 export const extensionOf = (format: ExportFormat) =>
   FORMATS.find((f) => f.id === format)?.extension ?? "wav";
 
-export interface PlanInput {
+interface PlanInput {
   source: ExportSource;
   loop: LoopRegion | null;
   sections: SectionRange[];
   duration: number;
 }
 
-export interface Region {
+interface Region {
   start: number;
   end: number;
   /** Short name for the file: the section name, "Loop 1:02-1:15", or "" for the whole track */

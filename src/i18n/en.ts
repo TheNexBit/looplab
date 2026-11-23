@@ -508,7 +508,6 @@ export const en = {
     confirmProposedHint: "They become yours: a new analysis will keep them.",
     removeProposed: "Remove the proposed markers",
     removeProposedHint: "Only the ones you set or edited remain.",
-    noProposed: "No proposed markers.",
     meter: "Meter",
     meterHint: "The track's meter: click to choose it, wheel to change the beats",
     meterBeats: "Beats per bar",

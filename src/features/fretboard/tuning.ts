@@ -1,4 +1,4 @@
-import { type Accidental, midiName, noteName, pitchClass } from "@/lib/music";
+import { type Accidental, midiName } from "@/lib/music";
 
 /**
  * A tuning is just the pitch of each open string, lowest first.
@@ -42,11 +42,6 @@ export const CUSTOM_ID = "custom";
 
 export function findTuning(id: string): Tuning | null {
   return TUNINGS.find((tuning) => tuning.id === id) ?? null;
-}
-
-/** "E A D G B E" — how a tuning is said out loud, low string first. */
-export function tuningLabel(strings: number[], accidental: Accidental = "sharp"): string {
-  return strings.map((midi) => noteName(pitchClass(midi), accidental)).join(" ");
 }
 
 /** With octaves, for the editor, where the octave is the thing being set. */

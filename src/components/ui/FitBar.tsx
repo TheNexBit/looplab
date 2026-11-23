@@ -14,7 +14,7 @@ import { cn } from "@/lib/cn";
  * lamp ("compact", the name in the hover hint), then a second row ("wrap"). No key is ever
  * hidden for lack of room.
  */
-export type FitMode = "full" | "compact" | "wrap";
+type FitMode = "full" | "compact" | "wrap";
 
 const FitContext = createContext<FitMode>("full");
 

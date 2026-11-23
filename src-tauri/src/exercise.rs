@@ -190,7 +190,17 @@ pub(crate) fn name_parts(file_name: &str) -> NameParts {
         removed.insert(0, words.split_off(cut).join(" "));
         backing |= group == 1;
     }
-    let label = removed
+    let label = title_case(&removed);
+    NameParts {
+        key: words.join(" "),
+        label,
+        backing,
+    }
+}
+
+/// Words taken off a name, as a label shows them: «slides backing» → «Slides Backing».
+pub fn title_case(phrases: &[String]) -> String {
+    phrases
         .join(" ")
         .split(' ')
         .filter(|w| !w.is_empty())
@@ -201,12 +211,7 @@ pub(crate) fn name_parts(file_name: &str) -> NameParts {
             })
         })
         .collect::<Vec<_>>()
-        .join(" ");
-    NameParts {
-        key: words.join(" "),
-        label,
-        backing,
-    }
+        .join(" ")
 }
 
 /// The other media files of `track`'s folder with the same lesson name.

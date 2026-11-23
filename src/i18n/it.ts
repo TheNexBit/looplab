@@ -510,7 +510,6 @@ export const it = {
     confirmProposedHint: "Diventano tuoi: una nuova analisi li terrà.",
     removeProposed: "Togli i marker proposti",
     removeProposedHint: "Restano solo quelli che hai messo o modificato.",
-    noProposed: "Nessun marker proposto.",
     meter: "Metrica",
     meterHint: "Metrica del brano: clic per sceglierla, rotella per cambiare i battiti",
     meterBeats: "Battiti per battuta",

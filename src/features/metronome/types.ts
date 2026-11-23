@@ -1,5 +1,5 @@
 /** Denominator of the time signature: which note value one pulse is. */
-export type BeatUnit = 2 | 4 | 8 | 16;
+type BeatUnit = 2 | 4 | 8 | 16;
 
 export interface TimeSignature {
   /** Numerator: how many pulses per bar. */

@@ -4,10 +4,13 @@
 //! `BEAT_THIS_MODELS` or from the reference folder of this PC. Every checkpoint found
 //! there that has golden logits is checked; without any, the tests say so and pass.
 
+mod common;
+
 use std::path::PathBuf;
 use std::time::Instant;
 
 use beat_detect::{BeatModel, FrameLogits};
+use common::{golden, golden_path};
 
 const CHECKPOINTS: [&str; 4] = ["final0", "final1", "final2", "small0"];
 
@@ -29,25 +32,6 @@ fn models() -> Vec<(&'static str, BeatModel)> {
         eprintln!("SKIPPED: no exported model in {}", dir.display());
     }
     found
-}
-
-fn golden_path(name: &str) -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/golden")
-        .join(name)
-}
-
-fn golden(name: &str) -> Vec<f32> {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/golden")
-        .join(name);
-    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
-    bytes
-        .as_chunks::<4>()
-        .0
-        .iter()
-        .map(|b| f32::from_le_bytes(*b))
-        .collect()
 }
 
 fn compare(case: &str, ours: &[FrameLogits], theirs: &[f32]) {

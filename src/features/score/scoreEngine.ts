@@ -21,14 +21,14 @@ type Api = alphaTab.AlphaTabApi;
 type Beat = alphaTab.model.Beat;
 
 /** What the engine reads of the player: Looplab's engine keeps the time, alphaTab follows. */
-export interface ScoreHost {
+interface ScoreHost {
   /** Seconds of the recording */
   duration: () => number;
   position: () => number;
   playing: () => boolean;
 }
 
-export interface ScoreEvents {
+interface ScoreEvents {
   loaded: (tracks: ScoreTrack[], barCount: number, fileSync: SyncPoint[]) => void;
   /** Bars and beats are drawn (again): overlays must be placed again */
   rendered: () => void;

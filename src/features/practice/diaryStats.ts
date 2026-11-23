@@ -17,7 +17,7 @@ export function lastDays(today: Date, count: number): string[] {
 
 const samePath = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
-export interface TrackSummary {
+interface TrackSummary {
   /** Seconds practised today */
   today: number;
   total: number;
@@ -40,7 +40,7 @@ export function trackSummary(entries: DiaryRecord[], path: string, now: Date): T
   };
 }
 
-export interface TrackRow {
+interface TrackRow {
   path: string;
   name: string;
   total: number;

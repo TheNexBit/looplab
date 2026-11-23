@@ -407,15 +407,12 @@ impl ClickVoice {
     #[inline]
     pub fn next(&mut self, volume: f32) -> f32 {
         if let Some((kind, at)) = self.sample {
-            return match self.samples.of(kind).get(at) {
-                Some(&sample) => {
-                    self.sample = Some((kind, at + 1));
-                    sample * self.level * volume
-                }
-                None => {
-                    self.sample = None;
-                    0.0
-                }
+            return if let Some(&sample) = self.samples.of(kind).get(at) {
+                self.sample = Some((kind, at + 1));
+                sample * self.level * volume
+            } else {
+                self.sample = None;
+                0.0
             };
         }
         if self.left == 0 {

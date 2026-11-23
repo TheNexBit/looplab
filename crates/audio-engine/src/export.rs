@@ -167,7 +167,9 @@ pub fn render(
             let edge = at.min(total - 1 - at);
             if edge < fade {
                 let gain = edge as f32 / fade as f32;
-                frame.iter_mut().for_each(|s| *s *= gain);
+                for s in frame.iter_mut() {
+                    *s *= gain;
+                }
             }
         }
         sink(out)?;

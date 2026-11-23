@@ -17,7 +17,7 @@ const isShortcut = (id: string | undefined): id is ShortcutId =>
  * What the pointer is over: the hint of a `Tooltip` (its `data-info` attributes), else a native
  * `title` (whose "Tasto destro: …" line becomes the right-click part), else the control's name.
  */
-export function infoOf(target: EventTarget | null): Info | null {
+function infoOf(target: EventTarget | null): Info | null {
   if (!(target instanceof Element)) return null;
   const element = target.closest("[data-info],[title],[aria-label]");
   if (!element) return null;

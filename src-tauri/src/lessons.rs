@@ -18,7 +18,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 
 use crate::db::{LibraryError, path_key};
-use crate::exercise::{TakeKind, media_kind, name_parts};
+use crate::exercise::{TakeKind, media_kind, name_parts, title_case};
 use crate::project;
 
 /// Score files Looplab draws, best first (the first found of the earliest kind is linked).
@@ -290,18 +290,7 @@ fn score_parts(file_name: &str) -> (String, String) {
         let cut = words.len() - phrase.split(' ').count();
         removed.insert(0, words.split_off(cut).join(" "));
     }
-    let label = removed
-        .join(" ")
-        .split(' ')
-        .filter(|w| !w.is_empty())
-        .map(|w| {
-            let mut chars = w.chars();
-            chars.next().map_or_else(String::new, |c| {
-                c.to_uppercase().collect::<String>() + chars.as_str()
-            })
-        })
-        .collect::<Vec<_>>()
-        .join(" ");
+    let label = title_case(&removed);
     (words.join(" "), label)
 }
 

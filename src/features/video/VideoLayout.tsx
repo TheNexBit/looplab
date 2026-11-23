@@ -79,7 +79,7 @@ export function BesideKey({ beside }: { beside: boolean }) {
 }
 
 /** The player's clock moved onto the picture's file (another angle of the take). */
-export const videoClock = () => {
+const videoClock = () => {
   const clock = playbackClock();
   return { ...clock, position: clock.position + useVideoStore.getState().shift };
 };

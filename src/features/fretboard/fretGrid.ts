@@ -8,7 +8,7 @@ export const INLAYS = [3, 5, 7, 9, 15, 17, 19, 21];
 export const DOUBLE_INLAYS = [12, 24];
 
 /** One note of the shape, found at one place on the neck. */
-export interface FretMark {
+interface FretMark {
   /** Index into the tuning, so 0 is the lowest string. */
   string: number;
   /** 0 is the open string. */

@@ -1,14 +1,12 @@
 //! "Analyse tempo": beats and downbeats of the open track found by the Beat This! network,
 //! turned into a tempo map (crate `beat-detect`).
 
-use std::path::PathBuf;
-
 use audio_engine::Pcm;
 use audio_engine::resample::StreamResampler;
 use beat_detect::{Hints, SAMPLE_RATE};
 use serde::Deserialize;
 use tauri::ipc::Channel;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, State};
 
 use super::{AppError, ErrorKind};
 use crate::project::TempoMarker;
@@ -26,27 +24,6 @@ const PREPARE_SHARE: f32 = 0.05;
 pub struct TempoRequest {
     /// Markers the user set or edited: kept as they are, and their bar starts guide the rest
     pub keep: Vec<TempoMarker>,
-}
-
-fn model_path(app: &AppHandle) -> Option<PathBuf> {
-    let bundled = app
-        .path()
-        .resource_dir()
-        .ok()
-        .map(|dir| dir.join("models").join(MODEL_FILE));
-    if let Some(path) = bundled.filter(|p| p.is_file()) {
-        return Some(path);
-    }
-    #[cfg(debug_assertions)]
-    {
-        let dev = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("models")
-            .join(MODEL_FILE);
-        if dev.is_file() {
-            return Some(dev);
-        }
-    }
-    None
 }
 
 /// The track as the network wants it: mono (the mean of the channels) at 22050 Hz.
@@ -93,8 +70,8 @@ pub async fn analyze_tempo(
             "track still loading",
         ));
     }
-    let model =
-        model_path(&app).ok_or_else(|| AppError::new(ErrorKind::TempoModelMissing, MODEL_FILE))?;
+    let model = crate::paths::model_file(&app, MODEL_FILE)
+        .ok_or_else(|| AppError::new(ErrorKind::TempoModelMissing, MODEL_FILE))?;
     let analyzer = state.tempo_analyzer(&model).map_err(AppError::internal)?;
 
     tauri::async_runtime::spawn_blocking(move || {
@@ -117,7 +94,7 @@ pub async fn analyze_tempo(
         };
         let analysis = analyzer
             .analyze(&signal, &hints, |p| {
-                report(PREPARE_SHARE + p * (1.0 - PREPARE_SHARE))
+                report(PREPARE_SHARE + p * (1.0 - PREPARE_SHARE));
             })
             .map_err(AppError::internal)?;
         Ok(analysis
@@ -193,7 +170,6 @@ mod tests {
         let analysis = analyzer
             .analyze(&signal, &Hints::default(), |_| {})
             .unwrap();
-        println!("{:?}", analysis.markers);
         let first = analysis.markers.first().expect("a marker");
         assert!((first.bpm - 120.0).abs() < 1.0, "{:?}", analysis.markers);
         assert_eq!(first.beats_per_bar, 4, "{:?}", analysis.markers);

@@ -27,7 +27,7 @@ export interface BarSpan {
   beatUnit?: number;
 }
 
-export interface ScorePoint {
+interface ScorePoint {
   bar: number;
   occurrence: number;
   /** 0..1 through the bar */

@@ -7,7 +7,7 @@ use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};
 use symphonia::core::errors::Error as SymphoniaError;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::{FormatOptions, FormatReader, TrackType};
-use symphonia::core::io::MediaSourceStream;
+use symphonia::core::io::{MediaSourceStream, MediaSourceStreamOptions};
 use symphonia::core::meta::MetadataOptions;
 
 use crate::load::LoadError;
@@ -27,7 +27,7 @@ pub struct Decoder {
 impl Decoder {
     pub fn open(path: &Path) -> Result<Self, LoadError> {
         let file = File::open(path)?;
-        let stream = MediaSourceStream::new(Box::new(file), Default::default());
+        let stream = MediaSourceStream::new(Box::new(file), MediaSourceStreamOptions::default());
 
         let mut hint = Hint::new();
         if let Some(extension) = path.extension().and_then(|e| e.to_str()) {

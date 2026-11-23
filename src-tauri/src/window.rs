@@ -9,6 +9,7 @@ use tauri::{
     WebviewWindowBuilder,
 };
 
+use crate::state::lock;
 use crate::{paths, window_state};
 
 pub const MAIN: &str = "main";
@@ -55,7 +56,7 @@ pub fn is_mini() -> bool {
 /// that stays above other programs (a score or tab in the browser, a lesson video); turned
 /// off, it goes back to where and how big it was.
 pub fn set_mini(window: &WebviewWindow, on: bool) -> tauri::Result<()> {
-    let mut mini = MINI.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut mini = lock(&MINI);
     if on == mini.is_some() {
         return Ok(());
     }

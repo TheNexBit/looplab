@@ -36,7 +36,7 @@ function playStep(index: number) {
   usePlaylistStore.getState().setProgress(index, 1);
 }
 
-export function startPlaylist() {
+function startPlaylist() {
   const player = usePlayerStore.getState();
   if (!player.track || usePlaylistStore.getState().steps.length === 0) return;
   playStep(0);

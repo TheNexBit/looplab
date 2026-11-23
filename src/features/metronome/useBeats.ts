@@ -4,10 +4,10 @@ import { currentPulses, pulsesPerSecond, shownSetup, useMetronomeStore } from "@
 import { feltBeatSpans } from "./beatGrid";
 
 /** What a pulse that just started is: a count-in click, an accent, a beat; muted pulses are skipped. */
-export type BeatKind = "countIn" | "accent" | "beat";
+type BeatKind = "countIn" | "accent" | "beat";
 
 /** Where a beat falls: its pulse in the bar (0 = the first) and how long a pulse lasts. */
-export interface BeatInfo {
+interface BeatInfo {
   pulse: number;
   seconds: number;
 }

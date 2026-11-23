@@ -4,10 +4,10 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import type { ExerciseFile } from "@/stores/exercise";
-import { nudge, realign, shiftTo } from "./exerciseSync";
+import { COARSE_STEP, FRAME_STEP, nudge, realign, shiftTo } from "./exerciseSync";
 
 /** «+0,173 s» / «−12 ms»: a shift as the user reads it. */
-export function formatShift(seconds: number): string {
+function formatShift(seconds: number): string {
   const sign = seconds < 0 ? "−" : "+";
   const abs = Math.abs(seconds);
   if (abs < 1) return `${sign}${Math.round(abs * 1000)} ms`;
@@ -48,12 +48,12 @@ export function NudgeRow({
   /** Audio steps (10 ms) instead of video frames */
   fine?: boolean;
 }) {
-  const small = fine ? 0.01 : 1 / 30;
+  const small = fine ? 0.01 : FRAME_STEP;
   const steps: [string, string, number][] = [
-    ["«", t.exercise.tenthBack, -0.1],
+    ["«", t.exercise.tenthBack, -COARSE_STEP],
     ["‹", fine ? t.exercise.milliBack : t.exercise.frameBack, -small],
     ["›", fine ? t.exercise.milliForward : t.exercise.frameForward, small],
-    ["»", t.exercise.tenthForward, 0.1],
+    ["»", t.exercise.tenthForward, COARSE_STEP],
   ];
   return (
     <div className="flex flex-col gap-1.5 px-2.5 py-1.5">

@@ -12,6 +12,7 @@ use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::hash::fnv1a;
+use crate::state::lock;
 
 /// Name the Tauri bundle gives the sidecar next to the app executable.
 const BUNDLED_NAME: &str = "ffmpeg.exe";
@@ -148,9 +149,9 @@ fn run(
         std::thread::spawn(move || {
             for line in BufReader::new(pipe).lines().map_while(Result::ok) {
                 if let Some(seconds) = parse_duration(&line) {
-                    *duration.lock().unwrap_or_else(|p| p.into_inner()) = Some(seconds);
+                    *lock(&duration) = Some(seconds);
                 }
-                let mut log = log.lock().unwrap_or_else(|p| p.into_inner());
+                let mut log = lock(&log);
                 if log.len() == LOG_TAIL {
                     log.pop_front();
                 }
@@ -161,7 +162,7 @@ fn run(
 
     if let Some(stdout) = child.stdout.take() {
         for line in BufReader::new(stdout).lines().map_while(Result::ok) {
-            let total = *duration.lock().unwrap_or_else(|p| p.into_inner());
+            let total = *lock(&duration);
             if let (Some(done), Some(total)) = (parse_progress(&line), total.filter(|t| *t > 0.0)) {
                 progress((done / total).clamp(0.0, 1.0) as f32);
             }
@@ -174,7 +175,7 @@ fn run(
 
     if !status.success() {
         let _ = fs::remove_file(&partial);
-        let log = log.lock().unwrap_or_else(|p| p.into_inner());
+        let log = lock(&log);
         let tail: String = log
             .iter()
             .rev()

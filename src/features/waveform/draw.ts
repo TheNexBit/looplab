@@ -3,7 +3,7 @@ import { clamp, formatTick } from "@/lib/time";
 import { type Peaks, pickLevel } from "./peaks";
 
 /** Part of the track to draw. Times in seconds, sizes in device pixels. */
-export interface Viewport {
+interface Viewport {
   start: number;
   span: number;
   width: number;
@@ -13,7 +13,7 @@ export interface Viewport {
 }
 
 /** How a waveform is drawn: its look and its vertical zoom (1 = peaks touch the edges). */
-export interface WaveLook {
+interface WaveLook {
   style: "filled" | "outline" | "half";
   zoom: number;
 }

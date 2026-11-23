@@ -141,6 +141,30 @@ pub fn webview_dir(app: &AppHandle) -> tauri::Result<PathBuf> {
     Ok(places(app)?.local.join("webview"))
 }
 
+/// A neural network model: in `models/` next to the app (a bundle resource) or, while
+/// developing, in `src-tauri/models`. None if it is in neither.
+pub fn model_file(app: &AppHandle, file: &str) -> Option<PathBuf> {
+    use tauri::Manager;
+    let bundled = app
+        .path()
+        .resource_dir()
+        .ok()
+        .map(|dir| dir.join("models").join(file));
+    if let Some(path) = bundled.filter(|p| p.is_file()) {
+        return Some(path);
+    }
+    #[cfg(debug_assertions)]
+    {
+        let dev = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("models")
+            .join(file);
+        if dev.is_file() {
+            return Some(dev);
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;

@@ -20,9 +20,9 @@ export const EXERCISE_LIMITS = {
 type NumberKey = keyof typeof EXERCISE_LIMITS;
 
 /** Most cells a rhythm can have (the engine's `MAX_STEPS`). */
-export const MAX_RHYTHM_CELLS = 128;
+const MAX_RHYTHM_CELLS = 128;
 /** Subdivisions a rhythm is written in: eighths, triplets, sixteenths of the pulse. */
-export const RHYTHM_SUBDIVISIONS = [2, 3, 4] as const;
+const RHYTHM_SUBDIVISIONS = [2, 3, 4] as const;
 
 export interface ExerciseSetup {
   trainer: boolean;

@@ -1,10 +1,11 @@
 import { t } from "@/i18n";
+import { fileNameOf } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player";
 
 export function LoadingState() {
   const load = usePlayerStore((s) => s.load);
   if (load.kind !== "loading") return null;
-  const name = load.path.split(/[\\/]/).pop();
+  const name = fileNameOf(load.path);
   const percent = Math.round(load.progress * 100);
 
   return (

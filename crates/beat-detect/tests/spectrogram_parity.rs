@@ -1,23 +1,11 @@
 //! The Rust spectrogram against the values Beat This! computes in Python
 //! (`tests/golden/make_golden.py`, run once with the reference environment).
 
-use std::path::PathBuf;
+mod common;
 
 use beat_detect::N_MELS;
 use beat_detect::spectrogram::{LogMelSpectrogram, N_BINS, mel_filterbank};
-
-fn golden(name: &str) -> Vec<f32> {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/golden")
-        .join(name);
-    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
-    bytes
-        .as_chunks::<4>()
-        .0
-        .iter()
-        .map(|b| f32::from_le_bytes(*b))
-        .collect()
-}
+use common::golden;
 
 /// Largest absolute difference, and where it is.
 fn worst(ours: &[f32], theirs: &[f32]) -> (f32, usize) {

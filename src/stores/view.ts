@@ -9,7 +9,7 @@ const EASE = 0.3;
 /** After a manual scroll, following waits this long before catching the playhead again. */
 const MANUAL_PAUSE_MS = 2_000;
 
-export interface ViewWindow {
+interface ViewWindow {
   start: number;
   span: number;
 }

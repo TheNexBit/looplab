@@ -40,7 +40,7 @@ impl StreamResampler {
             .map_err(|err| LoadError::Corrupt(err.to_string()))?;
             Some(fft)
         };
-        let delay_left = inner.as_ref().map_or(0, |r| r.output_delay());
+        let delay_left = inner.as_ref().map_or(0, Resampler::output_delay);
         Ok(Self {
             inner,
             input: Vec::new(),
@@ -60,7 +60,7 @@ impl StreamResampler {
         }
         self.input.extend_from_slice(frames);
         self.frames_in += (frames.len() / CHANNELS) as u64;
-        while let Some(needed) = self.inner.as_ref().map(|r| r.input_frames_next())
+        while let Some(needed) = self.inner.as_ref().map(Resampler::input_frames_next)
             && self.input.len() / CHANNELS >= needed
         {
             self.process_chunk(None, sink)?;

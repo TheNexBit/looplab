@@ -7,6 +7,7 @@ import { OnOffKey } from "@/components/ui/OnOffKey";
 import { useOptions } from "@/components/ui/OptionsKey";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
+import { fileNameOf } from "@/lib/format";
 import { fileOf, samePath, useExerciseStore } from "@/stores/exercise";
 import { usePlayerStore } from "@/stores/player";
 import { takeName } from "./AngleMenu";
@@ -90,7 +91,7 @@ export function TakeSwitch() {
                 title={file.path}
                 onClick={() => chooseOther(file.path)}
               >
-                {takeName(file.name)} · {file.path.split(/[\\/]/).pop()}
+                {takeName(file.name)} · {fileNameOf(file.path)}
               </Chip>
             </div>
           ))}
@@ -98,7 +99,7 @@ export function TakeSwitch() {
           {audioFiles.map((file) => (
             <div key={file.path} className="flex items-center gap-2 px-2.5 py-1 text-xs">
               <span className="min-w-0 flex-1 truncate" title={file.path}>
-                {file.path.split(/[\\/]/).pop()}
+                {fileNameOf(file.path)}
               </span>
               <span className="text-fg-subtle">{t.exercise.markBacking}</span>
               <OnOffKey

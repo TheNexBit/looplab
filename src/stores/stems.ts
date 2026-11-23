@@ -12,7 +12,7 @@ export interface StemChannelData {
 }
 
 /** Where the separation of the open song stands. */
-export type StemsPhase =
+type StemsPhase =
   | { kind: "idle" }
   | { kind: "running"; progress: number }
   | { kind: "error"; error: AppError };

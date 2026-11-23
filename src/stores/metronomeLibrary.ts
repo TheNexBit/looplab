@@ -28,7 +28,7 @@ export interface Part extends PlayedPart {
   id: string;
 }
 
-export interface SavedSequence {
+interface SavedSequence {
   id: string;
   name: string;
   parts: Part[];

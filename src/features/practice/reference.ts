@@ -17,7 +17,7 @@ const STANDARD: Record<Instrument, readonly number[]> = {
  * Tunings and how many semitones each string goes down from standard, lowest string first
  * (the bass uses the first four). Names in `t.practice.referenceTunings`.
  */
-export const REFERENCE_TUNINGS = {
+const REFERENCE_TUNINGS = {
   standard: [0, 0, 0, 0, 0, 0],
   eFlat: [1, 1, 1, 1, 1, 1],
   dropD: [2, 0, 0, 0, 0, 0],

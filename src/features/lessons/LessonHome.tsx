@@ -30,7 +30,7 @@ import {
   type TabState,
 } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
-import { formatAgo } from "@/lib/format";
+import { fileNameOf, formatAgo } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
 import { openLesson } from "./openLesson";
 
@@ -40,7 +40,6 @@ const l = t.lessons;
 const RECENT_COUNT = 4;
 
 const store = () => useLessonsStore.getState();
-const fileName = (path: string) => path.split(/[\\/]/).pop() ?? path;
 const ago = (seconds: number) => formatAgo(new Date(seconds * 1000), new Date(), t.recent.ago);
 
 async function addCourse() {
@@ -86,7 +85,7 @@ function choose(
 }
 
 function fileTitle(file: LessonFile) {
-  return file.label ? `${file.label} · ${fileName(file.path)}` : fileName(file.path);
+  return file.label ? `${file.label} · ${fileNameOf(file.path)}` : fileNameOf(file.path);
 }
 
 /** Right-click on a lesson: open one of its files, pick what opens and which tab goes with it. */
@@ -145,7 +144,7 @@ function LessonMenu({ lesson, children }: { lesson: Lesson; children: ReactNode 
                   ) : (
                     <FileMusic className="size-4" />
                   )}
-                  <span className="truncate">{fileName(file.path)}</span>
+                  <span className="truncate">{fileNameOf(file.path)}</span>
                 </ContextMenu.Item>
               ))}
               <ContextMenu.Item

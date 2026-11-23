@@ -9,6 +9,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::state::lock;
+
 const FILE_NAME: &str = "looplab.log";
 const OLD_FILE_NAME: &str = "looplab.old.log";
 const MAX_BYTES: u64 = 1_000_000;
@@ -62,7 +64,7 @@ pub fn write(level: Level, source: &str, message: &str) {
     let Some(path) = PATH.get() else {
         return;
     };
-    let _guard = WRITING.lock().unwrap_or_else(|p| p.into_inner());
+    let _guard = lock(&WRITING);
     if fs::metadata(path).is_ok_and(|m| m.len() > MAX_BYTES) {
         let _ = fs::rename(path, path.with_file_name(OLD_FILE_NAME));
     }

@@ -19,10 +19,10 @@ import type { ExerciseSetup } from "./metronomeExercises";
 export const METRONOME_BPM = { min: 20, max: 400, step: 1, default: 120 } as const;
 /** What the BPM count: quarter notes (as in DAWs) or the pulses of the bar (♪ in 4/8). */
 export const TEMPO_BASES = ["quarter", "pulse"] as const;
-export type TempoBase = (typeof TEMPO_BASES)[number];
+type TempoBase = (typeof TEMPO_BASES)[number];
 /** Note values a pulse can be: 2/x … 16/x. */
 export const METRONOME_UNITS = [2, 4, 8, 16] as const;
-export type MetronomeUnit = (typeof METRONOME_UNITS)[number];
+type MetronomeUnit = (typeof METRONOME_UNITS)[number];
 /** Clicks a pulse can be split into (1 = only the pulses). */
 export const SUBDIVISIONS = [1, 2, 3, 4, 5, 6] as const;
 export const CROSS = { min: 2, max: 16 } as const;
@@ -68,7 +68,7 @@ const FLASH_KEY = "looplab.metronome.flash";
 const VOICE_KEY = "looplab.metronome.voice";
 
 /** "uno, due, tre…" on the pulses, "e" on the subdivisions if asked. */
-export interface CountVoiceSetup {
+interface CountVoiceSetup {
   on: boolean;
   subdivisions: boolean;
   /** 0..1 */

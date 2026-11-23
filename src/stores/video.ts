@@ -4,7 +4,7 @@ import { readPrefs, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
 
 export type VideoStatus = "none" | "loading" | "proxying" | "ready" | "error";
-export type VideoDock = "top" | "side";
+type VideoDock = "top" | "side";
 
 /** Panel size limits, in CSS pixels (height when on top, width when at the side). */
 const VIDEO_SIZE = { min: 120, max: 900, default: 280 } as const;

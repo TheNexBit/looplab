@@ -1,11 +1,11 @@
 import { linkScore } from "@/features/score/pickScore";
 import { t } from "@/i18n";
 import { commands, type Lesson_Serialize } from "@/lib/bindings";
+import { fileNameOf } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
 import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
 
-const fileName = (path: string) => path.split(/[\\/]/).pop() ?? path;
 const samePath = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 /** The tab the user picked on the Home for the track being opened (wins over a linked one). */
@@ -52,7 +52,7 @@ export async function autoLinkScore(track: string) {
       useScoreStore.getState().unlink();
       return;
     }
-    if (!choice.score || (linked && samePath(linked.name, fileName(choice.score)))) return;
+    if (!choice.score || (linked && samePath(linked.name, fileNameOf(choice.score)))) return;
     score = choice.score;
   } else {
     if (linked) return;
@@ -66,7 +66,7 @@ export async function autoLinkScore(track: string) {
   if (now && !choice) return;
   await linkScore(score);
   if (useScoreStore.getState().link)
-    useScoreStore.getState().setInfo(t.lessons.tabLinked(fileName(score)));
+    useScoreStore.getState().setInfo(t.lessons.tabLinked(fileNameOf(score)));
 }
 
 /** The user removed the tab: the one beside the track is not linked again by itself. */

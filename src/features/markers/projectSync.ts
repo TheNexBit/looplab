@@ -57,7 +57,8 @@ function tempoSnapshot() {
   };
 }
 
-function apply(data: ProjectData) {
+/** What every file of a take shares: markers, loops, playlist and tempo map. */
+function applyCommon(data: ProjectData) {
   useMarkersStore.getState().replace(data.markers, data.sections);
   useLoopStore.getState().restore(data.loop);
   useSavedLoopsStore.getState().replace(data.loops);
@@ -69,6 +70,10 @@ function apply(data: ProjectData) {
     practice.setBeatOffset(data.beatOffset);
     practice.setTimeSignature(data.beatsPerBar, data.beatUnit);
   }
+}
+
+function apply(data: ProjectData) {
+  applyCommon(data);
   const player = usePlayerStore.getState();
   player.setSpeed(data.speed);
   player.setPitch(data.semitones, data.cents);
@@ -92,16 +97,7 @@ function resume(position: number) {
 
 /** Only the parts shared by the files of a take (and the practice speed): pitch, mix and place stay. */
 function applyShared(data: ProjectData) {
-  useMarkersStore.getState().replace(data.markers, data.sections);
-  useLoopStore.getState().restore(data.loop);
-  useSavedLoopsStore.getState().replace(data.loops);
-  usePlaylistStore.getState().replace(data.playlist);
-  const practice = usePracticeStore.getState();
-  practice.setTempoMap(data.tempoMap);
-  if (data.tempoMap.length === 0) {
-    practice.setBeatOffset(data.beatOffset);
-    practice.setTimeSignature(data.beatsPerBar, data.beatUnit);
-  }
+  applyCommon(data);
   useScoreStore.getState().restore(data.score);
   usePlayerStore.getState().setSpeed(data.speed);
 }

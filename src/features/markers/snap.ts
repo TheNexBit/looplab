@@ -25,7 +25,7 @@ export function nearestWithin(time: number, points: number[], threshold: number)
 }
 
 /** What the thing being dragged must not stick to: itself. */
-export interface SnapExclude {
+interface SnapExclude {
   markerId?: string;
   sectionId?: string;
   /** While the loop itself is being drawn, moved or resized */

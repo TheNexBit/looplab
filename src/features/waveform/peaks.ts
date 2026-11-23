@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
  * Layout (little-endian): u32 sampleRate, u32 levelCount, then per level
  * u32 binFrames, u32 bins, i8[bins * 2] as interleaved (min, max).
  */
-export interface PeakLevel {
+interface PeakLevel {
   binFrames: number;
   /** Interleaved (min, max) per bin, ±127 = full scale (`Peaks.gain` enlarges quiet songs) */
   data: Int8Array;

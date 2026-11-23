@@ -9,7 +9,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { menuContent, menuItem } from "@/components/ui/menu";
 import { t } from "@/i18n";
 import { type AppError, commands, type ExportFormat } from "@/lib/bindings";
-import { formatPercent, signed } from "@/lib/format";
+import { fileNameOf, formatPercent, signed } from "@/lib/format";
 import { readPrefs, writeStored } from "@/lib/storage";
 import { formatTime } from "@/lib/time";
 import { eqToRust, useEqStore } from "@/stores/eq";
@@ -296,7 +296,7 @@ export function ExportDialog() {
         {phase.kind === "done" && (
           <div className="mt-3 flex items-center gap-3 text-sm text-fg">
             <span className="min-w-0 flex-1 truncate" title={phase.path}>
-              {x.done} {phase.path.split(/[\\/]/).pop()}
+              {x.done} {fileNameOf(phase.path)}
             </span>
             <Button variant="hardware" onClick={() => void commands.revealFile(phase.path)}>
               <FolderOpen className="size-4" />

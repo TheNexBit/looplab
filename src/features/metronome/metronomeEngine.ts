@@ -12,7 +12,7 @@ import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 
 /** The bar of a setup, in the engine's terms. */
-export function barRequest(setup: MetronomeSetup): BarRequest {
+function barRequest(setup: MetronomeSetup): BarRequest {
   return {
     beats: setup.beats,
     unit: setup.unit,
@@ -26,7 +26,7 @@ export function barRequest(setup: MetronomeSetup): BarRequest {
 }
 
 /** A sequence in the engine's terms: every part with its bar, tempo and exercises. */
-export function sequenceRequest(sequence: PlayedSequence): SequenceRequest {
+function sequenceRequest(sequence: PlayedSequence): SequenceRequest {
   return {
     repeat: sequence.repeat,
     parts: sequence.parts.map((part) => ({
@@ -39,7 +39,7 @@ export function sequenceRequest(sequence: PlayedSequence): SequenceRequest {
 }
 
 /** What the engine needs of the metronome store and the click sounds of the settings. */
-export function metronomeRequest(): MetronomeRequest {
+function metronomeRequest(): MetronomeRequest {
   const m = useMetronomeStore.getState();
   return {
     bpm: m.bpm,

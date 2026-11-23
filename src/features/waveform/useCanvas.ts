@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { onThemeChange } from "@/lib/theme";
 
-export interface CanvasSize {
+interface CanvasSize {
   /** Device pixels: what drawing code works in */
   width: number;
   height: number;

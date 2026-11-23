@@ -39,7 +39,8 @@ pub struct AppState {
     stems_cancel: Mutex<Option<Arc<AtomicBool>>>,
 }
 
-fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+/// A mutex's data, even after a thread panicked while holding it (the data is still usable).
+pub(crate) fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     mutex
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())

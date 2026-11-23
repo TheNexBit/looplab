@@ -107,7 +107,7 @@ export function alignBars(spans: readonly BarSpan[], notes: readonly TabNote[]):
 }
 
 /** Bars found with less confidence than this are reported to be checked by eye. */
-export const UNSURE = 0.2;
+const UNSURE = 0.2;
 /** A bar start within this of where the points around it put it needs no point of its own. */
 const KEEP_SECONDS = 0.03;
 

@@ -39,7 +39,7 @@ export interface PdfBar {
 }
 
 /** "none": no score linked; "loading": being read and drawn; "ready"; "error". */
-export type ScoreStatus = "none" | "loading" | "ready" | "error";
+type ScoreStatus = "none" | "loading" | "ready" | "error";
 
 /** A track (instrument) of the score. */
 export interface ScoreTrack {
@@ -50,7 +50,7 @@ export interface ScoreTrack {
 }
 
 /** Height of the docked panel, in CSS pixels. */
-export const SCORE_SIZE = { min: 160, max: 1400, default: 380 } as const;
+const SCORE_SIZE = { min: 160, max: 1400, default: 380 } as const;
 export const SCORE_ZOOM = { min: 0.5, max: 2, step: 0.1, default: 1 } as const;
 
 const PREFS_KEY = "looplab.score";

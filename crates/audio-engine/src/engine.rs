@@ -102,15 +102,19 @@ pub(crate) enum Command {
 }
 
 /// Memory the audio thread lets go of, freed by the next command sent from outside.
+#[expect(
+    dead_code,
+    reason = "held only to be dropped away from the audio thread"
+)]
 pub(crate) enum Garbage {
-    Track(#[allow(dead_code)] Arc<Pcm>),
-    Sequence(#[allow(dead_code)] Arc<Sequence>),
-    Voice(#[allow(dead_code)] Arc<VoiceBank>),
-    Samples(#[allow(dead_code)] Arc<ClickSamples>),
-    TempoMap(#[allow(dead_code)] Arc<TempoMap>),
-    Stems(#[allow(dead_code)] Arc<Stems>),
-    Other(#[allow(dead_code)] Arc<OtherTake>),
-    Notes(#[allow(dead_code)] Arc<Vec<Note>>),
+    Track(Arc<Pcm>),
+    Sequence(Arc<Sequence>),
+    Voice(Arc<VoiceBank>),
+    Samples(Arc<ClickSamples>),
+    TempoMap(Arc<TempoMap>),
+    Stems(Arc<Stems>),
+    Other(Arc<OtherTake>),
+    Notes(Arc<Vec<Note>>),
 }
 
 /// Written by the audio thread, read by everyone else.

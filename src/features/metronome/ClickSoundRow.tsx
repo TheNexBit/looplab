@@ -16,7 +16,7 @@ const s = t.metronome.sounds;
 const names = t.practice.sounds;
 const AUDIO = ["wav", "mp3", "flac", "ogg", "m4a", "aac", "aiff"];
 
-export type SoundSlotSetup = (typeof SOUND_SLOTS)[number];
+type SoundSlotSetup = (typeof SOUND_SLOTS)[number];
 
 /** Plays one click of a kind with the sounds as they are now (also while stopped). */
 async function hear(slot: SoundSlotSetup["slot"]) {

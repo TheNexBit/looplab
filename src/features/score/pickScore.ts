@@ -4,7 +4,7 @@ import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
 
 /** Score files Looplab shows: Guitar Pro 3-8, MusicXML, Capella (drawn) and PDF (pictures). */
-export const SCORE_EXTENSIONS = [
+const SCORE_EXTENSIONS = [
   "gp",
   "gp3",
   "gp4",

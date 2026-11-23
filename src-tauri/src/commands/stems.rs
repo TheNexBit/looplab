@@ -36,27 +36,6 @@ pub struct StemsInfo {
     pub names: Vec<String>,
 }
 
-fn model_path(app: &AppHandle) -> Option<PathBuf> {
-    let bundled = app
-        .path()
-        .resource_dir()
-        .ok()
-        .map(|dir| dir.join("models").join(MODEL_FILE));
-    if let Some(path) = bundled.filter(|p| p.is_file()) {
-        return Some(path);
-    }
-    #[cfg(debug_assertions)]
-    {
-        let dev = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("models")
-            .join(MODEL_FILE);
-        if dev.is_file() {
-            return Some(dev);
-        }
-    }
-    None
-}
-
 /// Cache file of one separated track: next to the decoded song, `<key>.stem-vocals.pcm`.
 fn stem_file(stem: &Path, name: &str, partial: bool) -> PathBuf {
     let ending = if partial { "partial" } else { "pcm" };
@@ -132,8 +111,8 @@ pub async fn separate_stems(
             "track still loading",
         ));
     }
-    let model =
-        model_path(&app).ok_or_else(|| AppError::new(ErrorKind::StemModelMissing, MODEL_FILE))?;
+    let model = crate::paths::model_file(&app, MODEL_FILE)
+        .ok_or_else(|| AppError::new(ErrorKind::StemModelMissing, MODEL_FILE))?;
     let separator = state.stem_separator(&model).map_err(AppError::internal)?;
     let stem = cache_stem(&app, Path::new(&request.path), rate)?;
     // Room in the cache: six tracks as large as the decoded song

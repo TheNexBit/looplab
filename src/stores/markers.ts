@@ -31,7 +31,7 @@ export type SectionRange = SectionData;
 const newId = () => crypto.randomUUID();
 
 /** Shortest section, in seconds: as short as a loop can be. */
-export const MIN_SECTION = MIN_LOOP;
+const MIN_SECTION = MIN_LOOP;
 
 /** Sections in time order. */
 export const sortedSections = (sections: readonly SectionData[]): SectionData[] =>

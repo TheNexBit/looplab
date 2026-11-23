@@ -1,5 +1,5 @@
 /** Tokens of `styles/theme.css` that canvas drawing reads. */
-export type ThemeToken =
+type ThemeToken =
   | "accent"
   | "fg"
   | "fg-muted"

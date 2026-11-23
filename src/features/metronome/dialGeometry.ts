@@ -16,7 +16,7 @@ export const RADIUS = 116;
  */
 export const SWEEP_DEG = 300;
 export const START_DEG = 120;
-export const END_DEG = (START_DEG + SWEEP_DEG) % 360;
+const END_DEG = (START_DEG + SWEEP_DEG) % 360;
 export const SPAN = METRONOME_BPM.max - METRONOME_BPM.min;
 
 export const angleOf = (bpm: number) =>

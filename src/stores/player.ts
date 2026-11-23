@@ -31,7 +31,7 @@ export type Track = Omit<TrackInfo, "duration" | "ready"> & { duration: number; 
  */
 const peaksRefreshMs = (duration: number) => clamp((duration / 3600) * 1700, 1000, 5000);
 
-export type LoadState =
+type LoadState =
   | { kind: "idle" }
   | { kind: "loading"; path: string; progress: number }
   | { kind: "error"; path: string; error: AppError };

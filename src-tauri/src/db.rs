@@ -6,12 +6,13 @@
 //! version is the database's `user_version`; `upgrade` brings older files up to date.
 
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex, MutexGuard};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use rusqlite::{Connection, OpenFlags, OptionalExtension, params};
 
 use crate::paths::Places;
+use crate::state::lock;
 use crate::{backup, legacy, log};
 
 /// The library file, in the user folder.
@@ -190,12 +191,6 @@ pub struct Library {
     failure: Option<String>,
     /// Name of the backup put back at start because the library was damaged
     recovered: Option<String>,
-}
-
-fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
-    mutex
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 impl Library {

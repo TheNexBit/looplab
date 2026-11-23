@@ -2,7 +2,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { commands } from "@/lib/bindings";
 
 /** The bytes of a library score (read through the asset protocol), `null` if it cannot be read. */
-export async function scoreBytes(file: string): Promise<Uint8Array | null> {
+async function scoreBytes(file: string): Promise<Uint8Array | null> {
   const prepared = await commands.prepareScore(file);
   if (prepared.status === "error") return null;
   try {

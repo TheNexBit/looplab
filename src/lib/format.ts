@@ -1,3 +1,6 @@
+/** The last part of a path, as a list shows a file: "C:\music\song.mp3" → "song.mp3". */
+export const fileNameOf = (path: string) => path.split(/[\\/]/).pop() ?? path;
+
 /**
  * A value with its sign always shown when not zero, as on the pitch and gain readouts of
  * DAWs: 2 → "+2", -3 → "-3", 0 → "0". With a unit: "+2 st".
@@ -11,7 +14,7 @@ export function signed(value: number, unit?: string): string {
 export const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
 
 /** Words for `formatAgo`, from `i18n`. */
-export interface AgoWords {
+interface AgoWords {
   now: string;
   minutes: string;
   today: string;
