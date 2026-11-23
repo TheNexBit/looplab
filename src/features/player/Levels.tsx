@@ -21,7 +21,10 @@ export function TrackLevel({ className }: { className?: string }) {
       hint={v.trackVolumeHint}
       value={volume}
       current={() => settings().trackVolume}
-      {...SETTING_LIMITS.trackVolume}
+      min={SETTING_LIMITS.trackVolume.min}
+      max={SETTING_LIMITS.trackVolume.max}
+      step={0.01}
+      notch={SETTING_LIMITS.trackVolume.step}
       defaultValue={1}
       onChange={(trackVolume) => settings().update({ trackVolume })}
       format={formatPercent}
@@ -50,7 +53,10 @@ export function ClickLevel({ className }: { className?: string }) {
       hint={v.clickVolumeHint}
       value={volume}
       current={() => settings().clickVolume}
-      {...SETTING_LIMITS.clickVolume}
+      min={SETTING_LIMITS.clickVolume.min}
+      max={SETTING_LIMITS.clickVolume.max}
+      step={0.01}
+      notch={SETTING_LIMITS.clickVolume.step}
       defaultValue={0.6}
       onChange={(clickVolume) => settings().update({ clickVolume })}
       format={formatPercent}

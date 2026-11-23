@@ -34,7 +34,10 @@ interface KnobProps {
   current: () => number;
   min: number;
   max: number;
+  /** Smallest change: what a drag moves by */
   step: number;
+  /** What a wheel notch or an arrow key moves by (default: `step`), e.g. 5% on a level */
+  notch?: number;
   /** Double-click goes back to it; a `centered` knob lights the ring from it */
   defaultValue: number;
   /**
@@ -74,6 +77,7 @@ export function Knob({
   min,
   max,
   step,
+  notch = step,
   defaultValue,
   centered = false,
   onChange,
@@ -97,7 +101,7 @@ export function Knob({
     const clean = Number(snapped.toFixed(decimals));
     if (clean !== current()) onChange(clean);
   };
-  useWheelSteps(knobRef, (notch) => set(current() + notch * step));
+  useWheelSteps(knobRef, (turn) => set(current() + turn * notch));
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
@@ -125,7 +129,7 @@ export function Knob({
     if (by === undefined) return;
     event.preventDefault();
     event.stopPropagation();
-    set(current() + by * step * (event.shiftKey ? 10 : 1));
+    set(current() + by * (event.shiftKey ? step : notch));
   };
 
   const angle = angleOf(shareOf(value, min, max, pivot));
