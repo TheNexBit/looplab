@@ -25,9 +25,20 @@ export function Overview() {
   const playheadRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<HTMLDivElement>(null);
   const dirty = useRef(true);
-  const { ref: canvasRef, size } = useCanvas(() => {
-    dirty.current = true;
-  });
+  /** The whole track's waveform (the window, loop and playhead are elements over it). */
+  const paint = () => {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx || !peaks || duration <= 0) return;
+    const { width, height } = size.current;
+    ctx.clearRect(0, 0, width, height);
+    drawWaveform(ctx, peaks, { start: 0, span: duration, width, height }, themeColor("wave-dim"), {
+      style: useSettingsStore.getState().waveStyle,
+      zoom: 1,
+    });
+    dirty.current = false;
+  };
+  // A resize empties the canvas: drawn again at once, never shown blank for a frame
+  const { ref: canvasRef, size } = useCanvas(() => paint());
 
   useEffect(() => {
     if (peaks) dirty.current = true;
@@ -46,21 +57,7 @@ export function Overview() {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !peaks || duration <= 0) return;
 
-    if (dirty.current) {
-      const { width, height } = size.current;
-      ctx.clearRect(0, 0, width, height);
-      drawWaveform(
-        ctx,
-        peaks,
-        { start: 0, span: duration, width, height },
-        themeColor("wave-dim"),
-        {
-          style: useSettingsStore.getState().waveStyle,
-          zoom: 1,
-        },
-      );
-      dirty.current = false;
-    }
+    if (dirty.current) paint();
 
     const { start, span } = useViewStore.getState();
     const box = windowRef.current;

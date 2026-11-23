@@ -770,7 +770,6 @@ export const it = {
     angles: "Inquadrature della lezione",
     main: "Principale",
     rename: "Nome dell'inquadratura",
-    renameTake: "Nome del file",
     nudge: "Sposta",
     nudgeHint:
       "Sposta questo file rispetto agli altri della lezione, se l'allineamento automatico non va bene",
@@ -789,7 +788,6 @@ export const it = {
       noSound: "Senza audio: allinealo a mano con «Sposta»",
       mismatch: "Il suono è diverso (un'altra versione): tenuto separato",
     },
-    shift: (ms: string) => `Spostamento: ${ms}`,
     thisTrack: "È il file aperto: gli altri si allineano a lui",
   },
   score: {

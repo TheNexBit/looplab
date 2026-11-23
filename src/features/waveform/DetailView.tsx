@@ -50,8 +50,48 @@ export function DetailView() {
   const shadeRef = useRef<HTMLDivElement>(null);
   const dirty = useRef(true);
   const drawn = useRef({ start: -1, span: -1 });
+  /** Ruler, grid and waveform of the view from `start`, `span` seconds wide. */
+  const paint = (ctx: CanvasRenderingContext2D, start: number, span: number) => {
+    if (!peaks) return;
+    const viewStore = useViewStore.getState();
+    const { width, height, dpr } = size.current;
+    ctx.clearRect(0, 0, width, height);
+    // A view stretched past an end of the track (hand drag): shade where there is no music
+    const pixelsPerSecond = width / span;
+    ctx.fillStyle = themeColor("grid");
+    if (start < 0) ctx.fillRect(0, 0, Math.round(-start * pixelsPerSecond), height);
+    const end = viewStore.duration;
+    if (start + span > end) {
+      const x = Math.round((end - start) * pixelsPerSecond);
+      ctx.fillRect(x, 0, width - x, height);
+    }
+    const view = { start, span, width, height, top: RULER_CSS * dpr };
+    const settings = useSettingsStore.getState();
+    drawRuler(ctx, view, dpr, {
+      tick: themeColor("tick"),
+      label: themeColor("fg-muted"),
+      grid: settings.rulerLines ? themeColor("grid") : undefined,
+    });
+    const beats = settings.showGrid ? currentTempoMap() : null;
+    if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
+    drawWaveform(ctx, peaks, view, themeColor("wave"), {
+      style: settings.waveStyle,
+      zoom: settings.waveZoom,
+    });
+    if (beats) {
+      drawBeatGrid(ctx, view, beats, dpr, "bars", {
+        line: themeColor("bar"),
+        notch: themeColor("accent"),
+      });
+    }
+    drawn.current = { start, span };
+    dirty.current = false;
+  };
+  // A resize empties the canvas: drawn again at once, never shown blank for a frame
   const { ref: canvasRef, size } = useCanvas(() => {
-    dirty.current = true;
+    const ctx = canvasRef.current?.getContext("2d");
+    const { start, span } = useViewStore.getState();
+    if (ctx) paint(ctx, start, span);
   });
 
   // New track: redraw even if the window happens to match the previous one
@@ -84,40 +124,10 @@ export function DetailView() {
     }
     viewStore.step();
     const { start, span } = useViewStore.getState();
-    const { width, height, dpr } = size.current;
+    const { width, dpr } = size.current;
 
     if (dirty.current || drawn.current.start !== start || drawn.current.span !== span) {
-      ctx.clearRect(0, 0, width, height);
-      // A view stretched past an end of the track (hand drag): shade where there is no music
-      const pixelsPerSecond = width / span;
-      ctx.fillStyle = themeColor("grid");
-      if (start < 0) ctx.fillRect(0, 0, Math.round(-start * pixelsPerSecond), height);
-      const end = viewStore.duration;
-      if (start + span > end) {
-        const x = Math.round((end - start) * pixelsPerSecond);
-        ctx.fillRect(x, 0, width - x, height);
-      }
-      const view = { start, span, width, height, top: RULER_CSS * dpr };
-      const settings = useSettingsStore.getState();
-      drawRuler(ctx, view, dpr, {
-        tick: themeColor("tick"),
-        label: themeColor("fg-muted"),
-        grid: settings.rulerLines ? themeColor("grid") : undefined,
-      });
-      const beats = settings.showGrid ? currentTempoMap() : null;
-      if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
-      drawWaveform(ctx, peaks, view, themeColor("wave"), {
-        style: settings.waveStyle,
-        zoom: settings.waveZoom,
-      });
-      if (beats) {
-        drawBeatGrid(ctx, view, beats, dpr, "bars", {
-          line: themeColor("bar"),
-          notch: themeColor("accent"),
-        });
-      }
-      drawn.current = { start, span };
-      dirty.current = false;
+      paint(ctx, start, span);
     }
 
     const toX = (time: number) => ((time - start) / span) * (width / dpr);

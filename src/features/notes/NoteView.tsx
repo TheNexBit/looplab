@@ -155,8 +155,10 @@ export function NoteView() {
   const lastKey = useRef("");
   const lastSent = useRef(0);
   const inFlight = useRef(false);
+  // A resize empties the canvas: drawn again at once, never shown blank for a frame
   const { ref: canvasRef, size } = useCanvas(() => {
-    dirty.current = true;
+    const canvas = canvasRef.current;
+    if (canvas) draw(canvas, size.current.width, size.current.height, picture.current);
   });
 
   // Another mode starts from an empty picture (a new track remounts the view)

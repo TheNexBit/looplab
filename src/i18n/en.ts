@@ -766,7 +766,6 @@ export const en = {
     angles: "Camera angles of the lesson",
     main: "Main",
     rename: "Name of the angle",
-    renameTake: "Name of the file",
     nudge: "Move",
     nudgeHint: "Move this file against the others of the lesson, if the automatic line-up is off",
     frameBack: "One frame earlier",
@@ -784,7 +783,6 @@ export const en = {
       noSound: "No sound: line it up by hand with «Move»",
       mismatch: "Its sound differs (another version): kept apart",
     },
-    shift: (ms: string) => `Shift: ${ms}`,
     thisTrack: "This is the open file: the others line up with it",
   },
   score: {

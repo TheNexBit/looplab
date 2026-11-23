@@ -65,6 +65,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
   pentagramma, e alcune battute andavano perse (Exercise 03 ne aveva 7 su 8). Ora i 27 PDF del corso
   JTC hanno tutti le stesse battute dei loro file .gp.
 - Nelle lezioni con video e spartito la forma d'onda grande poteva ridursi a pochi pixel.
+- La forma d'onda, la panoramica e la vista note lampeggiavano mentre se ne cambiava la misura: la tela veniva
+  svuotata e ridisegnata solo al giro di schermo dopo. Ora si ridisegna nello stesso istante.
 - La finestra chiusa massimizzata si riapriva normale: una finestra ridotta a icona salvava una posizione
   finta (-32000) e alla riapertura veniva scartato anche «massimizzata». Ora una finestra ridotta a icona non
   cambia niente di ciò che è ricordato, e «massimizzata» vale sempre.
