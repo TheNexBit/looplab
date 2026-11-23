@@ -264,6 +264,9 @@ pub struct Project {
     pub stem_mix: Vec<StemChannel>,
     /// The linked score (tab, notation or PDF), if any
     pub score: Option<ProjectScore>,
+    /// The other scores used with this track, each with its own sync and view, so switching
+    /// back to one finds it as it was. The one in `score` is never here
+    pub other_scores: Vec<ProjectScore>,
     /// Seconds since 1970: when the parts shared with the other files of the exercise (score,
     /// markers, sections, loops, tempo, practice speed) last changed. Set on saving; what the UI sends is ignored
     pub shared_at: f64,
@@ -295,6 +298,7 @@ impl Default for Project {
             channels: ChannelMode::Stereo,
             stem_mix: Vec::new(),
             score: None,
+            other_scores: Vec::new(),
             shared_at: 0.0,
             shared_from: None,
             shared_delta: 0.0,
@@ -481,6 +485,7 @@ fn shared_parts(p: &Project) -> serde_json::Value {
         p.beat_unit,
         p.tempo_map,
         p.score,
+        p.other_scores,
         p.speed
     ])
 }
@@ -493,6 +498,7 @@ pub fn has_shared(p: &Project) -> bool {
 /// The shared parts that existed before the speed was shared: score, markers, loops, tempo.
 fn has_shared_marks(p: &Project) -> bool {
     p.score.is_some()
+        || !p.other_scores.is_empty()
         || !p.markers.is_empty()
         || !p.sections.is_empty()
         || !p.loops.is_empty()
@@ -515,6 +521,7 @@ pub fn take_shared(into: &Project, from: &Project, delta: f64) -> Project {
         beat_unit: from.beat_unit,
         tempo_map: from.tempo_map.clone(),
         score: from.score.clone(),
+        other_scores: from.other_scores.clone(),
         speed: from.speed,
         shared_at: from.shared_at,
         shared_delta: delta,
@@ -536,7 +543,7 @@ pub fn take_shared(into: &Project, from: &Project, delta: f64) -> Project {
     for t in &mut out.tempo_map {
         t.time = at(t.time);
     }
-    if let Some(score) = &mut out.score {
+    for score in out.score.iter_mut().chain(out.other_scores.iter_mut()) {
         for p in &mut score.sync {
             p.time = at(p.time);
         }

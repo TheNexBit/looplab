@@ -157,11 +157,15 @@ pub fn path_of(dir: &Path, file: &str) -> Option<PathBuf> {
     is_content_name(file).then(|| dir.join(file))
 }
 
-/// The score files the saved projects name.
+/// The score files the saved projects name: the linked one and the others used before.
 fn used(conn: &Connection) -> rusqlite::Result<HashSet<String>> {
     let mut statement = conn.prepare(
         "SELECT json_extract(data, '$.score.file') FROM projects
-         WHERE json_extract(data, '$.score.file') IS NOT NULL",
+         WHERE json_extract(data, '$.score.file') IS NOT NULL
+         UNION
+         SELECT json_extract(other.value, '$.file') FROM projects,
+                json_each(projects.data, '$.otherScores') AS other
+         WHERE json_extract(other.value, '$.file') IS NOT NULL",
     )?;
     let rows = statement.query_map([], |row| row.get::<_, String>(0))?;
     rows.collect()
@@ -274,24 +278,30 @@ mod tests {
             p
         };
         let used = import(&dir, &src("used.gp", b"used")).unwrap();
+        let before = import(&dir, &src("before.pdf", b"before")).unwrap();
         let unused = import(&dir, &src("unused.gp", b"unused")).unwrap();
         let fresh = import(&dir, &src("fresh.gp", b"fresh")).unwrap();
         let partial = dir.join(format!("{}{PARTIAL}", content_name(b"half", "gp")));
         fs::write(&partial, b"ha").unwrap();
         let stranger = dir.join("leggimi.txt");
         fs::write(&stranger, b"mine").unwrap();
-        for file in [&used.file, &unused.file] {
+        for file in [&used.file, &before.file, &unused.file] {
             age(&dir.join(file));
         }
         age(&partial);
         age(&stranger);
         conn.execute(
             "INSERT INTO projects (path_key, path, data, updated_at) VALUES ('k', 'p', ?1, 0)",
-            [format!(r#"{{"score":{{"file":"{}"}}}}"#, used.file)],
+            [format!(
+                r#"{{"score":{{"file":"{}"}},"otherScores":[{{"file":"{}"}}]}}"#,
+                used.file, before.file
+            )],
         )
         .unwrap();
         assert_eq!(sweep(&conn, &dir).unwrap(), 2);
         assert!(dir.join(&used.file).is_file());
+        // A tab used before with the track is kept: switching back finds it
+        assert!(dir.join(&before.file).is_file());
         assert!(dir.join(&fresh.file).is_file());
         assert!(!dir.join(&unused.file).exists());
         assert!(!partial.exists());

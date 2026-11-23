@@ -124,7 +124,9 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
 - **Dati**: `scores.rs` copia il file collegato una sola volta in `spartiti\` accanto a `libreria.db`
   (`Places::scores`), con nome dal contenuto `<size>-<fnv>.<ext>` (stesso file = stessa copia; l'originale non
   si tocca). Il progetto del brano tiene `score` (file, nome, tracce, righi, impaginazione, segui, zoom, punti di
-  sincronia). All'avvio `scores::sweep` toglie le copie che nessun progetto nomina (più vecchie di un'ora) e i
+  sincronia) e `other_scores`, le altre tab usate col brano, ognuna con la sua sincronia (lo «scaffale» dello
+  store: cambiando tab quella mostrata ci va, e una già usata torna com'era; menu «Tab», `TabMenu.tsx`). All'avvio
+  `scores::sweep` toglie le copie che nessun progetto nomina, né in `score` né in `otherScores` (più vecchie di un'ora), e i
   `.parziale` rimasti. `backup.rs` copia `suoni\` e `spartiti\` in ogni backup (`USER_FOLDERS`); gli spartiti
   invariati sono hard link al backup precedente dove il disco lo permette. Comandi: `import_score`,
   `prepare_score` (apre solo quel file al protocollo asset).

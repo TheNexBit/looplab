@@ -101,6 +101,8 @@ export const shortcuts = {
   // Light or dark paper under the score, and the overview strip on / off
   toggleScorePaper: "Shift+P",
   toggleOverview: "Shift+O",
+  // The next tab of the lesson (.gp or PDF), each with its own sync
+  nextTab: "Alt+T",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

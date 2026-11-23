@@ -71,6 +71,17 @@ pub fn set_lesson_choice(
     })?)
 }
 
+/// The lesson `track` belongs to (read from its own folder, also outside the course folders):
+/// the score bar lists its tabs to switch between them.
+#[tauri::command]
+#[specta::specta]
+pub fn lesson_of_track(
+    library: State<'_, Library>,
+    track: String,
+) -> Result<Option<lessons::Lesson>, AppError> {
+    Ok(library.with(|conn| lessons::lesson_of(conn, &track))?)
+}
+
 /// The score beside `track` (same folder, same name), to link when its project has none.
 #[tauri::command]
 #[specta::specta]

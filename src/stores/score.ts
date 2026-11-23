@@ -67,6 +67,8 @@ const loadPrefs = (): Prefs =>
 interface ScoreState extends Prefs {
   /** The song's linked score, as saved in its project */
   link: ProjectScore | null;
+  /** The other scores used with the song, each with its own sync and view (never `link`) */
+  shelf: ProjectScore[];
   status: ScoreStatus;
   error: AppError | null;
   /** Tracks of the loaded score */
@@ -80,8 +82,8 @@ interface ScoreState extends Prefs {
   /** The empty panel ("link a score") is open, for a song with no score yet */
   asking: boolean;
 
-  /** Replaces the link (a song opened): only projectSync calls it. */
-  restore: (link: ProjectScore | null) => void;
+  /** Replaces the link and the scores used before (a song opened): only projectSync calls it. */
+  restore: (link: ProjectScore | null, shelf?: ProjectScore[]) => void;
   /** A problem to tell over the score shown (it stays on screen), shown a few seconds */
   notice: AppError | null;
   /** Shows a problem: as a notice over the score if one is shown, else in the empty panel. */
@@ -90,6 +92,8 @@ interface ScoreState extends Prefs {
   /** Copies `path` into the library and links it to the open song. */
   linkFile: (path: string) => Promise<void>;
   unlink: () => void;
+  /** Shows a score kept on the shelf (by its library file), the one shown going there. */
+  swapTo: (file: string) => void;
   setStatus: (status: ScoreStatus, error?: AppError | null) => void;
   setLoaded: (tracks: ScoreTrack[], barCount: number, fileSync: SyncPoint[]) => void;
   setTracks: (tracks: number[]) => void;
@@ -145,6 +149,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
   return {
     ...loadPrefs(),
     link: null,
+    shelf: [],
     status: "none",
     error: null,
     tracks: [],
@@ -154,13 +159,14 @@ export const useScoreStore = create<ScoreState>((set, get) => {
     asking: false,
     notice: null,
 
-    restore: (link) =>
+    restore: (link, shelf = []) =>
       set({
         asking: false,
         notice: null,
         info: null,
         tapping: null,
         link,
+        shelf,
         status: link ? "loading" : "none",
         error: null,
         tracks: [],
@@ -198,13 +204,18 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       }
       const { file, name, kind } = result.data;
       const previous = get().link;
-      // Same file again: keep its sync and view; another file starts fresh
+      // Same file again: keep its sync and view
       if (previous?.file === file) {
         set({ asking: false });
         return;
       }
+      // Another file: the one shown goes on the shelf, and a file used before comes back as
+      // it was left (sync, bars, view); a new one starts fresh
+      const shelf = get().shelf;
+      const kept = shelf.find((score) => score.file === file);
+      const others = shelf.filter((score) => score.file !== file);
       set({
-        link: {
+        link: kept ?? {
           file,
           name,
           kind,
@@ -216,6 +227,7 @@ export const useScoreStore = create<ScoreState>((set, get) => {
           sync: [],
           pdfBars: [],
         },
+        shelf: previous ? [previous, ...others] : others,
         status: "loading",
         error: null,
         tracks: [],
@@ -226,8 +238,37 @@ export const useScoreStore = create<ScoreState>((set, get) => {
       prefs({ collapsed: false });
     },
 
-    unlink: () =>
-      set({ link: null, status: "none", error: null, tracks: [], fileSync: [], tapping: null }),
+    swapTo: (file) => {
+      const { link, shelf } = get();
+      const kept = shelf.find((score) => score.file === file);
+      if (!kept || link?.file === file) return;
+      const others = shelf.filter((score) => score.file !== file);
+      set({
+        link: kept,
+        shelf: link ? [link, ...others] : others,
+        status: "loading",
+        error: null,
+        tracks: [],
+        fileSync: [],
+        barCount: 0,
+        tapping: null,
+        notice: null,
+      });
+    },
+
+    // The tab taken away is kept on the shelf: linking it again finds its sync
+    unlink: () => {
+      const { link, shelf } = get();
+      set({
+        link: null,
+        shelf: link ? [link, ...shelf.filter((score) => score.file !== link.file)] : shelf,
+        status: "none",
+        error: null,
+        tracks: [],
+        fileSync: [],
+        tapping: null,
+      });
+    },
     setStatus: (status, error = null) => set({ status, error }),
     setLoaded: (tracks, barCount, fileSync) => set({ tracks, barCount, fileSync, status: "ready" }),
     setTracks: (tracks) => edit({ tracks }),

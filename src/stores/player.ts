@@ -210,23 +210,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       };
 
       if (playing) {
-        // Like Reaper: stopping goes back to the start point, ready to play the same passage again
-        if (useSettingsStore.getState().returnToStart) {
-          anchor(cue, false);
-          void commands.pause().then(report);
-          void commands.seek(cue).then(report);
-        } else {
-          anchor(currentPosition(), false);
-          void commands.pause().then(report);
-        }
+        // The playhead stops exactly where the music is, so the user sees where they got to
+        anchor(currentPosition(), false);
+        void commands.pause().then(report);
         return;
       }
 
-      // Play starts where the playhead is; only at the very end of the track does it start
-      // over (from the loop, if one is active), like the engine does
+      // Play starts where the playhead is or, with "return to start point", from the start point
+      // (the dashed line: where play last started or the user last clicked), like Reaper; only
+      // at the very end of the track does it start over (from the loop, if one is active)
       const loop = useLoopStore.getState();
       const region = loop.enabled ? loop.region() : null;
-      const position = currentPosition();
+      const here = currentPosition();
+      const position = useSettingsStore.getState().returnToStart ? cue : here;
       const from =
         position >= track.duration - 0.01
           ? region
@@ -237,7 +233,15 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       anchor(from, true, countInNow(from));
       set({ cue: from });
       useViewStore.getState().resumeFollow();
-      void commands.play().then(report);
+      // The engine is moved to the start point first when the playhead was left elsewhere
+      if (Math.abs(from - here) > 1e-3) {
+        void commands.seek(from).then((r) => {
+          report(r);
+          if (get().playing) void commands.play().then(report);
+        });
+      } else {
+        void commands.play().then(report);
+      }
     },
 
     seek: (seconds) => {

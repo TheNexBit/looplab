@@ -35,6 +35,7 @@ import { NeckKey, PaperKey, SynthKey } from "./ExtrasKeys";
 import { pickScore } from "./pickScore";
 import { SyncMenu } from "./SyncMenu";
 import { stopTapping } from "./syncActions";
+import { TabMenu } from "./TabMenu";
 import { TabNeck } from "./TabNeck";
 
 /** alphaTab (1.2 MB) loads only when a score is first shown, never at start. */
@@ -383,6 +384,7 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
       {/* Every key stays on screen: names give way to icons first, then a second row */}
       <FitBar className="min-h-7 gap-x-2 data-[fit=compact]:gap-x-1 data-[fit=wrap]:gap-x-1">
         <PanelTitle />
+        {tapping === null && <TabMenu link={link} />}
         {tapping !== null && <TapBanner next={tapping} />}
         {tapping === null && notation && <TrackMenu link={link} />}
         {tapping === null && !collapsed && <ViewKeys link={link} />}

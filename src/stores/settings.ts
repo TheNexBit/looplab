@@ -67,6 +67,8 @@ export interface Settings {
   scoreDark: boolean;
   /** The overview strip with the whole track above the sections; off leaves a thin strip to reopen it */
   showOverview: boolean;
+  /** What is folded in the lesson Home: course folders, and folder + newline + module name */
+  lessonFolds: string[];
   /** Media keys reach Looplab even while another program has the focus */
   globalMediaKeys: boolean;
   /** Beat and bar lines on the waveform (when the tempo is known); the magnet uses them */
@@ -194,6 +196,7 @@ const DEFAULTS: Settings = {
   scoreNeck: false,
   scoreDark: false,
   showOverview: true,
+  lessonFolds: [],
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",
@@ -242,6 +245,10 @@ export function sanitize(values: Partial<Settings>): Settings {
       (result as Record<string, unknown>)[key] = value;
     }
   }
+  // A list of strings only (an old or damaged file may hold anything)
+  result.lessonFolds = Array.isArray(values.lessonFolds)
+    ? values.lessonFolds.filter((key): key is string => typeof key === "string")
+    : [];
   // Before the on/off key, 0 bars meant off: keep an existing count-in on
   if (typeof values.countIn !== "boolean" && typeof values.countInBars === "number") {
     result.countIn = values.countInBars > 0;

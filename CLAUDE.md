@@ -12,4 +12,7 @@ Valgono insieme a `D:\CLAUDE.md`. Specifica completa del progetto: `docs/SPEC.md
 - `src/lib/bindings.ts` è generato: rigeneralo con `npm run bindings`, mai a mano.
 - Script: in `scripts/` solo i lanciatori `.cmd` numerati per importanza (`01-dev.cmd`…), la logica in `scripts/powershell/<nome>.ps1` (PowerShell 7), stile FolderForge. Mai `.ps1` e `.cmd` mischiati.
 - Prima di chiudere una fase: `scripts\02-test.cmd` senza errori né warning; aggiorna `docs/ROADMAP.md` e `docs/ARCHITECTURE.md`.
+- **Versione** (SemVer, vedi `CHANGELOG.md`): `0.<fase>.0` quando una fase è chiusa e provata, `0.<fase>.<n>` per le
+  correzioni dopo. A fine fase: versione in `package.json` e `Cargo.toml` (workspace), voce in `CHANGELOG.md`,
+  etichetta git `v0.F.0`.
 - Mai Rubber Band (GPL); FFmpeg solo build LGPL. tauri-specta/specta sono rc: versioni fissate con `=`.

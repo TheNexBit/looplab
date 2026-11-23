@@ -109,6 +109,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             lessons::add_lesson_root,
             lessons::remove_lesson_root,
             lessons::set_lesson_choice,
+            lessons::lesson_of_track,
             lessons::score_beside,
             lessons::forget_score_beside,
             lessons::open_document,

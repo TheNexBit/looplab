@@ -9,17 +9,26 @@ import {
   FileVideo,
   FolderOpen,
   FolderPlus,
+  FoldVertical,
   GraduationCap,
   Play,
   RefreshCw,
   Search,
+  Trash2,
   Undo2,
+  UnfoldVertical,
   X,
 } from "lucide-react";
-import { ContextMenu } from "radix-ui";
+import { ContextMenu, Popover } from "radix-ui";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
+import {
+  floatingPanel,
+  menuContent,
+  menuItem,
+  menuLabel,
+  menuSeparator,
+} from "@/components/ui/menu";
 import { withRightClick } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import {
@@ -32,6 +41,7 @@ import {
 import { cn } from "@/lib/cn";
 import { fileNameOf, formatAgo } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
+import { useSettingsStore } from "@/stores/settings";
 import { openLesson } from "./openLesson";
 
 type Lesson = Lesson_Serialize;
@@ -247,7 +257,34 @@ function LessonRow({
 }
 
 /** Right-click on a course: read it again, show it, take it off the Home. */
-function CourseMenu({ root, children }: { root: LessonRoot; children: ReactNode }) {
+/** Keys of what is folded in the Home, remembered: a course is its folder, a module its folder plus name. */
+const groupKey = (root: string, group: string) => `${root}\n${group}`;
+
+function setFolds(change: (folds: Set<string>) => void) {
+  const folds = new Set(useSettingsStore.getState().lessonFolds);
+  change(folds);
+  useSettingsStore.getState().update({ lessonFolds: [...folds] });
+}
+
+/** Folds or opens every module of a course at once. */
+function foldModules(root: string, groups: string[], fold: boolean) {
+  setFolds((folds) => {
+    for (const group of groups) {
+      if (fold) folds.add(groupKey(root, group));
+      else folds.delete(groupKey(root, group));
+    }
+  });
+}
+
+function CourseMenu({
+  root,
+  groups,
+  children,
+}: {
+  root: LessonRoot;
+  groups: string[];
+  children: ReactNode;
+}) {
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>{children}</ContextMenu.Trigger>
@@ -265,6 +302,25 @@ function CourseMenu({ root, children }: { root: LessonRoot; children: ReactNode 
             <FolderOpen className="size-4" />
             {l.reveal}
           </ContextMenu.Item>
+          {groups.length > 0 && (
+            <>
+              <ContextMenu.Separator className={menuSeparator} />
+              <ContextMenu.Item
+                className={menuItem}
+                onSelect={() => foldModules(root.path, groups, true)}
+              >
+                <FoldVertical className="size-4" />
+                {l.foldModules}
+              </ContextMenu.Item>
+              <ContextMenu.Item
+                className={menuItem}
+                onSelect={() => foldModules(root.path, groups, false)}
+              >
+                <UnfoldVertical className="size-4" />
+                {l.unfoldModules}
+              </ContextMenu.Item>
+            </>
+          )}
           <ContextMenu.Separator className={menuSeparator} />
           <ContextMenu.Item
             className={menuItem}
@@ -280,45 +336,130 @@ function CourseMenu({ root, children }: { root: LessonRoot; children: ReactNode 
   );
 }
 
-/** A course: its modules as headings, their lessons below; the name folds it. */
+/** The key that takes a course off the Home, asking first: its files stay on the disk. */
+function RemoveCourse({ root }: { root: LessonRoot }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 shrink-0 text-fg-subtle hover:text-fg"
+          title={`${l.removeCourse} — ${l.removeCourseHint}`}
+          aria-label={l.removeCourse}
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="bottom"
+          align="end"
+          sideOffset={4}
+          className={`${floatingPanel} w-72 p-3`}
+        >
+          <p className="text-sm font-medium text-fg">{l.removeAsk(root.name)}</p>
+          <p className="mt-1 text-xs text-fg-subtle">{l.removeCourseHint}</p>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="hardware" onClick={() => setOpen(false)}>
+              {l.keep}
+            </Button>
+            <Button
+              variant="hardware"
+              onClick={() => {
+                setOpen(false);
+                void store().removeRoot(root.path);
+              }}
+            >
+              <X className="size-4" />
+              {l.removeCourse}
+            </Button>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+/**
+ * A course: its modules as headings that fold, their lessons below; the name folds the whole
+ * course. What is folded is remembered.
+ */
 function Course({ root, lessons }: { root: LessonRoot; lessons: Lesson[] }) {
-  const [folded, setFolded] = useState(false);
+  const folds = useSettingsStore((s) => s.lessonFolds);
+  const folded = folds.includes(root.path);
   const groups: { name: string; lessons: Lesson[] }[] = [];
   for (const lesson of lessons) {
     const last = groups[groups.length - 1];
     if (last && last.name === lesson.group) last.lessons.push(lesson);
     else groups.push({ name: lesson.group, lessons: [lesson] });
   }
+  const names = groups.map((group) => group.name).filter(Boolean);
   const Chevron = folded ? ChevronRight : ChevronDown;
+  const toggle = (key: string) =>
+    setFolds((all) => {
+      if (!all.delete(key)) all.add(key);
+    });
   return (
     <section className="well rounded-panel px-2 py-1.5">
-      <CourseMenu root={root}>
-        <button
-          type="button"
-          title={withRightClick(root.path, l.courseRightClick)}
-          onClick={() => setFolded(!folded)}
-          className="flex w-full items-center gap-2 rounded-control px-1 py-1 text-left hover:text-fg"
-        >
-          <Chevron className="size-4 shrink-0 text-fg-subtle" aria-hidden />
-          <GraduationCap className="size-4 shrink-0 text-accent" aria-hidden />
-          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-fg">{root.name}</span>
-          {!root.exists && <span className="text-[11px] text-cue">{l.missingCourse}</span>}
-          <span className="text-[11px] text-fg-subtle tabular">{l.lessonsCount(root.lessons)}</span>
-        </button>
-      </CourseMenu>
+      <div className="flex items-center gap-1">
+        <CourseMenu root={root} groups={names}>
+          <button
+            type="button"
+            title={withRightClick(root.path, l.courseRightClick)}
+            onClick={() => toggle(root.path)}
+            aria-expanded={!folded}
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-control px-1 py-1 text-left hover:text-fg"
+          >
+            <Chevron className="size-4 shrink-0 text-fg-subtle" aria-hidden />
+            <GraduationCap className="size-4 shrink-0 text-accent" aria-hidden />
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-fg">
+              {root.name}
+            </span>
+            {!root.exists && <span className="text-[11px] text-cue">{l.missingCourse}</span>}
+            <span className="text-[11px] text-fg-subtle tabular">
+              {l.lessonsCount(root.lessons)}
+            </span>
+          </button>
+        </CourseMenu>
+        <RemoveCourse root={root} />
+      </div>
       {!folded &&
-        groups.map((group) => (
-          <div key={`${group.name}-${group.lessons[0]?.id}`} className="mt-1">
-            {group.name && (
-              <h3 className="panel-label px-2 pt-1.5 pb-0.5 text-fg-subtle">{group.name}</h3>
-            )}
-            <ul>
-              {group.lessons.map((lesson) => (
-                <LessonRow key={lesson.id} lesson={lesson} missing={!root.exists} />
-              ))}
-            </ul>
-          </div>
-        ))}
+        groups.map((group) => {
+          const key = groupKey(root.path, group.name);
+          const shut = group.name !== "" && folds.includes(key);
+          const GroupChevron = shut ? ChevronRight : ChevronDown;
+          return (
+            <div key={`${group.name}-${group.lessons[0]?.id}`} className="mt-1">
+              {group.name && (
+                <h3>
+                  <button
+                    type="button"
+                    onClick={() => toggle(key)}
+                    aria-expanded={!shut}
+                    className="panel-label flex w-full items-center gap-1.5 rounded-control px-2 pt-1.5 pb-0.5 text-left text-fg-subtle hover:text-fg"
+                  >
+                    <GroupChevron className="size-3.5 shrink-0" aria-hidden />
+                    <span className="min-w-0 flex-1 truncate">{group.name}</span>
+                    {shut && (
+                      <span className="text-[11px] font-normal normal-case tracking-normal tabular">
+                        {l.lessonsCount(group.lessons.length)}
+                      </span>
+                    )}
+                  </button>
+                </h3>
+              )}
+              {!shut && (
+                <ul>
+                  {group.lessons.map((lesson) => (
+                    <LessonRow key={lesson.id} lesson={lesson} missing={!root.exists} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
     </section>
   );
 }

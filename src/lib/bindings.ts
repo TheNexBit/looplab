@@ -211,6 +211,11 @@ export const commands = {
 	removeLessonRoot: (path: string) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("remove_lesson_root", { path })),
 	/**  Remembers which file a lesson opens and which tab goes with it. */
 	setLessonChoice: (id: string, choice: LessonChoice_Deserialize) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("set_lesson_choice", { id, choice })),
+	/**
+	 *  The lesson `track` belongs to (read from its own folder, also outside the course folders):
+	 *  the score bar lists its tabs to switch between them.
+	 */
+	lessonOfTrack: (track: string) => typedError<Lesson_Serialize | null, AppError>(__TAURI_INVOKE("lesson_of_track", { track })),
 	/**  The score beside `track` (same folder, same name), to link when its project has none. */
 	scoreBeside: (track: string) => typedError<string | null, AppError>(__TAURI_INVOKE("score_beside", { track })),
 	/**  The user removed the tab of `track`: it is not linked again by itself. */
@@ -1009,6 +1014,11 @@ export type Project_Deserialize = {
 	/**  The linked score (tab, notation or PDF), if any */
 	score?: ProjectScore_Deserialize | null,
 	/**
+	 *  The other scores used with this track, each with its own sync and view, so switching
+	 *  back to one finds it as it was. The one in `score` is never here
+	 */
+	otherScores?: ProjectScore_Deserialize[],
+	/**
 	 *  Seconds since 1970: when the parts shared with the other files of the exercise (score,
 	 *  markers, sections, loops, tempo, practice speed) last changed. Set on saving; what the UI sends is ignored
 	 */
@@ -1061,6 +1071,11 @@ export type Project_Serialize = {
 	stemMix: StemChannel[],
 	/**  The linked score (tab, notation or PDF), if any */
 	score: ProjectScore_Serialize | null,
+	/**
+	 *  The other scores used with this track, each with its own sync and view, so switching
+	 *  back to one finds it as it was. The one in `score` is never here
+	 */
+	otherScores: ProjectScore_Serialize[],
 	/**
 	 *  Seconds since 1970: when the parts shared with the other files of the exercise (score,
 	 *  markers, sections, loops, tempo, practice speed) last changed. Set on saving; what the UI sends is ignored

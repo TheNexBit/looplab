@@ -33,6 +33,8 @@ export interface ProjectData {
   stemMix: StemChannelData[];
   /** The linked score (tab, notation or PDF) */
   score: ProjectScore | null;
+  /** The other scores used with the track, each with its own sync and view */
+  otherScores: ProjectScore[];
 }
 
 const num = (value: number | null | undefined, fallback: number) =>
@@ -76,14 +78,15 @@ export function fromFile(file: Project_Serialize, duration = 0): ProjectData {
     eq: eqFromFile(file.eq),
     channels: file.channels,
     stemMix: (file.stemMix ?? []).map((c) => ({ ...c, level: num(c.level, 1) })),
-    score: scoreOf(file),
+    score: scoreOf(file.score),
+    // Older files have none; a damaged entry is left out
+    otherScores: (file.otherScores ?? []).flatMap((score) => scoreOf(score) ?? []),
   };
 }
 
-/** The linked score of a file, with every number guaranteed and broken sync points left out. */
-function scoreOf(file: Project_Serialize): ProjectScore | null {
-  const score = file.score;
-  if (!score) return null;
+/** A score of a file, with every number guaranteed and broken sync points left out. */
+function scoreOf(score: Project_Serialize["score"]): ProjectScore | null {
+  if (!score?.file) return null;
   return {
     ...score,
     zoom: num(score.zoom, SCORE_ZOOM.default),

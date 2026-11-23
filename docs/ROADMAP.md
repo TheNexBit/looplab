@@ -987,6 +987,25 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
 
 **Unione:** il 23/11/2026 il ramo `fase-28` è stato unito in main.
 
+## 29. Comodità delle lezioni 🔧 (ramo `fase-29`)
+
+**Obiettivo:** le sei priorità dell'utente del 23/11/2026.
+
+- **Versione:** numerazione SemVer `0.<fase>.<correzione>`, `CHANGELOG.md`, etichetta git per versione
+  (la prima è `v0.28.0`, fasi 1-28). Regola in `CLAUDE.md`.
+- **Home a tutta finestra** anche al primo avvio (`features/library/EmptyState.tsx`).
+- **Togliere un corso:** tasto cestino sulla riga del corso, con conferma; i file restano sul disco
+  (`remove_lesson_root`).
+- **Moduli richiudibili:** ogni modulo si chiude col suo titolo; nel menu del corso «Chiudi / Apri tutti
+  i moduli». Corsi e moduli chiusi si ricordano (`lessonFolds` nelle impostazioni).
+- **Cambio tab facile:** menu «Tab» nella barra dello spartito (`features/score/TabMenu.tsx`) con le tab
+  della lezione (`lesson_of_track`), la spia della sincronizzazione, le tab usate prima e «Cambia
+  file…». Alt+T (riassegnabile, anche in Ctrl+K) passa alla successiva. Ogni progetto tiene le tab
+  usate prima con la loro sincronizzazione (`Project.other_scores`, «scaffale» nello store dello
+  spartito); la pulizia dei file in `spartiti\` le conserva.
+- **Stop con «Torna al punto di partenza»:** il playhead resta dove si è fermata la musica; Play riparte
+  dalla linea tratteggiata (`stores/player.ts`, con test).
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

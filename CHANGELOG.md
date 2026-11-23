@@ -12,6 +12,20 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
+### Aggiunto
+
+- Menu «Tab» nella barra dello spartito: tutte le tab della lezione (.gp e PDF) a un clic, ognuna
+  con la sua sincronizzazione; Alt+T passa alla successiva. Le tab usate prima con un brano restano
+  ricordate.
+- Tasto per togliere un corso dalla Home (i file restano sul disco), con conferma.
+- Moduli dei corsi richiudibili uno per uno, con «Chiudi / Apri tutti i moduli»; la scelta si ricorda.
+
+### Modificato
+
+- La Home occupa tutta la finestra anche al primo avvio.
+- Con «Torna al punto di partenza» lo stop lascia il playhead dove sei arrivato; ripartendo si
+  riparte dalla linea tratteggiata.
+
 ## 0.28.0 — 2026-11-23
 
 Prima versione numerata: raccoglie le fasi 1-28. Il dettaglio di ogni fase è nella

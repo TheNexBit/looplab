@@ -81,3 +81,45 @@ describe("playhead during a count-in between repetitions", () => {
     expect(currentPosition()).toBeCloseTo(11, 5);
   });
 });
+
+describe("stop with «return to start point»", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["performance", "Date"] });
+    useLoopStore.getState().clear();
+    useSettingsStore.setState({ returnToStart: true, countIn: false });
+    usePlayerStore.setState({
+      track: {
+        path: "x",
+        name: "x",
+        duration: 60,
+        sourceSampleRate: 48_000,
+        complete: true,
+        ready: 60,
+      },
+      playing: true,
+      speed: 1,
+      cue: 5,
+      anchorPosition: 20,
+      anchorTime: performance.now(),
+      holdUntil: 0,
+    });
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("leaves the playhead where the music got to, then plays again from the start point", () => {
+    usePlayerStore.getState().togglePlay();
+    expect(usePlayerStore.getState().playing).toBe(false);
+    expect(currentPosition()).toBeCloseTo(20);
+    usePlayerStore.getState().togglePlay();
+    expect(usePlayerStore.getState().playing).toBe(true);
+    expect(currentPosition()).toBeCloseTo(5);
+  });
+
+  it("plays on from where it stopped when the option is off", () => {
+    useSettingsStore.setState({ returnToStart: false });
+    usePlayerStore.getState().togglePlay();
+    expect(currentPosition()).toBeCloseTo(20);
+    usePlayerStore.getState().togglePlay();
+    expect(currentPosition()).toBeCloseTo(20);
+  });
+});

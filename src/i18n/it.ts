@@ -712,8 +712,12 @@ export const it = {
     rescan: "Aggiorna ora",
     removeCourse: "Togli dalla Home",
     removeCourseHint: "I file del corso restano dove sono",
+    removeAsk: (name: string) => `Togliere «${name}» dalla Home?`,
+    keep: "Lascia",
+    foldModules: "Chiudi tutti i moduli",
+    unfoldModules: "Apri tutti i moduli",
     rightClick: "scegli il file da aprire o la tab giusta",
-    courseRightClick: "aggiorna, mostra nella cartella, togli dalla Home",
+    courseRightClick: "aggiorna, mostra nella cartella, chiudi o apri i moduli, togli dalla Home",
     tabLinked: (name: string) => `Tab collegata: ${name}`,
   },
   exercise: {
@@ -764,6 +768,10 @@ export const it = {
       "Looplab ne tiene una copia nella sua libreria (con i backup): il tuo file resta dov'è, intatto.",
     choose: "Scegli file…",
     change: "Cambia file…",
+    tabs: "Tab",
+    lessonTabs: "Tab della lezione",
+    usedBefore: "Usate prima con questo brano",
+    tabsHint: "Ogni tab tiene la sua sincronizzazione. Alt+T passa alla successiva.",
     unlink: "Scollega dal brano",
     files: "Spartiti",
     linking: "Copio lo spartito nella libreria…",
@@ -898,7 +906,7 @@ export const it = {
       "Una riga in fondo alla finestra spiega sempre cosa hai sotto il mouse, tasto destro compreso (come la Info View di Ableton)",
     returnToStart: "Torna al punto di partenza",
     returnToStartHint:
-      "Fermando la riproduzione si torna all'ultimo punto cliccato, come in Reaper",
+      "Fermando, il playhead resta dove sei arrivato; ripartendo si riparte dall'ultimo punto cliccato (la linea tratteggiata), come in Reaper",
     resumePosition: "Riprendi dove eri",
     resumePositionHint: "Riaprendo un brano il playhead torna dove l'avevi lasciato",
     snap: "Snap",
@@ -1186,7 +1194,7 @@ export const it = {
     follow: "Follow: la forma d'onda segue il playhead durante l'ascolto",
     followRightClick: "scorrimento continuo o a pagine, come in Reaper",
     returnToStart:
-      "Torna al punto di partenza: fermando la riproduzione, il playhead torna dove l'avevi fatta partire o dove avevi cliccato",
+      "Torna al punto di partenza: fermando, il playhead resta dove sei arrivato; ripartendo si riparte da dove l'avevi fatta partire o da dove avevi cliccato (linea tratteggiata)",
     snap: "Snap: loop, marker e sezioni si agganciano a marker, battute, sezioni e playhead. Maiusc tenuto premuto lo sospende, come in Reaper",
   },
   shortcuts: {
@@ -1270,6 +1278,7 @@ export const it = {
     toggleHome: "Lezioni (Home dei corsi)",
     toggleScorePaper: "Spartito: carta chiara / scura",
     toggleOverview: "Panoramica: mostra / nascondi",
+    nextTab: "Tab successiva della lezione",
   },
   keys: {
     Space: "Spazio",

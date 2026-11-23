@@ -709,8 +709,12 @@ export const en = {
     rescan: "Update now",
     removeCourse: "Remove from Home",
     removeCourseHint: "The course files stay where they are",
+    removeAsk: (name: string) => `Remove «${name}» from the Home?`,
+    keep: "Keep",
+    foldModules: "Fold all modules",
+    unfoldModules: "Open all modules",
     rightClick: "choose the file to open or the right tab",
-    courseRightClick: "update, show in folder, remove from Home",
+    courseRightClick: "update, show in folder, fold or open the modules, remove from Home",
     tabLinked: (name: string) => `Tab linked: ${name}`,
   },
   exercise: {
@@ -760,6 +764,10 @@ export const en = {
       "Looplab keeps a copy in its library (backed up): your file stays where it is, untouched.",
     choose: "Choose file…",
     change: "Change file…",
+    tabs: "Tab",
+    lessonTabs: "Tabs of the lesson",
+    usedBefore: "Used before with this track",
+    tabsHint: "Each tab keeps its own sync. Alt+T goes to the next one.",
     unlink: "Unlink from the song",
     files: "Scores",
     linking: "Copying the score into the library…",
@@ -888,7 +896,8 @@ export const en = {
     infoBarHint:
       "A line at the bottom of the window always explains what is under the mouse, right-click included (like Ableton's Info View)",
     returnToStart: "Return to start point",
-    returnToStartHint: "Stopping playback goes back to the last point clicked, as in Reaper",
+    returnToStartHint:
+      "Stopping leaves the playhead where you got to; playing again starts from the last point clicked (the dashed line), as in Reaper",
     resumePosition: "Resume where you were",
     resumePositionHint: "Reopening a track brings the playhead back to where you left it",
     snap: "Snap",
@@ -1180,7 +1189,7 @@ export const en = {
     follow: "Follow: the waveform follows the playhead while playing",
     followRightClick: "continuous or page-by-page scrolling, as in Reaper",
     returnToStart:
-      "Return to start point: stopping playback, the playhead goes back to where you started it or where you clicked",
+      "Return to start point: stopping leaves the playhead where you got to; playing again starts from where you started it or where you clicked (dashed line)",
     snap: "Snap: loops, markers and sections snap to markers, bars, sections and the playhead. Holding Shift suspends it, as in Reaper",
   },
   shortcuts: {
@@ -1264,6 +1273,7 @@ export const en = {
     toggleHome: "Lessons (course Home)",
     toggleScorePaper: "Score: light / dark paper",
     toggleOverview: "Track overview: show / hide",
+    nextTab: "Next tab of the lesson",
   },
   keys: {
     Space: "Space",

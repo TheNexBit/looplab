@@ -104,13 +104,8 @@ export function EmptyState({
 
   const last = files[0]?.exists ? files[0] : undefined;
   return (
-    // Over a track the lessons take the whole width (the start screen stays centred)
-    <div
-      className={cn(
-        "mx-auto flex h-full w-full flex-col gap-6 overflow-y-auto px-6 pt-8 pb-10 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden",
-        !overTrack && "max-w-6xl",
-      )}
-    >
+    // The whole width, at the start and over a track alike
+    <div className="flex h-full w-full flex-col gap-6 overflow-y-auto px-6 pt-8 pb-10 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
       <div className="flex min-h-0 flex-col gap-3">
         {overTrack && (
           <Button

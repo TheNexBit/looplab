@@ -7,6 +7,7 @@ import { setFollow } from "@/features/player/FollowKey";
 import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/actions";
 import { togglePlaylist } from "@/features/practice/playlist";
 import { isTapping, tapSync } from "@/features/score/syncActions";
+import { nextTab } from "@/features/score/TabMenu";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
 import { useLessonsStore } from "@/stores/lessons";
@@ -186,6 +187,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
     const { scoreDark, update } = useSettingsStore.getState();
     update({ scoreDark: !scoreDark });
   },
+  nextTab: () => void nextTab(),
   toggleOverview: () => {
     const { showOverview, update } = useSettingsStore.getState();
     update({ showOverview: !showOverview });

@@ -41,6 +41,7 @@ function snapshot(): ProjectData {
     channels,
     stemMix: useStemsStore.getState().channels,
     score: useScoreStore.getState().link,
+    otherScores: useScoreStore.getState().shelf,
   };
 }
 
@@ -80,7 +81,7 @@ function apply(data: ProjectData) {
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
   useStemsStore.getState().replace(data.stemMix);
-  useScoreStore.getState().restore(data.score);
+  useScoreStore.getState().restore(data.score, data.otherScores);
   resume(data.position);
 }
 
@@ -98,7 +99,7 @@ function resume(position: number) {
 /** Only the parts shared by the files of a take (and the practice speed): pitch, mix and place stay. */
 function applyShared(data: ProjectData) {
   applyCommon(data);
-  useScoreStore.getState().restore(data.score);
+  useScoreStore.getState().restore(data.score, data.otherScores);
   usePlayerStore.getState().setSpeed(data.speed);
 }
 
@@ -231,7 +232,7 @@ export function syncProject(): () => void {
       if (state.channels !== previous.channels) schedule();
     }),
     useScoreStore.subscribe((state, previous) => {
-      if (state.link !== previous.link) schedule();
+      if (state.link !== previous.link || state.shelf !== previous.shelf) schedule();
     }),
   ];
   void projectDefaults();
