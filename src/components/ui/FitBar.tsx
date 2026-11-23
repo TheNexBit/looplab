@@ -55,9 +55,17 @@ export function FitBar({
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
-    const observer = new ResizeObserver(() => setTick((tick) => tick + 1));
+    const tick = () => setTick((value) => value + 1);
+    const observer = new ResizeObserver(tick);
     observer.observe(element);
-    return () => observer.disconnect();
+    // A key that appears, goes or changes its text on its own (a track with a backing opened
+    // after a plain one) never re-renders the bar: measure again on any change inside it
+    const changes = new MutationObserver(tick);
+    changes.observe(element, { childList: true, subtree: true, characterData: true });
+    return () => {
+      observer.disconnect();
+      changes.disconnect();
+    };
   }, []);
 
   // Runs after every render: a key that grew (a longer name) is measured at once
