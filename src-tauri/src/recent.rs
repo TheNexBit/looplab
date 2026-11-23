@@ -103,6 +103,20 @@ pub fn remove(conn: &Connection, path: &str) -> Result<(), LibraryError> {
     Ok(())
 }
 
+/// Empties the list (`only_missing`: just the files no longer on the disk). The tracks' projects,
+/// diary and files are not touched. Returns how many were taken off.
+pub fn clear(conn: &Connection, only_missing: bool) -> Result<usize, LibraryError> {
+    if !only_missing {
+        return Ok(conn.execute("DELETE FROM recent", [])?);
+    }
+    let mut removed = 0;
+    for file in list(conn)?.into_iter().filter(|file| !file.exists) {
+        remove(conn, &file.path)?;
+        removed += 1;
+    }
+    Ok(removed)
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;
@@ -119,6 +133,21 @@ mod tests {
         add(&conn, r"d:\A.MP3", None).unwrap();
         let names: Vec<String> = list(&conn).unwrap().into_iter().map(|r| r.path).collect();
         assert_eq!(names, [r"d:\A.MP3", r"D:\b.mp3"]);
+    }
+
+    #[test]
+    fn clears_all_or_only_the_missing_files() {
+        let dir = temp_dir("recent-clear");
+        let here = dir.join("here.mp3");
+        fs::write(&here, b"x").unwrap();
+        let conn = memory();
+        add(&conn, &here.to_string_lossy(), None).unwrap();
+        add(&conn, r"Z:\gone\away.mp3", None).unwrap();
+        assert_eq!(clear(&conn, true).unwrap(), 1);
+        let left: Vec<String> = list(&conn).unwrap().into_iter().map(|r| r.path).collect();
+        assert_eq!(left, [here.to_string_lossy().into_owned()]);
+        assert_eq!(clear(&conn, false).unwrap(), 1);
+        assert!(list(&conn).unwrap().is_empty());
     }
 
     #[test]

@@ -1124,6 +1124,15 @@ export const en = {
     title: "Recently opened",
     missing: "File not found",
     forget: "Remove from the list",
+    clear: "Clear the recent list",
+    clearAsk: (n: number) =>
+      n === 1 ? "Clear the list (1 track)?" : `Clear the list (${n} tracks)?`,
+    clearHint:
+      "Only the list goes, here and in the lessons' «Last opened»: the files, their loops and markers and the diary stay.",
+    clearAll: "Clear all",
+    clearMissing: (n: number) =>
+      n === 1 ? "Only the missing file" : `Only the ${n} missing files`,
+    keep: "Keep",
     empty: "No recent files",
     resume: "Resume",
     search: "Search the recent files",

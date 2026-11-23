@@ -82,6 +82,14 @@ pub fn forget_recent(library: State<'_, Library>, track: String) -> Result<(), A
     Ok(library.with(|conn| recent::remove(conn, &track))?)
 }
 
+/// Empties the recent list, or (`only_missing`) takes off the files no longer on the disk.
+#[tauri::command]
+#[specta::specta]
+pub fn clear_recent(library: State<'_, Library>, only_missing: bool) -> Result<u32, AppError> {
+    let removed = library.with(|conn| recent::clear(conn, only_missing))?;
+    Ok(u32::try_from(removed).unwrap_or(u32::MAX))
+}
+
 /// Called after a track opens successfully; a failure here must not fail the opening.
 pub fn remember(app: &AppHandle, track: &str, duration: f64) {
     let library = app.state::<Library>();

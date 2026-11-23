@@ -94,6 +94,8 @@ export const commands = {
 	saveProject: (track: string, project: Project_Deserialize) => typedError<null, AppError>(__TAURI_INVOKE("save_project", { track, project })),
 	recentFiles: () => typedError<RecentFile_Serialize[], AppError>(__TAURI_INVOKE("recent_files")),
 	forgetRecent: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_recent", { track })),
+	/**  Empties the recent list, or (`only_missing`) takes off the files no longer on the disk. */
+	clearRecent: (onlyMissing: boolean) => typedError<number, AppError>(__TAURI_INVOKE("clear_recent", { onlyMissing })),
 	/**
 	 *  A project with every default, for tracks opened for the first time.
 	 *  The defaults live in Rust only, so the UI never keeps its own copy.

@@ -21,6 +21,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - Moduli dei corsi richiudibili uno per uno; tasto «Comprimi tutto / Espandi tutto» per tutti i corsi
   (accanto a «Aggiungi corso») e per ogni corso (sulla sua riga): comprime dalla radice, corsi e moduli,
   ed espande tutto allo stesso modo. La scelta si ricorda.
+- Tasto gomma per svuotare l'elenco dei recenti (anche da «Ultime aperte» delle lezioni), con conferma
+  e la scelta di togliere solo i file spariti; file, loop, marker e diario restano.
 - «Ritrova le battute» nel menu di sincronizzazione dei PDF: le cerca di nuovo nelle pagine.
 - Ricerca delle lezioni chiara: risultati raggruppati per corso e modulo come nella Home, parole cercate
   evidenziate, quante lezioni e in quanti corsi, più parole in qualsiasi ordine (accenti e maiuscole a

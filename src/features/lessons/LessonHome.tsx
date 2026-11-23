@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/menu";
 import { withRightClick } from "@/components/ui/Tooltip";
 import { isVideoPath } from "@/features/library/formats";
+import { ClearRecent } from "@/features/library/RecentList";
 import { t } from "@/i18n";
 import {
   commands,
@@ -751,7 +752,10 @@ export function LessonHome() {
           <>
             {recent.length > 0 && (
               <section>
-                <h3 className="panel-label mb-1 text-fg-subtle">{l.lastOpened}</h3>
+                <div className="mb-1 flex items-center gap-2">
+                  <h3 className="panel-label flex-1 text-fg-subtle">{l.lastOpened}</h3>
+                  <ClearRecent />
+                </div>
                 <ul className="well rounded-panel px-2 py-1.5">
                   {recent.map((lesson) => (
                     <LessonRow

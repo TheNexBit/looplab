@@ -66,6 +66,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             library::save_project,
             library::recent_files,
             library::forget_recent,
+            library::clear_recent,
             library::default_project,
             library::practice_diary,
             library::record_practice,

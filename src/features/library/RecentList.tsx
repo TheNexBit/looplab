@@ -1,13 +1,15 @@
-import { FileAudio, FileVideo, FolderOpen, Play, Search, X } from "lucide-react";
-import { ContextMenu } from "radix-ui";
+import { Eraser, FileAudio, FileVideo, FolderOpen, Play, Search, X } from "lucide-react";
+import { ContextMenu, Popover } from "radix-ui";
 import { type ReactNode, useState } from "react";
-import { menuContent, menuItem, menuSeparator } from "@/components/ui/menu";
+import { Button } from "@/components/ui/Button";
+import { floatingPanel, menuContent, menuItem, menuSeparator } from "@/components/ui/menu";
 import { withRightClick } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { commands, type RecentFile } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
 import { formatAgo, formatPercent } from "@/lib/format";
 import { formatLength } from "@/lib/time";
+import { useLessonsStore } from "@/stores/lessons";
 import { usePlayerStore } from "@/stores/player";
 import { useRecentStore } from "@/stores/recent";
 import { isVideoPath } from "./formats";
@@ -88,6 +90,63 @@ export function ResumeRow({ file }: { file: RecentFile }) {
 }
 
 /**
+ * The key that empties the recent list (asking first), or takes off only the files no longer on
+ * the disk. Tracks, their projects and the diary stay. The lesson Home's «Last opened» comes
+ * from the same list, so it empties too.
+ */
+export function ClearRecent() {
+  const files = useRecentStore((s) => s.files);
+  const [open, setOpen] = useState(false);
+  if (files.length === 0) return null;
+  const missing = files.filter((file) => !file.exists).length;
+  const clear = async (onlyMissing: boolean) => {
+    setOpen(false);
+    await useRecentStore.getState().clear(onlyMissing);
+    void useLessonsStore.getState().refresh();
+  };
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 shrink-0 text-fg-subtle hover:text-fg"
+          title={r.clear}
+          aria-label={r.clear}
+        >
+          <Eraser className="size-4" />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="bottom"
+          align="end"
+          sideOffset={4}
+          className={`${floatingPanel} w-80 p-3`}
+        >
+          <p className="text-sm font-medium text-fg">{r.clearAsk(files.length)}</p>
+          <p className="mt-1 text-xs text-fg-subtle">{r.clearHint}</p>
+          <div className="mt-3 flex flex-wrap justify-end gap-2">
+            <Button variant="hardware" onClick={() => setOpen(false)}>
+              {r.keep}
+            </Button>
+            {missing > 0 && (
+              <Button variant="hardware" onClick={() => void clear(true)}>
+                {r.clearMissing(missing)}
+              </Button>
+            )}
+            <Button variant="hardware" onClick={() => void clear(false)}>
+              <Eraser className="size-4" />
+              {r.clearAll}
+            </Button>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+/**
  * Recently opened tracks: the heart of the start screen. Name, what its project holds,
  * length and when it was opened; right-click for more. Missing files are struck through.
  */
@@ -103,6 +162,7 @@ export function RecentList() {
     <section className="flex min-h-0 w-full flex-col">
       <div className="mb-1.5 flex items-center gap-3">
         <h2 className="panel-label flex-1 text-fg-subtle">{r.title}</h2>
+        <ClearRecent />
         {files.length >= SEARCH_FROM && (
           <label className="well flex h-7 w-56 items-center gap-1.5 rounded-control px-2 text-fg-subtle focus-within:text-fg">
             <Search className="size-3.5 shrink-0" aria-hidden />

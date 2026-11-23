@@ -1136,6 +1136,14 @@ export const it = {
     title: "Aperti di recente",
     missing: "File non trovato",
     forget: "Togli dalla lista",
+    clear: "Svuota l'elenco dei recenti",
+    clearAsk: (n: number) =>
+      n === 1 ? "Svuotare l'elenco (1 brano)?" : `Svuotare l'elenco (${n} brani)?`,
+    clearHint:
+      "Si toglie solo l'elenco, qui e in «Ultime aperte» delle lezioni: i file, i loro loop e marker e il diario restano.",
+    clearAll: "Svuota tutto",
+    clearMissing: (n: number) => (n === 1 ? "Solo il file sparito" : `Solo i ${n} file spariti`),
+    keep: "Lascia",
     empty: "Nessun file recente",
     resume: "Riprendi",
     search: "Cerca tra i recenti",
