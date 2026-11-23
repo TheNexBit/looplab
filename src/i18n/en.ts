@@ -1223,7 +1223,7 @@ export const en = {
     clickVolumeShort: "Click vol.",
     clickVolume: "Click volume",
     clickVolumeHint:
-      "Volume of the click and the count-in. Drag up/down (Shift: fine), wheel ±5%, double-click: 60%",
+      "Volume of the click and the count-in. Drag up/down (Shift: fine), wheel ±5%, double-click: 80%",
     muteTrack: "Mute the track (its volume stays)",
     muteClick: "Mute the click (its volume stays)",
     knobHint: "Drag up/down (Shift: fine), wheel, double-click: normal value",

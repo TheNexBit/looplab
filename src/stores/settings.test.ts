@@ -1,33 +1,38 @@
 import { describe, expect, it } from "vitest";
-import { sanitize } from "./settings";
+import { SETTINGS_DEFAULTS, sanitize } from "./settings";
 
-describe("settings saved by an older version", () => {
-  it("keep a count-in that was on, with its length", () => {
-    const old = sanitize({ countInBars: 2 } as never);
-    expect(old.countIn).toBe(true);
-    expect(old.countInBars).toBe(2);
+describe("factory values (docs/VALORI-DI-FABBRICA.md)", () => {
+  it("a first start, or a damaged file, gets exactly the factory values", () => {
+    expect(sanitize({})).toEqual(SETTINGS_DEFAULTS);
   });
 
-  it("turn '0 bars' into a count-in that is off, one bar long when switched on", () => {
-    const old = sanitize({ countInBars: 0 } as never);
-    expect(old.countIn).toBe(false);
-    expect(old.countInBars).toBe(1);
-  });
-
-  it("respect the on/off key once it exists", () => {
-    expect(sanitize({ countIn: false, countInBars: 4 }).countIn).toBe(false);
-  });
-
-  it("fall back to the classic click for an unknown sound", () => {
-    expect(sanitize({ accentSound: "gong" } as never).accentSound).toBe("beepHigh");
-  });
-});
-
-describe("choice settings", () => {
-  it("fall back to the default for an unknown choice", () => {
-    expect(sanitize({ waveStyle: "spiky", wheel: "scroll" } as never)).toMatchObject({
+  it("keeps the values chosen with the user", () => {
+    expect(SETTINGS_DEFAULTS).toMatchObject({
+      language: "it",
+      startup: "empty",
+      trackVolume: 1,
+      clickVolume: 0.8,
+      trackMuted: false,
+      clickMuted: false,
+      metronome: false,
+      countIn: false,
+      countInBars: 1,
+      followPlayhead: true,
+      followMode: "page",
+      snap: true,
+      returnToStart: true,
+      resumePosition: true,
+      showOverview: true,
+      showGrid: true,
       waveStyle: "filled",
-      wheel: "scroll",
+      wheel: "zoom",
+      openView: "start",
+      afterLoop: "start",
+      scoreDark: false,
+      scoreNeck: false,
+      scoreSynth: false,
+      infoBar: false,
+      referencePitch: 440,
     });
   });
 });

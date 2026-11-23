@@ -165,7 +165,8 @@ export const SETTING_LIMITS = {
   referenceLevel: { min: 0.05, max: 1, step: 0.05 },
 } as const satisfies Record<NumericSetting, { min: number; max: number; step: number }>;
 
-const DEFAULTS: Settings = {
+/** The factory values: what a first start shows (docs/VALORI-DI-FABBRICA.md lists them). */
+export const SETTINGS_DEFAULTS: Settings = {
   language: "it",
   seekStep: 5,
   fineSeekStep: 1,
@@ -178,7 +179,8 @@ const DEFAULTS: Settings = {
   countInBars: 1,
   metronome: false,
   trackVolume: 1,
-  clickVolume: 0.6,
+  // As loud as the metronome on its own (user's choice)
+  clickVolume: 0.8,
   trackMuted: false,
   clickMuted: false,
   // The classic click: a high beep on the first beat, a lower one on the others
@@ -222,7 +224,8 @@ const DEFAULTS: Settings = {
   wheel: "zoom",
   wheelSpeed: 1,
   doubleClick: "none",
-  followMode: "center",
+  // Page by page, as in Reaper (user's choice): the waveform stays still while reading it
+  followMode: "page",
   openView: "start",
   // A loop is made to be played: start from its beginning, and stopping returns there
   afterLoop: "start",
@@ -247,10 +250,10 @@ const strings = (value: unknown): string[] =>
 
 /** Keeps numbers inside their limits and drops values of the wrong type (e.g. an old file). */
 export function sanitize(values: Partial<Settings>): Settings {
-  const result = { ...DEFAULTS };
-  for (const key of Object.keys(DEFAULTS) as (keyof Settings)[]) {
+  const result = { ...SETTINGS_DEFAULTS };
+  for (const key of Object.keys(SETTINGS_DEFAULTS) as (keyof Settings)[]) {
     const value = values[key];
-    if (typeof value !== typeof DEFAULTS[key]) continue;
+    if (typeof value !== typeof SETTINGS_DEFAULTS[key]) continue;
     if (typeof value === "number") {
       const limits = SETTING_LIMITS[key as NumericSetting];
       (result as Record<string, unknown>)[key] = limits
@@ -269,19 +272,20 @@ export function sanitize(values: Partial<Settings>): Settings {
     result.countIn = values.countInBars > 0;
   }
   // A sound removed in a later version falls back to the classic click
-  if (!isClickSound(result.accentSound)) result.accentSound = DEFAULTS.accentSound;
-  if (!isClickSound(result.beatSound)) result.beatSound = DEFAULTS.beatSound;
-  if (!isClickSound(result.subSound)) result.subSound = DEFAULTS.subSound;
-  if (!isClickSound(result.crossSound)) result.crossSound = DEFAULTS.crossSound;
+  if (!isClickSound(result.accentSound)) result.accentSound = SETTINGS_DEFAULTS.accentSound;
+  if (!isClickSound(result.beatSound)) result.beatSound = SETTINGS_DEFAULTS.beatSound;
+  if (!isClickSound(result.subSound)) result.subSound = SETTINGS_DEFAULTS.subSound;
+  if (!isClickSound(result.crossSound)) result.crossSound = SETTINGS_DEFAULTS.crossSound;
   if (!INSTRUMENTS.includes(result.referenceInstrument)) {
-    result.referenceInstrument = DEFAULTS.referenceInstrument;
+    result.referenceInstrument = SETTINGS_DEFAULTS.referenceInstrument;
   }
   if (!REFERENCE_TUNING_IDS.includes(result.referenceTuning)) {
-    result.referenceTuning = DEFAULTS.referenceTuning;
+    result.referenceTuning = SETTINGS_DEFAULTS.referenceTuning;
   }
   for (const key of Object.keys(SETTING_CHOICES) as ChoiceSetting[]) {
     const allowed: readonly string[] = SETTING_CHOICES[key];
-    if (!allowed.includes(result[key])) (result as Record<string, unknown>)[key] = DEFAULTS[key];
+    if (!allowed.includes(result[key]))
+      (result as Record<string, unknown>)[key] = SETTINGS_DEFAULTS[key];
   }
   return result;
 }
@@ -289,7 +293,9 @@ export function sanitize(values: Partial<Settings>): Settings {
 /** Preferences of this PC: kept in the WebView's local storage, so they survive updates. */
 function load(): Settings {
   const stored = readStored(KEY);
-  return stored && typeof stored === "object" ? sanitize(stored as Partial<Settings>) : DEFAULTS;
+  return stored && typeof stored === "object"
+    ? sanitize(stored as Partial<Settings>)
+    : SETTINGS_DEFAULTS;
 }
 
 const persist = (settings: Settings) => writeStored(KEY, settings);
@@ -309,12 +315,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     persist(next);
   },
   reset: () => {
-    set(DEFAULTS);
-    persist(DEFAULTS);
+    set(SETTINGS_DEFAULTS);
+    persist(SETTINGS_DEFAULTS);
   },
   resetSome: (keys) => {
     const patch: Partial<Settings> = {};
-    for (const key of keys) (patch as Record<string, unknown>)[key] = DEFAULTS[key];
+    for (const key of keys) (patch as Record<string, unknown>)[key] = SETTINGS_DEFAULTS[key];
     get().update(patch);
   },
 }));

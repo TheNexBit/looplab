@@ -1231,7 +1231,7 @@ export const it = {
     clickVolumeShort: "Vol. click",
     clickVolume: "Volume click",
     clickVolumeHint:
-      "Volume del click e del count-in. Trascina su/giù (Maiusc: fine), rotella ±5%, doppio clic: 60%",
+      "Volume del click e del count-in. Trascina su/giù (Maiusc: fine), rotella ±5%, doppio clic: 80%",
     muteTrack: "Silenzia il brano (il volume resta com'è)",
     muteClick: "Silenzia il click (il volume resta com'è)",
     knobHint: "Trascina su/giù (Maiusc: fine), rotella, doppio clic: valore normale",

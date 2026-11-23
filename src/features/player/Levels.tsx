@@ -2,7 +2,7 @@ import { Knob } from "@/components/ui/Knob";
 import { MuteKey } from "@/components/ui/MuteKey";
 import { t } from "@/i18n";
 import { formatPercent } from "@/lib/format";
-import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
+import { SETTING_LIMITS, SETTINGS_DEFAULTS, useSettingsStore } from "@/stores/settings";
 
 const v = t.transport;
 const settings = () => useSettingsStore.getState();
@@ -25,7 +25,7 @@ export function TrackLevel({ className }: { className?: string }) {
       max={SETTING_LIMITS.trackVolume.max}
       step={0.01}
       notch={SETTING_LIMITS.trackVolume.step}
-      defaultValue={1}
+      defaultValue={SETTINGS_DEFAULTS.trackVolume}
       onChange={(trackVolume) => settings().update({ trackVolume })}
       format={formatPercent}
       off={muted}
@@ -57,7 +57,7 @@ export function ClickLevel({ className }: { className?: string }) {
       max={SETTING_LIMITS.clickVolume.max}
       step={0.01}
       notch={SETTING_LIMITS.clickVolume.step}
-      defaultValue={0.6}
+      defaultValue={SETTINGS_DEFAULTS.clickVolume}
       onChange={(clickVolume) => settings().update({ clickVolume })}
       format={formatPercent}
       off={muted}

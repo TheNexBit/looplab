@@ -1070,6 +1070,10 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   che la base si apre dalla Home. Tolti il selettore, il tasto A, l'ingresso della base nel mixer del motore
   (`OtherTake`), i comandi `set_other_take`/`set_other_take_on` e il segno `backing` dei file dell'esercizio.
   Restano le inquadrature (Ctrl+1-9, V) e l'allineamento dei file.
+- **Valori di fabbrica:** `scripts
+-prova-da-zero.cmd` apre l'app con una cartella dati vuota (cancellata alla
+  chiusura); l'elenco unico è `docs/VALORI-DI-FABBRICA.md`, scelto con l'utente (click 80%, segui a pagine), con il
+  test `src/stores/settings.test.ts`. Da fare: «Ripristina tutto» nelle impostazioni.
 - **Home unificata:** a sinistra solo l'albero dei corsi; a destra un solo riquadro (`NowCard`: «Stai suonando»
   con «Torna al brano» sopra un brano aperto, altrimenti «Riprendi da dove eri», con la lezione successiva se è
   fatta), un solo elenco dei recenti per lezioni e file (ognuno dice «corso · modulo» o «file», e si apre dalla
