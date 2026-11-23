@@ -7,7 +7,7 @@ use tauri::State;
 
 use super::{AppError, ErrorKind};
 use crate::db::Library;
-use crate::lessons::{self, LessonChoice, LessonLibrary};
+use crate::lessons::{self, LessonChoice, LessonLibrary, LessonProgress};
 
 /// The lessons as last read: shown at once, then `scan_lessons` brings them up to date.
 #[tauri::command]
@@ -57,7 +57,7 @@ pub fn remove_lesson_root(
     })?)
 }
 
-/// Remembers which file a lesson opens and which tab goes with it.
+/// Remembers which file a lesson opens and which tab goes with it (its mark stays).
 #[tauri::command]
 #[specta::specta]
 pub fn set_lesson_choice(
@@ -67,6 +67,20 @@ pub fn set_lesson_choice(
 ) -> Result<LessonLibrary, AppError> {
     Ok(library.with(|conn| {
         lessons::set_choice(conn, &id, &choice)?;
+        lessons::library(conn)
+    })?)
+}
+
+/// Marks a lesson done, to review, or neither (the files picked for it stay).
+#[tauri::command]
+#[specta::specta]
+pub fn set_lesson_progress(
+    library: State<'_, Library>,
+    id: String,
+    progress: LessonProgress,
+) -> Result<LessonLibrary, AppError> {
+    Ok(library.with(|conn| {
+        lessons::set_progress(conn, &id, progress)?;
         lessons::library(conn)
     })?)
 }

@@ -1,4 +1,5 @@
 import { angleByIndex, nextAngle, toggleOther } from "@/features/exercise/exerciseSync";
+import { stepLesson, toggleOpenLessonDone } from "@/features/lessons/lessonOrder";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { loopSection } from "@/features/markers/sectionActions";
 import { toggleMetronomeRun } from "@/features/metronome/metronomeEngine";
@@ -188,6 +189,9 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
     update({ scoreDark: !scoreDark });
   },
   nextTab: () => void nextTab(),
+  previousLesson: () => void stepLesson(-1),
+  nextLesson: () => void stepLesson(1),
+  toggleLessonDone: () => void toggleOpenLessonDone(),
   toggleOverview: () => {
     const { showOverview, update } = useSettingsStore.getState();
     update({ showOverview: !showOverview });

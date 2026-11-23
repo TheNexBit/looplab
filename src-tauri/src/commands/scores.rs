@@ -59,6 +59,23 @@ pub fn prepare_score(
     Ok(path.to_string_lossy().into_owned())
 }
 
+/// Lets the UI read a Guitar Pro file where the user keeps it (a lesson's tab beside its PDF,
+/// to count its bars) and returns its path. Only that file, and only a Guitar Pro file.
+#[tauri::command]
+#[specta::specta]
+pub fn prepare_guitar_pro(app: AppHandle, path: PathBuf) -> Result<String, AppError> {
+    if scores::kind_of(&path) != Some(scores::ScoreKind::Notation) {
+        return Err(AppError::new(ErrorKind::UnsupportedFormat, path.display()));
+    }
+    if !path.is_file() {
+        return Err(AppError::new(ErrorKind::FileNotFound, path.display()));
+    }
+    app.asset_protocol_scope()
+        .allow_file(&path)
+        .map_err(AppError::internal)?;
+    Ok(path.to_string_lossy().into_owned())
+}
+
 /// A note group of a bar for the automatic sync: when it starts (0..1 of the bar) and its pitches.
 #[derive(Debug, Clone, serde::Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

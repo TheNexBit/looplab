@@ -101,6 +101,10 @@ pub struct Lesson {
     pub tab: TabState,
     /// Last opening of any of its files (seconds since 1970)
     pub opened_at: Option<f64>,
+    /// The file opened last («Resume» opens it again, angle included)
+    pub last_file: Option<String>,
+    /// The user's mark: done, or to review
+    pub progress: LessonProgress,
     /// Seconds practised in all, from the diary
     pub practice: f64,
 }
@@ -122,6 +126,16 @@ pub struct LessonLibrary {
     pub lessons: Vec<Lesson>,
 }
 
+/// The user's mark on a lesson, to see how far a course is.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum LessonProgress {
+    #[default]
+    None,
+    Done,
+    Review,
+}
+
 /// What the user picked for one lesson.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -135,6 +149,16 @@ pub struct LessonChoice {
     /// No tab is linked by itself (the user removed it)
     #[serde(default)]
     pub no_score: bool,
+    /// Done or to review; set apart with `set_progress` (picking files keeps it)
+    #[serde(default)]
+    pub progress: LessonProgress,
+}
+
+impl LessonChoice {
+    /// The user picked what opens or which tab goes with it (the mark aside)
+    fn picks_files(&self) -> bool {
+        self.main.is_some() || self.score.is_some() || self.no_score
+    }
 }
 
 /// One folder as last read.
@@ -462,8 +486,32 @@ fn choice(conn: &Connection, id: &str) -> Result<LessonChoice, LibraryError> {
     })
 }
 
-/// Remembers what the user picked for a lesson (an empty choice is forgotten).
+/// Remembers which files the user picked for a lesson; its mark (done, to review) stays.
 pub fn set_choice(conn: &Connection, id: &str, choice: &LessonChoice) -> Result<(), LibraryError> {
+    let progress = self::choice(conn, id)?.progress;
+    store_choice(
+        conn,
+        id,
+        &LessonChoice {
+            progress,
+            ..choice.clone()
+        },
+    )
+}
+
+/// Marks a lesson done, to review, or neither; the files picked for it stay.
+pub fn set_progress(
+    conn: &Connection,
+    id: &str,
+    progress: LessonProgress,
+) -> Result<(), LibraryError> {
+    let mut picked = choice(conn, id)?;
+    picked.progress = progress;
+    store_choice(conn, id, &picked)
+}
+
+/// Writes a lesson's choice (an empty one is forgotten).
+fn store_choice(conn: &Connection, id: &str, choice: &LessonChoice) -> Result<(), LibraryError> {
     if *choice == LessonChoice::default() {
         conn.execute("DELETE FROM lesson_choices WHERE id = ?1", [id])?;
     } else {
@@ -502,7 +550,7 @@ fn complete(
     } else {
         has(&picked.score).or_else(|| default_score(&found.files))
     };
-    let chosen = picked != LessonChoice::default();
+    let chosen = picked.picks_files();
 
     // Headings: the folders between the course and the lesson's own folder
     let rel: Vec<String> = folder
@@ -546,6 +594,7 @@ fn complete(
         TabState::None
     };
     let mut opened_at: Option<f64> = None;
+    let mut last_file: Option<String> = None;
     let mut practice = 0.0;
     for file in found.files.iter().filter(|f| is_media(f)) {
         if let Some(project) = project::find(conn, &file.path)?
@@ -569,8 +618,11 @@ fn complete(
             )
             .optional()?
             .flatten();
-        if let Some(time) = opened {
-            opened_at = Some(opened_at.map_or(time, |t: f64| t.max(time)));
+        if let Some(time) = opened
+            && opened_at.is_none_or(|last| time > last)
+        {
+            opened_at = Some(time);
+            last_file = Some(file.path.clone());
         }
         let seconds: Option<f64> = conn.query_row(
             "SELECT SUM(seconds) FROM diary WHERE path_key = ?1",
@@ -592,6 +644,8 @@ fn complete(
         chosen,
         tab,
         opened_at,
+        last_file,
+        progress: picked.progress,
         practice,
     })
 }
@@ -867,7 +921,7 @@ mod tests {
             &LessonChoice {
                 main: Some(mp3.path.clone()),
                 score: Some(pdf.path.clone()),
-                no_score: false,
+                ..LessonChoice::default()
             },
         )
         .unwrap();
@@ -876,6 +930,33 @@ mod tests {
         assert_eq!(classic.main.as_deref(), Some(mp3.path.as_str()));
         assert_eq!(classic.score.as_deref(), Some(pdf.path.as_str()));
         assert!(classic.chosen);
+        assert_eq!(classic.progress, LessonProgress::None);
+
+        // The mark and the files picked never undo each other
+        set_progress(&conn, &classic.id, LessonProgress::Done).unwrap();
+        set_choice(&conn, &classic.id, &LessonChoice::default()).unwrap();
+        let classic = named(&library(&conn).unwrap(), "Exercise 01 Classic").clone();
+        assert_eq!(classic.progress, LessonProgress::Done);
+        assert!(!classic.chosen);
+        set_progress(&conn, &classic.id, LessonProgress::Review).unwrap();
+        let marked = named(&library(&conn).unwrap(), "Exercise 01 Classic").clone();
+        assert_eq!(marked.progress, LessonProgress::Review);
+        assert!(!marked.chosen);
+        set_progress(&conn, &classic.id, LessonProgress::None).unwrap();
+        let count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM lesson_choices", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(count, 0, "a lesson with nothing picked keeps no row");
+        set_choice(
+            &conn,
+            &classic.id,
+            &LessonChoice {
+                main: Some(mp3.path.clone()),
+                score: Some(pdf.path.clone()),
+                ..LessonChoice::default()
+            },
+        )
+        .unwrap();
         assert_eq!(
             score_beside(&conn, &mp3.path).unwrap(),
             Some(pdf.path.clone())

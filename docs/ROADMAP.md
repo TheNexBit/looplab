@@ -1033,6 +1033,19 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   (la sincronia riparte da zero, Ctrl+Z la riporta).
 - **Stop con «Torna al punto di partenza»:** il playhead resta dove si è fermata la musica; Play riparte
   dalla linea tratteggiata (`stores/player.ts`, con test).
+- **Lezioni fatte / da ripassare:** `LessonProgress` nella scelta della lezione (`lesson_choices`, nessuno
+  schema nuovo), comando `set_lesson_progress`; scegliere i file non tocca il segno e viceversa. Nella Home
+  un cerchio per lezione (clic = fatta / da fare, tasto destro = da ripassare) e «N/M fatte» con barretta
+  per corso e modulo.
+- **Lezione precedente / successiva:** `features/lessons/LessonNav.tsx` nella barra in alto, accanto a
+  «Lezioni»: ‹ «Fatta» › (Alt+← / Alt+→, «Lezione fatta / da fare» assegnabile). Solo per i brani di un
+  corso della Home; salta i documenti e resta nel corso (`lessonOrder.ts`, con test).
+- **Riprendi da dove eri:** riquadro in cima a «Ultime aperte»: riapre il file aperto per ultimo
+  (`Lesson.last_file`) col suo progetto; se la lezione è fatta, propone la successiva.
+- **Avviso battute del PDF:** `pdf/PdfBarCheck.tsx` conta le battute del .gp gemello (stesso nome, o l'unico
+  della lezione; `guitarProBars`, comando `prepare_guitar_pro` che apre solo quel file .gp) e avvisa se
+  sono diverse da quelle trovate nel PDF. «Va bene così» si ricorda per quel PDF con quel numero di battute
+  (`pdfBarsAccepted` nelle impostazioni).
 
 ## Dopo la prima versione
 

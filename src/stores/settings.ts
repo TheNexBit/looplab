@@ -69,6 +69,8 @@ export interface Settings {
   showOverview: boolean;
   /** What is folded in the lesson Home: course folders, and folder + newline + module name */
   lessonFolds: string[];
+  /** PDFs whose bars differ from their Guitar Pro twin and are fine as they are: file + ":" + bars */
+  pdfBarsAccepted: string[];
   /** Media keys reach Looplab even while another program has the focus */
   globalMediaKeys: boolean;
   /** Beat and bar lines on the waveform (when the tempo is known); the magnet uses them */
@@ -197,6 +199,7 @@ const DEFAULTS: Settings = {
   scoreDark: false,
   showOverview: true,
   lessonFolds: [],
+  pdfBarsAccepted: [],
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",
@@ -230,6 +233,10 @@ export const CLICK_SOUNDS = Object.keys(t.practice.sounds) as ClickSound[];
 const isClickSound = (value: unknown): value is ClickSound =>
   CLICK_SOUNDS.includes(value as ClickSound);
 
+/** The strings of a stored list (anything else, or no list, is dropped). */
+const strings = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
 /** Keeps numbers inside their limits and drops values of the wrong type (e.g. an old file). */
 export function sanitize(values: Partial<Settings>): Settings {
   const result = { ...DEFAULTS };
@@ -245,10 +252,9 @@ export function sanitize(values: Partial<Settings>): Settings {
       (result as Record<string, unknown>)[key] = value;
     }
   }
-  // A list of strings only (an old or damaged file may hold anything)
-  result.lessonFolds = Array.isArray(values.lessonFolds)
-    ? values.lessonFolds.filter((key): key is string => typeof key === "string")
-    : [];
+  // Lists of strings only (an old or damaged file may hold anything)
+  result.lessonFolds = strings(values.lessonFolds);
+  result.pdfBarsAccepted = strings(values.pdfBarsAccepted);
   // Before the on/off key, 0 bars meant off: keep an existing count-in on
   if (typeof values.countIn !== "boolean" && typeof values.countInBars === "number") {
     result.countIn = values.countInBars > 0;

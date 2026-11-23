@@ -189,6 +189,12 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   sopra il brano con Ctrl+L), `openLesson.ts`: `autoLinkScore` (chiamato da `projectSync` dopo il caricamento)
   collega la tab accanto a un brano che non ne ha, anche aperto da fuori; togliere la tab lo ricorda
   (`forget_score_beside`).
+- **Avanzamento delle lezioni (fase 29)**: il segno della lezione (`LessonProgress`: nessuno, fatta, da
+  ripassare) vive nella stessa riga di `lesson_choices`: `set_choice` conserva il segno, `set_progress` i file
+  scelti; `chosen` guarda solo i file. `Lesson.last_file` è il file aperto per ultimo («Riprendi»).
+  `features/lessons/lessonOrder.ts` trova la lezione di un brano tra quelle della Home e le sue vicine nello
+  stesso corso (`ensure` legge l'elenco salvato una volta, anche se la Home non è mai stata aperta);
+  `LessonNav.tsx` sta nella barra in alto.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

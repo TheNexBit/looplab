@@ -27,6 +27,15 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - Ricerca delle lezioni chiara: risultati raggruppati per corso e modulo come nella Home, parole cercate
   evidenziate, quante lezioni e in quanti corsi, più parole in qualsiasi ordine (accenti e maiuscole a
   parte), tasto × ed Esc per svuotarla. Le «Ultime aperte» dicono di che corso e modulo sono.
+- Lezioni «fatte» e «da ripassare»: un clic sul cerchio della lezione la segna fatta, il tasto destro
+  la segna da ripassare. Ogni corso e ogni modulo mostrano «3/8 fatte» con una barretta, e quante lezioni
+  sono da ripassare.
+- Lezione precedente / successiva del corso dalla barra in alto (Alt+← e Alt+→), con il tasto «Fatta»
+  per segnare la lezione mentre la suoni.
+- «Riprendi da dove eri» in cima alla Home: riapre l'ultima lezione com'era (file, punto, loop,
+  velocità e tab); se è già fatta, propone la successiva.
+- Avviso sopra un PDF quando le sue battute non sono quante quelle della tab .gp gemella, con
+  «Ritrova le battute» e «Va bene così».
 
 ### Corretto
 

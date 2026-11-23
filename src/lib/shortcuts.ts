@@ -103,6 +103,10 @@ export const shortcuts = {
   toggleOverview: "Shift+O",
   // The next tab of the lesson (.gp or PDF), each with its own sync
   nextTab: "Alt+T",
+  // The lessons of a course in their order, like a playlist's previous / next
+  previousLesson: "Alt+ArrowLeft",
+  nextLesson: "Alt+ArrowRight",
+  toggleLessonDone: "",
 } as const satisfies Record<keyof typeof t.shortcuts, string>;
 
 export type ShortcutId = keyof typeof shortcuts;

@@ -21,6 +21,7 @@ import { Kbd } from "@/components/ui/Kbd";
 import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { TakeSwitch } from "@/features/exercise/TakeSwitch";
+import { LessonNav } from "@/features/lessons/LessonNav";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
@@ -195,6 +196,7 @@ export function TopBar() {
         </Tooltip>
         <RecentMenu />
         <HomeKey />
+        <LessonNav />
 
         {/* Small display with the open track; the lamp is lit while a track is loaded. Its least
             width makes the bar turn keys into icons (then wrap) before the name is squeezed */}

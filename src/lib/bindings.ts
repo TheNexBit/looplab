@@ -88,6 +88,11 @@ export const commands = {
 	 *  round trip) and returns its path. Only that file is opened up, never the folder.
 	 */
 	prepareScore: (file: string) => typedError<string, AppError>(__TAURI_INVOKE("prepare_score", { file })),
+	/**
+	 *  Lets the UI read a Guitar Pro file where the user keeps it (a lesson's tab beside its PDF,
+	 *  to count its bars) and returns its path. Only that file, and only a Guitar Pro file.
+	 */
+	prepareGuitarPro: (path: string) => typedError<string, AppError>(__TAURI_INVOKE("prepare_guitar_pro", { path })),
 	/**  The saved project of a track, or `null` if it has none yet. */
 	loadProject: (track: string) => typedError<Project_Serialize | null, AppError>(__TAURI_INVOKE("load_project", { track })),
 	/**  Saves the project of a track. */
@@ -211,8 +216,10 @@ export const commands = {
 	addLessonRoot: (path: string) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("add_lesson_root", { path })),
 	/**  Takes a course folder off the Home; its files are not touched. */
 	removeLessonRoot: (path: string) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("remove_lesson_root", { path })),
-	/**  Remembers which file a lesson opens and which tab goes with it. */
+	/**  Remembers which file a lesson opens and which tab goes with it (its mark stays). */
 	setLessonChoice: (id: string, choice: LessonChoice_Deserialize) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("set_lesson_choice", { id, choice })),
+	/**  Marks a lesson done, to review, or neither (the files picked for it stay). */
+	setLessonProgress: (id: string, progress: LessonProgress) => typedError<LessonLibrary_Serialize, AppError>(__TAURI_INVOKE("set_lesson_progress", { id, progress })),
 	/**
 	 *  The lesson `track` belongs to (read from its own folder, also outside the course folders):
 	 *  the score bar lists its tabs to switch between them.
@@ -605,6 +612,8 @@ export type LessonChoice_Deserialize = {
 	score?: string | null,
 	/**  No tab is linked by itself (the user removed it) */
 	noScore?: boolean,
+	/**  Done or to review; set apart with `set_progress` (picking files keeps it) */
+	progress?: LessonProgress,
 };
 
 /**  What the user picked for one lesson. */
@@ -615,6 +624,8 @@ export type LessonChoice_Serialize = {
 	score: string | null,
 	/**  No tab is linked by itself (the user removed it) */
 	noScore: boolean,
+	/**  Done or to review; set apart with `set_progress` (picking files keeps it) */
+	progress: LessonProgress,
 };
 
 export type LessonFile = {
@@ -639,6 +650,9 @@ export type LessonLibrary_Serialize = {
 	roots: LessonRoot[],
 	lessons: Lesson_Serialize[],
 };
+
+/**  The user's mark on a lesson, to see how far a course is. */
+export type LessonProgress = "none" | "done" | "review";
 
 export type LessonRoot = {
 	path: string,
@@ -668,6 +682,10 @@ export type Lesson_Deserialize = {
 	tab: TabState,
 	/**  Last opening of any of its files (seconds since 1970) */
 	openedAt?: number | null,
+	/**  The file opened last («Resume» opens it again, angle included) */
+	lastFile?: string | null,
+	/**  The user's mark: done, or to review */
+	progress: LessonProgress,
 	/**  Seconds practised in all, from the diary */
 	practice: number | null,
 };
@@ -692,6 +710,10 @@ export type Lesson_Serialize = {
 	tab: TabState,
 	/**  Last opening of any of its files (seconds since 1970) */
 	openedAt: number | null,
+	/**  The file opened last («Resume» opens it again, angle included) */
+	lastFile: string | null,
+	/**  The user's mark: done, or to review */
+	progress: LessonProgress,
 	/**  Seconds practised in all, from the diary */
 	practice: number | null,
 };

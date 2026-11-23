@@ -38,7 +38,10 @@ import { TabNeck } from "./TabNeck";
 
 /** alphaTab (1.2 MB) loads only when a score is first shown, never at start. */
 const ScoreView = lazy(() => import("./ScoreView").then((m) => ({ default: m.ScoreView })));
+
 /** pdf.js too loads only when a PDF is first shown. */
+import { PdfBarCheck } from "./pdf/PdfBarCheck";
+
 const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.PdfView })));
 
 /** Space always left to the waveforms under the score (CSS pixels). */
@@ -628,6 +631,7 @@ function ScoreBody({ link }: { link: ProjectScore }) {
       </div>
       {/* Notices stack at the foot of the score, never over each other nor over the title */}
       <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex flex-col items-center gap-1.5 px-[5%]">
+        {link.kind === "pdf" && status === "ready" && <PdfBarCheck link={link} />}
         <InfoToast />
         <NoticeToast />
       </div>

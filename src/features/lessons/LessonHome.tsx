@@ -3,6 +3,8 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Circle,
+  CircleCheck,
   FileAudio,
   FileMusic,
   FileText,
@@ -13,6 +15,7 @@ import {
   GraduationCap,
   Play,
   RefreshCw,
+  RotateCcw,
   Search,
   Trash2,
   Undo2,
@@ -41,15 +44,18 @@ import {
   type TabState,
 } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
-import { fileNameOf, formatAgo } from "@/lib/format";
+import { fileNameOf, formatAgo, samePath } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
+import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
+import { MarkItems } from "./LessonNav";
+import { lessonAround, progressOf, toggleDone } from "./lessonOrder";
 import { openLesson } from "./openLesson";
 import { litParts, matches, searchWords } from "./search";
 
 type Lesson = Lesson_Serialize;
 const l = t.lessons;
-/** Lessons shown under «Recently opened» */
+/** Lessons shown under «Recently opened» (the last one opened sits above them, to resume) */
 const RECENT_COUNT = 4;
 
 const store = () => useLessonsStore.getState();
@@ -114,6 +120,8 @@ function LessonMenu({ lesson, children }: { lesson: Lesson; children: ReactNode 
             <Play className="size-4" />
             {lesson.main ? l.open : l.openDocument}
           </ContextMenu.Item>
+          <ContextMenu.Separator className={menuSeparator} />
+          <MarkItems lesson={lesson} />
           {media.length > 0 && (
             <>
               <ContextMenu.Separator className={menuSeparator} />
@@ -198,6 +206,50 @@ function LessonMenu({ lesson, children }: { lesson: Lesson; children: ReactNode 
   );
 }
 
+/** The lesson's mark: a click makes it done or to do; the row's right-click has «to review». */
+function MarkKey({ lesson }: { lesson: Lesson }) {
+  const Icon =
+    lesson.progress === "done" ? CircleCheck : lesson.progress === "review" ? RotateCcw : Circle;
+  return (
+    <button
+      type="button"
+      title={`${l.mark[lesson.progress]}
+${l.markHint}`}
+      aria-label={l.mark[lesson.progress]}
+      aria-pressed={lesson.progress === "done"}
+      onClick={() => toggleDone(lesson)}
+      className={cn(
+        "grid size-7 shrink-0 place-items-center rounded-control transition-colors hover:bg-surface-hover",
+        lesson.progress === "done" && "text-loop",
+        lesson.progress === "review" && "text-cue",
+        lesson.progress === "none" && "text-fg-subtle/60 hover:text-fg",
+      )}
+    >
+      <Icon className="size-4" />
+    </button>
+  );
+}
+
+/** «3/8 done» with a thin bar, and how many are to review: how far a course or module is. */
+function Progress({ lessons }: { lessons: Lesson[] }) {
+  const { done, review, total } = progressOf(lessons);
+  return (
+    <span
+      className="flex items-center gap-2 text-[11px] font-normal tracking-normal normal-case text-fg-subtle tabular"
+      title={l.doneOfHint}
+    >
+      {review > 0 && <span className="whitespace-nowrap text-cue">{l.reviewCount(review)}</span>}
+      <span aria-hidden className="h-1 w-12 overflow-hidden rounded-full bg-led-off">
+        <span
+          className="block h-full rounded-full bg-loop"
+          style={{ width: `${total ? (done / total) * 100 : 0}%` }}
+        />
+      </span>
+      <span className="whitespace-nowrap">{l.doneOf(done, total)}</span>
+    </span>
+  );
+}
+
 /** One lesson: name, what it holds, its tab, practice and last opening; click opens it. */
 function LessonRow({
   lesson,
@@ -220,44 +272,52 @@ function LessonRow({
   return (
     <li className="border-t border-border first:border-t-0">
       <LessonMenu lesson={lesson}>
-        <button
-          type="button"
-          disabled={missing}
-          title={
-            missing
-              ? `${l.missingCourse}: ${lesson.folder}`
-              : withRightClick(lesson.folder, l.rightClick)
-          }
-          onClick={() => void openLesson(lesson)}
-          className={cn(
-            "grid w-full grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-3 rounded-control px-2 py-1.5 text-left text-sm transition-colors",
-            missing
-              ? "cursor-not-allowed text-fg-subtle line-through"
-              : "text-fg-muted hover:bg-surface-hover hover:text-fg",
-          )}
-        >
-          <Icon className="size-4 shrink-0" aria-hidden />
-          <span className="min-w-0">
-            <span className="block truncate text-fg">
-              <Lit text={lesson.name} words={words} />
-            </span>
-            {from && <span className="block truncate text-[11px] text-fg-subtle">{from}</span>}
-          </span>
-          <span className="flex items-center gap-3 text-[11px] text-fg-subtle tabular">
-            {!lesson.main && <span>{l.document}</span>}
-            {videos > 1 && <span className="whitespace-nowrap">{l.angles(videos)}</span>}
-            {backing && <span>{l.backing}</span>}
-            <TabLamp state={lesson.tab} />
-            {minutes > 0 && (
-              <span className="whitespace-nowrap text-readout" title={l.practiceHint}>
-                {l.practice(minutes)}
-              </span>
+        <div className="flex items-center gap-1">
+          <MarkKey lesson={lesson} />
+          <button
+            type="button"
+            disabled={missing}
+            title={
+              missing
+                ? `${l.missingCourse}: ${lesson.folder}`
+                : withRightClick(lesson.folder, l.rightClick)
+            }
+            onClick={() => void openLesson(lesson)}
+            className={cn(
+              "grid min-w-0 flex-1 grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-3 rounded-control px-2 py-1.5 text-left text-sm transition-colors",
+              missing
+                ? "cursor-not-allowed text-fg-subtle line-through"
+                : "text-fg-muted hover:bg-surface-hover hover:text-fg",
             )}
-            <span className="w-16 text-right whitespace-nowrap">
-              {lesson.openedAt ? ago(lesson.openedAt) : ""}
+          >
+            <Icon className="size-4 shrink-0" aria-hidden />
+            <span className="min-w-0">
+              <span
+                className={cn(
+                  "block truncate",
+                  lesson.progress === "done" ? "text-fg-muted" : "text-fg",
+                )}
+              >
+                <Lit text={lesson.name} words={words} />
+              </span>
+              {from && <span className="block truncate text-[11px] text-fg-subtle">{from}</span>}
             </span>
-          </span>
-        </button>
+            <span className="flex items-center gap-3 text-[11px] text-fg-subtle tabular">
+              {!lesson.main && <span>{l.document}</span>}
+              {videos > 1 && <span className="whitespace-nowrap">{l.angles(videos)}</span>}
+              {backing && <span>{l.backing}</span>}
+              <TabLamp state={lesson.tab} />
+              {minutes > 0 && (
+                <span className="whitespace-nowrap text-readout" title={l.practiceHint}>
+                  {l.practice(minutes)}
+                </span>
+              )}
+              <span className="w-16 text-right whitespace-nowrap">
+                {lesson.openedAt ? ago(lesson.openedAt) : ""}
+              </span>
+            </span>
+          </button>
+        </div>
       </LessonMenu>
     </li>
   );
@@ -481,9 +541,7 @@ function Course({ root, lessons }: { root: LessonRoot; lessons: Lesson[] }) {
               {root.name}
             </span>
             {!root.exists && <span className="text-[11px] text-cue">{l.missingCourse}</span>}
-            <span className="text-[11px] text-fg-subtle tabular">
-              {l.lessonsCount(root.lessons)}
-            </span>
+            <Progress lessons={lessons} />
           </button>
         </CourseMenu>
         <FoldAllKey courses={new Map([[root.path, names]])} />
@@ -506,11 +564,7 @@ function Course({ root, lessons }: { root: LessonRoot; lessons: Lesson[] }) {
                   >
                     <GroupChevron className="size-3.5 shrink-0" aria-hidden />
                     <span className="min-w-0 flex-1 truncate">{group.name}</span>
-                    {shut && (
-                      <span className="text-[11px] font-normal normal-case tracking-normal tabular">
-                        {l.lessonsCount(group.lessons.length)}
-                      </span>
-                    )}
+                    <Progress lessons={group.lessons} />
                   </button>
                 </h3>
               )}
@@ -524,6 +578,71 @@ function Course({ root, lessons }: { root: LessonRoot; lessons: Lesson[] }) {
             </div>
           );
         })}
+    </section>
+  );
+}
+
+/**
+ * The lesson opened last, big at the top: one click opens it as it was left (the file opened
+ * last, with its position, loop, speed and tab). Once it is done, the next one is a click away.
+ */
+function Resume({
+  lesson,
+  lessons,
+  from,
+  missing,
+}: {
+  lesson: Lesson;
+  lessons: Lesson[];
+  from: string;
+  missing: boolean;
+}) {
+  const track = usePlayerStore((s) => s.track?.path);
+  const isOpen = lesson.files.some((file) => samePath(file.path, track));
+  const next = lesson.progress === "done" ? lessonAround(lessons, lesson.lastFile)?.next : null;
+  return (
+    <section className="well flex flex-wrap items-center gap-x-4 gap-y-2 rounded-panel px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <h3 className="panel-label text-fg-subtle">{l.resume}</h3>
+        <p className="mt-1 flex items-center gap-2">
+          <span className="truncate text-base font-semibold text-fg">{lesson.name}</span>
+          {lesson.progress !== "none" && (
+            <span
+              className={cn(
+                "text-[11px] whitespace-nowrap",
+                lesson.progress === "done" ? "text-loop" : "text-cue",
+              )}
+            >
+              {l.mark[lesson.progress]}
+            </span>
+          )}
+        </p>
+        <p className="truncate text-xs text-fg-subtle">
+          {[from, lesson.openedAt ? ago(lesson.openedAt) : ""].filter(Boolean).join(" · ")}
+        </p>
+      </div>
+      {next && (
+        <Button
+          variant="hardware"
+          disabled={missing}
+          title={`${l.next} — ${next.name}`}
+          onClick={() => void openLesson(next)}
+        >
+          <span className="max-w-56 truncate">
+            {l.upNext}: {next.name}
+          </span>
+          <ChevronRight className="size-4" />
+        </Button>
+      )}
+      <Button
+        variant="primary"
+        disabled={missing}
+        title={missing ? l.missingCourse : l.resumeHint}
+        onClick={() => void openLesson(lesson, lesson.lastFile ?? undefined)}
+      >
+        <Play className="size-4" />
+        {isOpen ? l.backToLesson : l.resumeKey}
+      </Button>
     </section>
   );
 }
@@ -661,7 +780,7 @@ export function LessonHome() {
       library.lessons
         .filter((lesson) => lesson.openedAt)
         .sort((a, b) => (b.openedAt ?? 0) - (a.openedAt ?? 0))
-        .slice(0, RECENT_COUNT),
+        .slice(0, RECENT_COUNT + 1),
     [library],
   );
   const missing = useMemo(
@@ -750,22 +869,30 @@ export function LessonHome() {
           />
         ) : (
           <>
-            {recent.length > 0 && (
-              <section>
-                <div className="mb-1 flex items-center gap-2">
+            {recent[0] && (
+              <section className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
                   <h3 className="panel-label flex-1 text-fg-subtle">{l.lastOpened}</h3>
                   <ClearRecent />
                 </div>
-                <ul className="well rounded-panel px-2 py-1.5">
-                  {recent.map((lesson) => (
-                    <LessonRow
-                      key={lesson.id}
-                      lesson={lesson}
-                      from={from(lesson)}
-                      missing={missing.has(lesson.root)}
-                    />
-                  ))}
-                </ul>
+                <Resume
+                  lesson={recent[0]}
+                  lessons={library.lessons}
+                  from={from(recent[0])}
+                  missing={missing.has(recent[0].root)}
+                />
+                {recent.length > 1 && (
+                  <ul className="well rounded-panel px-2 py-1.5">
+                    {recent.slice(1).map((lesson) => (
+                      <LessonRow
+                        key={lesson.id}
+                        lesson={lesson}
+                        from={from(lesson)}
+                        missing={missing.has(lesson.root)}
+                      />
+                    ))}
+                  </ul>
+                )}
               </section>
             )}
             {library.roots.map((root) => (
