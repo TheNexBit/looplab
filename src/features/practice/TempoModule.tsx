@@ -15,19 +15,18 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { useCompact } from "@/components/ui/FitBar";
 import { Kbd } from "@/components/ui/Kbd";
-import { NumberField, parsePercent } from "@/components/ui/NumberField";
+import { NumberField } from "@/components/ui/NumberField";
 import { OptionsKey, OptionsPanel, useOptions } from "@/components/ui/OptionsKey";
-import { Slider } from "@/components/ui/Slider";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { ClickLevel } from "@/features/player/Levels";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
-import { formatPercent } from "@/lib/format";
 import type { ShortcutId } from "@/lib/shortcuts";
 import { clamp } from "@/lib/time";
 import { useWheelSteps } from "@/lib/useWheelSteps";
 import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
-import { SETTING_LIMITS, useSettingsStore } from "@/stores/settings";
+import { useSettingsStore } from "@/stores/settings";
 import { setDownbeatHere, tapBeat } from "./actions";
 import { ClickSoundPicker } from "./ClickSoundPicker";
 import { TimeSignaturePicker } from "./TimeSignaturePicker";
@@ -292,11 +291,10 @@ function BpmDisplay() {
   );
 }
 
-/** Count-in choices, click volume and the "needs a tempo" warning. */
+/** Count-in choices, click sounds and the "needs a tempo" warning (the volume has its knob). */
 function ClickOptions() {
   const countIn = useSettingsStore((s) => s.countIn);
   const bars = useSettingsStore((s) => s.countInBars);
-  const volume = useSettingsStore((s) => s.clickVolume);
   const metronome = useSettingsStore((s) => s.metronome);
   const hasBpm = usePracticeStore((s) => s.bpm !== null);
   const update = useSettingsStore((s) => s.update);
@@ -326,19 +324,6 @@ function ClickOptions() {
           ))}
         </div>
       </div>
-      <Slider
-        label={p.volume}
-        value={volume}
-        defaultValue={0.6}
-        min={SETTING_LIMITS.clickVolume.min}
-        max={SETTING_LIMITS.clickVolume.max}
-        step={SETTING_LIMITS.clickVolume.step}
-        onChange={(clickVolume) => update({ clickVolume })}
-        format={formatPercent}
-        parse={parsePercent}
-        trackClassName="flex-1"
-        className="justify-between"
-      />
       <div className="border-t border-border pt-3">
         <ClickSoundPicker />
       </div>
@@ -421,6 +406,8 @@ export function TempoModule({ className }: { className?: string }) {
       <div className="flex">
         <CountInKey />
       </div>
+      {/* The click's level and mute beside the keys that switch it on */}
+      <ClickLevel className="ml-1 border-l border-border pl-2" />
     </div>
   );
 }

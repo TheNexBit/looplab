@@ -4,6 +4,7 @@ import { PanelTitle } from "@/components/ui/PanelTitle";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { SectionLane } from "@/features/markers/SectionLane";
 import { NoteView } from "@/features/notes/NoteView";
+import { TrackLevel } from "@/features/player/Levels";
 import { t } from "@/i18n";
 import { DETAIL_HEIGHT, OVERVIEW_HEIGHT } from "@/lib/appearance";
 import { clamp } from "@/lib/time";
@@ -89,15 +90,19 @@ export function WaveformPanel() {
       className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden bg-stage p-2.5"
     >
       {/* The shared panel title (as video and score): the arrow folds the overview; Shift+O too */}
-      <PanelTitle
-        label={t.waveform.overview}
-        icon={<AudioWaveform className="size-3.5 shrink-0 text-accent" aria-hidden />}
-        open={showOverview}
-        onToggle={toggleOverview}
-        foldLabel={t.waveform.hideOverview}
-        openLabel={t.waveform.showOverview}
-        shortcut="toggleOverview"
-      />
+      <div className="flex shrink-0 items-center gap-3">
+        <PanelTitle
+          label={t.waveform.overview}
+          icon={<AudioWaveform className="size-3.5 shrink-0 text-accent" aria-hidden />}
+          open={showOverview}
+          onToggle={toggleOverview}
+          foldLabel={t.waveform.hideOverview}
+          openLabel={t.waveform.showOverview}
+          shortcut="toggleOverview"
+        />
+        {/* The track's own level and mute, on its header as in Reaper */}
+        <TrackLevel className="ml-auto" />
+      </div>
       {showOverview && (
         <div className="flex shrink-0 flex-col gap-0.5">
           <Overview />

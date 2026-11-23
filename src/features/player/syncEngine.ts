@@ -40,7 +40,7 @@ export function clickSettings() {
   return {
     countIn: settings.countIn ? settings.countInBars : 0,
     metronome: settings.metronome,
-    volume: settings.clickVolume,
+    volume: settings.clickMuted ? 0 : settings.clickVolume,
     sounds: clickSounds(settings),
   };
 }
@@ -89,8 +89,10 @@ export function syncWithEngine(): () => void {
       pushStems(true);
     }
   };
-  const pushTrackVolume = (force = false) =>
-    sendTrackVolume(useSettingsStore.getState().trackVolume, force);
+  const pushTrackVolume = (force = false) => {
+    const { trackVolume, trackMuted } = useSettingsStore.getState();
+    sendTrackVolume(trackMuted ? 0 : trackVolume, force);
+  };
   const sendTempo = sender(commands.setTempoMap);
   const pushTempo = (force = false) => sendTempo(clickTempoMap(), force);
 

@@ -1,17 +1,15 @@
-import { Magnet, MoveHorizontal, Pause, Play, Undo2 } from "lucide-react";
-
+import { Check, Magnet, Minus, MoveHorizontal, Pause, Play, Plus, Undo2 } from "lucide-react";
+import { ContextMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
-import { Fader } from "@/components/ui/Fader";
 import { FitBar, useCompact } from "@/components/ui/FitBar";
-import { NumberField, parsePercent } from "@/components/ui/NumberField";
-import { Slider } from "@/components/ui/Slider";
+import { Knob } from "@/components/ui/Knob";
+import { menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
 import { t } from "@/i18n";
-import { cn } from "@/lib/cn";
 import { formatPercent, signed } from "@/lib/format";
+import { clamp } from "@/lib/time";
 import { usePlayerStore } from "@/stores/player";
 import { useSettingsStore } from "@/stores/settings";
 import { showsWhole, useViewStore } from "@/stores/view";
@@ -19,17 +17,10 @@ import { FollowKey } from "./FollowKey";
 import { LoopMenu } from "./LoopMenu";
 import { CENTS, SEMITONES, SPEED, SPEED_PRESETS } from "./limits";
 import { TimeDisplay } from "./TimeDisplay";
-import { TuningPicker } from "./TuningPicker";
+import { TuningItems } from "./TuningPicker";
 
 /** Recessed panel holding a group of keys or a fader. */
 const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
-
-/** Speed and pitch faders line up one under the other */
-const LABEL = "w-16";
-const TRACK = "w-12 lg:w-16 2xl:w-20 min-[1800px]:w-24";
-/** In a crowded dock: a shorter label column and faders (every control stays) */
-const LABEL_COMPACT = "w-9";
-const TRACK_COMPACT = "w-12";
 
 /** Bottom dock: transport, loop, tempo and click (like every DAW), speed and pitch. */
 export function TransportDock() {
@@ -116,116 +107,114 @@ export function TransportDock() {
 
         <TempoModule />
 
-        {/* Speed over pitch, like two strips of a mixer */}
         <SpeedPitch />
       </FitBar>
     </footer>
   );
 }
 
-/** Speed and pitch faders with their quick keys: narrower in a crowded dock, never fewer. */
+const tr = t.transport;
+const player = () => usePlayerStore.getState();
+
+/** The pitch as its display shows it: semitones, and the cents when there are some. */
+const pitchText = (semitones: number, cents: number) =>
+  cents === 0
+    ? signed(semitones, tr.semitones)
+    : `${signed(semitones)} ${signed(cents)}${tr.cents.charAt(0)}`;
+
+/**
+ * Speed and pitch, two knobs like the levels (one look for every value): the speed presets,
+ * the fine tuning and the tunings on their right button.
+ */
 function SpeedPitch() {
   const speed = usePlayerStore((s) => s.speed);
   const semitones = usePlayerStore((s) => s.semitones);
   const cents = usePlayerStore((s) => s.cents);
-  const { setSpeed, setPitch } = usePlayerStore.getState();
   const compact = useCompact();
-  const label = compact ? LABEL_COMPACT : LABEL;
-  const track = compact ? TRACK_COMPACT : TRACK;
+  const keepOpen = (event: Event) => event.preventDefault();
+  const fine = (next: number) =>
+    player().setPitch(player().semitones, clamp(next, CENTS.min, CENTS.max));
   return (
-    <div className="well ml-auto flex shrink-0 items-center gap-2 rounded-panel px-2 py-1.5 lg:px-3">
-      {/* Track and click levels first: lower the track to hear the click over a loud mix */}
-      <VolumeStrip />
-      <div className="grid gap-1">
-        <div className="flex items-center gap-1">
-          <Slider
-            label={compact ? t.transport.speedShort : t.transport.speed}
-            value={speed}
-            defaultValue={SPEED.default}
-            min={SPEED.min}
-            max={SPEED.max}
-            step={SPEED.step}
-            onChange={setSpeed}
-            format={formatPercent}
-            parse={parsePercent}
-            labelClassName={label}
-            trackClassName={track}
-          />
-          {SPEED_PRESETS.map((preset) => (
-            <Tooltip key={preset} label={`${t.transport.speedPreset} ${formatPercent(preset)}`}>
-              <Chip
-                active={speed === preset}
-                onClick={() => setSpeed(preset)}
-                aria-label={`${t.transport.speedPreset} ${formatPercent(preset)}`}
-                className={cn(
-                  "h-[22px] font-mono text-[10px] tabular",
-                  compact ? "px-1" : "px-1.5",
-                )}
+    <div className="well ml-auto flex shrink-0 items-center gap-3 rounded-panel px-3 py-1.5">
+      <Knob
+        label={tr.speed}
+        caption={compact ? tr.speedShort : tr.speed}
+        hint={tr.knobHint}
+        value={speed}
+        current={() => player().speed}
+        min={SPEED.min}
+        max={SPEED.max}
+        step={SPEED.step}
+        defaultValue={SPEED.default}
+        centered
+        onChange={player().setSpeed}
+        format={formatPercent}
+        rightClick={tr.speedRightClick}
+        menu={
+          <>
+            <ContextMenu.Label className={menuLabel}>{tr.speedPreset}</ContextMenu.Label>
+            {SPEED_PRESETS.map((preset) => (
+              <ContextMenu.Item
+                key={preset}
+                className={menuItem}
+                onSelect={() => player().setSpeed(preset)}
               >
-                {compact ? Math.round(preset * 100) : formatPercent(preset)}
-              </Chip>
-            </Tooltip>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Slider
-            label={compact ? t.transport.pitchShort : t.transport.pitch}
-            value={semitones}
-            defaultValue={SEMITONES.default}
-            min={SEMITONES.min}
-            max={SEMITONES.max}
-            step={SEMITONES.step}
-            onChange={(value) => setPitch(value, cents)}
-            format={(value) => signed(value, t.transport.semitones)}
-            labelClassName={label}
-            trackClassName={track}
-          />
-          <Tooltip label={t.transport.fineTune}>
-            <span>
-              <NumberField
-                label={t.transport.fineTune}
-                value={cents}
-                min={CENTS.min}
-                max={CENTS.max}
-                step={CENTS.step}
-                onChange={(value) => setPitch(semitones, value)}
-                format={(value) => signed(value, t.transport.cents)}
-              />
-            </span>
-          </Tooltip>
-          <TuningPicker />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** The level of the track and of the click, always at hand: two faders, like a mixer. */
-function VolumeStrip() {
-  const trackVolume = useSettingsStore((s) => s.trackVolume);
-  const clickVolume = useSettingsStore((s) => s.clickVolume);
-  const update = useSettingsStore((s) => s.update);
-  const v = t.transport;
-  return (
-    <div className="flex shrink-0 items-end gap-1.5 border-r border-border pr-2">
-      <Fader
-        label={v.trackVolume}
-        short={v.trackVolumeShort}
-        hint={v.trackVolumeHint}
-        value={trackVolume}
-        current={() => useSettingsStore.getState().trackVolume}
-        reset={1}
-        onChange={(value) => update({ trackVolume: value })}
+                <Check className={speed === preset ? "size-4" : "size-4 opacity-0"} />
+                {formatPercent(preset)}
+              </ContextMenu.Item>
+            ))}
+          </>
+        }
       />
-      <Fader
-        label={v.clickVolume}
-        short={v.clickVolumeShort}
-        hint={v.clickVolumeHint}
-        value={clickVolume}
-        current={() => useSettingsStore.getState().clickVolume}
-        reset={0.6}
-        onChange={(value) => update({ clickVolume: value })}
+      <Knob
+        label={tr.pitch}
+        caption={compact ? tr.pitchShort : tr.pitch}
+        hint={tr.knobHint}
+        value={semitones}
+        current={() => player().semitones}
+        min={SEMITONES.min}
+        max={SEMITONES.max}
+        step={SEMITONES.step}
+        defaultValue={SEMITONES.default}
+        centered
+        onChange={(next) => player().setPitch(next, player().cents)}
+        format={(value) => pitchText(value, cents)}
+        rightClick={tr.pitchRightClick}
+        menu={
+          <>
+            <ContextMenu.Label className={menuLabel}>
+              {tr.fineTune}: {signed(cents, tr.cents)}
+            </ContextMenu.Label>
+            <ContextMenu.Item
+              className={menuItem}
+              disabled={cents >= CENTS.max}
+              onSelect={(event) => {
+                keepOpen(event);
+                fine(player().cents + CENTS.step);
+              }}
+            >
+              <Plus className="size-4" />
+              {tr.fineUp}
+            </ContextMenu.Item>
+            <ContextMenu.Item
+              className={menuItem}
+              disabled={cents <= CENTS.min}
+              onSelect={(event) => {
+                keepOpen(event);
+                fine(player().cents - CENTS.step);
+              }}
+            >
+              <Minus className="size-4" />
+              {tr.fineDown}
+            </ContextMenu.Item>
+            <ContextMenu.Item className={menuItem} disabled={cents === 0} onSelect={() => fine(0)}>
+              <Undo2 className="size-4" />
+              {tr.fineReset}
+            </ContextMenu.Item>
+            <ContextMenu.Separator className={menuSeparator} />
+            <TuningItems />
+          </>
+        }
       />
     </div>
   );

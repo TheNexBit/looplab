@@ -36,6 +36,9 @@ export interface Settings {
   trackVolume: number;
   /** Volume of the clicks, 0..1 */
   clickVolume: number;
+  /** Track or clicks silenced, their volume kept for when they come back (the mixer's mute key) */
+  trackMuted: boolean;
+  clickMuted: boolean;
   /** Sound and level (0..1) of the first beat of a bar, and of the other beats, like Reaper */
   accentSound: ClickSound;
   accentLevel: number;
@@ -174,6 +177,8 @@ const DEFAULTS: Settings = {
   metronome: false,
   trackVolume: 1,
   clickVolume: 0.6,
+  trackMuted: false,
+  clickMuted: false,
   // The classic click: a high beep on the first beat, a lower one on the others
   accentSound: "beepHigh",
   accentLevel: 1,

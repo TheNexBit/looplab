@@ -40,6 +40,10 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - Panoramica e forma d'onda grande si regolano trascinando il loro bordo inferiore (doppio clic: misura
   normale). La forma d'onda grande ha una misura minima uguale in ogni brano: spartito e video si
   rimpiccioliscono prima di lei.
+- Volumi, velocità e tonalità con manopole uguali e il valore in un display: il volume del brano sta sul titolo
+  della forma d'onda, quello del click nel modulo del metronomo, velocità e tonalità nella barra in basso.
+  Nuovi tasti «M» per silenziare il brano o il click senza perdere il livello. Preset di velocità, intonazione
+  fine e accordatura col tasto destro sulle manopole.
 
 ### Corretto
 

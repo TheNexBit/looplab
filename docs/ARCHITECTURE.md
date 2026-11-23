@@ -200,6 +200,10 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   danno ai loro pannelli al massimo `100% - reserve`, quindi si rimpiccioliscono per primi. Il pannello subito
   sopra le forme d'onda si registra con `claimNeighbour`: il bordo della forma d'onda grande sposta il confine
   con lui.
+- **Manopole (fase 29)**: `components/ui/Knob.tsx` è il comando unico per i valori continui della barra e dei
+  titoli (`knobTurn.ts`: valore ↔ giro, con il normale a metà per le manopole centrate); `MuteKey.tsx` il mute.
+  `features/player/Levels.tsx` tiene volume e mute di brano e click; `syncEngine` manda 0 al motore quando un
+  livello è muto.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 
