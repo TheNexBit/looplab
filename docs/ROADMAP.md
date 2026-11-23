@@ -997,7 +997,9 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
 - **Togliere un corso:** tasto cestino sulla riga del corso, con conferma; i file restano sul disco
   (`remove_lesson_root`).
 - **Moduli richiudibili:** ogni modulo si chiude col suo titolo; un tasto «Comprimi tutto / Espandi tutto»
-  per tutta la Home (accanto a «Aggiungi corso») e uno per corso (sulla sua riga), anche nel menu del corso. Corsi e moduli chiusi si ricordano (`lessonFolds` nelle impostazioni).
+  per tutta la Home (accanto a «Aggiungi corso») e uno per corso (sulla sua riga): chiude dalla radice, il
+  corso e i suoi moduli (riaprendo un corso i moduli restano chiusi), e apre tutto allo stesso modo. Nel menu
+  del corso «Chiudi / Apri tutti i moduli» lasciano il corso aperto. Corsi e moduli chiusi si ricordano (`lessonFolds` nelle impostazioni).
 - **Cambio tab facile:** menu «Tab» nella barra dello spartito (`features/score/TabMenu.tsx`) con le tab
   della lezione (`lesson_of_track`), la spia della sincronizzazione, le tab usate prima e «Cambia
   file…». Alt+T (riassegnabile, anche in Ctrl+K) passa alla successiva. Ogni progetto tiene le tab

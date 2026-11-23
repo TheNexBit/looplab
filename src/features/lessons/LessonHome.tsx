@@ -295,18 +295,22 @@ function modulesByCourse(lessons: Lesson[]): Map<string, string[]> {
 }
 
 /**
- * One key that folds every module when any is open, and opens them all when all are folded:
- * for one course, or (`modules` of every course) for the whole Home.
+ * One key that folds from the root: every course and every module of it when anything is open
+ * (a course opened later shows its modules folded), and opens them all when all are folded.
+ * For one course, or (`courses`: every course with its modules) for the whole Home.
  */
 function FoldAllKey({
-  modules,
+  courses,
   labelled = false,
 }: {
-  modules: Map<string, string[]>;
+  courses: Map<string, string[]>;
   labelled?: boolean;
 }) {
   const folds = useSettingsStore((s) => s.lessonFolds);
-  const keys = [...modules].flatMap(([root, names]) => names.map((name) => groupKey(root, name)));
+  const keys = [...courses].flatMap(([root, names]) => [
+    root,
+    ...names.map((name) => groupKey(root, name)),
+  ]);
   if (keys.length === 0) return null;
   const anyOpen = keys.some((key) => !folds.includes(key));
   const label = anyOpen ? l.foldAll : l.unfoldAll;
@@ -318,9 +322,14 @@ function FoldAllKey({
       className={labelled ? undefined : "size-7 shrink-0 text-fg-subtle hover:text-fg"}
       title={label}
       aria-label={label}
-      onClick={() => {
-        for (const [root, names] of modules) foldModules(root, names, anyOpen);
-      }}
+      onClick={() =>
+        setFolds((all) => {
+          for (const key of keys) {
+            if (anyOpen) all.add(key);
+            else all.delete(key);
+          }
+        })
+      }
     >
       <Icon className="size-4" />
       {labelled && label}
@@ -476,7 +485,7 @@ function Course({ root, lessons }: { root: LessonRoot; lessons: Lesson[] }) {
             </span>
           </button>
         </CourseMenu>
-        {!folded && <FoldAllKey modules={new Map([[root.path, names]])} />}
+        <FoldAllKey courses={new Map([[root.path, names]])} />
         <RemoveCourse root={root} />
       </div>
       {!folded &&
@@ -668,6 +677,7 @@ export function LessonHome() {
       ),
     [library, courseNames, words],
   );
+  const modules = useMemo(() => modulesByCourse(library.lessons), [library]);
   const from = (lesson: Lesson) =>
     [courseNames.get(lesson.root), lesson.group].filter(Boolean).join(" · ");
 
@@ -715,7 +725,14 @@ export function LessonHome() {
             </button>
           )}
         </label>
-        {!needle && <FoldAllKey modules={modulesByCourse(library.lessons)} labelled />}
+        {!needle && (
+          <FoldAllKey
+            courses={
+              new Map(library.roots.map((root) => [root.path, modules.get(root.path) ?? []]))
+            }
+            labelled
+          />
+        )}
         <Button variant="hardware" onClick={() => void addCourse()} title={l.addCourseHint}>
           <FolderPlus className="size-4" />
           {l.addCourse}
