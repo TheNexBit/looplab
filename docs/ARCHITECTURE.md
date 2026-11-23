@@ -180,6 +180,9 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   (Guitar Pro > MusicXML > Capella > PDF, parole finali «tab», «score»… tolte) vanno alla lezione con lo stesso
   nome o all'unica della cartella; cartelle con solo PDF sono documenti (aperti col visore di sistema). Titoli:
   le cartelle tra il corso e la lezione, senza il numero d'ordine iniziale; ordine «naturale» (9 prima di 10).
+  Una cartella con una sola lezione dà il nome alla lezione solo se si chiama come lei (`folder_is_lesson`),
+  altrimenti resta un titolo: così qualsiasi cartella di media è un corso. I formati letti sono quelli di
+  `formats.rs`, l'unica lista dell'app (l'interfaccia la legge dalle costanti `AUDIO_FORMATS`/`VIDEO_FORMATS`).
   `scan_lessons` rilegge in sottofondo solo le cartelle con data di modifica cambiata; una cartella sparita
   tiene il vecchio elenco (disco scollegato). Stato tab, ultima apertura e minuti di pratica escono da
   `projects`, `recent` e `diary`. UI: `features/lessons/LessonHome.tsx` (sinistra della schermata iniziale, o

@@ -1003,6 +1003,11 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   file…». Alt+T (riassegnabile, anche in Ctrl+K) passa alla successiva. Ogni progetto tiene le tab
   usate prima con la loro sincronizzazione (`Project.other_scores`, «scaffale» nello store dello
   spartito); la pulizia dei file in `spartiti\` le conserva.
+- **Corsi da qualsiasi cartella:** formati in una lista unica (`src-tauri/src/formats.rs`, letta
+  dall'interfaccia con le costanti dei bindings `AUDIO_FORMATS` e `VIDEO_FORMATS`), con in più .m4v, .aif,
+  .wave, .m4b, .mka e .oga. Una cartella con un solo file è la lezione solo quando si chiama come lei
+  (`folder_is_lesson`); altrimenti resta un titolo. Profondità fino a 16 cartelle. Test con una cartella
+  qualsiasi di video e canzoni.
 - **Ricerca delle lezioni** (`features/lessons/search.ts`, con test): più parole in qualsiasi ordine,
   accenti e maiuscole a parte; risultati per corso e modulo come nella Home, parole evidenziate, conteggio
   «N lezioni trovate in M corsi», tasto × ed Esc per svuotarla (il primo Esc svuota, il secondo torna al

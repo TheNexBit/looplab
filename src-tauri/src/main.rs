@@ -7,6 +7,7 @@ mod commands;
 mod db;
 mod diary;
 mod exercise;
+mod formats;
 mod hash;
 mod json_file;
 mod legacy;

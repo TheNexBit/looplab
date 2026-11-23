@@ -121,6 +121,9 @@ pub fn builder() -> Builder<tauri::Wry> {
             MidiTrigger,
             MediaKey
         ])
+        // The media files the app opens: one list, read by the UI too
+        .constant("AUDIO_FORMATS", crate::formats::AUDIO)
+        .constant("VIDEO_FORMATS", crate::formats::VIDEO)
 }
 
 /// The cache folder, as a command error if it cannot be found.

@@ -41,8 +41,9 @@ const SCORE_WORDS: &[&str] = &[
     "tabs",
     "tab",
 ];
-/// Folders deeper than this under a course folder are not read.
-const MAX_DEPTH: usize = 8;
+/// Folders deeper than this under a course folder are not read (a guard against folder loops
+/// through links, far deeper than any course).
+const MAX_DEPTH: usize = 16;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -385,6 +386,35 @@ fn folder_lessons(folder: &Path, names: &[String]) -> Vec<Found> {
     found
 }
 
+/// Letters and digits only, lower case: «01 Lesson 01 Warm-Up» and «lesson 01 warm up» agree.
+fn squashed(text: &str) -> String {
+    text.chars()
+        .filter(|c| c.is_alphanumeric())
+        .flat_map(char::to_lowercase)
+        .collect()
+}
+
+/// True when a folder holding one lesson is that lesson (course folders like «02 Exercise 03
+/// Basic Shapes» holding «Exercise 03 Basic Shapes.mp4»): the lesson takes the folder's name and
+/// the folder is no heading. Any other folder («Live» holding «Gig 2019.mkv») stays a heading and
+/// the lesson keeps its own name.
+fn folder_is_lesson(folder: &Path, root: &Path, found: &[Found]) -> bool {
+    let [lesson] = found else {
+        return false;
+    };
+    if folder == root {
+        return false;
+    }
+    let folder_name = folder
+        .file_name()
+        .map(|n| squashed(without_number(&n.to_string_lossy())))
+        .unwrap_or_default();
+    let own = squashed(&lesson.key);
+    !folder_name.is_empty()
+        && !own.is_empty()
+        && (folder_name.contains(&own) || own.contains(&folder_name))
+}
+
 /// What «Open» opens by default: the main video, else a video, else the audio with the player.
 fn default_main(files: &[LessonFile]) -> Option<String> {
     let media = |f: &&LessonFile| matches!(f.kind, LessonFileKind::Video | LessonFileKind::Audio);
@@ -574,7 +604,7 @@ fn lessons_of(conn: &Connection, root: &Path, index: &Index) -> Result<Vec<Lesso
     for (folder, dir) in folders {
         let folder = Path::new(folder);
         let found = folder_lessons(folder, &dir.files);
-        let single = found.len() == 1 && folder != root;
+        let single = folder_is_lesson(folder, root, &found);
         let mut lessons = Vec::new();
         for lesson in found {
             lessons.push(complete(conn, root, folder, single, lesson)?);
@@ -683,8 +713,8 @@ pub fn lesson_of(conn: &Connection, track: &str) -> Result<Option<Lesson>, Libra
     };
     let dir = read_dir(folder);
     let found = folder_lessons(folder, &dir.files);
-    let single = found.len() == 1;
     let root = folder.parent().unwrap_or(folder);
+    let single = folder_is_lesson(folder, root, &found);
     for lesson in found {
         if lesson
             .files
@@ -858,6 +888,48 @@ mod tests {
         remove_root(&conn, &root.to_string_lossy()).unwrap();
         assert!(library(&conn).unwrap().lessons.is_empty());
         fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn any_folder_of_media_is_a_course() {
+        // No modules, no numbers, no tabs: plain videos and songs, loose and in sub-folders
+        let conn = memory();
+        let root = crate::project::tests::temp_dir("lessons-any-folder");
+        for file in [
+            "holiday clip.m4v",
+            "voice memo.aif",
+            "old tape.wave",
+            "notes.txt",
+            "Live/Gig 2019.mkv",
+            "Live/Encore.mka",
+            "Live/Deep/Deeper/Still There.oga",
+        ] {
+            let path = root.join(file);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(&path, b"x").unwrap();
+        }
+        let lib = read(&conn, &root);
+        let mut names: Vec<&str> = lib.lessons.iter().map(|l| l.name.as_str()).collect();
+        names.sort_unstable();
+        assert_eq!(
+            names,
+            [
+                "Encore",
+                "Gig 2019",
+                "Still There",
+                "holiday clip",
+                "old tape",
+                "voice memo"
+            ]
+        );
+        assert!(lib.lessons.iter().all(|l| l.main.is_some()));
+        // A folder holding one file of another name is a heading, not the lesson's name
+        let still = lib
+            .lessons
+            .iter()
+            .find(|l| l.name == "Still There")
+            .unwrap();
+        assert_eq!(still.group, "Live › Deep › Deeper");
     }
 
     #[test]

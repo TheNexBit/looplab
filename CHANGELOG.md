@@ -27,6 +27,11 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ### Corretto
 
+- Qualsiasi cartella di video o audio diventa un corso, anche senza moduli, numeri o tab: una lezione
+  per file, le sotto-cartelle come titoli. La cartella dà il nome alla lezione solo quando si chiama
+  come lei (prima un file solo in una cartella prendeva sempre il nome della cartella).
+- Formati: una lista unica per tutta l'app; aggiunti .m4v, .aif, .wave, .m4b, .mka e .oga.
+  Cartelle lette fino a 16 livelli (prima 8).
 - Battute dei PDF: travature, parentesi delle terzine e linee 8va lunghe venivano prese per righe del
   pentagramma, e alcune battute andavano perse (Exercise 03 ne aveva 7 su 8). Ora i 27 PDF del corso
   JTC hanno tutti le stesse battute dei loro file .gp.

@@ -14,10 +14,8 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 
 use crate::db::{LibraryError, path_key};
+use crate::formats::{AUDIO, VIDEO};
 use crate::project::{self, Project, fingerprint};
-
-const AUDIO: &[&str] = &["mp3", "wav", "flac", "m4a", "aac", "ogg", "aiff"];
-const VIDEO: &[&str] = &["mp4", "mov", "mkv", "webm"];
 
 /// Words at the end of a name that tell one file of the take from another, longest first.
 /// The backing ones mark a take without the player.

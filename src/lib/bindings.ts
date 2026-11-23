@@ -233,6 +233,11 @@ export const events = {
 	videoWindowHidden: makeEvent<VideoWindowHidden, VideoWindowHidden>("video-window-hidden"),
 };
 
+/* Constants */
+export const AUDIO_FORMATS = ["mp3","wav","wave","flac","m4a","m4b","aac","ogg","oga","aiff","aif","mka"] as const;
+
+export const VIDEO_FORMATS = ["mp4","m4v","mov","mkv","webm"] as const;
+
 /* Types */
 /**  One pass through a bar, in playback order: its length at the written tempo and its notes. */
 export type AlignBar = {

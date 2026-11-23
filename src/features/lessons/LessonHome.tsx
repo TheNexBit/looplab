@@ -30,6 +30,7 @@ import {
   menuSeparator,
 } from "@/components/ui/menu";
 import { withRightClick } from "@/components/ui/Tooltip";
+import { isVideoPath } from "@/features/library/formats";
 import { t } from "@/i18n";
 import {
   commands,
@@ -60,7 +61,7 @@ async function addCourse() {
 
 function lessonIcon(lesson: Lesson) {
   if (!lesson.main) return FileText;
-  return lesson.main.toLowerCase().match(/\.(mp4|mov|mkv|webm)$/) ? FileVideo : FileAudio;
+  return isVideoPath(lesson.main) ? FileVideo : FileAudio;
 }
 
 /** Lamp and word: how far the lesson's tab is. */
