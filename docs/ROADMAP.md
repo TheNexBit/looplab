@@ -950,7 +950,7 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
 
 **Unione:** il 22/11/2026 il ramo `tab` (fasi 21-27, tutte provate) è stato unito in main; worktree tolto.
 
-## 28. Rifinitura grafica 🔧 (ramo `fase-28`)
+## 28. Rifinitura grafica ✅ (provata 23/11/2026)
 
 **Obiettivo:** togliere i difetti di aspetto trovati usando le fasi 21-27 e rendere più severo il collaudo grafico.
 
@@ -975,6 +975,17 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   battuta ci sta (titolo visibile, niente riga tagliata); avviso «Tab collegata» in basso; Home sopra un brano a
   tutta larghezza (pannello laterale tolto); «Lo sapevi?» va a capo intero; trainer spenti più leggibili; menu
   «BPM ♩» cliccabile su tutta la riga. La barra in alto a 1280 px era già a posto.
+- **Prova dell'utente (23/11/2026, 15/15 e 8/8):** Lezioni sopra un brano a tutta larghezza (la schermata iniziale
+  resta centrata); zoom del PDF oltre il 100% (pagina = larghezza del pannello, al massimo 900 px, per lo zoom;
+  scorrimento di lato e la vista segue la battuta anche di lato); nome del brano mai schiacciato a 1280 px.
+- **Riprova del collaudatore:** la barra in alto (`components/ui/FitBar.tsx`) non si rimisurava quando un tasto
+  compariva da solo (esercizio con base aperto dopo un brano semplice) e spingeva fuori i tasti a destra; ora si
+  rimisura a ogni cambiamento al suo interno (verificato a 1280, 1366, 1440 e 1920 px).
+- **Lasciati così (scelta dell'utente):** a 1280 px e zoom 200% un'annotazione .gp molto lunga esce a destra
+  (alphaTab non la manda a capo); nei temi Light e Paper la voce scelta di un menu, senza puntatore sopra, ha
+  contrasto ~4:1; nei temi Light e Paper «Carta scura» lascia il .gp chiaro (il PDF diventa scuro).
+
+**Unione:** il 23/11/2026 il ramo `fase-28` è stato unito in main.
 
 ## Dopo la prima versione
 
