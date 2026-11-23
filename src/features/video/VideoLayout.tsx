@@ -1,10 +1,11 @@
-import { ChevronDown, ChevronUp, Columns2, ExternalLink, PanelLeft, PanelTop } from "lucide-react";
+import { Columns2, ExternalLink, Film, PanelLeft, PanelTop } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/Button";
+import { PanelTitle } from "@/components/ui/PanelTitle";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { AngleMenu } from "@/features/exercise/AngleMenu";
-import { SCORE_MIN_VISIBLE } from "@/features/score/ScoreLayout";
+import { SCORE_MIN_VISIBLE, SCORE_ROW_HEIGHT } from "@/features/score/ScoreLayout";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { playbackClock } from "@/stores/player";
@@ -33,11 +34,31 @@ const panelSize = (top: boolean, size: number, below: number) =>
       }
     : { width: `min(${size}px, calc(100% - ${WAVEFORMS_MIN_WIDTH}px))` };
 
-/** The video panel's title bar; `children` are its keys, on the right. */
-export function VideoHeader({ children }: { children: ReactNode }) {
+/**
+ * The video panel's title bar: the shared panel title (its arrow folds the picture when
+ * `onToggle` is given), the angles, then `children`, its keys, on the right.
+ */
+export function VideoHeader({
+  children,
+  open = true,
+  onToggle,
+}: {
+  children: ReactNode;
+  open?: boolean;
+  onToggle?: () => void;
+}) {
   return (
     <header className="flex h-8 shrink-0 items-center gap-1 px-3 text-xs text-fg-subtle">
-      <span className="mr-auto font-medium tracking-wide uppercase">{t.video.title}</span>
+      <span className="mr-auto">
+        <PanelTitle
+          label={t.video.title}
+          icon={<Film className="size-3.5 shrink-0 text-accent" aria-hidden />}
+          open={open}
+          onToggle={onToggle}
+          foldLabel={t.video.collapse}
+          openLabel={t.video.expand}
+        />
+      </span>
       <AngleMenu />
       {children}
     </header>
@@ -122,13 +143,15 @@ export function VideoLayout({ children }: { children: ReactNode }) {
   const size = useVideoStore((s) => s.size);
   const { setDock, setDockWithScore, toggleCollapsed } = useVideoStore.getState();
   const hasScore = useScoreStore((s) => s.link !== null);
+  const askingScore = useScoreStore((s) => s.asking);
   const layoutRef = useRef<HTMLDivElement>(null);
   if (status === "none" || detached) return children;
   // With a score the video has its own place (beside it by default), so both stay large
   const dock = hasScore ? dockWithScore : dockAlone;
   const top = dock === "top";
   // Under the video: the waveforms, and the score's least height when one is shown
-  const below = WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : 0);
+  const below =
+    WAVEFORMS_MIN_HEIGHT + (hasScore ? SCORE_MIN_VISIBLE : askingScore ? SCORE_ROW_HEIGHT : 0);
 
   // Largest panel the window allows now (the CSS of `panelSize` keeps it so on screen)
   const largest = () => {
@@ -148,7 +171,7 @@ export function VideoLayout({ children }: { children: ReactNode }) {
       className="flex shrink-0 flex-col overflow-hidden"
       style={collapsed ? undefined : panelSize(top, size, below)}
     >
-      <VideoHeader>
+      <VideoHeader open={!collapsed} onToggle={toggleCollapsed}>
         {hasScore && <BesideKey beside={false} />}
         <Tooltip label={top ? t.video.dockSide : t.video.dockTop}>
           <Button
@@ -163,16 +186,6 @@ export function VideoLayout({ children }: { children: ReactNode }) {
           </Button>
         </Tooltip>
         <DetachKey />
-        <Tooltip label={collapsed ? t.video.expand : t.video.collapse}>
-          <Button
-            size="icon"
-            className="size-6"
-            aria-label={collapsed ? t.video.expand : t.video.collapse}
-            onClick={toggleCollapsed}
-          >
-            {collapsed ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
-          </Button>
-        </Tooltip>
       </VideoHeader>
       {!collapsed && <VideoBox />}
     </section>

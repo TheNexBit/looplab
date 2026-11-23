@@ -1010,9 +1010,13 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   .wave, .m4b, .mka e .oga. Una cartella con un solo file è la lezione solo quando si chiama come lei
   (`folder_is_lesson`); altrimenti resta un titolo. Profondità fino a 16 cartelle. Test con una cartella
   qualsiasi di video e canzoni.
-- **Panoramica più semplice:** al posto del tasto che compariva solo col puntatore (in alto a destra) e
-  della striscia con la freccia al centro, un solo titolo «Panoramica del brano» sempre visibile, allo
-  stesso posto, con la freccia giù/destra come i corsi della Home (`WaveformPanel.tsx`); Maiusc+O resta.
+- **Titoli dei pannelli uguali:** `components/ui/PanelTitle.tsx` per video, spartito e panoramica: a sinistra
+  freccia giù/destra (come i corsi della Home), icona e nome; un clic apre o chiude (Maiusc+O per la
+  panoramica). Tolti il tasto della panoramica che compariva solo col puntatore, la striscia con la freccia
+  al centro e le frecce su/giù a destra di video e spartito.
+- **Spartito senza tab in una riga:** `EmptyRow` (testo, «Scegli file…» con la nota sulla copia nel
+  suggerimento, ×) al posto del pannello vuoto alto. Il video ora tiene conto di questa riga
+  (`SCORE_ROW_HEIGHT`) e lascia sempre il posto alla forma d'onda (prima la schiacciava a zero).
 - **Svuotare i recenti:** tasto gomma accanto ad «Aperti di recente» e a «Ultime aperte» (`ClearRecent`),
   con conferma: «Svuota tutto» o «Solo i file spariti» (`recent::clear`, comando `clear_recent`, con test).
   Si toglie solo l'elenco: progetti, diario e file restano.

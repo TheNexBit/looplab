@@ -769,13 +769,12 @@ export const it = {
     title: "Spartito",
     show: "Mostra lo spartito",
     hide: "Nascondi lo spartito",
-    emptyTitle: "Collega una tab o uno spartito a questo brano",
-    emptyHint:
-      "Trascina qui un file Guitar Pro (.gp, .gp5, .gpx…), MusicXML o PDF, oppure sceglilo dal disco.",
     emptyNoTrack: "Apri prima un brano: lo spartito si collega al brano aperto.",
     emptySafe:
       "Looplab ne tiene una copia nella sua libreria (con i backup): il tuo file resta dov'è, intatto.",
     choose: "Scegli file…",
+    emptyRow:
+      "Nessuna tab collegata: scegli un file (.gp, MusicXML, PDF) o trascinalo sulla finestra",
     change: "Cambia file…",
     tabs: "Tab",
     lessonTabs: "Tab della lezione",

@@ -41,8 +41,11 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ### Modificato
 
-- Panoramica: un solo titolo «Panoramica del brano» sempre allo stesso posto, con la freccia giù
-  (aperta) o a destra (chiusa), come i corsi della Home; prima c'erano due tasti diversi in due posti.
+- Pannelli: video, spartito e panoramica hanno lo stesso titolo a sinistra (freccia giù = aperto, a destra =
+  chiuso, icona e nome), come i corsi della Home; un clic sul titolo apre o chiude. Spariti i tasti freccia
+  diversi sparsi a destra e al centro.
+- Spartito senza tab: una riga sola (cosa fare, «Scegli file…», ×) invece di un pannello vuoto grande che
+  tagliava il testo; la forma d'onda non viene più schiacciata dal video quando c'è questa riga.
 - La Home occupa tutta la finestra anche al primo avvio.
 - Con «Torna al punto di partenza» lo stop lascia il playhead dove sei arrivato; ripartendo si
   riparte dalla linea tratteggiata.

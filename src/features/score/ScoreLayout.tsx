@@ -1,13 +1,10 @@
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   FileMusic,
   Link2Off,
   Loader2,
   MoreHorizontal,
   ScrollText,
-  ShieldCheck,
   Sparkles,
   X,
   ZoomIn,
@@ -20,6 +17,7 @@ import { ChoiceKeys } from "@/components/ui/ChoiceKeys";
 import { FitBar, useCompact, useFitMode } from "@/components/ui/FitBar";
 import { MenuChoice } from "@/components/ui/MenuChoice";
 import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
+import { PanelTitle } from "@/components/ui/PanelTitle";
 import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { Stepper } from "@/components/ui/Stepper";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -47,6 +45,8 @@ const PdfView = lazy(() => import("./pdf/PdfView").then((m) => ({ default: m.Pdf
 const WAVEFORMS_MIN_HEIGHT = 230;
 /** Least height of the score panel (bar on two rows and a readable stave): the waveforms give way first. */
 export const SCORE_MIN_VISIBLE = 200;
+/** Height of the one row shown while no tab is linked (it may wrap to two). */
+export const SCORE_ROW_HEIGHT = 56;
 const HANDLE_PX = 4;
 
 /**
@@ -60,7 +60,8 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
   const size = useScoreStore((s) => s.size);
   const layoutRef = useRef<HTMLDivElement>(null);
   if (!link && !asking) return children;
-  const open = !link || !collapsed;
+  // No tab yet: one row (pick or drop a file), the waveforms keep their room
+  const open = link !== null && !collapsed;
 
   const largest = () =>
     (layoutRef.current?.clientHeight ?? Number.POSITIVE_INFINITY) -
@@ -81,11 +82,11 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
             : undefined
         }
       >
-        {link ? <ScoreToolbar link={link} /> : <EmptyHeader />}
-        {open && (
+        {link ? <ScoreToolbar link={link} /> : <EmptyRow />}
+        {link && open && (
           <div className="min-h-0 flex-1 px-3 pb-2">
             <div className="relative size-full overflow-hidden rounded-panel border border-border">
-              {link ? <ScoreBody link={link} /> : <EmptyBody />}
+              <ScoreBody link={link} />
             </div>
           </div>
         )}
@@ -103,24 +104,58 @@ export function ScoreLayout({ children }: { children: ReactNode }) {
   );
 }
 
-function PanelTitle() {
+/** The score's title, the same as every panel's: the arrow folds it (not in a lesson). */
+function ScoreTitle({ foldable }: { foldable: boolean }) {
   const compact = useCompact();
+  const collapsed = useScoreStore((s) => s.collapsed);
   return (
-    <span
-      title={compact ? t.score.title : undefined}
-      className="flex shrink-0 items-center gap-1.5 font-medium tracking-wide text-fg-subtle uppercase"
-    >
-      <FileMusic className="size-3.5 text-accent" aria-hidden />
-      {compact ? <span className="sr-only">{t.score.title}</span> : t.score.title}
-    </span>
+    <PanelTitle
+      label={t.score.title}
+      icon={<FileMusic className="size-3.5 shrink-0 text-accent" aria-hidden />}
+      open={!foldable || !collapsed}
+      onToggle={foldable ? useScoreStore.getState().toggleCollapsed : undefined}
+      foldLabel={t.score.collapse}
+      openLabel={t.score.expand}
+      hideName={compact}
+    />
   );
 }
 
-function EmptyHeader() {
+/**
+ * No tab linked yet: one row under the title, never a big empty panel. What to do, the key to
+ * pick a file (a file can also be dropped anywhere on the window), and the key to close the row.
+ */
+function EmptyRow() {
+  const hasTrack = usePlayerStore((s) => s.track !== null);
+  const linking = useScoreStore((s) => s.linking);
+  const error = useScoreStore((s) => s.error);
   return (
-    <header className="flex h-9 shrink-0 items-center gap-2 px-3 text-xs">
-      <PanelTitle />
-      <span className="mr-auto" />
+    <header className="flex min-h-9 shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1 text-xs">
+      <ScoreTitle foldable={false} />
+      <span className="min-w-0 flex-1 text-fg-muted">
+        {linking ? (
+          <span className="flex items-center gap-1.5">
+            <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            {t.score.linking}
+          </span>
+        ) : error ? (
+          <span className="flex items-center gap-1.5 text-red-400">
+            <AlertCircle className="size-3.5 shrink-0" aria-hidden />
+            {problemText(error)}
+          </span>
+        ) : hasTrack ? (
+          t.score.emptyRow
+        ) : (
+          t.score.emptyNoTrack
+        )}
+      </span>
+      {hasTrack && !linking && (
+        <Tooltip label={t.score.emptySafe}>
+          <Button variant="primary" className="h-7" onClick={() => void pickScore()}>
+            {t.score.choose}
+          </Button>
+        </Tooltip>
+      )}
       <Tooltip label={t.score.hide}>
         <Button
           size="icon"
@@ -128,7 +163,7 @@ function EmptyHeader() {
           aria-label={t.score.hide}
           onClick={() => useScoreStore.getState().toggleShown()}
         >
-          <ChevronUp className="size-3.5" />
+          <X className="size-3.5" />
         </Button>
       </Tooltip>
     </header>
@@ -374,7 +409,6 @@ export function ScorePanel({ link }: { link: ProjectScore }) {
 }
 
 function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: boolean }) {
-  const store = useScoreStore.getState();
   const notation = link.kind === "notation";
   const collapsed = useScoreStore((s) => s.collapsed) && !lesson;
   const ready = useScoreStore((s) => s.status === "ready");
@@ -383,7 +417,7 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
     <header className="shrink-0 px-3 py-1 text-xs">
       {/* Every key stays on screen: names give way to icons first, then a second row */}
       <FitBar className="min-h-7 gap-x-2 data-[fit=compact]:gap-x-1 data-[fit=wrap]:gap-x-1">
-        <PanelTitle />
+        <ScoreTitle foldable={!lesson} />
         {tapping === null && <TabMenu link={link} />}
         {tapping !== null && <TapBanner next={tapping} />}
         {tapping === null && notation && <TrackMenu link={link} />}
@@ -403,22 +437,6 @@ function ScoreToolbar({ link, lesson = false }: { link: ProjectScore; lesson?: b
         )}
         <SyncMenu link={link} disabled={!ready} />
         <FileMenu link={link} />
-        {!lesson && (
-          <Tooltip label={collapsed ? t.score.expand : t.score.collapse}>
-            <Button
-              size="icon"
-              className="size-6"
-              aria-label={collapsed ? t.score.expand : t.score.collapse}
-              onClick={store.toggleCollapsed}
-            >
-              {collapsed ? (
-                <ChevronDown className="size-3.5" />
-              ) : (
-                <ChevronUp className="size-3.5" />
-              )}
-            </Button>
-          </Tooltip>
-        )}
       </FitBar>
     </header>
   );
@@ -501,40 +519,6 @@ function Notice({
       {hint && <p className="max-w-md text-xs text-fg-muted">{hint}</p>}
       {children}
     </div>
-  );
-}
-
-function EmptyBody() {
-  const hasTrack = usePlayerStore((s) => s.track !== null);
-  const linking = useScoreStore((s) => s.linking);
-  const error = useScoreStore((s) => s.error);
-  if (linking) {
-    return <Notice icon={<Loader2 className="size-6 animate-spin" />} title={t.score.linking} />;
-  }
-  return (
-    <Notice
-      icon={<FileMusic className="size-8" />}
-      title={hasTrack ? t.score.emptyTitle : t.score.emptyNoTrack}
-      hint={hasTrack ? t.score.emptyHint : undefined}
-    >
-      {error && (
-        <p className="flex items-center gap-1.5 text-xs text-red-400">
-          <AlertCircle className="size-3.5" />
-          {problemText(error)}
-        </p>
-      )}
-      {hasTrack && (
-        <>
-          <Button variant="primary" className="mt-1" onClick={() => void pickScore()}>
-            {t.score.choose}
-          </Button>
-          <p className="mt-2 flex max-w-md items-center gap-1.5 text-[11px] text-fg-subtle">
-            <ShieldCheck className="size-3.5 shrink-0 text-loop" aria-hidden />
-            {t.score.emptySafe}
-          </p>
-        </>
-      )}
-    </Notice>
   );
 }
 

@@ -764,13 +764,11 @@ export const en = {
     title: "Score",
     show: "Show the score",
     hide: "Hide the score",
-    emptyTitle: "Link a tab or a score to this song",
-    emptyHint:
-      "Drop a Guitar Pro (.gp, .gp5, .gpx…), MusicXML or PDF file here, or choose it from disk.",
     emptyNoTrack: "Open a song first: the score is linked to the open song.",
     emptySafe:
       "Looplab keeps a copy in its library (backed up): your file stays where it is, untouched.",
     choose: "Choose file…",
+    emptyRow: "No tab linked: choose a file (.gp, MusicXML, PDF) or drop it on the window",
     change: "Change file…",
     tabs: "Tab",
     lessonTabs: "Tabs of the lesson",

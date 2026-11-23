@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { Tooltip } from "@/components/ui/Tooltip";
+import { AudioWaveform } from "lucide-react";
+import { PanelTitle } from "@/components/ui/PanelTitle";
 import { SectionLane } from "@/features/markers/SectionLane";
 import { NoteView } from "@/features/notes/NoteView";
 import { t } from "@/i18n";
@@ -21,27 +21,16 @@ export function WaveformPanel() {
   const showOverview = useSettingsStore((s) => s.showOverview);
   return (
     <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden bg-stage p-2.5">
-      {/* One header, always in the same place with the same arrow (as the course headings of the
-          lesson Home): down = open, right = folded. A click anywhere on it, or Shift+O */}
-      <Tooltip
-        label={showOverview ? t.waveform.hideOverview : t.waveform.showOverview}
+      {/* The shared panel title (as video and score): the arrow folds the overview; Shift+O too */}
+      <PanelTitle
+        label={t.waveform.overview}
+        icon={<AudioWaveform className="size-3.5 shrink-0 text-accent" aria-hidden />}
+        open={showOverview}
+        onToggle={toggleOverview}
+        foldLabel={t.waveform.hideOverview}
+        openLabel={t.waveform.showOverview}
         shortcut="toggleOverview"
-      >
-        <button
-          type="button"
-          aria-expanded={showOverview}
-          aria-label={showOverview ? t.waveform.hideOverview : t.waveform.showOverview}
-          onClick={toggleOverview}
-          className="flex h-4 shrink-0 items-center gap-1 self-start rounded-control pr-1.5 text-fg-subtle transition-colors hover:text-fg"
-        >
-          {showOverview ? (
-            <ChevronDown className="size-3.5" aria-hidden />
-          ) : (
-            <ChevronRight className="size-3.5" aria-hidden />
-          )}
-          <span className="panel-label">{t.waveform.overview}</span>
-        </button>
-      </Tooltip>
+      />
       {showOverview && (
         <div className="shrink-0">
           <Overview />
