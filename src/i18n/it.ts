@@ -690,7 +690,6 @@ export const it = {
     found: (lessons: number, courses: number) =>
       `${lessons === 1 ? "1 lezione trovata" : `${lessons} lezioni trovate`} in ${courses === 1 ? "1 corso" : `${courses} corsi`}`,
     scanning: "Aggiorno le lezioni…",
-    lastOpened: "Ultime aperte",
     lessonsCount: (n: number) => (n === 1 ? "1 lezione" : `${n} lezioni`),
     missingCourse: "Cartella non trovata (disco scollegato?)",
     angles: (n: number) => `${n} inquadrature`,
@@ -764,7 +763,6 @@ export const it = {
     resume: "Riprendi da dove eri",
     resumeKey: "Riprendi",
     resumeHint: "Riapre la lezione com'era: punto, loop, velocità e tab",
-    backToLesson: "Torna alla lezione",
     upNext: "Poi",
   },
   exercise: {
@@ -1191,7 +1189,8 @@ export const it = {
     clearMissing: (n: number) => (n === 1 ? "Solo il file sparito" : `Solo i ${n} file spariti`),
     keep: "Lascia",
     empty: "Nessun file recente",
-    resume: "Riprendi",
+    nowPlaying: "Stai suonando",
+    looseFile: "file",
     search: "Cerca tra i recenti",
     noMatch: "Nessun brano con questo nome",
     open: "Apri",

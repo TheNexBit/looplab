@@ -1,4 +1,4 @@
-import { ArrowLeft, FolderOpen, Lightbulb, Metronome, Music, Upload } from "lucide-react";
+import { FolderOpen, Lightbulb, Metronome, Music, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
@@ -10,7 +10,7 @@ import { useMetronomeStore } from "@/stores/metronome";
 import { useRecentStore } from "@/stores/recent";
 import { formatsLabel } from "./formats";
 import { pickAndOpenFile } from "./pickFile";
-import { RecentList, ResumeRow } from "./RecentList";
+import { NowCard, RecentList } from "./RecentList";
 
 /** One tip per start of the app, picked at random */
 const tip = t.recent.tips[Math.floor(Math.random() * t.recent.tips.length)];
@@ -105,32 +105,21 @@ export function EmptyState({
     return () => window.removeEventListener("keydown", onKey, true);
   }, [overTrack]);
 
-  const last = files[0]?.exists ? files[0] : undefined;
   return (
     // The whole width, at the start and over a track alike
     <div className="flex h-full w-full flex-col gap-6 overflow-y-auto px-6 pt-8 pb-10 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
+      {/* The courses, the whole height: the place most used */}
       <div className="flex min-h-0 flex-col gap-3">
-        {overTrack && (
-          <Button
-            variant="hardware"
-            className="h-8 shrink-0 self-start px-3"
-            onClick={() => useLessonsStore.getState().setOpen(false)}
-          >
-            <ArrowLeft className="size-4" />
-            {t.lessons.back}
-            <Kbd shortcut="toggleHome" />
-          </Button>
-        )}
         <LessonHome />
       </div>
       <div className="flex min-h-0 flex-col gap-4">
-        {files.length === 0 ? (
+        <NowCard overTrack={overTrack} />
+        {files.length === 0 && !overTrack ? (
           <div className="flex flex-1 items-center">
             <FirstDrop hovering={hovering} />
           </div>
         ) : (
           <>
-            {last && <ResumeRow file={last} />}
             <div className="flex min-h-0 flex-1 flex-col">
               <RecentList />
             </div>

@@ -686,7 +686,6 @@ export const en = {
     found: (lessons: number, courses: number) =>
       `${lessons === 1 ? "1 lesson found" : `${lessons} lessons found`} in ${courses === 1 ? "1 course" : `${courses} courses`}`,
     scanning: "Updating the lessons…",
-    lastOpened: "Recently opened",
     lessonsCount: (n: number) => (n === 1 ? "1 lesson" : `${n} lessons`),
     missingCourse: "Folder not found (drive disconnected?)",
     angles: (n: number) => `${n} angles`,
@@ -760,7 +759,6 @@ export const en = {
     resume: "Pick up where you left off",
     resumeKey: "Resume",
     resumeHint: "Opens the lesson as it was: position, loop, speed and tab",
-    backToLesson: "Back to the lesson",
     upNext: "Next",
   },
   exercise: {
@@ -1177,7 +1175,8 @@ export const en = {
       n === 1 ? "Only the missing file" : `Only the ${n} missing files`,
     keep: "Keep",
     empty: "No recent files",
-    resume: "Resume",
+    nowPlaying: "Now playing",
+    looseFile: "file",
     search: "Search the recent files",
     noMatch: "No track with this name",
     open: "Open",

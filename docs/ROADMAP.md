@@ -1068,6 +1068,11 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   «Solo base» apre la base; la ricerca trova «base»/«backing». Le lezioni aperte si ricordano (`lessonFilesOpen`).
 - **Ascolti:** il selettore dentro la lezione si chiama «Ascolti: Chitarra + base / Solo base», con la spiegazione
   (il video resta, cambia solo l'audio).
+- **Home unificata:** a sinistra solo l'albero dei corsi; a destra un solo riquadro (`NowCard`: «Stai suonando»
+  con «Torna al brano» sopra un brano aperto, altrimenti «Riprendi da dove eri», con la lezione successiva se è
+  fatta), un solo elenco dei recenti per lezioni e file (ognuno dice «corso · modulo» o «file», e si apre dalla
+  sua lezione), apri file, metronomo, suggerimento. Tolti «Ultime aperte», il riquadro «Riprendi» a sinistra e il
+  tasto «Torna al brano» in alto.
 
 **Rimandato (utente 23/11):** testi più chiari per l'avviso delle battute del PDF: avviso «Nel PDF ho riconosciuto
 7 battute, ma la tab .gp della lezione ne ha 8: probabilmente una battuta del PDF non è stata riconosciuta, e lo

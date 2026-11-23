@@ -1,13 +1,26 @@
-import { Eraser, FileAudio, FileVideo, FolderOpen, Play, Search, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Eraser,
+  FileAudio,
+  FileVideo,
+  FolderOpen,
+  Play,
+  Search,
+  X,
+} from "lucide-react";
 import { ContextMenu, Popover } from "radix-ui";
 import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Kbd } from "@/components/ui/Kbd";
 import { floatingPanel, menuContent, menuItem, menuSeparator } from "@/components/ui/menu";
 import { withRightClick } from "@/components/ui/Tooltip";
+import { lessonAround, lessonHolding } from "@/features/lessons/lessonOrder";
+import { openLesson } from "@/features/lessons/openLesson";
 import { t } from "@/i18n";
 import { commands, type RecentFile } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
-import { formatAgo, formatPercent } from "@/lib/format";
+import { fileNameOf, formatAgo, formatPercent, samePath } from "@/lib/format";
 import { formatLength } from "@/lib/time";
 import { useLessonsStore } from "@/stores/lessons";
 import { usePlayerStore } from "@/stores/player";
@@ -18,10 +31,32 @@ const r = t.recent;
 /** Below this many tracks a search field would only be in the way */
 const SEARCH_FROM = 7;
 
-const open = (file: RecentFile) => void usePlayerStore.getState().open(file.path);
+/** The lesson of the Home that holds `path`, if any. */
+const lessonOf = (path: string) => lessonHolding(useLessonsStore.getState().library.lessons, path);
+
+/** Opens a recent track: through its lesson when it is one (its tab and angles come along). */
+export function openRecent(file: RecentFile) {
+  const lesson = lessonOf(file.path);
+  if (lesson) void openLesson(lesson, file.path);
+  else void usePlayerStore.getState().open(file.path);
+}
+const open = openRecent;
+
+/**
+ * Where a track comes from: «course · module» for a lesson's file, else «file». Components
+ * showing it subscribe to the lessons' library, so it follows a rescan.
+ */
+export function originOf(path: string): string {
+  const lesson = lessonOf(path);
+  if (!lesson) return r.looseFile;
+  const course = useLessonsStore
+    .getState()
+    .library.roots.find((root) => root.path === lesson.root)?.name;
+  return [course, lesson.group].filter(Boolean).join(" · ");
+}
 
 /** "3 loop · 2 sez. · 75%": what the track's project holds, empty without one. */
-function projectSummary(file: RecentFile): string {
+export function projectSummary(file: RecentFile): string {
   const parts: string[] = [];
   if (file.savedLoops > 0) parts.push(`${file.savedLoops} ${r.loops}`);
   if (file.sections > 0) parts.push(`${file.sections} ${r.sectionsShort}`);
@@ -29,7 +64,7 @@ function projectSummary(file: RecentFile): string {
   return parts.join(" · ");
 }
 
-const ago = (file: RecentFile) =>
+export const ago = (file: RecentFile) =>
   file.openedAt ? formatAgo(new Date(file.openedAt * 1000), new Date(), r.ago) : "";
 
 /** Right-click on a recent track: open it, show it in its folder, take it off the list. */
@@ -69,23 +104,76 @@ function RecentMenu({ file, children }: { file: RecentFile; children: ReactNode 
   );
 }
 
-/** The last track, one slim row on top: back to it with one click. */
-export function ResumeRow({ file }: { file: RecentFile }) {
-  const summary = projectSummary(file);
+/**
+ * The one card on top of the start screen. Over an open track: «Now playing», where it comes
+ * from and the way back to it. Otherwise: the last track, to pick up where you left off. Once
+ * its lesson is done, the next lesson is a click away.
+ */
+export function NowCard({ overTrack }: { overTrack: boolean }) {
+  const track = usePlayerStore((s) => s.track);
+  const files = useRecentStore((s) => s.files);
+  const lessons = useLessonsStore((s) => s.library.lessons);
+  const last = files[0]?.exists ? files[0] : undefined;
+  const playing = overTrack && track ? track : null;
+  const path = playing?.path ?? last?.path;
+  if (!path) return null;
+  const around = lessonAround(lessons, path);
+  const lesson = around?.lesson ?? null;
+  const next = lesson?.progress === "done" ? around?.next : null;
+  const summary = !playing && last ? projectSummary(last) : "";
+  // A lesson's other file (its backing, another angle) is named: «Riprendi» opens that one
+  const otherFile = lesson && !samePath(path, lesson.main) ? fileNameOf(path) : "";
+  const details = [otherFile, originOf(path), !playing && last ? ago(last) : "", summary].filter(
+    Boolean,
+  );
   return (
-    <button
-      type="button"
-      title={file.path}
-      onClick={() => open(file)}
-      className="well group flex w-full items-center gap-3 rounded-panel px-3 py-2 text-left transition-[filter] hover:brightness-125"
-    >
-      <span className="hw flex size-7 shrink-0 items-center justify-center rounded-control text-accent">
-        <Play className="size-3.5 fill-current" />
-      </span>
-      <span className="panel-label shrink-0 text-accent">{r.resume}</span>
-      <span className="min-w-0 flex-1 truncate text-sm text-fg">{file.name}</span>
-      {summary && <span className="shrink-0 text-xs text-readout tabular">{summary}</span>}
-    </button>
+    <section className="well shrink-0 rounded-panel px-4 py-3" title={path}>
+      <h2 className="panel-label text-fg-subtle">{playing ? r.nowPlaying : t.lessons.resume}</h2>
+      <p className="mt-1 flex items-center gap-2">
+        <span className="truncate text-base font-semibold text-fg">
+          {lesson?.name ?? playing?.name ?? last?.name}
+        </span>
+        {lesson && lesson.progress !== "none" && (
+          <span
+            className={cn(
+              "text-[11px] whitespace-nowrap",
+              lesson.progress === "done" ? "text-loop" : "text-cue",
+            )}
+          >
+            {t.lessons.mark[lesson.progress]}
+          </span>
+        )}
+      </p>
+      <p className="truncate text-xs text-fg-subtle">{details.join(" · ")}</p>
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+        {playing ? (
+          <Button variant="primary" onClick={() => useLessonsStore.getState().setOpen(false)}>
+            <ArrowLeft className="size-4" />
+            {t.lessons.back}
+            <Kbd shortcut="toggleHome" />
+          </Button>
+        ) : (
+          last && (
+            <Button variant="primary" title={t.lessons.resumeHint} onClick={() => open(last)}>
+              <Play className="size-4" />
+              {t.lessons.resumeKey}
+            </Button>
+          )
+        )}
+        {next && (
+          <Button
+            variant="hardware"
+            title={`${t.lessons.next} — ${next.name}`}
+            onClick={() => void openLesson(next)}
+          >
+            <span className="max-w-56 truncate">
+              {t.lessons.upNext}: {next.name}
+            </span>
+            <ChevronRight className="size-4" />
+          </Button>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -152,6 +240,8 @@ export function ClearRecent() {
  */
 export function RecentList() {
   const files = useRecentStore((s) => s.files);
+  // Read again when the lessons change: each row says which course it comes from
+  useLessonsStore((s) => s.library);
   const [query, setQuery] = useState("");
 
   if (files.length === 0) return null;
@@ -205,7 +295,12 @@ export function RecentList() {
                     className="size-4"
                     aria-label={isVideoPath(file.path) ? r.video : r.audio}
                   />
-                  <span className="truncate">{file.name}</span>
+                  <span className="min-w-0">
+                    <span className="block truncate">{file.name}</span>
+                    <span className="block truncate text-[11px] text-fg-subtle">
+                      {originOf(file.path)}
+                    </span>
+                  </span>
                   <span className="text-xs text-readout-dim tabular">{projectSummary(file)}</span>
                   <span className="text-right font-mono text-xs text-fg-subtle tabular">
                     {file.duration ? formatLength(file.duration) : ""}

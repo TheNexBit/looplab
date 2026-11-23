@@ -47,6 +47,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - Nella Home ogni lezione mostra tutti i suoi file (video, inquadrature, audio, base, tab) e ognuno si apre da
   solo; tasto «Solo base» sulla riga della lezione. Dentro la lezione il selettore «Ascolti: Chitarra + base /
   Solo base» dice chiaramente cosa senti.
+- Home senza doppioni: a sinistra solo i corsi, a destra un solo «Riprendi» (o «Stai suonando» con «Torna al
+  brano») e un solo elenco dei recenti, che dice da quale corso e modulo viene ogni brano.
 
 ### Corretto
 
