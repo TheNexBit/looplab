@@ -19,6 +19,13 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
   ricordate.
 - Tasto per togliere un corso dalla Home (i file restano sul disco), con conferma.
 - Moduli dei corsi richiudibili uno per uno, con «Chiudi / Apri tutti i moduli»; la scelta si ricorda.
+- «Ritrova le battute» nel menu di sincronizzazione dei PDF: le cerca di nuovo nelle pagine.
+
+### Corretto
+
+- Battute dei PDF: travature, parentesi delle terzine e linee 8va lunghe venivano prese per righe del
+  pentagramma, e alcune battute andavano perse (Exercise 03 ne aveva 7 su 8). Ora i 27 PDF del corso
+  JTC hanno tutti le stesse battute dei loro file .gp.
 
 ### Modificato
 

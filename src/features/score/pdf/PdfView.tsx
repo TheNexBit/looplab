@@ -205,15 +205,6 @@ export function PdfView({ link }: { link: ProjectScore }) {
         if (cancelled) return;
         setAspects(shapes);
         setDoc(loaded);
-        if (useScoreStore.getState().link?.pdfBars.length === 0) {
-          useScoreStore.setState({ detecting: { done: 0, of: loaded.numPages } });
-          const found = await findBars(loaded, (done) =>
-            useScoreStore.setState({ detecting: { done, of: loaded?.numPages ?? done } }),
-          );
-          if (cancelled) return;
-          useScoreStore.setState({ detecting: null });
-          store.setPdfBars(found);
-        }
       } catch {
         if (!cancelled) store.setStatus("error", { kind: "corruptFile", detail: "pdf" });
       }
@@ -225,6 +216,32 @@ export function PdfView({ link }: { link: ProjectScore }) {
       void task?.destroy();
     };
   }, [link.file]);
+
+  // No bars yet (first opening, or «Find the bars again»): found from the pages
+  const needsBars = link.pdfBars.length === 0;
+  useEffect(() => {
+    if (!doc || !needsBars) return;
+    let cancelled = false;
+    void (async () => {
+      useScoreStore.setState({ detecting: { done: 0, of: doc.numPages } });
+      try {
+        const found = await findBars(doc, (done) =>
+          useScoreStore.setState({ detecting: { done, of: doc.numPages } }),
+        );
+        if (!cancelled) useScoreStore.getState().setPdfBars(found);
+      } catch {
+        if (!cancelled) {
+          useScoreStore.getState().setStatus("error", { kind: "corruptFile", detail: "pdf" });
+        }
+      } finally {
+        if (!cancelled) useScoreStore.setState({ detecting: null });
+      }
+    })();
+    return () => {
+      cancelled = true;
+      useScoreStore.setState({ detecting: null });
+    };
+  }, [doc, needsBars]);
 
   // Bars and sync into the clock; ready once there are bars
   useEffect(() => {

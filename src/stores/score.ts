@@ -104,6 +104,11 @@ interface ScoreState extends Prefs {
   setSync: (sync: SyncPoint[]) => void;
   /** PDF: its bars (found, or fixed by the user) and the sync that goes with them. */
   setPdfBars: (bars: PdfBar[], sync?: SyncPoint[]) => void;
+  /**
+   * PDF: its bars found again from the pages (an older finder may have missed some). The sync
+   * goes with them, as it named the old bars; an undo brings both back.
+   */
+  findPdfBarsAgain: () => void;
   /** Adds a sync point, replacing one at the same place of the score. */
   putSync: (point: SyncPoint) => void;
   /** Moves sync point `index` (in `link.sync`) to `time`. */
@@ -283,6 +288,9 @@ export const useScoreStore = create<ScoreState>((set, get) => {
     },
     setSync: (sync) => edit({ sync }),
     setPdfBars: (pdfBars, sync) => edit(sync ? { pdfBars, sync } : { pdfBars }),
+    findPdfBarsAgain: () => {
+      if (get().link?.kind === "pdf") edit({ pdfBars: [], sync: [] });
+    },
     moveSync: (index, time) => {
       const sync = get().link?.sync ?? [];
       const point = sync[index];

@@ -45,3 +45,23 @@ describe("tabs kept on the shelf", () => {
     expect(useScoreStore.getState().link?.file).toBe("a");
   });
 });
+
+describe("finding a PDF's bars again", () => {
+  it("empties the bars and their sync, so the view looks for them again", () => {
+    const pdf = {
+      ...score("p", true),
+      kind: "pdf" as const,
+      pdfBars: [{ page: 1, x: 0, y: 0, w: 1, h: 0.1 }],
+    };
+    useScoreStore.getState().restore(pdf, []);
+    useScoreStore.getState().findPdfBarsAgain();
+    expect(useScoreStore.getState().link?.pdfBars).toEqual([]);
+    expect(useScoreStore.getState().link?.sync).toEqual([]);
+  });
+
+  it("leaves a Guitar Pro tab alone", () => {
+    useScoreStore.getState().restore(score("g", true), []);
+    useScoreStore.getState().findPdfBarsAgain();
+    expect(useScoreStore.getState().link?.sync).toHaveLength(1);
+  });
+});

@@ -58,6 +58,24 @@ describe("detectBars", () => {
     expect(detectBars(p.gray, 400, 300)).toHaveLength(1);
   });
 
+  it("steps over beams and tuplet brackets as long as staff lines (JTC Exercise 03)", () => {
+    const p = page(400, 300);
+    const top = 60;
+    const notationBottom = p.staff(top, 5, 10, 20, 380);
+    const tabBottom = p.staff(notationBottom + 30, 6, 10, 20, 380);
+    // A beam over the staff, a beam between two of its lines and a bracket under it: long,
+    // but starting and stopping with the notes, not with the staff
+    p.hLine(top - 9, 50, 350);
+    p.hLine(top + 25, 50, 350);
+    p.hLine(notationBottom + 12, 50, 350);
+    p.vLine(20, top, tabBottom);
+    for (const x of [200, 380]) p.vLine(x, top, tabBottom);
+    const bars = detectBars(p.gray, 400, 300);
+    expect(bars).toHaveLength(2);
+    // Both bars hold the notation and the tab
+    expect((bars[0]?.h ?? 0) * 300).toBeGreaterThan(tabBottom - top);
+  });
+
   it("finds nothing on a page of text", () => {
     const p = page(200, 200);
     for (let y = 20; y < 180; y += 12) p.hLine(y, 20, 60);

@@ -1003,6 +1003,13 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
   file…». Alt+T (riassegnabile, anche in Ctrl+K) passa alla successiva. Ogni progetto tiene le tab
   usate prima con la loro sincronizzazione (`Project.other_scores`, «scaffale» nello store dello
   spartito); la pulizia dei file in `spartiti\` le conserva.
+- **Battute dei PDF:** il riconoscimento (`features/score/pdf/detectBars.ts`) prendeva travature, parentesi
+  delle terzine e linee 8va per righe del pentagramma: il pentagramma risultava storto e le sue stanghette
+  si perdevano (Exercise 03 Basic Shapes: 7 battute su 8, la sincronia non seguiva più dalla terza). Ora
+  una riga entra in un pentagramma solo se comincia e finisce con le altre ed è alla distanza giusta; la
+  «carta» si conta su tutto il pentagramma. Prova sui 27 PDF del corso JTC: tutti con le stesse battute
+  dei loro .gp (prima 7 sbagliati). «Ritrova le battute» nel menu Sincronia dei PDF le cerca di nuovo
+  (la sincronia riparte da zero, Ctrl+Z la riporta).
 - **Stop con «Torna al punto di partenza»:** il playhead resta dove si è fermata la musica; Play riparte
   dalla linea tratteggiata (`stores/player.ts`, con test).
 

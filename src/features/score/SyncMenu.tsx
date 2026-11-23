@@ -9,6 +9,7 @@ import {
   Metronome,
   MoveHorizontal,
   RefreshCw,
+  ScanSearch,
   Sparkles,
 } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
@@ -205,7 +206,21 @@ export function SyncMenu({ link, disabled }: { link: ProjectScore; disabled: boo
               ))}
             </div>
           )}
-          {(fileSync.length > 0 || synced) && <DropdownMenu.Separator className={menuSeparator} />}
+          {(fileSync.length > 0 || synced || link.kind === "pdf") && (
+            <DropdownMenu.Separator className={menuSeparator} />
+          )}
+          {link.kind === "pdf" && (
+            <DropdownMenu.Item
+              className={cn(menuItem, "items-start")}
+              onSelect={() => useScoreStore.getState().findPdfBarsAgain()}
+            >
+              <ScanSearch className="mt-0.5 size-3.5 shrink-0" />
+              <span className="flex flex-col">
+                {t.score.findBarsAgain}
+                <span className="text-[11px] text-fg-subtle">{t.score.findBarsAgainHint}</span>
+              </span>
+            </DropdownMenu.Item>
+          )}
           {fileSync.length > 0 && (
             <DropdownMenu.Item
               className={menuItem}

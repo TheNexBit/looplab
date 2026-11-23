@@ -846,6 +846,9 @@ export const it = {
       "Prova ad aprirlo con un lettore PDF e a salvarne una copia, poi collega quella.",
     syncFromFile: "Usa la sincronia salvata nel file",
     syncClear: "Azzera la sincronia",
+    findBarsAgain: "Ritrova le battute",
+    findBarsAgainHint:
+      "Le cerca di nuovo nelle pagine; la sincronia riparte da zero (Ctrl+Z la riporta)",
     clickHint: "Clic su una nota: salta lì · Trascina sulle note: loop",
     autoSync: "Sincronizza dalle note",
     autoSyncHint:

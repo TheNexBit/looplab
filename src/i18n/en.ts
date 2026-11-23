@@ -840,6 +840,9 @@ export const en = {
     failedPdfHint: "Try opening it in a PDF reader and saving a copy, then link that one.",
     syncFromFile: "Use the sync saved in the file",
     syncClear: "Clear the sync",
+    findBarsAgain: "Find the bars again",
+    findBarsAgainHint:
+      "Looks for them in the pages again; the sync starts over (Ctrl+Z brings it back)",
     clickHint: "Click a note: jump there · Drag over notes: loop",
     autoSync: "Sync from the notes",
     autoSyncHint:

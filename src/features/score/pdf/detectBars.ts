@@ -94,43 +94,116 @@ function staffLines(gray: Uint8ClampedArray, width: number, height: number): Lin
   return lines;
 }
 
-/** True if the row halfway between two lines is mostly paper (a staff, not a dark picture). */
-function paperBetween(gray: Uint8ClampedArray, width: number, a: Line, b: Line) {
-  const y = Math.round((a.y + b.y) / 2);
-  let ink = 0;
-  const from = Math.round(Math.max(a.x0, b.x0));
-  const to = Math.round(Math.min(a.x1, b.x1));
-  for (let x = from; x <= to; x++) if ((gray[y * width + x] ?? 255) < INK) ink++;
-  return to > from && ink / (to - from + 1) < 0.3;
+/**
+ * True if most rows inside a staff are paper (a staff, not a dark picture with stripes). Rows
+ * are counted over the whole staff: a beam may lie right across the gap between two lines.
+ */
+function mostlyPaper(gray: Uint8ClampedArray, width: number, group: Line[]) {
+  const first = group[0] as Line;
+  const last = group.at(-1) as Line;
+  const from = Math.round(Math.max(...group.map((l) => l.x0)));
+  const to = Math.round(Math.min(...group.map((l) => l.x1)));
+  if (to <= from) return false;
+  let rows = 0;
+  let paper = 0;
+  for (let y = Math.ceil(first.y); y <= Math.floor(last.y); y++) {
+    let ink = 0;
+    for (let x = from; x <= to; x++) if ((gray[y * width + x] ?? 255) < INK) ink++;
+    rows++;
+    if (ink / (to - from + 1) < 0.3) paper++;
+  }
+  return rows > 0 && paper / rows >= 0.4;
 }
 
-/** Evenly spaced runs of 4 to 6 lines, with paper between them. */
+/** How far a staff wanders from even spacing: the largest gap off the mean, as a share of it. */
+function unevenness(group: Line[]): number {
+  if (group.length < 2) return 1;
+  const first = group[0] as Line;
+  const mean = ((group.at(-1) as Line).y - first.y) / (group.length - 1);
+  let worst = 0;
+  for (let k = 1; k < group.length; k++) {
+    const gap = (group[k] as Line).y - (group[k - 1] as Line).y;
+    worst = Math.max(worst, Math.abs(gap - mean) / mean);
+  }
+  return worst;
+}
+
+/** A line this close to where the next staff line is due (share of the spacing) is on the grid. */
+const ON_GRID = 0.15;
+/** The lines of one staff start and end together, within this share of the page width. */
+const SAME_EDGES = 0.02;
+/** Spacings tried from a line: to each of the next few (a beam may lie right under it). */
+const SPACING_TRIES = 3;
+
+/**
+ * The longest evenly spaced run of up to 6 lines starting at `lines[i]`. Only lines with the
+ * same left and right ends join: beams, tuplet brackets and 8va lines run long too, but they
+ * start and stop with the notes, and taking them in would bend the staff (and lose its barlines).
+ */
+function staffFrom(
+  width: number,
+  lines: Line[],
+  i: number,
+  height: number,
+): { group: Line[]; last: number } {
+  const first = lines[i] as Line;
+  const edges = width * SAME_EDGES;
+  const fits = (line: Line) =>
+    Math.abs(line.x0 - first.x0) <= edges && Math.abs(line.x1 - first.x1) <= edges;
+  let best: { group: Line[]; last: number } = { group: [first], last: i };
+  for (let j = i + 1; j <= i + SPACING_TRIES && j < lines.length; j++) {
+    const spacing = (lines[j] as Line).y - first.y;
+    if (spacing <= 0 || spacing >= height * 0.05 || !fits(lines[j] as Line)) continue;
+    const group = [first];
+    let last = i;
+    while (group.length < 6) {
+      const previous = group.at(-1) as Line;
+      // The spacing so far (it settles as lines are added)
+      const step = group.length > 1 ? (previous.y - first.y) / (group.length - 1) : spacing;
+      const due = previous.y + step;
+      let pick = -1;
+      for (let k = last + 1; k < lines.length; k++) {
+        const line = lines[k] as Line;
+        if (line.y > due + step * ON_GRID) break;
+        const off = Math.abs(line.y - due);
+        if (
+          off <= step * ON_GRID &&
+          fits(line) &&
+          (pick < 0 || off < Math.abs((lines[pick] as Line).y - due))
+        ) {
+          pick = k;
+        }
+      }
+      if (pick < 0) break;
+      group.push(lines[pick] as Line);
+      last = pick;
+    }
+    const better =
+      group.length > best.group.length ||
+      (group.length === best.group.length && unevenness(group) < unevenness(best.group));
+    if (better) best = { group, last };
+  }
+  return best;
+}
+
+/** Staves: evenly spaced runs of 4 to 6 lines (5 = notation, 6 = guitar tab, 4 = bass tab). */
 function staves(gray: Uint8ClampedArray, width: number, lines: Line[], height: number): Staff[] {
   const found: Staff[] = [];
   let i = 0;
   while (i < lines.length) {
-    const group = [lines[i] as Line];
-    const first = lines[i + 1];
-    const spacing = first ? first.y - (lines[i] as Line).y : 0;
-    if (spacing > 0 && spacing < height * 0.05) {
-      for (let j = i + 1; j < lines.length; j++) {
-        const last = group.at(-1) as Line;
-        const gap = (lines[j] as Line).y - last.y;
-        if (gap < spacing * 0.7 || gap > spacing * 1.3 || group.length === 6) break;
-        if (!paperBetween(gray, width, last, lines[j] as Line)) break;
-        group.push(lines[j] as Line);
-      }
+    const { group, last } = staffFrom(width, lines, i, height);
+    if (group.length < 4 || !mostlyPaper(gray, width, group)) {
+      i += 1;
+      continue;
     }
-    if (group.length >= 4) {
-      found.push({
-        top: (group[0] as Line).y,
-        bottom: (group.at(-1) as Line).y,
-        x0: Math.min(...group.map((l) => l.x0)),
-        x1: Math.max(...group.map((l) => l.x1)),
-        lines: group.length,
-      });
-      i += group.length;
-    } else i += 1;
+    found.push({
+      top: (group[0] as Line).y,
+      bottom: (group.at(-1) as Line).y,
+      x0: Math.min(...group.map((l) => l.x0)),
+      x1: Math.max(...group.map((l) => l.x1)),
+      lines: group.length,
+    });
+    i = last + 1;
   }
   return found;
 }
