@@ -166,6 +166,11 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
       const { track, lanes } = get();
       if (!track || index === 0) return;
       const kept = lanes.filter((_, i) => i !== index);
+      // The last other file goes: back to the track alone, at full level
+      if (kept.length < 2) {
+        await get().close();
+        return;
+      }
       await open(
         track,
         kept.slice(1).map((lane) => lane.path),

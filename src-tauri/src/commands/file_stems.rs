@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex, PoisonError, Weak};
 
 use audio_engine::offset::{self, Sound};
 use audio_engine::peaks::PeaksBuilder;
-use audio_engine::{LoadError, MAX_STEMS, Pcm, Stems, shifted};
+use audio_engine::{LoadError, MAX_STEMS, Pcm, StemLevels, Stems, shifted};
 use serde::{Deserialize, Serialize};
 use tauri::ipc::Response;
 use tauri::{AppHandle, State};
@@ -181,7 +181,10 @@ pub fn close_stem_files(state: State<'_, AppState>) -> Result<(), AppError> {
         .unwrap_or_else(PoisonError::into_inner)
         .clear();
     *OPEN_FOR.lock().unwrap_or_else(PoisonError::into_inner) = None;
-    state.engine()?.set_stems(None);
+    let engine = state.engine()?;
+    engine.set_stems(None);
+    // The track alone at full level again: a lane muted or lowered before must not stay silent
+    engine.set_stem_levels(StemLevels::default());
     Ok(())
 }
 

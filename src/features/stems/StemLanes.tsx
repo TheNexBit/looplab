@@ -1,9 +1,12 @@
-import { AlertTriangle, Layers, Loader2, Plus, X } from "lucide-react";
+import { AlertTriangle, Layers, Loader2, Plus, Trash2, X } from "lucide-react";
+import { ContextMenu } from "radix-ui";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
 import { Knob } from "@/components/ui/Knob";
 import { MuteKey } from "@/components/ui/MuteKey";
-import { Tooltip } from "@/components/ui/Tooltip";
+import { menuContent, menuItem, menuSeparator } from "@/components/ui/menu";
+import { Tooltip, withRightClick } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { fileNameOf, formatPercent } from "@/lib/format";
@@ -68,54 +71,83 @@ export function StemLaneHeads({ ruler }: { ruler: number }) {
       {lanes.map((lane, index) => {
         const heard = laneHeard(lanes, index);
         return (
-          <div
-            key={lane.path}
-            className={cn(
-              "flex min-h-0 flex-1 flex-col justify-center gap-1 overflow-hidden py-1 pr-1.5 pl-2",
-              index > 0 && "border-t border-edge",
-            )}
-            style={{ borderLeft: `3px solid ${heard ? laneColor(index) : "var(--color-border)"}` }}
-          >
-            <div className="flex min-w-0 items-center gap-1">
-              <span
-                title={fileNameOf(lane.path)}
-                className={cn(
-                  "min-w-0 flex-1 truncate text-xs font-semibold",
-                  heard ? "text-fg" : "text-fg-subtle",
-                )}
-              >
-                {labels[index]}
-              </span>
-              {!lane.linedUp && (
-                <span title={f.notLinedUp} className="shrink-0 text-amber-400">
-                  <AlertTriangle className="size-3" aria-label={f.notLinedUp} />
-                </span>
+          <LaneMenu key={lane.path} index={index}>
+            <div
+              title={withRightClick(fileNameOf(lane.path), f.headRightClick)}
+              className={cn(
+                "flex min-h-0 flex-1 flex-col justify-center gap-1 overflow-hidden py-1 pr-1.5 pl-2",
+                index > 0 && "border-t border-edge",
               )}
-              {index > 0 && (
-                <button
-                  type="button"
-                  title={f.removeLane}
-                  aria-label={f.removeLane}
-                  onClick={() => void store().remove(index)}
-                  className="shrink-0 rounded-control text-fg-subtle hover:text-fg"
+              style={{
+                borderLeft: `3px solid ${heard ? laneColor(index) : "var(--color-border)"}`,
+              }}
+            >
+              <div className="flex min-w-0 items-center gap-1">
+                <span
+                  className={cn(
+                    "min-w-0 flex-1 truncate text-xs font-semibold",
+                    heard ? "text-fg" : "text-fg-subtle",
+                  )}
                 >
-                  <X className="size-3" />
-                </button>
-              )}
+                  {labels[index]}
+                </span>
+                {!lane.linedUp && (
+                  <span title={f.notLinedUp} className="shrink-0 text-amber-400">
+                    <AlertTriangle className="size-3" aria-label={f.notLinedUp} />
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <SoloKey index={index} solo={lane.solo} />
+                <MuteKey
+                  muted={lane.mute}
+                  label={f.mute}
+                  onChange={() => store().toggleMute(index)}
+                />
+                <LaneLevel index={index} />
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <SoloKey index={index} solo={lane.solo} />
-              <MuteKey
-                muted={lane.mute}
-                label={f.mute}
-                onChange={() => store().toggleMute(index)}
-              />
-              <LaneLevel index={index} />
-            </div>
-          </div>
+          </LaneMenu>
         );
       })}
     </div>
+  );
+}
+
+/**
+ * The lane's right-click menu, as on a DAW's track head: solo, mute, level back to 100%, and
+ * (for the files added to the track) taking it away. Nothing that removes sits on the head.
+ */
+function LaneMenu({ index, children }: { index: number; children: ReactNode }) {
+  return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger asChild>{children}</ContextMenu.Trigger>
+      <ContextMenu.Portal>
+        <ContextMenu.Content className={menuContent}>
+          <ContextMenu.Item className={menuItem} onSelect={() => store().toggleSolo(index)}>
+            {f.solo}
+          </ContextMenu.Item>
+          <ContextMenu.Item className={menuItem} onSelect={() => store().toggleMute(index)}>
+            {f.mute}
+          </ContextMenu.Item>
+          <ContextMenu.Item
+            className={menuItem}
+            onSelect={() => store().setLevel(index, LANE_LEVEL.default)}
+          >
+            {f.levelReset}
+          </ContextMenu.Item>
+          {index > 0 && (
+            <>
+              <ContextMenu.Separator className={menuSeparator} />
+              <ContextMenu.Item className={menuItem} onSelect={() => void store().remove(index)}>
+                <Trash2 className="size-4" />
+                {f.removeLane}
+              </ContextMenu.Item>
+            </>
+          )}
+        </ContextMenu.Content>
+      </ContextMenu.Portal>
+    </ContextMenu.Root>
   );
 }
 

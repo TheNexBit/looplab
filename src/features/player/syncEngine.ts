@@ -87,6 +87,8 @@ export function syncWithEngine(): () => void {
     }
     const { names, channels } = useStemsStore.getState();
     if (names) sendStemLevels({ levels: stemGains(names, channels), original: null }, force);
+    // Stems from files just closed and no separated tracks: the track alone, at full level
+    else sendStemLevels({ levels: [], original: null }, force);
   };
   /** The separated tracks of a song just opened, if it was separated before */
   const loadStems = async (path: string) => {
