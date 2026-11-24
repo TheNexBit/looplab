@@ -94,7 +94,7 @@ export function DetailView() {
         if (!lanePeaks) continue;
         const color = laneHeard(lanes, index)
           ? themeColor(`section-${index % SECTION_COLORS}`)
-          : themeColor("wave-dim");
+          : themeColor("fg-subtle");
         drawWaveform(ctx, lanePeaks, { ...view, top, height: top + band }, color, look);
       }
     } else {

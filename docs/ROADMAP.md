@@ -1181,6 +1181,28 @@ studiare), dissolvenza al cue out, comandi MIDI per avanzare nella setlist, espo
 **stems**: una corsia per file, una sotto l'altra, con S/M, volume, cambio istantaneo tra solo e base senza fermare
 la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tutte; riaperte come erano.
 
+- **Aprire:** «Apri come stems…» nel menu ▾ di Apri e in Ctrl+K (più file insieme); tasto **«Stems»** sulla riga delle
+  lezioni che hanno una base (lezione + base); **trascinando** sulla finestra due o più file, o una cartella che li
+  contiene. Il file principale è il primo che non è una base («backing», «base», «minus»…), gli altri in ordine.
+- **Allineamento:** ogni file è confrontato col brano dal suono (lo stesso confronto delle inquadrature, fase 26) e
+  spostato col silenzio o tagliato all'inizio; lo spostamento si salva, la volta dopo non si rifà. Se non si trova,
+  la corsia parte col brano e mostra un triangolo d'avviso.
+- **Vista:** nella forma d'onda grande una fascia per corsia, nel colore della corsia mentre si sente, grigia quando
+  no; sopra il bordo sinistro di ognuna una riga con nome breve (le parole comuni ai file tolte: «Backing»), **S**
+  (Ctrl+clic aggiunge), **M**, volume, ✕ per toglierla. Loop, marker, playhead e righello su tutte le corsie.
+- **Barra «Stems · N»** nel titolo delle forme d'onda: **Cambia (X)** passa alla corsia successiva da sola senza
+  fermare la musica, **+** aggiunge file, **✕** torna al brano da solo.
+- **Motore:** il file aperto è una corsia del mix col suo volume (`StemLevels.original`), gli altri file sono gli
+  ingressi delle tracce separate (max 8), già spostati sul tempo del brano: velocità, tonalità, EQ e loop valgono per
+  tutto il mix. Le tracce separate dall'IA restano ferme finché ci sono stems da file (scheda Tracce lo dice).
+- **Salvataggio:** corsie, spostamenti e mix nel progetto del brano (`Project.stem_files`): riaprendolo tornano.
+- Lanciatore di prova `13-prova-stems.cmd` (copia dei dati in `D:\.cache\looplab\prova-stems`): da togliere a fine
+  fase.
+
+**Scelte prese da me (da confermare in prova):** la durata è quella del file principale (una base più lunga si
+ferma con lui); con più di 3 corsie la manopola del volume non si vede (restano S e M); i file video si possono
+usare come stems (se ne usa l'audio).
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

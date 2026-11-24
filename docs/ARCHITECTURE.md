@@ -222,6 +222,14 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   aperto che non è `expectedPath` chiude la modalità (sottoscrizione in `live.ts`, rinviata di un giro perché
   `projectSync` prenda prima il nuovo brano coi salvataggi ancora fermi). `setPlaysOnFromHere` (player) fa ripartire
   Play da dove si era fermato; `Setlist.lastSong` è il punto di «Riprendi».
+- **Stems da file (fase 31)**: `commands/file_stems.rs` decodifica i file, li allinea al brano aperto con
+  `audio_engine::offset` (se lo spostamento non è già salvato), li sposta con `audio_engine::shifted` e li passa al
+  motore come tracce del mix (`Stems`, max 8); il brano aperto è l'ingresso `original` con il suo livello
+  (`StemLevels.original`, `set_stem_levels(levels, original)`). Le forme d'onda delle corsie escono da
+  `get_stem_peaks` (binario, come `get_peaks`). `open_for` impedisce che le tracce separate (`load_stems`) le
+  sostituiscano. Frontend: `stores/fileStems.ts` (corsie, `laneGains`, `nextSolo`, `laneLabels`),
+  `features/stems/fileStems.ts` (aprire: menu, lezioni, trascinamento), `features/stems/StemLanes.tsx` (teste delle
+  corsie e barra), `DetailView` disegna una fascia per corsia; `projectSync` salva e riapre `Project.stem_files`.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

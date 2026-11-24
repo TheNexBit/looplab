@@ -48,7 +48,7 @@ function SoloKey({ index, solo }: { index: number; solo: boolean }) {
 }
 
 /**
- * The heads of the lanes, over the left edge of the detailed view (like the track heads of a
+ * The heads of the lanes, one small row over the left edge of each (like the track heads of a
  * DAW): colour, name, S and M, level. A lane that is not heard is drawn grey.
  */
 export function StemLaneHeads({ top }: { top: number }) {
@@ -72,47 +72,43 @@ export function StemLaneHeads({ top }: { top: number }) {
               onPointerDown={(event) => event.stopPropagation()}
               onWheel={(event) => event.stopPropagation()}
               className={cn(
-                "pointer-events-auto m-1 flex max-h-[calc(100%-0.5rem)] min-w-0 flex-col gap-1 overflow-hidden rounded-control border border-edge/60 bg-bg-from/85 py-1 pr-1.5 pl-2 shadow-sm backdrop-blur-[2px]",
+                "pointer-events-auto m-1 flex min-w-0 items-center gap-1.5 overflow-hidden rounded-control border border-edge/60 bg-bg-from/85 py-0.5 pr-1.5 pl-2 shadow-sm backdrop-blur-[2px]",
                 !heard && "opacity-75",
               )}
               style={{ borderLeft: `3px solid ${laneColor(index)}` }}
             >
-              <div className="flex min-w-0 items-center gap-1.5">
-                <span
-                  title={fileNameOf(lane.path)}
-                  className={cn(
-                    "max-w-40 truncate text-xs font-semibold",
-                    heard ? "text-fg" : "text-fg-subtle",
-                  )}
-                >
-                  {labels[index]}
+              <span
+                title={fileNameOf(lane.path)}
+                className={cn(
+                  "max-w-36 truncate text-xs font-semibold",
+                  heard ? "text-fg" : "text-fg-subtle",
+                )}
+              >
+                {labels[index]}
+              </span>
+              {!lane.linedUp && (
+                <span title={f.notLinedUp} className="shrink-0 text-amber-400">
+                  <AlertTriangle className="size-3" aria-label={f.notLinedUp} />
                 </span>
-                {!lane.linedUp && (
-                  <span title={f.notLinedUp} className="shrink-0 text-amber-400">
-                    <AlertTriangle className="size-3" aria-label={f.notLinedUp} />
-                  </span>
-                )}
-                {index > 0 && (
-                  <button
-                    type="button"
-                    title={f.removeLane}
-                    aria-label={f.removeLane}
-                    onClick={() => void store().remove(index)}
-                    className="ml-auto shrink-0 rounded-control text-fg-subtle hover:text-fg"
-                  >
-                    <X className="size-3" />
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1">
-                <SoloKey index={index} solo={lane.solo} />
-                <MuteKey
-                  muted={lane.mute}
-                  label={f.mute}
-                  onChange={() => store().toggleMute(index)}
-                />
-                <LaneLevel index={index} />
-              </div>
+              )}
+              <SoloKey index={index} solo={lane.solo} />
+              <MuteKey
+                muted={lane.mute}
+                label={f.mute}
+                onChange={() => store().toggleMute(index)}
+              />
+              <LaneLevel index={index} />
+              {index > 0 && (
+                <button
+                  type="button"
+                  title={f.removeLane}
+                  aria-label={f.removeLane}
+                  onClick={() => void store().remove(index)}
+                  className="shrink-0 rounded-control text-fg-subtle hover:text-fg"
+                >
+                  <X className="size-3" />
+                </button>
+              )}
             </div>
           </div>
         );
