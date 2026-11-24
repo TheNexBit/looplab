@@ -27,7 +27,10 @@ function Strip({ name }: { name: string }) {
   const silenced = channel.mute || (soloing && !channel.solo);
   return (
     <div
-      className={cn("flex min-w-11 flex-1 flex-col items-center gap-1.5", silenced && "opacity-50")}
+      className={cn(
+        "flex min-w-10 flex-1 basis-10 flex-col items-center gap-1.5",
+        silenced && "opacity-50",
+      )}
     >
       <Tooltip label={`${s.solo} ${label}`}>
         <Chip
@@ -149,7 +152,7 @@ export function StemsPanel() {
       )}
       {names && (
         <>
-          <div className="flex justify-between gap-1.5">
+          <div className="flex flex-wrap justify-around gap-x-1.5 gap-y-4">
             {ordered.map((name) => (
               <Strip key={name} name={name} />
             ))}

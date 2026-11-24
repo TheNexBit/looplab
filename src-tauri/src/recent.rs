@@ -85,10 +85,52 @@ pub fn insert(
     Ok(())
 }
 
+/// Two lengths this close are the same recording (the decoders round differently).
+const SAME_LENGTH: f64 = 0.05;
+
+/// Drops the entries `path` was moved from: gone from disk, same file name and same length.
+/// (A file with a project is also followed by its content, `project::find_by_content`.)
+fn forget_moved_twins(
+    conn: &Connection,
+    path: &str,
+    duration: Option<f64>,
+) -> Result<(), LibraryError> {
+    let Some(duration) = duration else {
+        return Ok(());
+    };
+    let name_of = |p: &str| {
+        Path::new(p)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_lowercase())
+    };
+    let name = name_of(path);
+    let mut query = conn.prepare(
+        "SELECT path, duration FROM recent WHERE path_key != ?1 AND duration IS NOT NULL",
+    )?;
+    let twins: Vec<String> = query
+        .query_map([path_key(path)], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+        })?
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .filter(|(old, length)| {
+            (length - duration).abs() < SAME_LENGTH
+                && name_of(old) == name
+                && !Path::new(old).exists()
+        })
+        .map(|(old, _)| old)
+        .collect();
+    for old in twins {
+        remove(conn, &old)?;
+    }
+    Ok(())
+}
+
 /// Moves `path` to the top of the list (Windows paths compare without case), noting the
 /// time and its `duration`.
 pub fn add(conn: &Connection, path: &str, duration: Option<f64>) -> Result<(), LibraryError> {
     insert(conn, path, Some(project::now()), duration)?;
+    forget_moved_twins(conn, path, duration)?;
     conn.execute(
         "DELETE FROM recent WHERE path_key NOT IN (
              SELECT path_key FROM recent
@@ -124,6 +166,29 @@ mod tests {
     use super::*;
     use crate::db::tests::memory;
     use crate::project::tests::temp_dir;
+
+    #[test]
+    fn a_moved_file_without_project_leaves_no_crossed_out_twin() {
+        let dir = temp_dir("recent-moved");
+        let conn = memory();
+        let old = dir.join("basso.wav");
+        let kept = dir.join("other").join("basso.wav");
+        fs::create_dir_all(kept.parent().unwrap()).unwrap();
+        fs::write(&kept, b"x").unwrap();
+        let old = old.to_string_lossy().into_owned();
+        let kept = kept.to_string_lossy().into_owned();
+        // A file still on disk, or of another length, is another file: it stays
+        add(&conn, &kept, Some(10.0)).unwrap();
+        add(&conn, &old, Some(42.0)).unwrap();
+        let new = dir
+            .join("moved")
+            .join("basso.wav")
+            .to_string_lossy()
+            .into_owned();
+        add(&conn, &new, Some(42.01)).unwrap();
+        let paths: Vec<String> = list(&conn).unwrap().into_iter().map(|f| f.path).collect();
+        assert_eq!(paths, [new, kept]);
+    }
 
     #[test]
     fn newest_first_without_duplicates() {
