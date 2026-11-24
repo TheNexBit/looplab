@@ -1143,6 +1143,26 @@ Fonti: [BandHelper](https://www.bandhelper.com/tutorials/building_set_lists.html
 [Anytune](https://apps.apple.com/us/app/anytune/id415365180),
 [Moises](https://moises.ai/features/band-collaborative-setlist/).
 
+**Terza tornata (24/11): modalità Setlist.** L'utente apriva un brano da studiare (Night Terror) e si ritrovava la
+setlist; e a fine brano il successivo non partiva. Come OnSong (libreria e set separati) e BandHelper (avanti
+automatico, pausa che ferma la corsa), la setlist ora è una **modalità che si accende**:
+
+- **«Attiva»** (o «Riprendi dal 5», dal brano dove ti eri fermato) sulla setlist, oppure «Suona da questo brano».
+  In alto la **barra della setlist** al posto di «‹ Fatta ›»: nome, ‹ 3/12 ›, spia **AUTO**, «Stage view», ✕.
+- La scheda **Setlist del pannello c'è solo con la modalità accesa** e mostra la setlist in corso (brano in corso
+  col ▶, quelli già suonati attenuati; doppio clic = suona quel brano).
+- **Aprire un brano che non è in scaletta** (recenti, corsi, file) **chiude la modalità**, con l'avviso «Torna alla
+  setlist»; «Apri per studiarlo» la chiude anche per un brano della scaletta.
+- **Avanti automatico** (spia AUTO, acceso di fabbrica): a fine brano parte il successivo dopo la pausa tra i brani
+  (3 s di fabbrica per le setlist nuove, «Subito» = 0 s). Per brano: **«Ferma dopo questo»** (come lo STOP di
+  AbleSet) o **Segue**. Dopo una pausa del set si aspetta Spazio.
+- Brani suonati con le **impostazioni Live** (scelta dell'utente). Play riparte da dove si era fermato anche con
+  «Torna al punto di partenza» acceso. **Alt+← / Alt+→** e i tasti multimediali avanti/indietro (pedali) cambiano
+  brano della setlist; **Esc** dalla Stage view torna alla vista normale, la modalità resta accesa.
+- Rinomina: un clic seleziona la riga, **F2** o «Rinomina» nel menu la rinomina.
+
+**Rimandata:** dissolvenza al cue out (tocca il volume del motore audio: da fare a parte, senza rischi).
+
 **Scelte prese da me (da confermare in prova):** trasposizione e velocità Live partono da 0 st e 100% (non da quelle
 di studio del brano); «Brano precedente» nei primi 3 secondi torna al brano prima, dopo riparte da capo; durante
 il Live il brano non salva niente nel suo progetto (anche loop o marker toccati lì).

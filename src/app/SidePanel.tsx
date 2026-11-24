@@ -6,6 +6,7 @@ import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { EqPanel } from "@/features/eq/EqPanel";
 import { SectionList } from "@/features/markers/SectionList";
 import { PracticePanel } from "@/features/practice/PracticePanel";
+import { useLiveStore } from "@/features/setlist/live";
 import { SetlistPanel } from "@/features/setlist/SetlistPanel";
 import { StemsPanel } from "@/features/stems/StemsPanel";
 import { t } from "@/i18n";
@@ -21,7 +22,11 @@ const tabs: { id: SidePanelTab; label: string; content: ReactNode }[] = [
 
 export function SidePanel() {
   const open = useUiStore((s) => s.sidePanelOpen);
-  const tab = useUiStore((s) => s.sidePanelTab);
+  const setMode = useLiveStore((s) => s.active);
+  const chosen = useUiStore((s) => s.sidePanelTab);
+  // The setlist belongs to set mode: studying a single track never finds it in the way
+  const tab = chosen === "setlist" && !setMode ? "sections" : chosen;
+  const shown = tabs.filter(({ id }) => id !== "setlist" || setMode);
   const setTab = useUiStore((s) => s.setSidePanelTab);
   const width = useUiStore((s) => s.sidePanelWidth);
   // While dragging the width follows the pointer at once, without the opening animation
@@ -56,13 +61,13 @@ export function SidePanel() {
             style={{ width }}
           >
             <Tabs.List className="flex flex-wrap gap-0.5 border-b border-edge p-2">
-              {tabs.map(({ id, label }) => (
+              {shown.map(({ id, label }) => (
                 <Tabs.Trigger key={id} value={id} className={`${tabTrigger} min-w-fit flex-1 px-2`}>
                   {label}
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
-            {tabs.map(({ id, content }) => (
+            {shown.map(({ id, content }) => (
               <Tabs.Content key={id} value={id} className="min-h-0 flex-1">
                 {content}
               </Tabs.Content>

@@ -216,7 +216,12 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   `SetlistParts.tsx` (`SetlistPanel.tsx` è la scheda del pannello). Trascinamento: `setlistDrop.ts` trova la zona
   `data-setlist-drop` sotto il puntatore, sia per i file del sistema (`useFileDrop` passa la posizione, `App` li dà
   alla setlist invece di aprirli) sia per i brani trascinati dai recenti (`dragTrack`, col puntatore). Righe di tipo
-  `break` (pause), `segue`, `key` (lista `SETLIST_KEYS` da Rust); `printSetlist.ts` stampa da un iframe nascosto.
+  `break` (pause), `segue`, `stopAfter`, `key` (lista `SETLIST_KEYS` da Rust); `printSetlist.ts` stampa da un iframe nascosto.
+  **Modalità Setlist** = `useLiveStore.active` (`stage` mostra la Stage view): `SetNav.tsx` nella barra in alto, la
+  scheda del pannello filtrata da `SidePanel`, `afterSong` (setlistMath) decide cosa segue a fine brano. Un brano
+  aperto che non è `expectedPath` chiude la modalità (sottoscrizione in `live.ts`, rinviata di un giro perché
+  `projectSync` prenda prima il nuovo brano coi salvataggi ancora fermi). `setPlaysOnFromHere` (player) fa ripartire
+  Play da dove si era fermato; `Setlist.lastSong` è il punto di «Riprendi».
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

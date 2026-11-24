@@ -272,9 +272,18 @@ export function LiveSettingsDialog({
             label={s.segue}
             on={song.segue}
             disabled={isLast}
-            onChange={(segue) => edit({ segue })}
+            onChange={(segue) => edit(segue ? { segue, stopAfter: false } : { segue })}
           />
           <span className="text-[11px] text-fg-subtle">{isLast ? s.segueLast : s.segueHint}</span>
+        </Row>
+        <Row label={s.stopAfter} hint={s.stopAfterHint}>
+          <OnOffKey
+            label={s.stopAfter}
+            on={song.stopAfter}
+            disabled={isLast}
+            onChange={(stopAfter) => edit(stopAfter ? { stopAfter, segue: false } : { stopAfter })}
+          />
+          <span className="text-[11px] text-fg-subtle">{s.stopAfterHint}</span>
         </Row>
         <Notes song={song} onChange={(notes) => edit({ notes })} />
         <p className="text-[11px] text-fg-subtle">{s.live.studyKept}</p>

@@ -22,6 +22,8 @@ import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { LessonNav } from "@/features/lessons/LessonNav";
 import { pickAndOpenFile } from "@/features/library/pickFile";
+import { useLiveStore } from "@/features/setlist/live";
+import { SetNav } from "@/features/setlist/SetNav";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
 import { useLessonsStore } from "@/stores/lessons";
@@ -166,6 +168,7 @@ function HistoryKeys() {
 }
 
 export function TopBar() {
+  const setMode = useLiveStore((st) => st.active);
   const sidePanelOpen = useUiStore((s) => s.sidePanelOpen);
   const toggleSidePanel = useUiStore((s) => s.toggleSidePanel);
   const openDialog = useUiStore((s) => s.openDialog);
@@ -195,7 +198,7 @@ export function TopBar() {
         </Tooltip>
         <RecentMenu />
         <HomeKey />
-        <LessonNav />
+        {setMode ? <SetNav /> : <LessonNav />}
 
         {/* Small display with the open track; the lamp is lit while a track is loaded. Its least
             width makes the bar turn keys into icons (then wrap) before the name is squeezed */}

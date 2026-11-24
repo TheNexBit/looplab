@@ -80,6 +80,8 @@ export interface Settings {
   setlistOpen: string;
   /** Live mode: the whole songs, or only the changes between them (head and tail of each) */
   liveMode: LiveMode;
+  /** Set mode: when a song ends the next one starts by itself (BandHelper's auto-advance) */
+  setlistAutoAdvance: boolean;
   /** Seconds of each song played around a change in the «changes» Live mode */
   liveChangeSeconds: number;
   /** PDFs whose bars differ from their Guitar Pro twin and are fine as they are: file + ":" + bars */
@@ -227,6 +229,7 @@ export const SETTINGS_DEFAULTS: Settings = {
   setlistOpen: "",
   liveMode: "set",
   liveChangeSeconds: 10,
+  setlistAutoAdvance: true,
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",

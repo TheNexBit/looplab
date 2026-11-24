@@ -36,6 +36,7 @@ describe("factory values (docs/VALORI-DI-FABBRICA.md)", () => {
       homeView: "courses",
       liveMode: "set",
       liveChangeSeconds: 10,
+      setlistAutoAdvance: true,
     });
   });
 });

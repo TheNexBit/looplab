@@ -1,4 +1,5 @@
 import { shortcutHandlers } from "@/app/shortcutHandlers";
+import { useLiveStore } from "@/features/setlist/live";
 import { t } from "@/i18n";
 import { commands, events, type MediaKeyKind, type MidiTrigger } from "@/lib/bindings";
 import type { ShortcutId } from "@/lib/shortcuts";
@@ -48,9 +49,12 @@ export function startRemoteControl(): () => void {
     );
     if (action) shortcutHandlers[action]();
   });
-  const onMediaKey = events.mediaKey.listen(({ payload }) =>
-    shortcutHandlers[MEDIA_ACTIONS[payload.key]](),
-  );
+  const onMediaKey = events.mediaKey.listen(({ payload }) => {
+    const live = useLiveStore.getState();
+    if (live.active && payload.key === "next") live.next();
+    else if (live.active && payload.key === "previous") live.previous();
+    else shortcutHandlers[MEDIA_ACTIONS[payload.key]]();
+  });
 
   const applyMediaKeys = (enabled: boolean) => void commands.setGlobalMediaKeys(enabled);
   applyMediaKeys(useSettingsStore.getState().globalMediaKeys);

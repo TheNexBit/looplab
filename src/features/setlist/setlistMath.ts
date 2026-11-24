@@ -43,6 +43,7 @@ export function songFromFile(path: string, length: number | null = null): Song {
     notes: "",
     key: null,
     segue: false,
+    stopAfter: false,
   };
 }
 
@@ -119,6 +120,23 @@ export function songNumbers(songs: readonly Song[]): Map<string, number> {
   const numbers = new Map<string, number>();
   for (const song of songs) if (!isBreak(song)) numbers.set(song.id, numbers.size + 1);
   return numbers;
+}
+
+/**
+ * What follows when a song of the set ends. A segue starts the next one at once (a medley), a
+ * break starts its countdown at once; after a break, after a song marked «Stop after», or with
+ * auto-advance off, the next one waits for the key; otherwise it starts after the gap (at once
+ * with 0 s).
+ */
+export function afterSong(
+  current: Song | undefined,
+  next: Song,
+  autoAdvance: boolean,
+  gapSeconds: number,
+): "play" | "wait" | "gap" {
+  if (current?.segue || isBreak(next)) return "play";
+  if (!current || isBreak(current) || current.stopAfter || !autoAdvance) return "wait";
+  return gapSeconds > 0 ? "gap" : "play";
 }
 
 /** The list with the item at `from` moved to `to` (both clamped). */

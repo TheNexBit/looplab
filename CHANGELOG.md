@@ -21,6 +21,9 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
   brani dai recenti; «Aggiungi alla setlist» nei menu di recenti e lezioni.
 - **Pause** tra i set, **Segue** (il brano dopo parte subito), **tonalità** di ogni brano e **stampa** della scaletta
   (anche in PDF).
+- **Modalità Setlist**: si accende con «Attiva» (o «Riprendi dal N»), mostra la barra della setlist in alto e la scheda
+  nel pannello, si chiude da sola aprendo un brano che non è in scaletta («Torna alla setlist»). **Avanti automatico**
+  con pausa tra i brani, «Ferma dopo questo», Alt+frecce e tasti multimediali per cambiare brano.
 - **Live mode** con **Stage view**: la setlist suonata di fila come sul palco, comandabile da tastiera o pedale
   voltapagina, con pausa tra i brani a scelta e la **prova dei cambi** (solo inizio e fine di ogni brano).
 

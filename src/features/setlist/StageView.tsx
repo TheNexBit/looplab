@@ -2,6 +2,7 @@ import {
   AlertCircle,
   ArrowDownToLine,
   Coffee,
+  Minimize2,
   Pause,
   Play,
   SkipBack,
@@ -38,7 +39,7 @@ function useStageKeys() {
       if (event.key === " ") live.toggle();
       else if (NEXT_KEYS.has(event.key)) live.next();
       else if (PREVIOUS_KEYS.has(event.key)) live.previous();
-      else if (event.key === "Escape") live.stop();
+      else if (event.key === "Escape") live.setStage(false);
       else handled = false;
       // On stage no other shortcut may fire (a stray key must not open a dialog)
       event.stopPropagation();
@@ -229,6 +230,10 @@ export function StageView() {
         </div>
         <Button variant="hardware" className="h-10 px-3" onClick={() => live.stop()}>
           <X className="size-4" />
+          {s.leaveSet}
+        </Button>
+        <Button variant="hardware" className="h-10 px-3" onClick={() => live.setStage(false)}>
+          <Minimize2 className="size-4" />
           {s.stage.exit}
           <kbd className="ml-1 text-[10px] text-fg-subtle">Esc</kbd>
         </Button>

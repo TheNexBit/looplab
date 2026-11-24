@@ -20,6 +20,7 @@ import { startTrainer } from "@/features/practice/trainer";
 import { startRemoteControl } from "@/features/remote/remoteControl";
 import { ScoreLayout } from "@/features/score/ScoreLayout";
 import { useLiveStore } from "@/features/setlist/live";
+import { LeftSetNotice } from "@/features/setlist/SetNav";
 import { StageView } from "@/features/setlist/StageView";
 import { dropFilesOnSetlist, hoverFilesOver } from "@/features/setlist/setlistDrop";
 import { feedDetachedVideo } from "@/features/video/detach";
@@ -60,7 +61,7 @@ export function App() {
   const mini = useUiStore((s) => s.mini);
   const metronomeOpen = useMetronomeStore((s) => s.open);
   const homeOpen = useLessonsStore((s) => s.open);
-  const liveActive = useLiveStore((s) => s.active);
+  const onStage = useLiveStore((s) => s.active && s.stage);
   const infoBar = useSettingsStore((s) => s.infoBar);
   const hovering = useFileDrop(dropFiles, hoverFilesOver);
   const overSetlist = useSetlistsStore((s) => s.dropTarget !== null);
@@ -136,6 +137,7 @@ export function App() {
             )}
             <DropOverlay visible={hovering && hasTrack && !overSetlist} />
             <ErrorBanner />
+            <LeftSetNotice />
             {info && !hasTrack && (
               <span className="absolute right-3 bottom-2 text-[11px] text-fg-subtle tabular">
                 {info.name} {info.version} · {t.app.engine} {info.engineVersion}
@@ -165,7 +167,7 @@ export function App() {
         <DiaryDialog />
         <ExportDialog />
         {/* Live mode: the setlist on stage, over everything */}
-        {liveActive && <StageView />}
+        {onStage && <StageView />}
       </div>
     </TooltipProvider>
   );

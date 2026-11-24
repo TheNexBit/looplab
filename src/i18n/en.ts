@@ -712,8 +712,8 @@ export const en = {
     overBy: (time: string) => `${time} over`,
     gap: "Gap between songs",
     gapHint:
-      "In Live mode, how long the next song waits before starting by itself. «Wait»: it starts when you press Space or the pedal",
-    gapWait: "Wait",
+      "With auto-advance, how long the next song waits before starting (with a countdown). «At once»: it starts as soon as the previous one ends",
+    gapWait: "At once",
     end: "end",
     noSongs: "No songs in the setlist",
     noSongsHint:
@@ -737,7 +737,6 @@ export const en = {
     fileMissing: "File not found",
     hasNotes: "Has stage notes",
     liveSettings: "Live settings…",
-    liveFromHere: "Live from this song",
     openToStudy: "Open to practise",
     replaceFile: "Find the file…",
     moveUp: "Move up",
@@ -746,9 +745,9 @@ export const en = {
     removeSong: "Remove from the setlist",
     fromTime: (time: string) => `from ${time}`,
     toTime: (time: string) => `to ${time}`,
-    liveKey: "Live",
     liveChanges: "Live · changes",
-    liveHint: "Plays the setlist through on the Stage view, from the first song",
+    liveHint:
+      "The setlist on the whole window (Stage view), from where you are or where you left off",
     liveChangesHint: (seconds: number) =>
       `Changes rehearsal: only the first and last ${seconds} seconds of each song, to rehearse going into the next`,
     liveEmpty: "Add at least one song",
@@ -782,6 +781,27 @@ export const en = {
     segueLast: "The last song has no song after it",
     print: "Print the setlist…",
     printTotal: (time: string) => `Total length: ${time}`,
+    activate: "Activate",
+    activateHint:
+      "Turns the setlist on: the songs play one after the other with their Live settings, in the usual view with the set bar on top",
+    resumeFrom: (n: number) => `Resume from ${n}`,
+    setOn: "Setlist on",
+    leaveSet: "Close the setlist",
+    playFromHere: "Play from this song",
+    nowPlaying: "Now playing",
+    stopAfter: "Stop after this",
+    stopAfterHint:
+      "When this song ends the setlist stops and waits for Space, even with auto-advance on",
+    autoAdvance: "Auto-advance",
+    autoAdvanceHint:
+      "On: when a song ends the next one starts, after the gap between songs. Off: it waits for Space",
+    autoShort: "Auto",
+    previousSong: "Previous song of the setlist",
+    nextSongKey: "Next song of the setlist",
+    stageKey: "Stage view",
+    stageHint: "The setlist on the whole window, to read on stage (Esc comes back here)",
+    leftNotice: (name: string) => `Setlist «${name}» closed: you opened a track that is not in it`,
+    backToSet: "Back to the setlist",
     live: {
       title: (song: string) => `Live settings · ${song}`,
       cueIn: "Cue in",
@@ -822,7 +842,7 @@ export const en = {
       changesTitle: "Live mode · changes rehearsal",
       song: "Song",
       setClock: "Set",
-      exit: "Leave",
+      exit: "Normal view",
       next: "Next",
       lastSong: "Last song of the set",
       loading: "Loading the song…",

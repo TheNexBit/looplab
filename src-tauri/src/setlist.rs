@@ -73,6 +73,9 @@ pub struct SetlistSong {
     /// Segue: the next song follows at once, without the gap or waiting for the key (a medley)
     #[serde(default)]
     pub segue: bool,
+    /// Stop after this song even with auto-advance on (AbleSet's STOP cue)
+    #[serde(default)]
+    pub stop_after: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
@@ -91,6 +94,9 @@ pub struct Setlist {
     #[serde(default)]
     pub gap_seconds: u32,
     pub songs: Vec<SetlistSong>,
+    /// The song the set was last left on (its id): «Resume» starts there
+    #[serde(default)]
+    pub last_song: Option<String>,
 }
 
 /// A song file as it is now on the disk.
@@ -156,6 +162,12 @@ fn tidy(mut setlist: Setlist) -> Setlist {
     setlist.date = valid_date(setlist.date);
     setlist.limit_minutes = setlist.limit_minutes.filter(|m| (1..=600).contains(m));
     setlist.gap_seconds = setlist.gap_seconds.min(MAX_GAP);
+    // A song removed since is no place to resume from
+    if let Some(last) = &setlist.last_song
+        && !setlist.songs.iter().any(|song| &song.id == last)
+    {
+        setlist.last_song = None;
+    }
     for song in &mut setlist.songs {
         song.title = song.title.trim().to_string();
         song.path = song.path.take().filter(|p| !p.trim().is_empty());
@@ -187,6 +199,7 @@ fn tidy(mut setlist: Setlist) -> Setlist {
             song.bpm = None;
             song.key = None;
             song.segue = false;
+            song.stop_after = false;
         }
     }
     setlist
@@ -317,6 +330,7 @@ mod tests {
             notes: String::new(),
             key: None,
             segue: false,
+            stop_after: false,
         }
     }
 
@@ -329,6 +343,7 @@ mod tests {
             limit_minutes: None,
             gap_seconds: 0,
             songs: vec![song("Uno"), song("Due")],
+            last_song: None,
         }
     }
 

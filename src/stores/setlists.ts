@@ -95,8 +95,10 @@ export const useSetlistsStore = create<SetlistsState>((set, get) => {
         date: null,
         venue: "",
         limitMinutes: null,
-        gapSeconds: 0,
+        // Auto-advance after a short countdown, like BandHelper's time between songs
+        gapSeconds: 3,
         songs: [],
+        lastSong: null,
       });
       if (result.status === "error") {
         set({ error: result.error });

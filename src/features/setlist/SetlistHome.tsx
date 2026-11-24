@@ -16,6 +16,7 @@ import {
   AddSongs,
   LiveKey,
   newSetlist,
+  SetKey,
   SetlistDropZone,
   SetlistPicker,
   SongList,
@@ -272,6 +273,7 @@ export function SetlistHome() {
             {s.newSetlist}
           </Button>
         )}
+        {setlist && <SetKey setlist={setlist} />}
         {setlist && <LiveKey setlist={setlist} />}
       </div>
       {!setlist ? (

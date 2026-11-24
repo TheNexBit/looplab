@@ -2,11 +2,13 @@ import { create } from "zustand";
 import { holdProjectSaves, onProjectApplied } from "@/features/markers/projectSync";
 import type { SetlistSong_Serialize as Song } from "@/lib/bindings";
 import { samePath } from "@/lib/format";
+import { useLessonsStore } from "@/stores/lessons";
 import { useLoopStore } from "@/stores/loop";
-import { currentPosition, usePlayerStore } from "@/stores/player";
+import { currentPosition, setPlaysOnFromHere, usePlayerStore } from "@/stores/player";
 import { useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
-import { cueRange, isBreak, livePlan } from "./setlistMath";
+import { useUiStore } from "@/stores/ui";
+import { afterSong, cueRange, livePlan } from "./setlistMath";
 
 /**
  * - `loading`: the song's file is opening
@@ -20,8 +22,17 @@ export type LivePhase = "loading" | "ready" | "gap" | "playing" | "paused" | "do
 /** What happens once a song is loaded. */
 type Then = "wait" | "play" | "gap";
 
+/** Set mode left because a track outside the setlist was opened: «Back to the setlist». */
+export interface LeftSet {
+  setlistId: string;
+  index: number;
+}
+
 interface LiveState {
+  /** Set mode is on: the setlist is being played, its Live settings apply */
   active: boolean;
+  /** The Stage view covers the window (off: the usual view, with the set bar on top) */
+  stage: boolean;
   setlistId: string;
   index: number;
   phase: LivePhase;
@@ -37,8 +48,15 @@ interface LiveState {
   runningSince: number;
   /** The song's file is missing or could not be opened */
   missing: boolean;
-  start: (setlistId: string, index?: number) => Promise<void>;
+  /** Set mode was just left by opening another track (shown as a notice with a way back) */
+  left: LeftSet | null;
+  /** Turns set mode on at song `index` (or moves there if already on); `stage` shows the Stage view. */
+  start: (setlistId: string, index?: number, stage?: boolean) => Promise<void>;
+  /** Plays song `index` of the set at once (a double-click on it). */
+  playSong: (index: number) => void;
   stop: () => void;
+  setStage: (stage: boolean) => void;
+  dismissLeft: () => void;
   toggle: () => void;
   next: () => void;
   previous: () => void;
@@ -54,12 +72,16 @@ const END_MARGIN = 0.03;
 let timer: ReturnType<typeof setInterval> | undefined;
 /** Grows with every song loaded: an older load that finishes late is dropped. */
 let loadToken = 0;
+/** The file set mode is opening or has open: any other track that opens leaves set mode. */
+let expectedPath: string | null = null;
+/** The side panel tab before set mode showed the setlist, given back when it ends. */
+let tabBefore: ReturnType<typeof useUiStore.getState>["sidePanelTab"] | null = null;
 
-const songs = (): Song[] => {
+const setlistOf = () => {
   const { setlistId } = useLiveStore.getState();
-  return useSetlistsStore.getState().setlists.find((s) => s.id === setlistId)?.songs ?? [];
+  return useSetlistsStore.getState().setlists.find((s) => s.id === setlistId);
 };
-
+const songs = (): Song[] => setlistOf()?.songs ?? [];
 const currentSong = (): Song | undefined => songs()[useLiveStore.getState().index];
 
 const fileMissing = (path: string) =>
@@ -68,13 +90,13 @@ const fileMissing = (path: string) =>
 /** Waits until `path` is open with its project applied (false if it could not be opened). */
 function openTrack(path: string): Promise<boolean> {
   const player = usePlayerStore.getState();
+  expectedPath = path;
   if (samePath(player.track?.path, path) && player.load.kind !== "loading") {
     return Promise.resolve(true);
   }
   return new Promise((resolve) => {
     const offApplied = onProjectApplied((applied) => {
-      if (!samePath(applied, path)) return;
-      finish(true);
+      if (samePath(applied, path)) finish(true);
     });
     const offError = usePlayerStore.subscribe((state) => {
       if (state.load.kind === "error" && samePath(state.load.path, path)) finish(false);
@@ -93,7 +115,11 @@ function pausePlayer() {
   if (player.playing) player.togglePlay();
 }
 
-/** The setlist played as a gig: song after song, with its Live settings, on the Stage view. */
+/**
+ * Set mode: the setlist played as a gig, song after song with their Live settings, in the usual
+ * view (with the set bar on top) or on the full-window Stage view. Turned on only by the user;
+ * opening a track that is not in the set turns it off.
+ */
 export const useLiveStore = create<LiveState>((set, get) => {
   /** Loads song `index` and cues it; then waits, plays, or runs the gap. */
   const load = async (index: number, then: Then) => {
@@ -105,6 +131,10 @@ export const useLiveStore = create<LiveState>((set, get) => {
       return;
     }
     set({ index, part: 0, parts: [], phase: "loading", elapsed: 0, missing: false });
+    // Where to resume next time
+    if (setlistOf()?.lastSong !== song.id) {
+      useSetlistsStore.getState().edit(get().setlistId, (x) => ({ ...x, lastSong: song.id }));
+    }
     if (song.path) {
       const ok = !fileMissing(song.path) && (await openTrack(song.path));
       if (token !== loadToken || !get().active) return;
@@ -116,10 +146,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
     }
     if (then === "play") play();
     else if (then === "gap") {
-      const gap = useSetlistsStore
-        .getState()
-        .setlists.find((s) => s.id === get().setlistId)?.gapSeconds;
-      set({ phase: "gap", gapEnds: performance.now() + (gap ?? 0) * 1000 });
+      set({ phase: "gap", gapEnds: performance.now() + (setlistOf()?.gapSeconds ?? 0) * 1000 });
     } else set({ phase: "ready" });
   };
 
@@ -171,12 +198,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
     return phase === "playing" ? elapsed + (performance.now() - runningSince) / 1000 : elapsed;
   };
 
-  /** The song is over: the next one is cued, then waits for the key or runs the gap. */
-  /**
-   * The song is over. After a segue the next one starts at once (a medley); a break starts its
-   * countdown at once; after a break the next song waits for the key (the band comes back on
-   * stage); otherwise the gap runs, or Live waits for the key.
-   */
+  /** The song is over: the next one plays, waits or runs the gap (`afterSong`). */
   const songOver = () => {
     pausePlayer();
     const list = songs();
@@ -187,17 +209,8 @@ export const useLiveStore = create<LiveState>((set, get) => {
       set({ phase: "done" });
       return;
     }
-    const gap =
-      useSetlistsStore.getState().setlists.find((s) => s.id === get().setlistId)?.gapSeconds ?? 0;
-    const then: Then =
-      current?.segue || isBreak(next)
-        ? "play"
-        : current && isBreak(current)
-          ? "wait"
-          : gap > 0
-            ? "gap"
-            : "wait";
-    void load(index, then);
+    const auto = useSettingsStore.getState().setlistAutoAdvance;
+    void load(index, afterSong(current, next, auto, setlistOf()?.gapSeconds ?? 0));
   };
 
   const tick = () => {
@@ -207,14 +220,19 @@ export const useLiveStore = create<LiveState>((set, get) => {
       if (performance.now() >= state.gapEnds) play();
       return;
     }
-    if (state.phase !== "playing") return;
     const song = currentSong();
     if (!song) return;
+    const player = usePlayerStore.getState();
+    // Started with the dock's Play key or the space bar of the usual view
+    if ((state.phase === "ready" || state.phase === "paused") && song.path && player.playing) {
+      set({ phase: "playing", setStartedAt: state.setStartedAt ?? performance.now() });
+      return;
+    }
+    if (state.phase !== "playing") return;
     if (!song.path) {
       if (song.length !== null && noFileElapsed() >= song.length) songOver();
       return;
     }
-    const player = usePlayerStore.getState();
     const part = state.parts[state.part];
     if (!part) return;
     const position = currentPosition();
@@ -228,12 +246,24 @@ export const useLiveStore = create<LiveState>((set, get) => {
       songOver();
       return;
     }
-    // Stopped from elsewhere (a media key, the mouse)
+    // Stopped from elsewhere (a media key, the dock)
     if (!player.playing) set({ phase: "paused" });
+  };
+
+  const showSetlistTab = (on: boolean) => {
+    const ui = useUiStore.getState();
+    if (on) {
+      if (ui.sidePanelTab !== "setlist") tabBefore = ui.sidePanelTab;
+      ui.setSidePanelTab("setlist");
+    } else if (ui.sidePanelTab === "setlist") {
+      ui.setSidePanelTab(tabBefore ?? "sections");
+      tabBefore = null;
+    }
   };
 
   return {
     active: false,
+    stage: false,
     setlistId: "",
     index: 0,
     phase: "loading",
@@ -244,25 +274,43 @@ export const useLiveStore = create<LiveState>((set, get) => {
     elapsed: 0,
     runningSince: 0,
     missing: false,
+    left: null,
 
-    start: async (setlistId, index = 0) => {
+    start: async (setlistId, index = 0, stage = false) => {
+      if (get().active && get().setlistId === setlistId) {
+        set({ stage });
+        if (index !== get().index) await load(index, "wait");
+        return;
+      }
+      if (get().active) get().stop();
       await useSetlistsStore.getState().flush();
       holdProjectSaves(true);
-      set({ active: true, setlistId, setStartedAt: null });
+      set({ active: true, stage, setlistId, setStartedAt: null, left: null });
+      showSetlistTab(true);
+      // The set is played in the usual view: the Home over the track makes way
+      if (!stage) useLessonsStore.getState().setOpen(false);
       clearInterval(timer);
       timer = setInterval(tick, TICK_MS);
       await load(index, "wait");
     },
 
+    playSong: (index) => void load(index, "play"),
+
     stop: () => {
+      if (!get().active) return;
       loadToken += 1;
+      expectedPath = null;
       clearInterval(timer);
       timer = undefined;
       pausePlayer();
-      set({ active: false, phase: "loading" });
+      set({ active: false, stage: false, phase: "loading" });
+      showSetlistTab(false);
       // The study settings of the open track come back
       holdProjectSaves(false);
     },
+
+    setStage: (stage) => set({ stage }),
+    dismissLeft: () => set({ left: null }),
 
     toggle: () => {
       const { phase } = get();
@@ -285,6 +333,24 @@ export const useLiveStore = create<LiveState>((set, get) => {
     },
   };
 });
+
+// A track that is not the set's song opens (recent list, a course, a file): set mode ends, with
+// a notice to go back. Studying a single track never finds the setlist in the way.
+usePlayerStore.subscribe((state, previous) => {
+  const live = useLiveStore.getState();
+  const path = state.track?.path;
+  if (!live.active || !path || path === previous.track?.path) return;
+  if (samePath(path, expectedPath)) return;
+  const left = { setlistId: live.setlistId, index: live.index };
+  // After the project sync has taken the new track (saves still held): the set's Live settings
+  // never land in the study project of the song that was playing
+  setTimeout(() => {
+    useLiveStore.getState().stop();
+    useLiveStore.setState({ left });
+  }, 0);
+});
+
+setPlaysOnFromHere(() => useLiveStore.getState().active);
 
 /** Seconds played of a song without file (for the Stage view's clock). */
 export function liveElapsed(state: LiveState = useLiveStore.getState()): number {

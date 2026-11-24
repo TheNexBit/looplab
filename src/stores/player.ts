@@ -122,6 +122,16 @@ function countInNow(from = 0): number {
   return countInSeconds(countIn ? countInBars : 0, clickTempoMap(), from);
 }
 
+let playsOnFromHere: () => boolean = () => false;
+
+/**
+ * Set mode registers itself here: while it is on, Play resumes where the music paused instead
+ * of going back to the start point ("return to start" is for practising, not for a set).
+ */
+export function setPlaysOnFromHere(check: () => boolean) {
+  playsOnFromHere = check;
+}
+
 /** Length of the open track in seconds, 0 when none is open. */
 export const trackDuration = () => usePlayerStore.getState().track?.duration ?? 0;
 
@@ -222,7 +232,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const loop = useLoopStore.getState();
       const region = loop.enabled ? loop.region() : null;
       const here = currentPosition();
-      const position = useSettingsStore.getState().returnToStart ? cue : here;
+      const position = useSettingsStore.getState().returnToStart && !playsOnFromHere() ? cue : here;
       const from =
         position >= track.duration - 0.01
           ? region

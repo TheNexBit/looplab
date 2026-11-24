@@ -1327,6 +1327,8 @@ export type SetlistSong_Deserialize = {
 	key?: string | null,
 	/**  Segue: the next song follows at once, without the gap or waiting for the key (a medley) */
 	segue?: boolean,
+	/**  Stop after this song even with auto-advance on (AbleSet's STOP cue) */
+	stopAfter?: boolean,
 };
 
 export type SetlistSong_Serialize = {
@@ -1354,6 +1356,8 @@ export type SetlistSong_Serialize = {
 	key: string | null,
 	/**  Segue: the next song follows at once, without the gap or waiting for the key (a medley) */
 	segue: boolean,
+	/**  Stop after this song even with auto-advance on (AbleSet's STOP cue) */
+	stopAfter: boolean,
 };
 
 export type Setlist_Deserialize = {
@@ -1368,6 +1372,8 @@ export type Setlist_Deserialize = {
 	/**  Seconds between songs in Live mode; 0 = wait for the next key */
 	gapSeconds?: number,
 	songs: SetlistSong_Deserialize[],
+	/**  The song the set was last left on (its id): «Resume» starts there */
+	lastSong?: string | null,
 };
 
 export type Setlist_Serialize = {
@@ -1382,6 +1388,8 @@ export type Setlist_Serialize = {
 	/**  Seconds between songs in Live mode; 0 = wait for the next key */
 	gapSeconds: number,
 	songs: SetlistSong_Serialize[],
+	/**  The song the set was last left on (its id): «Resume» starts there */
+	lastSong: string | null,
 };
 
 /**  A song file as it is now on the disk. */

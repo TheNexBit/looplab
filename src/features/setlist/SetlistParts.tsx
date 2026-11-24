@@ -8,16 +8,18 @@ import {
   FileAudio,
   FilePlus,
   FileVideo,
+  GraduationCap,
   GripVertical,
   History,
   ListMusic,
+  MonitorPlay,
   MoreHorizontal,
   Music,
+  OctagonPause,
   Pencil,
   Play,
   Plus,
   Printer,
-  Radio,
   Search,
   SlidersHorizontal,
   StickyNote,
@@ -70,8 +72,21 @@ export const shortDate = (date: string) =>
 
 export const newSetlist = () => store().create(s.newSetlistName(todayIso()));
 
-/** Opens a song of the setlist to practise it (the Home closes). */
+/** Where «Resume» starts: the song the set was last left on (the first one otherwise). */
+export function resumeIndex(setlist: Setlist): number {
+  const index = setlist.songs.findIndex((song) => song.id === setlist.lastSong);
+  return Math.max(0, index);
+}
+
+/** Turns set mode on at song `index` and plays it at once. */
+export async function playFrom(setlistId: string, index: number) {
+  await useLiveStore.getState().start(setlistId, index);
+  useLiveStore.getState().playSong(index);
+}
+
+/** Opens a song of the setlist to practise it alone: set mode ends, the Home closes. */
 export async function openToStudy(path: string) {
+  useLiveStore.getState().stop();
   useLessonsStore.getState().setOpen(false);
   const player = usePlayerStore.getState();
   if (!samePath(player.track?.path, path)) await player.open(path);
@@ -169,12 +184,9 @@ function SongMenuItems({
   return (
     <>
       {!pause && (
-        <Item
-          className={menuItem}
-          onSelect={() => void useLiveStore.getState().start(setlist.id, index)}
-        >
-          <Radio className="size-4" />
-          {s.liveFromHere}
+        <Item className={menuItem} onSelect={() => void playFrom(setlist.id, index)}>
+          <Play className="size-4" />
+          {s.playFromHere}
         </Item>
       )}
       <Item className={menuItem} onSelect={onSettings}>
@@ -183,7 +195,7 @@ function SongMenuItems({
       </Item>
       {song.path && (
         <Item className={menuItem} onSelect={() => void openToStudy(song.path ?? "")}>
-          <Play className="size-4" />
+          <GraduationCap className="size-4" />
           {s.openToStudy}
         </Item>
       )}
@@ -198,10 +210,29 @@ function SongMenuItems({
           className={menuItem}
           checked={song.segue}
           disabled={last}
-          onCheckedChange={(segue) => store().editSong(setlist.id, song.id, { segue })}
+          onCheckedChange={(segue) =>
+            store().editSong(setlist.id, song.id, segue ? { segue, stopAfter: false } : { segue })
+          }
         >
           <ArrowDownToLine className="size-4" />
           {s.segue}
+        </CheckboxItem>
+      )}
+      {!pause && (
+        <CheckboxItem
+          className={menuItem}
+          checked={song.stopAfter}
+          disabled={last}
+          onCheckedChange={(stopAfter) =>
+            store().editSong(
+              setlist.id,
+              song.id,
+              stopAfter ? { stopAfter, segue: false } : { stopAfter },
+            )
+          }
+        >
+          <OctagonPause className="size-4" />
+          {s.stopAfter}
         </CheckboxItem>
       )}
       <Separator className={menuSeparator} />
@@ -311,6 +342,11 @@ function SongRow({
 }) {
   const files = useSetlistsStore((st) => st.files);
   const isOpen = usePlayerStore((st) => samePath(st.track?.path, song.path));
+  const liveIndex = useLiveStore((st) =>
+    st.active && st.setlistId === setlist.id ? st.index : -1,
+  );
+  const current = liveIndex === index;
+  const played = liveIndex > index;
   const pause = isBreak(song);
   const missing = !!song.path && files.some((f) => samePath(f.path, song.path) && !f.exists);
   const length = playLength(song);
@@ -338,12 +374,16 @@ function SongRow({
           className={cn(
             "group relative flex items-center gap-1.5 rounded-control px-1 outline-none hover:bg-surface-hover",
             pause ? "my-1 h-8 border-y border-dashed border-border" : "h-9",
-            isOpen && "bg-accent-soft",
+            (current || (isOpen && liveIndex < 0)) && "bg-accent-soft",
+            played && "opacity-50",
             selected && "ring-1 ring-accent/60 ring-inset",
             dragging && "opacity-40",
           )}
           // In the side panel a double-click opens the song to practise it; on the Home its Live settings
-          onDoubleClick={() => (compact && song.path ? void openToStudy(song.path) : onSettings())}
+          // In the side panel (set mode) a double-click plays the song; on the Home it opens its Live settings
+          onDoubleClick={() =>
+            compact && !pause ? useLiveStore.getState().playSong(index) : onSettings()
+          }
         >
           {dropLine && (
             <span
@@ -363,8 +403,17 @@ function SongRow({
           >
             <GripVertical className="size-3.5" />
           </button>
-          <span className="w-5 shrink-0 text-right font-mono text-[11px] text-fg-subtle tabular">
-            {number ?? ""}
+          <span
+            className={cn(
+              "flex w-5 shrink-0 justify-end font-mono text-[11px] tabular",
+              current ? "text-accent" : "text-fg-subtle",
+            )}
+          >
+            {current ? (
+              <Play className="size-3 fill-current" aria-label={s.nowPlaying} />
+            ) : (
+              (number ?? "")
+            )}
           </span>
           <Icon
             className={cn("size-3.5 shrink-0", isOpen ? "text-accent" : "text-fg-subtle")}
@@ -425,11 +474,11 @@ function SongRow({
                 keyButton,
                 "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
               )}
-              title={s.liveFromHere}
-              aria-label={s.liveFromHere}
-              onClick={() => void useLiveStore.getState().start(setlist.id, index)}
+              title={s.playFromHere}
+              aria-label={s.playFromHere}
+              onClick={() => void playFrom(setlist.id, index)}
             >
-              <Radio className="size-4" />
+              <Play className="size-4" />
             </Button>
           )}
           {!compact && (
@@ -850,28 +899,71 @@ export function SetlistPicker({
   );
 }
 
-/** Live key, like a DAW's: a click starts the set; ▾ picks the whole set or the changes only. */
+/**
+ * The key that turns set mode on, like loading a set in BandHelper or OnSong: from the song
+ * the set was left on («Resume from 5»), or the first. Lit while the set is on; a click ends it.
+ */
+export function SetKey({ setlist, compact = false }: { setlist: Setlist; compact?: boolean }) {
+  const on = useLiveStore((st) => st.active && st.setlistId === setlist.id);
+  const empty = !setlist.songs.some((song) => !isBreak(song));
+  const resume = resumeIndex(setlist);
+  const numbers = songNumbers(setlist.songs);
+  const resumeSong = setlist.songs[resume];
+  const resumeNumber = resume > 0 && resumeSong ? numbers.get(resumeSong.id) : undefined;
+  if (on) {
+    return (
+      <Button
+        variant="hardware"
+        active
+        led="amber"
+        className="h-7 flex-row"
+        title={s.leaveSet}
+        onClick={() => useLiveStore.getState().stop()}
+      >
+        {s.setOn}
+      </Button>
+    );
+  }
+  return (
+    <Button
+      variant="primary"
+      disabled={empty}
+      title={empty ? s.liveEmpty : s.activateHint}
+      onClick={() => void useLiveStore.getState().start(setlist.id, resume)}
+    >
+      <Play className="size-4" />
+      {resumeNumber && !compact ? s.resumeFrom(resumeNumber) : s.activate}
+    </Button>
+  );
+}
+
+/** Stage view key: the set on the full-window view; ▾ picks the whole set or the changes only. */
 export function LiveKey({ setlist, compact = false }: { setlist: Setlist; compact?: boolean }) {
   const mode = useSettingsStore((st) => st.liveMode);
   const seconds = useSettingsStore((st) => st.liveChangeSeconds);
   const empty = !setlist.songs.some((song) => !isBreak(song));
+  const start = () => {
+    const live = useLiveStore.getState();
+    const index = live.active && live.setlistId === setlist.id ? live.index : resumeIndex(setlist);
+    void live.start(setlist.id, index, true);
+  };
   return (
     <div className="flex shrink-0">
       <Button
-        variant="primary"
+        variant="hardware"
         className="rounded-r-none"
         disabled={empty}
         title={empty ? s.liveEmpty : mode === "changes" ? s.liveChangesHint(seconds) : s.liveHint}
-        onClick={() => void useLiveStore.getState().start(setlist.id, 0)}
+        onClick={start}
       >
-        <Radio className="size-4" />
-        {mode === "changes" && !compact ? s.liveChanges : s.liveKey}
+        <MonitorPlay className="size-4" />
+        {!compact && (mode === "changes" ? s.liveChanges : s.stageKey)}
       </Button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <Button
-            variant="primary"
-            className="w-6 rounded-l-none border-l border-on-accent/20 px-0"
+            variant="hardware"
+            className="w-6 rounded-l-none border-l border-edge px-0"
             aria-label={s.liveOptions}
             title={s.liveOptions}
           >

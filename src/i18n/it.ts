@@ -716,8 +716,8 @@ export const it = {
     overBy: (time: string) => `${time} di troppo`,
     gap: "Pausa tra i brani",
     gapHint:
-      "Nel Live mode, quanto aspetta il brano successivo prima di partire da solo. «Attendi»: parte quando premi Spazio o il pedale",
-    gapWait: "Attendi",
+      "Con l'avanti automatico, quanto aspetta il brano successivo prima di partire (col conto alla rovescia). «Subito»: parte appena finisce il precedente",
+    gapWait: "Subito",
     end: "fine",
     noSongs: "Nessun brano in scaletta",
     noSongsHint:
@@ -741,7 +741,6 @@ export const it = {
     fileMissing: "File non trovato",
     hasNotes: "Ha note da palco",
     liveSettings: "Impostazioni Live…",
-    liveFromHere: "Live da questo brano",
     openToStudy: "Apri per studiarlo",
     replaceFile: "Cerca il file…",
     moveUp: "Sposta su",
@@ -750,9 +749,8 @@ export const it = {
     removeSong: "Togli dalla setlist",
     fromTime: (time: string) => `da ${time}`,
     toTime: (time: string) => `fino a ${time}`,
-    liveKey: "Live",
     liveChanges: "Live · cambi",
-    liveHint: "Suona la setlist di fila sulla Stage view, dal primo brano",
+    liveHint: "La setlist a tutta finestra (Stage view), da dove sei o da dove ti eri fermato",
     liveChangesHint: (seconds: number) =>
       `Prova dei cambi: di ogni brano solo i primi e gli ultimi ${seconds} secondi, per provare il passaggio al successivo`,
     liveEmpty: "Aggiungi almeno un brano",
@@ -786,6 +784,28 @@ export const it = {
     segueLast: "L'ultimo brano non ha un brano dopo",
     print: "Stampa la scaletta…",
     printTotal: (time: string) => `Durata totale: ${time}`,
+    activate: "Attiva",
+    activateHint:
+      "Attiva la setlist: i brani suonano in fila con le loro impostazioni Live, nella vista normale con la barra della setlist in alto",
+    resumeFrom: (n: number) => `Riprendi dal ${n}`,
+    setOn: "Setlist attiva",
+    leaveSet: "Chiudi la setlist",
+    playFromHere: "Suona da questo brano",
+    nowPlaying: "In riproduzione",
+    stopAfter: "Ferma dopo questo",
+    stopAfterHint:
+      "Alla fine di questo brano la setlist si ferma e aspetta Spazio, anche con l'avanti automatico acceso",
+    autoAdvance: "Avanti automatico",
+    autoAdvanceHint:
+      "Acceso: quando un brano finisce parte il successivo, dopo la pausa tra i brani. Spento: aspetta Spazio",
+    autoShort: "Auto",
+    previousSong: "Brano precedente della setlist",
+    nextSongKey: "Brano successivo della setlist",
+    stageKey: "Stage view",
+    stageHint: "La setlist a tutta finestra, da leggere sul palco (Esc torna qui)",
+    leftNotice: (name: string) =>
+      `Setlist «${name}» chiusa: hai aperto un brano che non è in scaletta`,
+    backToSet: "Torna alla setlist",
     live: {
       title: (song: string) => `Impostazioni Live · ${song}`,
       cueIn: "Cue in",
@@ -827,7 +847,7 @@ export const it = {
       changesTitle: "Live mode · prova dei cambi",
       song: "Brano",
       setClock: "Set",
-      exit: "Esci",
+      exit: "Vista normale",
       next: "Prossimo",
       lastSong: "Ultimo brano del set",
       loading: "Carico il brano…",

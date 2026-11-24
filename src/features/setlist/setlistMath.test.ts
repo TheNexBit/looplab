@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  afterSong,
   breakItem,
   cueRange,
   daysTo,
@@ -74,5 +75,18 @@ describe("setlist math", () => {
     expect([...songNumbers(songs).values()]).toEqual([1, 2, 3]);
     // Gap after «a» and none after the break, the segue or the last song
     expect(remainingFrom(songs, 0, 10)).toBe(810);
+  });
+
+  it("decides what follows a song: segue, break, stop after, auto-advance, gap", () => {
+    const song = songFromFile("a.mp3", 100);
+    const next = songFromFile("b.mp3", 100);
+    const pause = breakItem("Pausa");
+    expect(afterSong(song, next, true, 3)).toBe("gap");
+    expect(afterSong(song, next, true, 0)).toBe("play");
+    expect(afterSong(song, next, false, 3)).toBe("wait");
+    expect(afterSong({ ...song, stopAfter: true }, next, true, 3)).toBe("wait");
+    expect(afterSong({ ...song, segue: true }, next, false, 3)).toBe("play");
+    expect(afterSong(song, pause, false, 3)).toBe("play");
+    expect(afterSong(pause, next, true, 3)).toBe("wait");
   });
 });

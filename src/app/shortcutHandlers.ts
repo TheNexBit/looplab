@@ -9,6 +9,7 @@ import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/a
 import { togglePlaylist } from "@/features/practice/playlist";
 import { isTapping, tapSync } from "@/features/score/syncActions";
 import { nextTab } from "@/features/score/TabMenu";
+import { useLiveStore } from "@/features/setlist/live";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
 import { useLessonsStore } from "@/stores/lessons";
@@ -188,8 +189,10 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
     update({ scoreDark: !scoreDark });
   },
   nextTab: () => void nextTab(),
-  previousLesson: () => void stepLesson(-1),
-  nextLesson: () => void stepLesson(1),
+  previousLesson: () =>
+    useLiveStore.getState().active ? useLiveStore.getState().previous() : void stepLesson(-1),
+  nextLesson: () =>
+    useLiveStore.getState().active ? useLiveStore.getState().next() : void stepLesson(1),
   toggleLessonDone: () => void toggleOpenLessonDone(),
   toggleOverview: () => {
     const { showOverview, update } = useSettingsStore.getState();
