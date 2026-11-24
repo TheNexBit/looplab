@@ -684,8 +684,6 @@ export const en = {
     listenAll: "All",
     listenAllHint: "Every track is heard together",
     listenOneHint: (name: string) => `Only «${name}» is heard`,
-    cycleHint:
-      "X: the next choice of «Listen» (All → first track → second… → All), without stopping the music",
     add: "Track",
     addHint: "Add more files as stems of this track",
     close: "Close stems",
@@ -1571,7 +1569,7 @@ export const en = {
     toggleHome: "Home",
     toggleScorePaper: "Score: light / dark paper",
     toggleOverview: "Track overview: show / hide",
-    cycleStemSolo: "Stems: next track alone",
+    cycleStemSolo: "Stems: next choice of «Listen»",
     nextTab: "Next tab of the lesson",
     previousLesson: "Previous lesson of the course",
     nextLesson: "Next lesson of the course",

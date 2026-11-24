@@ -15,8 +15,8 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 ### Aggiunto
 
 - **Stems da file** (come «Open as stems» di Song Master): più file insieme (es. il solo e la sua base) una corsia
-  sotto l'altra, allineati dal suono, con Solo, Mute e volume per corsia e **X** per passare dall'uno all'altro senza
-  fermare la musica. Si aprono dal menu Apri, da Ctrl+K, col tasto «Stems» delle lezioni con base o trascinando più
+  sotto l'altra, allineati dal suono, con Solo, Mute e volume per corsia e il selettore **«Ascolta»** (Tutte, o una
+  corsia da sola) per passare dall'una all'altra senza fermare la musica. Si aprono dal menu Apri, da Ctrl+K, col tasto «Stems» delle lezioni con base o trascinando più
   file o una cartella; il brano se le ricorda.
 
 ## 0.30.0 — 2026-11-24

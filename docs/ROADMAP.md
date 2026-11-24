@@ -1191,8 +1191,11 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
   no; a sinistra, in una **colonna tutta loro** (mai sopra la forma d'onda: prima prova dell'utente, i clic su S/M
   finivano sulla musica), la testa di ogni corsia alta quanto lei: nome breve (le parole comuni ai file tolte:
   «Backing»), **S** (Ctrl+clic aggiunge), **M**, volume, ✕ per toglierla. Loop, marker, playhead e righello su tutte.
-- **Barra «Stems · N»** nel titolo delle forme d'onda: **Cambia (X)** passa alla corsia successiva da sola senza
-  fermare la musica, **+** aggiunge file, **✕** torna al brano da solo.
+- **Barra «Stems · N»** nel titolo delle forme d'onda: **«Ascolta: Tutte | corsia | corsia»** (la voce accesa è
+  quella che si sente; un clic cambia senza fermare la musica), **+ Traccia**, **Chiudi stems** (il suggerimento dice
+  come riaprirle). S è un interruttore semplice come in Reaper; tasto destro sulla testa: Solo, Mute, volume 100%,
+  togli dalle stems. Il comando «passa alla scelta successiva di Ascolta» non ha tasto di fabbrica (la X non era
+  chiara all'utente): si assegna in Impostazioni → Tasti o a un pedale MIDI.
 - **Motore:** il file aperto è una corsia del mix col suo volume (`StemLevels.original`), gli altri file sono gli
   ingressi delle tracce separate (max 8), già spostati sul tempo del brano: velocità, tonalità, EQ e loop valgono per
   tutto il mix. Le tracce separate dall'IA restano ferme finché ci sono stems da file (scheda Tracce lo dice).

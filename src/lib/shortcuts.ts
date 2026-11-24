@@ -102,8 +102,9 @@ export const shortcuts = {
   toggleOverview: "Shift+O",
   // The next tab of the lesson (.gp or PDF), each with its own sync
   nextTab: "Alt+T",
-  // Stems from files: the next lane alone (solo, backing, solo…), like a DAW's exclusive solo
-  cycleStemSolo: "X",
+  // Stems from files: the next choice of «Listen» (all, one lane alone…). No key by default
+  // (the user found the X key unclear): free to give it a key or a MIDI pedal in Settings → Keys
+  cycleStemSolo: "",
   // The lessons of a course in their order, like a playlist's previous / next
   previousLesson: "Alt+ArrowLeft",
   nextLesson: "Alt+ArrowRight",

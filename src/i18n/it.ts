@@ -687,8 +687,6 @@ export const it = {
     listenAll: "Tutte",
     listenAllHint: "Si sentono tutte le tracce insieme",
     listenOneHint: (name: string) => `Si sente solo «${name}»`,
-    cycleHint:
-      "X: passa alla scelta successiva di «Ascolta» (Tutte → prima traccia → seconda… → Tutte), senza fermare la musica",
     add: "Traccia",
     addHint: "Aggiungi altri file come stems di questo brano",
     close: "Chiudi stems",
@@ -1581,7 +1579,7 @@ export const it = {
     toggleHome: "Home",
     toggleScorePaper: "Spartito: carta chiara / scura",
     toggleOverview: "Panoramica: mostra / nascondi",
-    cycleStemSolo: "Stems: traccia successiva da sola",
+    cycleStemSolo: "Stems: passa alla scelta successiva di «Ascolta»",
     nextTab: "Tab successiva della lezione",
     previousLesson: "Lezione precedente del corso",
     nextLesson: "Lezione successiva del corso",

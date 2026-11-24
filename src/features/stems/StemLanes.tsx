@@ -2,7 +2,6 @@ import { AlertTriangle, Layers, Loader2, Plus, Trash2, X } from "lucide-react";
 import { ContextMenu } from "radix-ui";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
-import { Kbd } from "@/components/ui/Kbd";
 import { Knob } from "@/components/ui/Knob";
 import { MuteKey } from "@/components/ui/MuteKey";
 import { menuContent, menuItem, menuSeparator } from "@/components/ui/menu";
@@ -186,7 +185,7 @@ function LaneLevel({ index }: { index: number }) {
 
 /**
  * «Listen»: which lanes are heard, as a row of keys (like an A/B switch): «All», or one lane
- * alone. The lit key is what you hear; X goes to the next one without stopping the music.
+ * alone. The lit key is what you hear; a click switches without stopping the music.
  */
 function ListenSwitch() {
   const lanes = useFileStemsStore((s) => s.lanes);
@@ -242,18 +241,13 @@ function ListenSwitch() {
           </button>
         ))}
       </fieldset>
-      <Tooltip label={f.cycleHint} shortcut="cycleStemSolo">
-        <span className="cursor-default">
-          <Kbd shortcut="cycleStemSolo" />
-        </span>
-      </Tooltip>
     </div>
   );
 }
 
 /**
- * The stems in the waveform panel title: how many lanes, «Listen» (all or one lane alone, X to
- * go on), add a file, close the stems. While files are lined up, a spinner.
+ * The stems in the waveform panel title: how many lanes, «Listen» (all or one lane alone), add a
+ * file, close the stems. While files are lined up, a spinner.
  */
 export function StemsBar() {
   const lanes = useFileStemsStore((s) => s.lanes.length);
