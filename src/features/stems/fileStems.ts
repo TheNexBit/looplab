@@ -4,7 +4,7 @@ import { onProjectApplied } from "@/features/markers/projectSync";
 import { t } from "@/i18n";
 import { commands } from "@/lib/bindings";
 import { fileNameOf, samePath } from "@/lib/format";
-import { savedLanes, useFileStemsStore } from "@/stores/fileStems";
+import { projectStems, useFileStemsStore } from "@/stores/fileStems";
 import { useLessonsStore } from "@/stores/lessons";
 import { usePlayerStore } from "@/stores/player";
 
@@ -29,6 +29,18 @@ export function orderStems(paths: readonly string[]): string[] {
   );
   const main = sorted.find((path) => !BACKING_WORDS.test(fileNameOf(path))) ?? sorted[0];
   return main ? [main, ...sorted.filter((path) => path !== main)] : [];
+}
+
+/** Resolves once no stems are being opened (a project restoring its own lanes). */
+function stemsIdle(): Promise<void> {
+  if (!useFileStemsStore.getState().loading) return Promise.resolve();
+  return new Promise((resolve) => {
+    const stop = useFileStemsStore.subscribe((state) => {
+      if (state.loading) return;
+      stop();
+      resolve();
+    });
+  });
 }
 
 /** Opens `path` (unless it is open) and waits until its project has been applied. */
@@ -69,9 +81,11 @@ export async function openAsStems(
     openMain ? openMain(main) : usePlayerStore.getState().open(main),
   );
   if (!opened || others.length === 0) return;
+  // The project may be opening its own saved stems right now: wait, so their shift and mix
+  // (levels, mute, solo) are kept and never reset to 100%
+  await stemsIdle();
   const stems = useFileStemsStore.getState();
-  // Lanes already open for this track keep their shift and mix
-  await stems.open(main, [main, ...others], savedLanes(stems.lanes));
+  await stems.open(main, [main, ...others], projectStems(stems));
 }
 
 /** «Open as stems…»: several files picked in the dialog. */

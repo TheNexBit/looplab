@@ -37,6 +37,7 @@ describe("stems from files", () => {
       "Solo (mp4)",
       "Backing",
     ]);
-    expect(laneLabels(["a/x/Take.wav", "b/Take.wav"])).toEqual(["Take (wav) 1", "Take (wav) 2"]);
+    expect(laneLabels(["a/x/Take.wav", "b/Take.wav"])).toEqual(["Take 1", "Take 2"]);
+    expect(laneLabels([])).toEqual([]);
   });
 });

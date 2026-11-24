@@ -112,6 +112,7 @@ const extensionOf = (path: string) => {
  * Two lanes left with the same name get their file type, then their number («Solo (mp3)»).
  */
 export function laneLabels(paths: readonly string[]): string[] {
+  if (paths.length === 0) return [];
   const titles = paths.map(titleOf);
   const words = titles.map((title) => title.split(/[\s_-]+/).filter(Boolean));
   let common = 0;
@@ -125,11 +126,13 @@ export function laneLabels(paths: readonly string[]): string[] {
   const labels = titles.map((title, i) => (words[i] ?? []).slice(common).join(" ") || title);
   const twice = (list: string[], i: number) =>
     list.filter((label) => label.toLowerCase() === list[i]?.toLowerCase()).length > 1;
-  const typed = labels.map((label, i) =>
-    twice(labels, i) && extensionOf(paths[i] ?? "")
-      ? `${label} (${extensionOf(paths[i] ?? "")})`
-      : label,
-  );
+  // The file type tells apart only lanes of the same name and different types
+  const sameName = (i: number) =>
+    labels.flatMap((label, j) => (label.toLowerCase() === labels[i]?.toLowerCase() ? [j] : []));
+  const typed = labels.map((label, i) => {
+    const types = new Set(sameName(i).map((j) => extensionOf(paths[j] ?? "")));
+    return twice(labels, i) && types.size > 1 ? `${label} (${extensionOf(paths[i] ?? "")})` : label;
+  });
   return typed.map((label, i) => (twice(typed, i) ? `${label} ${i + 1}` : label));
 }
 

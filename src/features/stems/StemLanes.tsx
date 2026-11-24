@@ -22,7 +22,7 @@ import { pickAndAddStems } from "./fileStems";
 const f = t.fileStems;
 const store = () => useFileStemsStore.getState();
 
-/** With more lanes than this, each is low: name and keys on one row, no knob. */
+/** With more lanes than this, each is low: name, keys and knob on one row. */
 export const COMPACT_LANES = 3;
 
 /** The colour of lane `index`: the section palette, as the lanes of a DAW. */
@@ -67,7 +67,13 @@ export function StemLaneHeads({ ruler }: { ruler: number }) {
   const labels = laneLabels(lanes.map((lane) => lane.path));
   const compact = lanes.length > COMPACT_LANES;
   return (
-    <div className="well flex w-44 shrink-0 flex-col overflow-hidden rounded-panel">
+    <div
+      className={cn(
+        "well flex shrink-0 flex-col overflow-hidden rounded-panel",
+        // One row per lane with name, S, M and the level knob: a little wider
+        compact ? "w-64" : "w-44",
+      )}
+    >
       {/* Level with the ruler of the waveform beside it */}
       <div
         aria-hidden
@@ -115,6 +121,7 @@ export function StemLaneHeads({ ruler }: { ruler: number }) {
                   {name}
                   {warning}
                   {keys}
+                  <LaneLevel index={index} />
                 </>
               ) : (
                 <>
@@ -191,7 +198,7 @@ function LaneMenu({ index, children }: { index: number; children: ReactNode }) {
   );
 }
 
-/** The lane's level: a small knob (only with few lanes: they are tall enough). */
+/** The lane's level: a small knob, on every lane (never hidden for want of room). */
 function LaneLevel({ index }: { index: number }) {
   const level = useFileStemsStore((s) => s.lanes[index]?.level ?? 1);
   const mute = useFileStemsStore((s) => s.lanes[index]?.mute ?? false);
