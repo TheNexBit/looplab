@@ -2,7 +2,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { autoLinkScore } from "@/features/lessons/openLesson";
 import { resetTempoAnalysis } from "@/features/practice/tempoAnalysis";
 import { commands, type Project_Serialize } from "@/lib/bindings";
+import { samePath } from "@/lib/format";
 import { useEqStore } from "@/stores/eq";
+import { projectStems, useFileStemsStore } from "@/stores/fileStems";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
@@ -40,6 +42,7 @@ function snapshot(): ProjectData {
     eq,
     channels,
     stemMix: useStemsStore.getState().channels,
+    stemFiles: projectStems(useFileStemsStore.getState()),
     score: useScoreStore.getState().link,
     otherScores: useScoreStore.getState().shelf,
   };
@@ -81,8 +84,44 @@ function apply(data: ProjectData) {
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
   useStemsStore.getState().replace(data.stemMix);
+  restoreStemFiles(data.stemFiles);
   useScoreStore.getState().restore(data.score, data.otherScores);
   resume(data.position);
+}
+
+/**
+ * The stems from files of the track project: opened again (decoded and lined up only once:
+ * the shifts are saved), or only their mix when they are already open (a project read again).
+ */
+function restoreStemFiles(saved: ProjectData["stemFiles"]) {
+  const track = usePlayerStore.getState().track?.path;
+  const stems = useFileStemsStore.getState();
+  if (!track) return;
+  if (stems.track && !samePath(stems.track, track)) stems.forget();
+  if (saved.length < 2) {
+    const now = useFileStemsStore.getState();
+    if (now.lanes.length > 0 || now.missing.length > 0) void stems.close();
+    return;
+  }
+  // The track's own lane is the open file even if the project found it moved or copied (the
+  // project follows a file by its content): never its old path as one more lane
+  const paths = [track, ...saved.slice(1).map((lane) => lane.path)];
+  const open = useFileStemsStore.getState();
+  const same =
+    open.lanes.length === paths.length &&
+    open.lanes.every((lane, i) => samePath(lane.path, paths[i]));
+  if (same) {
+    useFileStemsStore.setState({
+      lanes: open.lanes.map((lane, i) => ({
+        ...lane,
+        level: saved[i]?.level ?? lane.level,
+        mute: saved[i]?.mute ?? lane.mute,
+        solo: saved[i]?.solo ?? lane.solo,
+      })),
+    });
+    return;
+  }
+  void open.open(track, paths, saved);
 }
 
 /** Back to where the playhead was when the track was last closed (unless near its end). */
@@ -273,6 +312,9 @@ export function syncProject(): () => void {
     }),
     useStemsStore.subscribe((state, previous) => {
       if (state.channels !== previous.channels) schedule();
+    }),
+    useFileStemsStore.subscribe((state, previous) => {
+      if (state.lanes !== previous.lanes || state.missing !== previous.missing) schedule();
     }),
     useScoreStore.subscribe((state, previous) => {
       if (state.link !== previous.link || state.shelf !== previous.shelf) schedule();

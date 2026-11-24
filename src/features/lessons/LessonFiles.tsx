@@ -1,4 +1,5 @@
-import { FileAudio, FileMusic, FileText, FileVideo, Music, Play } from "lucide-react";
+import { FileAudio, FileMusic, FileText, FileVideo, Layers, Music, Play } from "lucide-react";
+import { openAsStems } from "@/features/stems/fileStems";
 import { t } from "@/i18n";
 import type { Lesson_Serialize, LessonFile } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
@@ -48,6 +49,26 @@ export function BackingKey({ lesson, disabled }: { lesson: Lesson; disabled: boo
     >
       <Music className="size-3.5" />
       {l.roleBacking}
+    </button>
+  );
+}
+
+/** Opens the lesson with its backing track as stems: one lane under the other, X to switch. */
+export function StemsKey({ lesson, disabled }: { lesson: Lesson; disabled: boolean }) {
+  const backing = backingOf(lesson);
+  const main = lesson.main;
+  // A lesson whose only file is its backing has nothing to stack
+  if (!backing || !main || samePath(main, backing.path)) return null;
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      title={t.fileStems.lessonKeyHint}
+      onClick={() => void openAsStems([main, backing.path], (path) => openLesson(lesson, path))}
+      className="hw inline-flex h-6 shrink-0 items-center gap-1 rounded-control px-2 text-[11px] text-fg-muted transition-[filter] hover:text-fg hover:brightness-125 disabled:opacity-40"
+    >
+      <Layers className="size-3.5" />
+      {t.fileStems.lessonKey}
     </button>
   );
 }

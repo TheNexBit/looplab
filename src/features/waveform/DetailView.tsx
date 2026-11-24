@@ -3,10 +3,13 @@ import { CurrentMemo } from "@/features/markers/CurrentMemo";
 import { MarkerFlags } from "@/features/markers/MarkerFlags";
 import { TempoFlags } from "@/features/markers/TempoFlags";
 import { SyncFlags } from "@/features/score/SyncFlags";
+import { StemLaneHeads } from "@/features/stems/StemLanes";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { laneHeard, useFileStemsStore } from "@/stores/fileStems";
 import { useLoopStore } from "@/stores/loop";
+import { SECTION_COLORS } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { currentTempoMap, usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
@@ -42,6 +45,8 @@ export function DetailView() {
   const peaks = usePlayerStore((s) => s.peaks);
   const playheadWidth = useSettingsStore((s) => s.playheadWidth);
   const centerLine = useSettingsStore((s) => s.centerLine && s.waveStyle !== "half");
+  // Stems from files: one band per lane (the centre line would cross them)
+  const stemLanes = useFileStemsStore((s) => s.lanes.length > 1);
   const containerRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<HTMLDivElement>(null);
@@ -74,10 +79,27 @@ export function DetailView() {
     });
     const beats = settings.showGrid ? currentTempoMap() : null;
     if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
-    drawWaveform(ctx, peaks, view, themeColor("wave"), {
-      style: settings.waveStyle,
-      zoom: settings.waveZoom,
-    });
+    const look = { style: settings.waveStyle, zoom: settings.waveZoom };
+    const { lanes } = useFileStemsStore.getState();
+    if (lanes.length > 1) {
+      // Stems from files: one band per lane, in its colour while heard, grey when not
+      const band = (height - view.top) / lanes.length;
+      for (const [index, lane] of lanes.entries()) {
+        const lanePeaks = index === 0 ? peaks : lane.peaks;
+        const top = view.top + index * band;
+        if (index > 0) {
+          ctx.fillStyle = themeColor("border");
+          ctx.fillRect(0, Math.round(top), width, Math.max(1, dpr));
+        }
+        if (!lanePeaks) continue;
+        const color = laneHeard(lanes, index)
+          ? themeColor(`section-${index % SECTION_COLORS}`)
+          : themeColor("fg-subtle");
+        drawWaveform(ctx, lanePeaks, { ...view, top, height: top + band }, color, look);
+      }
+    } else {
+      drawWaveform(ctx, peaks, view, themeColor("wave"), look);
+    }
     if (beats) {
       drawBeatGrid(ctx, view, beats, dpr, "bars", {
         line: themeColor("bar"),
@@ -99,12 +121,16 @@ export function DetailView() {
     if (peaks) dirty.current = true;
   }, [peaks]);
 
-  // A new tempo, first beat or grid switch: redraw the grid
+  // A new tempo, first beat or grid switch, lanes opened or mixed: redraw
   useEffect(() => {
     const redraw = () => {
       dirty.current = true;
     };
-    const stops = [usePracticeStore.subscribe(redraw), useSettingsStore.subscribe(redraw)];
+    const stops = [
+      usePracticeStore.subscribe(redraw),
+      useSettingsStore.subscribe(redraw),
+      useFileStemsStore.subscribe(redraw),
+    ];
     return () => {
       for (const stop of stops) stop();
     };
@@ -170,76 +196,80 @@ export function DetailView() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="well relative min-h-0 flex-1 cursor-pointer overflow-hidden rounded-panel"
-    >
-      {/* Ruler strip and centre line, drawn behind the transparent canvas */}
+    // Stems from files: the lane heads stand in their own column, the waveform stays free
+    <div className="flex min-h-0 flex-1 gap-1">
+      <StemLaneHeads ruler={RULER_CSS} />
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
-        style={{ height: RULER_CSS }}
-      />
-      {centerLine && (
+        ref={containerRef}
+        className="well relative min-h-0 min-w-0 flex-1 cursor-pointer overflow-hidden rounded-panel"
+      >
+        {/* Ruler strip and centre line, drawn behind the transparent canvas */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
-          style={{ top: RULER_CSS }}
-        >
-          <div className="h-px w-full bg-grid" />
-        </div>
-      )}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 size-full"
-        aria-label={t.waveform.detail}
-      />
-      <LoopOverlay ref={loopRef} />
-      <LoopOverlay ref={braceRef} variant="brace" height={RULER_CSS - 4} />
-      <MarkerFlags area={containerRef} top={RULER_CSS} />
-      <TempoFlags area={containerRef} />
-      <SyncFlags area={containerRef} />
-      <CurrentMemo top={RULER_CSS} />
-      <div
-        ref={shadeRef}
-        aria-hidden
-        className="pointer-events-none invisible absolute bottom-0 left-0 bg-cue/15 will-change-transform"
-        style={{ top: RULER_CSS }}
-      />
-      <div
-        ref={cueRef}
-        aria-hidden
-        title={t.transport.cue}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 will-change-transform"
-      >
-        {/* Dashed full-height line, like Reaper's edit cursor: the playhead is the solid one */}
+          className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
+          style={{ height: RULER_CSS }}
+        />
+        {centerLine && !stemLanes && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
+            style={{ top: RULER_CSS }}
+          >
+            <div className="h-px w-full bg-grid" />
+          </div>
+        )}
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 size-full"
+          aria-label={t.waveform.detail}
+        />
+        <LoopOverlay ref={loopRef} />
+        <LoopOverlay ref={braceRef} variant="brace" height={RULER_CSS - 4} />
+        <MarkerFlags area={containerRef} top={RULER_CSS} />
+        <TempoFlags area={containerRef} />
+        <SyncFlags area={containerRef} />
+        <CurrentMemo top={RULER_CSS} />
         <div
-          className="absolute bottom-0 -left-px border-l-2 border-dashed border-cue opacity-80"
+          ref={shadeRef}
+          aria-hidden
+          className="pointer-events-none invisible absolute bottom-0 left-0 bg-cue/15 will-change-transform"
           style={{ top: RULER_CSS }}
         />
-        {/* Flag at the foot of the ruler, outlined so it stands out on any waveform */}
-        <svg
+        <div
+          ref={cueRef}
           aria-hidden
-          width="14"
-          height="11"
-          viewBox="0 0 14 11"
-          className="absolute -translate-x-1/2 overflow-visible"
-          style={{ top: RULER_CSS - 10 }}
+          title={t.transport.cue}
+          className="pointer-events-none absolute top-0 bottom-0 left-0 will-change-transform"
         >
-          <path
-            d="M1 1 H13 L7 10 Z"
-            className="fill-cue stroke-edge"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
+          {/* Dashed full-height line, like Reaper's edit cursor: the playhead is the solid one */}
+          <div
+            className="absolute bottom-0 -left-px border-l-2 border-dashed border-cue opacity-80"
+            style={{ top: RULER_CSS }}
           />
-        </svg>
-      </div>
-      <div
-        ref={playheadRef}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
-        style={{ width: playheadWidth }}
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
+          {/* Flag at the foot of the ruler, outlined so it stands out on any waveform */}
+          <svg
+            aria-hidden
+            width="14"
+            height="11"
+            viewBox="0 0 14 11"
+            className="absolute -translate-x-1/2 overflow-visible"
+            style={{ top: RULER_CSS - 10 }}
+          >
+            <path
+              d="M1 1 H13 L7 10 Z"
+              className="fill-cue stroke-edge"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div
+          ref={playheadRef}
+          className="pointer-events-none absolute top-0 bottom-0 left-0 bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
+          style={{ width: playheadWidth }}
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
+        </div>
       </div>
     </div>
   );

@@ -49,7 +49,7 @@ import { cn } from "@/lib/cn";
 import { fileNameOf, formatAgo } from "@/lib/format";
 import { useLessonsStore } from "@/stores/lessons";
 import { useSettingsStore } from "@/stores/settings";
-import { BackingKey, backingOf, LessonFiles, toggleFiles } from "./LessonFiles";
+import { BackingKey, backingOf, LessonFiles, StemsKey, toggleFiles } from "./LessonFiles";
 import { MarkItems } from "./LessonNav";
 import { progressOf, toggleDone } from "./lessonOrder";
 import { openLesson } from "./openLesson";
@@ -338,6 +338,7 @@ function LessonRow({
             </span>
           </button>
           <BackingKey lesson={lesson} disabled={missing} />
+          <StemsKey lesson={lesson} disabled={missing} />
         </div>
       </LessonMenu>
       {filesOpen && <LessonFiles lesson={lesson} missing={missing} />}

@@ -45,7 +45,7 @@ pub use metronome::{MetronomeSettings, Segment, Sequence};
 pub use pattern::{BarPattern, BeatState, ClickKind};
 pub use pcm::Pcm;
 pub use peaks::Peaks;
-pub use stems::{MAX_STEMS, StemLevels, Stems};
+pub use stems::{MAX_STEMS, StemLevels, Stems, shifted};
 pub use synth::{Note, SynthSettings};
 pub use tempo_map::{TempoMap, TempoSegment};
 pub use tone::ToneSettings;

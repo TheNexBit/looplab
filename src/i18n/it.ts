@@ -670,6 +670,44 @@ export const it = {
     collapse: "Comprimi",
     expand: "Espandi",
   },
+  fileStems: {
+    title: (lanes: number) => `Stems · ${lanes}`,
+    loading: "Allineo le stems…",
+    failed: "Stems non aperte",
+    unreadable: "Non si riesce a leggere.",
+    leftOut: (name: string, why: string) => `«${name}» lasciato fuori: ${why}`,
+    tooMany: (most: number, left: number) =>
+      `Al massimo ${most} file oltre al brano: ${left === 1 ? "1 lasciato fuori" : `${left} lasciati fuori`}`,
+    dismissNotice: "Chiudi l'avviso",
+    solo: "Solo",
+    soloHint: "Solo: accendi S su una o più tracce per sentire solo quelle",
+    mute: "Silenzia questa traccia",
+    level: "Volume della traccia",
+    notLinedUp:
+      "Non sono riuscito ad allinearla dal suono: parte insieme al brano. Se è sfasata, usa un'altra registrazione della stessa esecuzione",
+    removeLane: "Togli dalle stems (il file resta)",
+    levelReset: "Volume al 100%",
+    headRightClick: "solo, mute, volume, togli dalle stems",
+    listen: "Ascolta",
+    listenAll: "Tutte",
+    listenAllHint: "Si sentono tutte le tracce insieme",
+    listenOneHint: (name: string) => `Si sente solo «${name}»`,
+    add: "Traccia",
+    addHint: "Aggiungi altri file come stems di questo brano",
+    close: "Chiudi stems",
+    closeHint:
+      "Chiude le stems: resta solo il brano principale. Per riaprirle: tasto «Stems» della lezione, «Apri come stems…» nel menu ▾ di Apri, o trascina i file sulla finestra",
+    pickTitle: "Scegli i file da aprire insieme come stems",
+    addTitle: "Scegli i file da aggiungere come stems",
+    openAsStems: "Apri come stems…",
+    openAsStemsHint:
+      "Apri più file insieme (es. il solo e la sua base): una traccia sotto l'altra, a tempo, con Solo e Mute",
+    lessonKey: "Stems",
+    lessonKeyHint:
+      "Apri la lezione con la sua base come stems: una traccia sotto l'altra, «Ascolta» per scegliere cosa sentire",
+    separatedOff:
+      "Ci sono stems da file aperte: le tracce separate di questo brano non si usano finché non le chiudi.",
+  },
   setlist: {
     locale: "it-IT",
     homeTabs: "Cosa mostra la Home",
@@ -1546,6 +1584,7 @@ export const it = {
     toggleHome: "Home",
     toggleScorePaper: "Spartito: carta chiara / scura",
     toggleOverview: "Panoramica: mostra / nascondi",
+    cycleStemSolo: "Stems: passa alla scelta successiva di «Ascolta»",
     nextTab: "Tab successiva della lezione",
     previousLesson: "Lezione precedente del corso",
     nextLesson: "Lezione successiva del corso",

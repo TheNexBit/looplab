@@ -1,5 +1,6 @@
 import { PRESETS } from "@/features/eq/presets";
 import { SPEED_PRESETS } from "@/features/player/limits";
+import { pickAndOpenStems } from "@/features/stems/fileStems";
 import { detachVideo, dockVideo } from "@/features/video/detach";
 import { t } from "@/i18n";
 import { UI_SCALE } from "@/lib/appearance";
@@ -79,6 +80,12 @@ export function buildActions(): Action[] {
       run: () => ui.setSidePanelTab("sections"),
     },
     { id: "tab-eq", label: t.sidePanel.eq, group: g.view, run: () => ui.setSidePanelTab("eq") },
+    {
+      id: "open-as-stems",
+      label: t.fileStems.openAsStems,
+      group: g.app,
+      run: () => void pickAndOpenStems(),
+    },
     {
       id: "tab-setlist",
       label: t.sidePanel.setlist,

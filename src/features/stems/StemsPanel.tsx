@@ -7,6 +7,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { formatPercent } from "@/lib/format";
+import { useFileStemsStore } from "@/stores/fileStems";
 import { usePlayerStore } from "@/stores/player";
 import { channelOf, STEM_LEVEL, STEM_ORDER, useStemsStore } from "@/stores/stems";
 import { cancelSeparation, exportStems, separateStems } from "./actions";
@@ -77,6 +78,22 @@ export function StemsPanel() {
   const touched = useStemsStore((state) =>
     state.channels.some((c) => c.level !== STEM_LEVEL.default || c.mute || c.solo),
   );
+  const fileStems = useFileStemsStore((state) => state.lanes.length > 1);
+  if (fileStems) {
+    return (
+      <div className="flex h-full flex-col gap-3 overflow-y-auto p-3">
+        <p className="panel-label">{s.title}</p>
+        <p className="text-xs leading-relaxed text-fg-muted">{t.fileStems.separatedOff}</p>
+        <Button
+          variant="hardware"
+          className="self-start"
+          onClick={() => void useFileStemsStore.getState().close()}
+        >
+          {t.fileStems.close}
+        </Button>
+      </div>
+    );
+  }
   const ordered = names
     ? [
         ...STEM_ORDER.filter((n) => names.includes(n)),

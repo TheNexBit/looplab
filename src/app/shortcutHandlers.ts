@@ -11,6 +11,7 @@ import { isTapping, tapSync } from "@/features/score/syncActions";
 import { nextTab } from "@/features/score/TabMenu";
 import { playOrPause, useLiveStore } from "@/features/setlist/live";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
+import { useFileStemsStore } from "@/stores/fileStems";
 import { useHistoryStore } from "@/stores/history";
 import { useLessonsStore } from "@/stores/lessons";
 import {
@@ -189,6 +190,7 @@ export const shortcutHandlers: Required<ShortcutHandlers> = {
     update({ scoreDark: !scoreDark });
   },
   nextTab: () => void nextTab(),
+  cycleStemSolo: () => useFileStemsStore.getState().cycleSolo(),
   previousLesson: () =>
     useLiveStore.getState().active ? useLiveStore.getState().previous() : void stepLesson(-1),
   nextLesson: () =>

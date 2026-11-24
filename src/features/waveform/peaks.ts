@@ -60,3 +60,11 @@ const GET_PEAKS = "get_peaks";
 export async function fetchPeaks(): Promise<Peaks> {
   return parsePeaks(await invoke<ArrayBuffer>(GET_PEAKS));
 }
+
+/** Must match `GET_STEM_PEAKS` in `src-tauri/src/commands/waveform.rs`. */
+const GET_STEM_PEAKS = "get_stem_peaks";
+
+/** Waveform of lane `index` of the stems from files (already moved onto the track's time). */
+export async function fetchStemPeaks(index: number): Promise<Peaks> {
+  return parsePeaks(await invoke<ArrayBuffer>(GET_STEM_PEAKS, { index }));
+}

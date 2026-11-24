@@ -1,5 +1,6 @@
 import { commands, type SoundsRequest } from "@/lib/bindings";
 import { eqToRust, useEqStore } from "@/stores/eq";
+import { laneGains, onStemsClosed, useFileStemsStore } from "@/stores/fileStems";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
@@ -73,10 +74,21 @@ export function syncWithEngine(): () => void {
   const sendChannels = sender(commands.setChannelMode);
   const sendClick = sender(commands.setClick);
   const sendTrackVolume = sender(commands.setTrackVolume);
-  const sendStemLevels = sender(commands.setStemLevels);
+  const sendStemLevels = sender((mix: { levels: number[]; original: number | null }) =>
+    commands.setStemLevels(mix.levels, mix.original),
+  );
   const pushStems = (force = false) => {
+    const { lanes } = useFileStemsStore.getState();
+    if (lanes.length > 1) {
+      // Stems from files: the open file lane is the mix `original`, the others follow
+      const [own = 1, ...others] = laneGains(lanes);
+      sendStemLevels({ levels: others, original: own }, force);
+      return;
+    }
     const { names, channels } = useStemsStore.getState();
-    if (names) sendStemLevels(stemGains(names, channels), force);
+    if (names) sendStemLevels({ levels: stemGains(names, channels), original: null }, force);
+    // Stems from files just closed and no separated tracks: the track alone, at full level
+    else sendStemLevels({ levels: [], original: null }, force);
   };
   /** The separated tracks of a song just opened, if it was separated before */
   const loadStems = async (path: string) => {
@@ -89,6 +101,11 @@ export function syncWithEngine(): () => void {
       pushStems(true);
     }
   };
+  // Stems from files closed by hand: the song's separated tracks (if any) come back at once
+  onStemsClosed(() => {
+    const path = usePlayerStore.getState().track?.path;
+    if (path) void loadStems(path);
+  });
   const pushTrackVolume = (force = false) => {
     const { trackVolume, trackMuted } = useSettingsStore.getState();
     sendTrackVolume(trackMuted ? 0 : trackVolume, force);
@@ -132,6 +149,10 @@ export function syncWithEngine(): () => void {
     }),
     useEqStore.subscribe(() => pushAll(false)),
     useStemsStore.subscribe(() => pushStems()),
+    useFileStemsStore.subscribe((state, previous) => {
+      // Opened, closed or mixed: the engine gets the levels (at once after opening)
+      if (state.lanes !== previous.lanes) pushStems(state.lanes.length !== previous.lanes.length);
+    }),
     usePlayerStore.subscribe((state, previous) => {
       if (state.track && state.track !== previous.track) {
         pushAll(true);

@@ -5,6 +5,7 @@ import {
   FileMusic,
   FolderOpen,
   House,
+  Layers,
   Metronome,
   PanelRight,
   Piano,
@@ -18,12 +19,13 @@ import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 import { FitBar, useCompact } from "@/components/ui/FitBar";
 import { Kbd } from "@/components/ui/Kbd";
-import { menuContent, menuItem, menuLabel } from "@/components/ui/menu";
+import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { LessonNav } from "@/features/lessons/LessonNav";
 import { pickAndOpenFile } from "@/features/library/pickFile";
 import { useLiveStore } from "@/features/setlist/live";
 import { SetNav } from "@/features/setlist/SetNav";
+import { pickAndOpenStems } from "@/features/stems/fileStems";
 import { t } from "@/i18n";
 import { useHistoryStore } from "@/stores/history";
 import { useLessonsStore } from "@/stores/lessons";
@@ -77,6 +79,15 @@ function RecentMenu() {
       </Tooltip>
       <DropdownMenu.Portal>
         <DropdownMenu.Content align="start" sideOffset={6} className={`${menuContent} max-w-96`}>
+          <DropdownMenu.Item
+            className={menuItem}
+            title={t.fileStems.openAsStemsHint}
+            onSelect={() => void pickAndOpenStems()}
+          >
+            <Layers className="size-4" />
+            {t.fileStems.openAsStems}
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator className={menuSeparator} />
           <DropdownMenu.Label className={menuLabel}>{t.recent.title}</DropdownMenu.Label>
           {files.length === 0 && (
             <DropdownMenu.Item disabled className={menuItem}>

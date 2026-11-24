@@ -11,10 +11,14 @@ use super::{AppError, ErrorKind};
 use crate::state::AppState;
 
 pub const GET_PEAKS: &str = "get_peaks";
+/// Waveform of one lane of the stems from files (`file_stems.rs`); `GET_STEM_PEAKS` in peaks.ts.
+pub const GET_STEM_PEAKS: &str = "get_stem_peaks";
+/// The commands that answer raw bytes, routed to `handler` by `main.rs`.
+pub const BINARY: &[&str] = &[GET_PEAKS, GET_STEM_PEAKS];
 
-/// Tauri handler for the binary commands of this module.
+/// Tauri handler for the binary commands (this module's and the stem lanes').
 pub fn handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static {
-    tauri::generate_handler![get_peaks]
+    tauri::generate_handler![get_peaks, super::file_stems::get_stem_peaks]
 }
 
 #[tauri::command]

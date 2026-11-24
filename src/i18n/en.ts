@@ -667,6 +667,44 @@ export const en = {
     collapse: "Collapse",
     expand: "Expand",
   },
+  fileStems: {
+    title: (lanes: number) => `Stems · ${lanes}`,
+    loading: "Lining up the stems…",
+    failed: "Stems not opened",
+    unreadable: "It cannot be read.",
+    leftOut: (name: string, why: string) => `«${name}» left out: ${why}`,
+    tooMany: (most: number, left: number) =>
+      `At most ${most} files besides the track: ${left === 1 ? "1 left out" : `${left} left out`}`,
+    dismissNotice: "Close the notice",
+    solo: "Solo",
+    soloHint: "Solo: turn S on for one or more tracks to hear only those",
+    mute: "Mute this track",
+    level: "Track level",
+    notLinedUp:
+      "It could not be lined up from its sound: it starts with the track. If it is off, use another recording of the same performance",
+    removeLane: "Remove from the stems (the file stays)",
+    levelReset: "Level back to 100%",
+    headRightClick: "solo, mute, level, remove from the stems",
+    listen: "Listen",
+    listenAll: "All",
+    listenAllHint: "Every track is heard together",
+    listenOneHint: (name: string) => `Only «${name}» is heard`,
+    add: "Track",
+    addHint: "Add more files as stems of this track",
+    close: "Close stems",
+    closeHint:
+      "Closes the stems: only the main track stays. To open them again: the lesson's «Stems» key, «Open as stems…» in the Open ▾ menu, or drop the files on the window",
+    pickTitle: "Pick the files to open together as stems",
+    addTitle: "Pick the files to add as stems",
+    openAsStems: "Open as stems…",
+    openAsStemsHint:
+      "Open several files together (a solo and its backing track): one track under the other, in time, with Solo and Mute",
+    lessonKey: "Stems",
+    lessonKeyHint:
+      "Open the lesson with its backing as stems: one track under the other, «Listen» to pick what you hear",
+    separatedOff:
+      "Stems from files are open: the separated tracks of this song are not used until you close them.",
+  },
   setlist: {
     locale: "en-GB",
     homeTabs: "What the Home shows",
@@ -1536,6 +1574,7 @@ export const en = {
     toggleHome: "Home",
     toggleScorePaper: "Score: light / dark paper",
     toggleOverview: "Track overview: show / hide",
+    cycleStemSolo: "Stems: next choice of «Listen»",
     nextTab: "Next tab of the lesson",
     previousLesson: "Previous lesson of the course",
     nextLesson: "Next lesson of the course",

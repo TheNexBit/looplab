@@ -23,6 +23,7 @@ import { useLiveStore } from "@/features/setlist/live";
 import { LeftSetNotice } from "@/features/setlist/SetNav";
 import { StageView } from "@/features/setlist/StageView";
 import { dropFilesOnSetlist, hoverFilesOver } from "@/features/setlist/setlistDrop";
+import { dropAsStems } from "@/features/stems/fileStems";
 import { feedDetachedVideo } from "@/features/video/detach";
 import { LessonLayout } from "@/features/video/LessonLayout";
 import { VideoLayout } from "@/features/video/VideoLayout";
@@ -49,9 +50,16 @@ import { SidePanel } from "./SidePanel";
 import { shortcutHandlers } from "./shortcutHandlers";
 import { TopBar } from "./TopBar";
 
-/** Files dropped on a setlist join it; anywhere else they open (or link a tab) as before. */
+/**
+ * Files dropped on a setlist join it; several files or a folder open as stems; one file
+ * opens (or links a tab) as before.
+ */
 function dropFiles(paths: string[], position: { x: number; y: number } | null) {
-  if (!dropFilesOnSetlist(paths, position)) openDroppedFiles(paths);
+  if (dropFilesOnSetlist(paths, position)) return;
+  // Two or more playable files, or a folder of them: stems, like Song Master
+  void dropAsStems(paths).then((asStems) => {
+    if (!asStems) openDroppedFiles(paths);
+  });
 }
 
 export function App() {

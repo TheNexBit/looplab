@@ -1,38 +1,39 @@
 # Roadmap
 
-| #   | Fase                       | Stato                      |
-| --- | -------------------------- | -------------------------- |
-| 1   | Fondamenta                 | ✅ completata              |
-| 2   | Cuore audio                | ✅ completata              |
-| 3   | Velocità, tonalità e loop  | ✅ completata              |
-| 4   | Marker e sezioni           | ✅ collaudata (19/11/2026) |
-| 5   | EQ e isolamento base       | ✅ completata — da provare |
-| 6   | Video                      | ✅ completata — da provare |
-| 7   | Rifinitura e distribuzione | ✅ completata — da provare |
-| 8   | Strumenti di pratica       | ✅ completata              |
-| 9   | Comodità mentre suoni      | ✅ completata              |
-| 10  | Esportare e vedere le note | ✅ completata — da provare |
-| 11  | Scorciatoie per lo studio  | ✅ completata              |
-| 12  | Versione portable          | ✅ completata              |
-| 13  | Finestra mini              | ✅ completata              |
-| 14  | Appunti su loop e sezioni  | ✅ completata              |
-| 15  | Sezioni come region        | ✅ completata              |
-| 16  | Nota di riferimento        | ✅ completata              |
-| M   | Metronomo integrato        | ✅ completata              |
-| 17  | Mappa del tempo            | ✅ da perfezionare         |
-| 18  | Separazione strumenti      | ✅ completata              |
-| 19  | Archivio unico e backup    | ✅ completata              |
-| 20  | Esporta tracce separate    | ✅ completata              |
-| 21  | Tab Guitar Pro             | ✅ provata (19/11/2026)    |
-| 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)    |
-| 23  | Spartiti PDF               | ✅ provata (19/11/2026)    |
-| 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
-| 25  | Lezione: video e tab       | ✅ provata (21/11/2026)    |
-| 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)    |
-| 27  | Home delle lezioni         | ✅ provata (22/11/2026)    |
-| 28  | Rifinitura grafica         | ✅ provata (23/11/2026)    |
-| 29  | Comodità delle lezioni     | ✅ provata (24/11/2026)    |
-| 30  | Setlist e Live mode        | ✅ provata (24/11/2026)    |
+| #   | Fase                       | Stato                        |
+| --- | -------------------------- | ---------------------------- |
+| 1   | Fondamenta                 | ✅ completata                |
+| 2   | Cuore audio                | ✅ completata                |
+| 3   | Velocità, tonalità e loop  | ✅ completata                |
+| 4   | Marker e sezioni           | ✅ collaudata (19/11/2026)   |
+| 5   | EQ e isolamento base       | ✅ completata — da provare   |
+| 6   | Video                      | ✅ completata — da provare   |
+| 7   | Rifinitura e distribuzione | ✅ completata — da provare   |
+| 8   | Strumenti di pratica       | ✅ completata                |
+| 9   | Comodità mentre suoni      | ✅ completata                |
+| 10  | Esportare e vedere le note | ✅ completata — da provare   |
+| 11  | Scorciatoie per lo studio  | ✅ completata                |
+| 12  | Versione portable          | ✅ completata                |
+| 13  | Finestra mini              | ✅ completata                |
+| 14  | Appunti su loop e sezioni  | ✅ completata                |
+| 15  | Sezioni come region        | ✅ completata                |
+| 16  | Nota di riferimento        | ✅ completata                |
+| M   | Metronomo integrato        | ✅ completata                |
+| 17  | Mappa del tempo            | ✅ da perfezionare           |
+| 18  | Separazione strumenti      | ✅ completata                |
+| 19  | Archivio unico e backup    | ✅ completata                |
+| 20  | Esporta tracce separate    | ✅ completata                |
+| 21  | Tab Guitar Pro             | ✅ provata (19/11/2026)      |
+| 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)      |
+| 23  | Spartiti PDF               | ✅ provata (19/11/2026)      |
+| 24  | Extra dello spartito       | ✅ provata (21/11/2026)      |
+| 25  | Lezione: video e tab       | ✅ provata (21/11/2026)      |
+| 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)      |
+| 27  | Home delle lezioni         | ✅ provata (22/11/2026)      |
+| 28  | Rifinitura grafica         | ✅ provata (23/11/2026)      |
+| 29  | Comodità delle lezioni     | ✅ provata (24/11/2026)      |
+| 30  | Setlist e Live mode        | ✅ provata (24/11/2026)      |
+| 31  | Stems da file              | ✅ provata (24/11/2026)      |
 
 ## 1. Fondamenta ✅
 
@@ -1170,9 +1171,45 @@ il Live il brano non salva niente nel suo progetto (anche loop o marker toccati 
 Altre scelte: dopo una pausa il brano seguente aspetta il tasto (la band torna sul palco); una pausa parte da sola
 col suo conto alla rovescia quando ci si arriva.
 
-**Fase 31 (proposta):** studio verso la data: stato «pronto / quasi / da studiare» per brano, ripasso dei punti
-difficili di tutta la scaletta, piano del giorno. Poi: stampa/PDF della scaletta, comandi MIDI per avanzare,
-esportazione di tutto il set in un file audio.
+**Rimandato (utente 24/11, «per un secondo momento»):** studio verso la data (stato «pronto / quasi / da studiare»
+per brano, ripasso dei punti difficili di tutta la scaletta, piano del giorno, conto alla rovescia con i brani da
+studiare), dissolvenza al cue out, comandi MIDI per avanzare nella setlist, esportazione del set in un file audio.
+
+## 31. Stems da file ✅
+
+**Obiettivo (utente 24/11, da Song Master Pro):** aprire una cartella o più file (es. il solo e la sua base) come
+**stems**: una corsia per file, una sotto l'altra, con S/M, volume, cambio istantaneo tra solo e base senza fermare
+la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tutte; riaperte come erano.
+
+- **Aprire:** «Apri come stems…» nel menu ▾ di Apri e in Ctrl+K (più file insieme); tasto **«Stems»** sulla riga delle
+  lezioni che hanno una base (lezione + base); **trascinando** sulla finestra due o più file, o una cartella che li
+  contiene. Il file principale è il primo che non è una base («backing», «base», «minus»…), gli altri in ordine.
+- **Allineamento:** ogni file è confrontato col brano dal suono (lo stesso confronto delle inquadrature, fase 26) e
+  spostato col silenzio o tagliato all'inizio; lo spostamento si salva, la volta dopo non si rifà. Se non si trova,
+  la corsia parte col brano e mostra un triangolo d'avviso.
+- **Vista:** nella forma d'onda grande una fascia per corsia, nel colore della corsia mentre si sente, grigia quando
+  no; a sinistra, in una **colonna tutta loro** (mai sopra la forma d'onda: prima prova dell'utente, i clic su S/M
+  finivano sulla musica), la testa di ogni corsia alta quanto lei: nome breve (le parole comuni ai file tolte:
+  «Backing»), **S**, **M**, volume; tasto destro: Solo, Mute, volume 100%, togli. Loop, marker, playhead e righello su tutte.
+- **Barra «Stems · N»** nel titolo delle forme d'onda: **«Ascolta: Tutte | corsia | corsia»** (la voce accesa è
+  quella che si sente; un clic cambia senza fermare la musica), **+ Traccia**, **Chiudi stems** (il suggerimento dice
+  come riaprirle). S è un interruttore semplice come in Reaper; tasto destro sulla testa: Solo, Mute, volume 100%,
+  togli dalle stems. Il comando «passa alla scelta successiva di Ascolta» non ha tasto di fabbrica (la X non era
+  chiara all'utente): si assegna in Impostazioni → Tasti o a un pedale MIDI.
+- **Motore:** il file aperto è una corsia del mix col suo volume (`StemLevels.original`), gli altri file sono gli
+  ingressi delle tracce separate (max 8), già spostati sul tempo del brano: velocità, tonalità, EQ e loop valgono per
+  tutto il mix. Le tracce separate dall'IA restano ferme finché ci sono stems da file (scheda Tracce lo dice).
+- **Salvataggio:** corsie, spostamenti e mix nel progetto del brano (`Project.stem_files`): riaprendolo tornano.
+- Chiusa come versione 0.31.0 (24/11/2026), prima release pubblica su GitHub; il lanciatore di prova è stato tolto.
+
+- Collaudo (registro `docs/collaudo/2026-11-24_fase-31-stems.md`): 9 difetti corretti, riprova con R1 (volume
+  nascosto con molte corsie) e R2 (mix azzerato riaprendo) corretti e verificati. **Rimandato:** se si sposta tutta
+  la cartella del brano, i file delle altre corsie non vengono cercati nella nuova cartella (restano «mancanti» e
+  tornano quando il file è di nuovo al suo posto).
+
+**Scelte prese da me (da confermare in prova):** la durata è quella del file principale (una base più lunga si
+ferma con lui); con più di 3 corsie le teste stanno su una riga (nome, S, M, volume); i file video si possono
+usare come stems (se ne usa l'audio).
 
 ## Dopo la prima versione
 

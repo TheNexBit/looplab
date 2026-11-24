@@ -181,9 +181,21 @@ export const commands = {
 	exportStems: (request: StemsRequest) => typedError<ExportedStems, AppError>(__TAURI_INVOKE("export_stems", { request })),
 	/**
 	 *  Levels of the separated tracks, 0..1, in the order of `StemsInfo::names`, mute and solo
-	 *  already applied. All at 1 plays the original song.
+	 *  already applied. All at 1 plays the original song. With stems from files, `original` is the
+	 *  open file's own level and `levels` are the other files', in the order they were opened.
 	 */
-	setStemLevels: (levels: (number | null)[]) => typedError<null, AppError>(__TAURI_INVOKE("set_stem_levels", { levels })),
+	setStemLevels: (levels: (number | null)[], original: number | null) => typedError<null, AppError>(__TAURI_INVOKE("set_stem_levels", { levels, original })),
+	/**
+	 *  Opens `files` as stems of the open track `track` (at most `MAX_STEMS`), lining up those
+	 *  without a known shift. A file missing or unreadable is left out (listed in `failed`), the
+	 *  others open all the same. Returns the lanes in the order asked; their waveforms come from
+	 *  `get_stem_peaks`. Replaces the separated tracks of the song, if any were loaded.
+	 */
+	openStemFiles: (track: string, files: StemFileRequest_Deserialize[]) => typedError<OpenedStems, AppError>(__TAURI_INVOKE("open_stem_files", { track, files })),
+	/**  Back to the open track alone. */
+	closeStemFiles: () => typedError<null, AppError>(__TAURI_INVOKE("close_stem_files")),
+	/**  The playable files of a folder, by name (a folder dropped or picked to open as stems). */
+	mediaInFolder: (folder: string) => typedError<string[], AppError>(__TAURI_INVOKE("media_in_folder", { folder })),
 	/**
 	 *  The exercise of the open track (its other files found in its folder), or `null` when the
 	 *  track is alone.
@@ -850,6 +862,12 @@ export type NewBackup_Serialize = {
 	mirrorError: string | null,
 };
 
+/**  The lanes opened, in the order asked, and the files left out. */
+export type OpenedStems = {
+	lanes: StemFileLane[],
+	failed: StemFileFailure[],
+};
+
 /**  One part of a sequence: a bar, its tempo and exercises, for some bars. */
 export type PartRequest = PartRequest_Serialize | PartRequest_Deserialize;
 
@@ -1038,6 +1056,11 @@ export type Project_Deserialize = {
 	channels?: ChannelMode,
 	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
 	stemMix?: StemChannel[],
+	/**
+	 *  Stems from files opened with this track (its own lane first), each with its shift and
+	 *  its mix; empty when it plays alone
+	 */
+	stemFiles?: StemFile_Deserialize[],
 	/**  The linked score (tab, notation or PDF), if any */
 	score?: ProjectScore_Deserialize | null,
 	/**
@@ -1096,6 +1119,11 @@ export type Project_Serialize = {
 	channels: ChannelMode,
 	/**  Levels, Mute and Solo of the separated tracks (empty until the song is separated) */
 	stemMix: StemChannel[],
+	/**
+	 *  Stems from files opened with this track (its own lane first), each with its shift and
+	 *  its mix; empty when it plays alone
+	 */
+	stemFiles: StemFile_Serialize[],
 	/**  The linked score (tab, notation or PDF), if any */
 	score: ProjectScore_Serialize | null,
 	/**
@@ -1430,6 +1458,68 @@ export type StemChannel = {
 	level: number | null,
 	mute: boolean,
 	solo: boolean,
+};
+
+/**  One lane of the stems from files: the file, where it lines up, its level and its keys. */
+export type StemFile = StemFile_Serialize | StemFile_Deserialize;
+
+/**  A file that could not be opened as a stem, and why (the others open all the same). */
+export type StemFileFailure = {
+	path: string,
+	kind: ErrorKind,
+};
+
+/**  A lane as opened: what is heard at `t` of the open track is at `t + shift` in this file. */
+export type StemFileLane = {
+	path: string,
+	shift: number | null,
+	/**  Lined up from the sound (or a saved shift); false: it starts with the open track */
+	linedUp: boolean,
+};
+
+/**  A file to open as a stem; `shift` when it was lined up before (saved in the project). */
+export type StemFileRequest = StemFileRequest_Serialize | StemFileRequest_Deserialize;
+
+/**  A file to open as a stem; `shift` when it was lined up before (saved in the project). */
+export type StemFileRequest_Deserialize = {
+	path: string,
+	shift?: number | null,
+	/**  With a saved shift: whether it was found from the sound (false keeps the warning) */
+	linedUp?: boolean | null,
+};
+
+/**  A file to open as a stem; `shift` when it was lined up before (saved in the project). */
+export type StemFileRequest_Serialize = {
+	path: string,
+	shift: number | null,
+	/**  With a saved shift: whether it was found from the sound (false keeps the warning) */
+	linedUp: boolean | null,
+};
+
+/**  One lane of the stems from files: the file, where it lines up, its level and its keys. */
+export type StemFile_Deserialize = {
+	path: string,
+	/**  What is heard at `t` of the track is at `t + shift` in this file (0 for the track itself) */
+	shift: number | null,
+	/**  0..1 */
+	level: number | null,
+	mute: boolean,
+	solo: boolean,
+	/**  Lined up from the sound; false: it starts with the track (its head keeps the warning) */
+	linedUp?: boolean,
+};
+
+/**  One lane of the stems from files: the file, where it lines up, its level and its keys. */
+export type StemFile_Serialize = {
+	path: string,
+	/**  What is heard at `t` of the track is at `t + shift` in this file (0 for the track itself) */
+	shift: number | null,
+	/**  0..1 */
+	level: number | null,
+	mute: boolean,
+	solo: boolean,
+	/**  Lined up from the sound; false: it starts with the track (its head keeps the warning) */
+	linedUp: boolean,
 };
 
 /**  The separated tracks of the open song, in the order the levels are given. */
