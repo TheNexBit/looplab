@@ -12,7 +12,15 @@ import { formatLength } from "@/lib/time";
 import { openSetlist, useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
 import { HomeTabs } from "./HomeTabs";
-import { AddSongs, LiveKey, newSetlist, SetlistPicker, SongList, shortDate } from "./SetlistParts";
+import {
+  AddSongs,
+  LiveKey,
+  newSetlist,
+  SetlistDropZone,
+  SetlistPicker,
+  SongList,
+  shortDate,
+} from "./SetlistParts";
 import { daysTo, GAP_SECONDS, isBreak, LIMIT_MINUTES, setLength } from "./setlistMath";
 
 const s = t.setlist;
@@ -269,7 +277,10 @@ export function SetlistHome() {
       {!setlist ? (
         loaded && <SetlistInvite />
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
+        <SetlistDropZone
+          setlistId={setlist.id}
+          className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-1 pr-2"
+        >
           <div className="flex flex-wrap items-center gap-2">
             <InlineName
               value={setlist.name || s.untitled}
@@ -292,7 +303,7 @@ export function SetlistHome() {
           <SetTiming setlist={setlist} />
           <SongList setlist={setlist} />
           <AddSongs setlist={setlist} />
-        </div>
+        </SetlistDropZone>
       )}
     </div>
   );

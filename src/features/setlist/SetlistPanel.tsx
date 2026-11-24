@@ -1,6 +1,6 @@
 import { t } from "@/i18n";
 import { Countdown, SetlistInvite, SetMeter, useSetlists } from "./SetlistHome";
-import { AddSongs, LiveKey, SetlistPicker, SongList } from "./SetlistParts";
+import { AddSongs, LiveKey, SetlistDropZone, SetlistPicker, SongList } from "./SetlistParts";
 
 const s = t.setlist;
 
@@ -16,7 +16,8 @@ export function SetlistPanel() {
     return <div className="p-3">{loaded && <SetlistInvite compact />}</div>;
   }
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2 p-3">
+    // The whole tab takes dropped files, not only the rows of the list
+    <SetlistDropZone setlistId={setlist.id} className="flex h-full min-h-0 flex-col gap-2 p-3">
       <div className="flex items-center gap-1.5">
         <SetlistPicker current={setlist} compact />
         <LiveKey setlist={setlist} compact />
@@ -32,6 +33,6 @@ export function SetlistPanel() {
       </div>
       <AddSongs setlist={setlist} compact />
       <p className="text-[11px] text-fg-subtle">{s.panelHint}</p>
-    </div>
+    </SetlistDropZone>
   );
 }

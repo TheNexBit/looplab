@@ -23,7 +23,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { ContextMenu, DropdownMenu } from "radix-ui";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { InlineName } from "@/components/ui/InlineName";
 import { MenuChoice } from "@/components/ui/MenuChoice";
@@ -395,14 +395,47 @@ function SongRow({
 }
 
 /**
- * The songs in playing order, and the setlist's drop zone: files from the system or tracks
- * from the recent list join it when dropped here. Songs are reordered by their grip (the
- * pointer, not the system drag and drop: the window takes that for files).
+ * The setlist's drop zone: files from the system or tracks from the recent list join the
+ * setlist when dropped anywhere inside it (the empty space under the songs too). It lights up
+ * while they are over it.
+ */
+export function SetlistDropZone({
+  setlistId,
+  className,
+  children,
+}: {
+  setlistId: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  const dropping = useSetlistsStore((st) => st.dropTarget === setlistId);
+  const zone = { [DROP_ATTRIBUTE]: setlistId };
+  return (
+    <div
+      {...zone}
+      className={cn(
+        "relative rounded-panel transition-colors",
+        dropping && "bg-accent-soft ring-2 ring-accent ring-inset",
+        className,
+      )}
+    >
+      {children}
+      {dropping && (
+        <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-xs font-semibold text-accent">
+          {s.dropHere}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The songs in playing order. Reordered by their grip (the pointer, not the system drag and
+ * drop: the window takes that for files).
  */
 export function SongList({ setlist, compact = false }: { setlist: Setlist; compact?: boolean }) {
   const [drag, setDrag] = useState<{ from: number; to: number } | null>(null);
   const [settingsOf, setSettingsOf] = useState<string | null>(null);
-  const dropping = useSetlistsStore((st) => st.dropTarget === setlist.id);
   const listRef = useRef<HTMLOListElement>(null);
   const numbers = songNumbers(setlist.songs);
 
@@ -435,16 +468,8 @@ export function SongList({ setlist, compact = false }: { setlist: Setlist; compa
   };
 
   const settingsSong = setlist.songs.find((song) => song.id === settingsOf) ?? null;
-  const dropProps = { [DROP_ATTRIBUTE]: setlist.id };
-
   return (
-    <div
-      {...dropProps}
-      className={cn(
-        "relative flex min-h-24 flex-col rounded-panel transition-colors",
-        dropping && "bg-accent-soft ring-2 ring-accent",
-      )}
-    >
+    <div className="flex flex-col">
       {setlist.songs.length === 0 ? (
         <div className="flex flex-1 flex-col items-start gap-2 rounded-panel border-2 border-dashed border-border px-4 py-5">
           <ListMusic className="size-6 text-accent" aria-hidden />
@@ -476,11 +501,6 @@ export function SongList({ setlist, compact = false }: { setlist: Setlist; compa
             />
           ))}
         </ol>
-      )}
-      {dropping && (
-        <p className="pointer-events-none absolute inset-x-0 bottom-1 text-center text-xs font-semibold text-accent">
-          {s.dropHere}
-        </p>
       )}
       <LiveSettingsDialog
         key={settingsOf ?? ""}
