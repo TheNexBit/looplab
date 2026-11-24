@@ -15,4 +15,7 @@ Valgono insieme a `D:\CLAUDE.md`. Specifica completa del progetto: `docs/SPEC.md
 - **Versione** (SemVer, vedi `CHANGELOG.md`): `0.<fase>.0` quando una fase è chiusa e provata, `0.<fase>.<n>` per le
   correzioni dopo. A fine fase: versione in `package.json` e `Cargo.toml` (workspace), voce in `CHANGELOG.md`,
   etichetta git `v0.F.0`.
-- Mai Rubber Band (GPL); FFmpeg solo build LGPL. tauri-specta/specta sono rc: versioni fissate con `=`.
+- Licenza del progetto: **GPL-3.0-or-later**. Ogni libreria nuova deve avere una licenza compatibile con la GPL-3.0
+  (MIT, BSD, Apache-2.0, LGPL, GPL): controllala prima di aggiungerla. Rubber Band ora sarebbe ammessa, ma lo stretching
+  attuale si cambia solo su richiesta dell'utente. FFmpeg resta la build LGPL già in uso.
+- tauri-specta/specta sono rc: versioni fissate con `=`.
