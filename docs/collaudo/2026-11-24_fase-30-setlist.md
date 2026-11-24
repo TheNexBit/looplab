@@ -36,3 +36,30 @@ Avvisi: a 1280 la barra della setlist nasconde il nome e la scritta «Stage view
 
 ## Pulizia
 Processi chiusi (app, Vite, launcher) · porte 1421 e 9222 libere · cartella temporanea eliminata · progetto come prima: sì, più questo registro e `docs/collaudo/foto/` (svuotata delle foto della fase 28 e riempita con 5 foto nuove) · C: 640,21 → 640,20 GB (variazione del sistema, nessun file mio) · D: 160,48 → 160,30 GB (−180 MB non miei: la copia di prova dell'utente è stata usata dalle 09:10 alle 09:22, prima del mio avvio) · cargo-target invariato (27,0 GB) · ambiente ripulito: sì
+
+## Riprova 24/11/2026 11:00
+**Esito finale: ⚠️ SUPERATO CON AVVISI** · ramo `fase-30` a9a82fb · 12 difetti su 12 risolti · durata ~45 min
+`scripts\powershell\test.ps1`: Biome, TypeScript, Vitest (260 test), rustfmt, Clippy, cargo test: tutto ok. App vera (`tauri dev` sulla porta 1421, dati di prova isolati, brani con accenti ed emoji).
+
+| # | Esito | Prova |
+|---|---|---|
+| 1 | ✅ risolto | Brano senza file: Spazio e Play del dock lo fanno partire, il brano di prima resta fermo (posizione 0:00); pausa e ripresa; spia accesa; pausa della setlist ferma e riparte |
+| 2 | ✅ risolto | Titolo lunghissimo su 2 righe con «…», note lunghe che scorrono; barra, tempi e «Prossimo» sempre visibili a 1024×600, 1280×720, 1280×800, 1920×1080 |
+| 3 | ✅ risolto | Stampa: «domenica 6 dicembre 2026 · Bar Sport, Città di Castello», nessun %xx; `<b>&"` mostrati come testo |
+| 4 | ✅ risolto | Modifica fatta 120 ms e 30 ms prima di chiudere la finestra (chiusura vera di Windows): ritrovata dopo il riavvio |
+| 5 | ✅ risolto | Eliminata la setlist attiva: modalità chiusa, barra normale; una sezione di studio aggiunta dopo viene salvata (riaperto il brano, c'è) |
+| 6 | ✅ risolto | Tasto ▾ largo 28 px con la freccia; il menu mostra «Solo i cambi» |
+| 7 | ✅ risolto | Segno ✓ su «Ferma dopo questo» e «Segue» (leggibile col puntatore sopra); icona sulla riga |
+| 8 | ✅ risolto | Stage view di un brano col file mancante: nessuna sezione del brano di prima; le sezioni del brano giusto si vedono |
+| 9 | ✅ risolto | Chiusa la modalità, la barra in alto torna con «Apri», «Home», «Cerca un'azione…» |
+| 10 | ✅ risolto | Esc chiude solo Impostazioni Live; il secondo Esc chiude la Home |
+| 11 | ✅ risolto | «Esc = vista normale» e «Doppio clic su un brano per suonarlo» |
+| 12 | ✅ risolto | I cue non si incrociano (cue in fermo a cue out −1 s); F2 riparte dopo Invio ed Esc; «Fine prevista» conta la pausa (+1 min con pausa 60 s); riassunto Live a 6,6:1 nei temi chiari (≥ 9:1 negli scuri); commento doppio tolto |
+| Font | ✅ risolto | Inter e JetBrains Mono caricati (200) |
+
+Non regressione OK: Attiva, avanti automatico (pausa 2 s misurata), avanti automatico spento (aspetta il tasto), Ferma dopo, Segue, pausa che aspetta il tasto, brano fuori scaletta con «Torna alla setlist», Stage view con Esc, rinomina, chiusura e riapertura (tutto salvato).
+
+**Resta da fare (nuovo, minore):** su un brano col file mancante, «Brano precedente» (← o pedale) non torna indietro: ricomincia sempre lo stesso brano. Ripreso: brano 4 finito, passa al 5 (file mancante), premi ← due volte → resta sul 5. `live.ts` `previous()`: per un brano col percorso usa la posizione del brano aperto prima (12 s > 3 s) e quindi «ricomincia».
+Avvisi rimasti per scelta: barra della setlist a 1280 px con sole icone; nella Home con data e nome lunghi alcuni tasti vanno a capo. Console: solo `favicon.ico` 404 del server di sviluppo. Non verificabili come prima: trascinamento da Esplora risorse, finestre di sistema, pedali fisici.
+
+Pulizia: app, Vite e launcher chiusi (i 4 node già aperti prima lasciati) · porte 1421 e 9222 libere · cartella temporanea eliminata · progetto come prima: sì (solo questo registro; `docs/collaudo/foto/` non toccata) · C: 596,22 → 596,21 GB · D: 149,06 → 148,92 GB (ricompilazione dev nel cargo-target condiviso) · ambiente ripulito: sì

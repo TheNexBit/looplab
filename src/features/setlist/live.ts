@@ -327,7 +327,13 @@ export const useLiveStore = create<LiveState>((set, get) => {
       const song = currentSong();
       const { index, parts } = get();
       const start = parts[0]?.start ?? 0;
-      const into = song?.path ? currentPosition() - start : noFileElapsed();
+      // Time into the song: from the playhead only when its own file is the one open (a song
+      // whose file is missing never started, so «previous» goes back instead of restarting it)
+      const ownTrack =
+        !!song?.path &&
+        !get().missing &&
+        samePath(usePlayerStore.getState().track?.path, song.path);
+      const into = ownTrack ? currentPosition() - start : song?.path ? 0 : noFileElapsed();
       if (into > RESTART_AFTER || index === 0) void load(index, "wait");
       else void load(index - 1, "wait");
     },
