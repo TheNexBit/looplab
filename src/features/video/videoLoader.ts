@@ -34,6 +34,19 @@ async function load(path: string | null) {
 }
 
 /**
+ * Called when the <video> element found no picture: a file with audio only plays as audio,
+ * but a picture WebView2 cannot decode (Xvid/DivX in an .mp4) gets a proxy like any other.
+ */
+export async function noPicture() {
+  const path = current;
+  if (!path) return;
+  const found = await commands.hasPicture(path);
+  if (current !== path) return;
+  if (found.status === "ok" && found.data && !proxied) await fallBackToProxy();
+  else useVideoStore.getState().setStatus("none", { src: null });
+}
+
+/**
  * Called by the <video> element when WebView2 cannot play the file (HEVC, MKV…):
  * FFmpeg makes a light H.264 copy, which then replaces the original.
  */

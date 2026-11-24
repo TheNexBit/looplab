@@ -2,7 +2,7 @@
 //! place — by default `Documents\Looplab\Tracce separate\<song>\voce.wav`, `chitarra.wav`… (in
 //! English `Separated stems\<song>\vocals.wav`, unless the Italian folder already exists),
 //! or a folder the user chose (kept in the library) — and never in the cache, which empties
-//! itself. Each song folder has an `origine.txt` naming the song file it came from, so two
+//! itself. Each song folder has an `origine.txt` (`origin.txt` in English) naming the song file it came from, so two
 //! songs with the same name never overwrite each other.
 
 use std::fs;
@@ -17,8 +17,16 @@ use crate::db::{self, LibraryError};
 use crate::paths::Places;
 use crate::prefs::{self, UiLanguage};
 
-/// Names the song's folder after its file.
-const ORIGIN: &str = "origine.txt";
+/// Names the song file a folder came from: Italian name first (older exports), then English.
+const ORIGINS: [&str; 2] = ["origine.txt", "origin.txt"];
+
+/// The origin file written in `language`'s folder.
+fn origin_name(language: UiLanguage) -> &'static str {
+    match language {
+        UiLanguage::Italian => ORIGINS[0],
+        UiLanguage::English => ORIGINS[1],
+    }
+}
 /// The folder chosen by the user, in the library's `meta` table.
 const CHOSEN: &str = "stems_out_dir";
 
@@ -90,8 +98,9 @@ fn clean(name: &str) -> String {
 }
 
 fn origin_of(dir: &Path) -> Option<String> {
-    fs::read_to_string(dir.join(ORIGIN))
-        .ok()
+    ORIGINS
+        .iter()
+        .find_map(|name| fs::read_to_string(dir.join(name)).ok())
         .map(|text| text.trim().to_owned())
 }
 
@@ -146,7 +155,10 @@ pub fn save(
 ) -> io::Result<Vec<PathBuf>> {
     let dir = song_folder(root, song);
     fs::create_dir_all(&dir)?;
-    fs::write(dir.join(ORIGIN), song.to_string_lossy().as_bytes())?;
+    fs::write(
+        dir.join(origin_name(language)),
+        song.to_string_lossy().as_bytes(),
+    )?;
     tracks
         .iter()
         .map(|(source, pcm)| {
@@ -185,6 +197,18 @@ mod tests {
         assert_eq!(fs::metadata(&files[0]).unwrap().len(), 44 + 40_000 * 4);
         assert_eq!(origin_of(&dir).unwrap(), song.to_string_lossy());
         assert!(!dir.join("voce.wav.partial").exists());
+    }
+
+    #[test]
+    fn english_exports_name_their_origin_file_in_english_and_still_find_old_folders() {
+        let root = temp_dir("stems-out-origin");
+        let song = root.join("Song.mp3");
+        save(&root, &song, &[("bass", tone(10))], UiLanguage::English).unwrap();
+        let dir = root.join("Song");
+        assert!(dir.join("origin.txt").is_file() && !dir.join("origine.txt").exists());
+        assert!(dir.join("bass.wav").is_file());
+        // The same song again, now in Italian: the folder is found by its English origin file
+        assert_eq!(song_folder(&root, &song), dir);
     }
 
     #[test]

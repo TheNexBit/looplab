@@ -135,6 +135,11 @@ export const commands = {
 	 *  `on_progress` receives values from 0 to 1.
 	 */
 	makeVideoProxy: (path: string, onProgress: Channel<number | null>) => typedError<string, AppError>(__TAURI_INVOKE("make_video_proxy", { path, onProgress })),
+	/**
+	 *  Whether the file holds a picture WebView2 may not show (its <video> found none): then a
+	 *  proxy is made instead of playing it as audio only.
+	 */
+	hasPicture: (path: string) => typedError<boolean, AppError>(__TAURI_INVOKE("has_picture", { path })),
 	/**  Whether FFmpeg is installed (Opus audio and video proxies need it). */
 	ffmpegAvailable: () => __TAURI_INVOKE<boolean>("ffmpeg_available"),
 	/**  Takes the media keys for Looplab system-wide, or gives them back. */

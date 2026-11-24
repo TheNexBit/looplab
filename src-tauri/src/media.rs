@@ -71,6 +71,28 @@ fn ffmpeg_command(ffmpeg: &Path) -> Command {
     command
 }
 
+/// Whether FFmpeg's stream list (the log of `ffmpeg -i`) has a picture: a video stream that is
+/// not a cover image (an mp3 or m4a with its album art has none).
+fn lists_picture(log: &str) -> bool {
+    log.lines().any(|line| {
+        line.contains("Stream #") && line.contains(": Video:") && !line.contains("(attached pic)")
+    })
+}
+
+/// Whether `source` holds a picture, read by FFmpeg: also video codecs WebView2 cannot show
+/// (MPEG-4 Part 2 / Xvid in an .mp4), which then need a proxy. False without FFmpeg.
+pub fn has_picture(source: &Path) -> bool {
+    let Some(ffmpeg) = ffmpeg() else {
+        return false;
+    };
+    // Without an output FFmpeg only lists the streams (and ends with an error, as expected)
+    ffmpeg_command(&ffmpeg)
+        .args(["-hide_banner", "-i"])
+        .arg(source)
+        .output()
+        .is_ok_and(|out| lists_picture(&String::from_utf8_lossy(&out.stderr)))
+}
+
 /// Cache path for `source` in the `kind` folder, named after its path, size and date (a changed
 /// file gets a new name), followed by `suffix`: an extension (".mp4") or more ("-48000").
 pub fn cache_path(
@@ -298,6 +320,17 @@ mod tests {
             Some(201.5)
         );
         assert_eq!(parse_duration("  Stream #0:0: Audio: mp3"), None);
+    }
+
+    #[test]
+    fn tells_a_picture_from_cover_art() {
+        let xvid = "  Stream #0:0[0x1](und): Video: mpeg4 (Simple Profile) (mp4v / 0x7634706D), yuv420p, 640x480";
+        let cover =
+            "  Stream #0:1: Video: mjpeg (Baseline), yuvj420p, 500x500, 90k tbr (attached pic)";
+        let audio = "  Stream #0:0: Audio: mp3, 44100 Hz, stereo, fltp, 320 kb/s";
+        assert!(lists_picture(&format!("{audio}\n{xvid}")));
+        assert!(!lists_picture(&format!("{audio}\n{cover}")));
+        assert!(!lists_picture(audio));
     }
 
     #[test]

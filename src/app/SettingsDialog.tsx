@@ -10,6 +10,7 @@ import { Stepper } from "@/components/ui/Stepper";
 import { t } from "@/i18n";
 import { factoryReset } from "@/lib/factoryReset";
 import { formatPercent } from "@/lib/format";
+import { saved } from "@/lib/storage";
 import {
   SETTING_CHOICES,
   SETTING_LIMITS,
@@ -115,7 +116,8 @@ function LanguageChoice() {
         onChange={(language) => {
           if (language === value) return;
           useSettingsStore.getState().update({ language });
-          window.location.reload();
+          // Reloaded only once the library holds the new language: it is read at start
+          void saved().then(() => window.location.reload());
         }}
       />
     </SettingRow>

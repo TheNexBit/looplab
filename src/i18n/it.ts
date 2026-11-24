@@ -1036,6 +1036,7 @@ export const it = {
     thisTrack: "È il file aperto: gli altri si allineano a lui",
   },
   score: {
+    trackNumber: (n: number) => `Traccia ${n}`,
     title: "Spartito",
     show: "Mostra lo spartito",
     hide: "Nascondi lo spartito",
@@ -1436,7 +1437,7 @@ export const it = {
     open: "Apri",
     reveal: "Mostra nella cartella",
     rightClick: "apri, mostra nella cartella, togli dalla lista",
-    loops: "loop",
+    loops: (n: number) => `${n} loop`,
     sectionsShort: "sez.",
     video: "Video",
     audio: "Audio",

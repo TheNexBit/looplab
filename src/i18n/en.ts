@@ -1029,6 +1029,7 @@ export const en = {
     thisTrack: "This is the open file: the others line up with it",
   },
   score: {
+    trackNumber: (n: number) => `Track ${n}`,
     title: "Score",
     show: "Show the score",
     hide: "Hide the score",
@@ -1420,7 +1421,7 @@ export const en = {
     open: "Open",
     reveal: "Show in folder",
     rightClick: "open, show in folder, remove from the list",
-    loops: "loops",
+    loops: (n: number) => (n === 1 ? "1 loop" : `${n} loops`),
     sectionsShort: "sect.",
     video: "Video",
     audio: "Audio",

@@ -1,3 +1,4 @@
+import { readStored } from "@/lib/storage";
 import { en } from "./en";
 import { it } from "./it";
 import { systemLanguage, type UiLanguage } from "./system";
@@ -26,12 +27,9 @@ const SETTINGS_KEY = "looplab.settings";
  * module keeps its strings, so a change takes effect by reloading the window.
  */
 function chosenLanguage(): UiLanguage {
-  try {
-    const stored = JSON.parse(globalThis.localStorage?.getItem(SETTINGS_KEY) ?? "null");
-    if (stored?.language === "en" || stored?.language === "it") return stored.language;
-  } catch {
-    // Unreadable settings: fall back to the system's language
-  }
+  // The settings live in the library (lib/storage.ts), loaded before any module reads them
+  const stored = readStored(SETTINGS_KEY) as { language?: unknown } | undefined;
+  if (stored?.language === "en" || stored?.language === "it") return stored.language;
   return systemLanguage();
 }
 

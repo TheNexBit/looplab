@@ -421,6 +421,8 @@ fn find_by_content(conn: &Connection, track: &str) -> Result<Option<Project>, Li
             "UPDATE projects SET path_key = ?1, path = ?2 WHERE path_key = ?3",
             params![path_key(track), track, old_key],
         )?;
+        // The same file, moved: its old place is no recent file any more (no crossed-out twin)
+        crate::recent::remove(conn, &old_path)?;
     }
     Ok(Some(project))
 }
@@ -728,9 +730,19 @@ pub(crate) mod tests {
         let conn = memory();
         let old = track(&dir, "old.mp3", &[3u8; 200_000]);
         save(&conn, &old, &sample()).unwrap();
+        crate::recent::add(&conn, &old, None).unwrap();
         let new = dir.join("renamed.mp3").to_string_lossy().into_owned();
         fs::rename(&old, &new).unwrap();
         assert_eq!(plain(load(&conn, &new, &dir).unwrap()), Some(sample()));
+        let recent: Vec<String> = crate::recent::list(&conn)
+            .unwrap()
+            .into_iter()
+            .map(|file| file.path)
+            .collect();
+        assert!(
+            !recent.contains(&old),
+            "no crossed-out twin left in the recent list"
+        );
         let rows: i64 = conn
             .query_row("SELECT COUNT(*) FROM projects", [], |r| r.get(0))
             .unwrap();

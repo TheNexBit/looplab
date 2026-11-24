@@ -86,6 +86,9 @@ export function drawWaveform(
 const TICK_STEPS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600];
 const MIN_TICK_GAP_CSS = 90;
 
+/** CSS pixels between a ruler tick and its label: more than half the start point's flag. */
+const LABEL_GAP = 8;
+
 /**
  * Time ruler with labels along the top `height` device pixels.
  * With `grid`, each labelled tick also draws a faint line down through the waveform.
@@ -122,7 +125,8 @@ export function drawRuler(
     ctx.fillRect(half, height - 3 * dpr, Math.max(1, dpr), 3 * dpr);
     ctx.fillRect(x, height - 8 * dpr, Math.max(1, dpr), 8 * dpr);
     ctx.fillStyle = colors.label;
-    ctx.fillText(formatTick(time, step < 1), x + 4 * dpr, height / 2);
+    // Clear of the start point's flag (14 px wide, centred on its time), also at 0:00
+    ctx.fillText(formatTick(time, step < 1), x + LABEL_GAP * dpr, height / 2);
   }
 }
 

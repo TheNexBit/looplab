@@ -150,28 +150,36 @@ export function moved<T>(list: readonly T[], from: number, to: number): T[] {
   return result;
 }
 
-/**
- * The parts of a song Live plays. «Set»: the whole cue range. «Changes»: only `seconds` after
- * the start and `seconds` before the end (one part when they meet), to rehearse going from one
- * song into the next.
- */
 /** Fade out lengths offered in the Live settings (seconds as heard). */
 export const FADE_OUT_CHOICES = [1, 2, 3, 5, 8, 12] as const;
 /** The length a fade starts with when it is switched on. */
 export const FADE_OUT_DEFAULT = 3;
 
 /**
- * Track level while a song fades out towards `end` (seconds in the file): 1 until the fade
+ * Track level while a part fades out towards its `end` (seconds in the file): 1 until the fade
  * starts, then down to 0 at `end`. `seconds` is the fade as heard: at a slower Live speed the
- * file moves less in that time. The curve is squared, so the ear hears an even fade.
+ * file moves less in that time. A fade longer than the part starts with it, never lower. The
+ * curve is squared, so the ear hears an even fade.
  */
-export function fadeGain(position: number, end: number, seconds: number | null, speed = 1): number {
+export function fadeGain(
+  position: number,
+  part: { start: number; end: number },
+  seconds: number | null,
+  speed = 1,
+): number {
   if (!seconds || seconds <= 0) return 1;
-  const left = (end - position) / (seconds * speed);
+  const span = Math.min(seconds * speed, part.end - part.start);
+  if (span <= 0) return 1;
+  const left = (part.end - position) / span;
   const linear = Math.min(1, Math.max(0, left));
   return linear * linear;
 }
 
+/**
+ * The parts of a song Live plays. «Set»: the whole cue range. «Changes»: only `seconds` after
+ * the start and `seconds` before the end (one part when they meet), to rehearse going from one
+ * song into the next.
+ */
 export function livePlan(
   range: { start: number; end: number },
   mode: "set" | "changes",

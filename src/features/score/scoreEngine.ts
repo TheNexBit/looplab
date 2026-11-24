@@ -1,6 +1,7 @@
 import * as alphaTab from "@coderline/alphatab";
 // The music font (Bravura, SIL OFL) bundled by Vite from the package: nothing copied around
 import bravuraWoff2 from "@coderline/alphatab/font/Bravura.woff2?url";
+import { t } from "@/i18n";
 import type { AlignedBar } from "@/lib/bindings";
 import { themeColor } from "@/lib/theme";
 import type { ProjectScore, ScoreTrack, SyncPoint } from "@/stores/score";
@@ -169,7 +170,7 @@ export class ScoreEngine extends BarSync {
       tidyTexts(score);
       const tracks: ScoreTrack[] = score.tracks.map((track) => ({
         index: track.index,
-        name: track.name || track.shortName || `Traccia ${track.index + 1}`,
+        name: track.name || track.shortName || t.score.trackNumber(track.index + 1),
         percussion: track.isPercussion,
       }));
       const fileSync: SyncPoint[] = score.exportFlatSyncPoints().map((p) => ({

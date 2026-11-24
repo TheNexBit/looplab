@@ -10,11 +10,23 @@ type Persist = (key: string, json: string | null) => unknown;
 
 let values = new Map<string, string>();
 let persist: Persist = () => {};
+/** Writes sent to the library and not confirmed yet (`saved` waits for them). */
+const pending = new Set<Promise<unknown>>();
 
 /** Called once at start with the stored values and how to save a change. */
 export function startStorage(stored: Record<string, string>, save: Persist) {
   values = new Map(Object.entries(stored));
-  persist = save;
+  persist = (key, json) => {
+    const write = Promise.resolve(save(key, json)).catch(() => {});
+    pending.add(write);
+    void write.finally(() => pending.delete(write));
+    return write;
+  };
+}
+
+/** Resolves once every change sent so far is written in the library (before a reload). */
+export async function saved(): Promise<void> {
+  await Promise.all([...pending]);
 }
 
 /** The JSON value stored under `key`, or `undefined` if there is none or it cannot be read. */

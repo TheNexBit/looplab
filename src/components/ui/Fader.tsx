@@ -46,7 +46,10 @@ export function Fader({
   });
   return (
     <Tooltip label={`${label} ${formatPercent(value)} — ${hint}`}>
-      <div ref={ref} className={cn("flex flex-col items-center gap-1", disabled && "opacity-40")}>
+      <div
+        ref={ref}
+        className={cn("flex max-w-full flex-col items-center gap-1", disabled && "opacity-40")}
+      >
         <RadixSlider.Root
           orientation="vertical"
           className={cn("relative flex w-4 touch-none flex-col items-center", heightClassName)}
@@ -64,7 +67,9 @@ export function Fader({
           </RadixSlider.Track>
           <RadixSlider.Thumb className="hw block h-3 w-5 rounded-[2px] bg-[linear-gradient(var(--color-thumb-from),var(--color-thumb-to))] transition-[filter] hover:brightness-125" />
         </RadixSlider.Root>
-        <span className="panel-label leading-none">{short}</span>
+        <span className="panel-label max-w-full truncate leading-none tracking-[0.04em]">
+          {short}
+        </span>
       </div>
     </Tooltip>
   );

@@ -14,7 +14,7 @@ import { useVideoStore } from "@/stores/video";
 import { useWavesStore } from "@/stores/waves";
 import { detachVideo } from "./detach";
 import { VideoView } from "./VideoView";
-import { fallBackToProxy } from "./videoLoader";
+import { fallBackToProxy, noPicture } from "./videoLoader";
 
 /** The picture is kept at least this tall while there is room (the waveforms come first). */
 const VIDEO_MIN_VISIBLE = 140;
@@ -122,7 +122,7 @@ export function VideoBox() {
           error={error}
           clock={videoClock}
           onUnsupported={() => void fallBackToProxy()}
-          onNoPicture={() => setStatus("none", { src: null })}
+          onNoPicture={() => void noPicture()}
           onReady={() => setStatus("ready")}
         />
       </div>

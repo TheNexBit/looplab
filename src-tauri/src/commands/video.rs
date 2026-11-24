@@ -49,6 +49,16 @@ pub async fn make_video_proxy(
     Ok(proxy.to_string_lossy().into_owned())
 }
 
+/// Whether the file holds a picture WebView2 may not show (its <video> found none): then a
+/// proxy is made instead of playing it as audio only.
+#[tauri::command]
+#[specta::specta]
+pub async fn has_picture(path: String) -> Result<bool, AppError> {
+    tauri::async_runtime::spawn_blocking(move || media::has_picture(Path::new(&path)))
+        .await
+        .map_err(AppError::internal)
+}
+
 /// Whether FFmpeg is installed (Opus audio and video proxies need it).
 #[tauri::command]
 #[specta::specta]

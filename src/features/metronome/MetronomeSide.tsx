@@ -21,9 +21,10 @@ export function MetronomeSide() {
   return (
     <aside className="flex w-80 shrink-0 flex-col border-l border-edge bg-bg-from">
       <Tabs.Root defaultValue="exercises" className="flex min-h-0 flex-1 flex-col">
-        <Tabs.List className="flex gap-0.5 border-b border-edge p-2">
+        {/* As in the side panel: a clear gap, and a second row rather than cramped labels */}
+        <Tabs.List className="flex flex-wrap gap-1.5 border-b border-edge p-2">
           {tabs.map(([id, label]) => (
-            <Tabs.Trigger key={id} value={id} className={`${tabTrigger} flex-1`}>
+            <Tabs.Trigger key={id} value={id} className={`${tabTrigger} min-w-fit flex-1 px-2.5`}>
               {label}
             </Tabs.Trigger>
           ))}

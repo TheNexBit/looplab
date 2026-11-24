@@ -26,7 +26,9 @@ function Strip({ name }: { name: string }) {
   // Silent because another track is soloed: drawn dimmed, like a DAW's implicit mute
   const silenced = channel.mute || (soloing && !channel.solo);
   return (
-    <div className={cn("flex w-11 flex-col items-center gap-1.5", silenced && "opacity-50")}>
+    <div
+      className={cn("flex min-w-11 flex-1 flex-col items-center gap-1.5", silenced && "opacity-50")}
+    >
       <Tooltip label={`${s.solo} ${label}`}>
         <Chip
           active={channel.solo}
@@ -147,7 +149,7 @@ export function StemsPanel() {
       )}
       {names && (
         <>
-          <div className="flex justify-between gap-1">
+          <div className="flex justify-between gap-1.5">
             {ordered.map((name) => (
               <Strip key={name} name={name} />
             ))}

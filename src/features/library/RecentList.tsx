@@ -61,7 +61,7 @@ export function originOf(path: string): string {
 /** "3 loop · 2 sez. · 75%": what the track's project holds, empty without one. */
 export function projectSummary(file: RecentFile): string {
   const parts: string[] = [];
-  if (file.savedLoops > 0) parts.push(`${file.savedLoops} ${r.loops}`);
+  if (file.savedLoops > 0) parts.push(r.loops(file.savedLoops));
   if (file.sections > 0) parts.push(`${file.sections} ${r.sectionsShort}`);
   if (file.speed && Math.abs(file.speed - 1) > 0.001) parts.push(formatPercent(file.speed));
   return parts.join(" · ");

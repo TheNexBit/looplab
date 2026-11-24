@@ -87,6 +87,7 @@ pub fn builder() -> Builder<tauri::Wry> {
             sound::eq_response,
             video::prepare_video,
             video::make_video_proxy,
+            video::has_picture,
             video::ffmpeg_available,
             crate::media_keys::set_global_media_keys,
             data::cache_usage,

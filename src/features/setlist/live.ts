@@ -68,6 +68,8 @@ interface LiveState {
 const RESTART_AFTER = 3;
 /** How often Live checks where the playhead is (ms). */
 const TICK_MS = 40;
+/** After the last song, the fade is lifted this late: the engine's stop ramp is over (ms). */
+const FADE_RELEASE_MS = 60;
 /** A song is over this close to its end (seconds): the engine's reports are not exact. */
 const END_MARGIN = 0.03;
 
@@ -202,14 +204,16 @@ export const useLiveStore = create<LiveState>((set, get) => {
 
   /** The song is over: the next one plays, waits or runs the gap (`afterSong`). */
   const songOver = () => {
+    // The fade stays down while the engine closes the sound: `cue` of the next song lifts it
     pausePlayer();
-    set({ fade: 1 });
     const list = songs();
     const current = list[get().index];
     const index = get().index + 1;
     const next = list[index];
     if (!next) {
       set({ phase: "done" });
+      // Full level again once the engine has closed the sound (a few ms), for what comes next
+      setTimeout(() => set({ fade: 1 }), FADE_RELEASE_MS);
       return;
     }
     const auto = useSettingsStore.getState().setlistAutoAdvance;
@@ -251,7 +255,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
     }
     // The last part ends at the cue out: the song may fade out towards it
     if (!state.parts[state.part + 1]) {
-      const fade = fadeGain(position, part.end, song.fadeOut, song.speed ?? 1);
+      const fade = fadeGain(position, part, song.fadeOut, song.speed ?? 1);
       if (Math.abs(fade - state.fade) > 0.005 || (fade === 1 && state.fade !== 1)) set({ fade });
     }
     // Stopped from elsewhere (a media key, the dock)

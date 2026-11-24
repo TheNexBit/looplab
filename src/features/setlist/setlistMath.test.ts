@@ -93,21 +93,28 @@ describe("setlist math", () => {
 });
 
 describe("fade out at the cue out", () => {
+  const part = { start: 0, end: 100 };
   it("is full level before the fade and silent at the cue out", () => {
-    expect(fadeGain(90, 100, 3)).toBe(1);
-    expect(fadeGain(97, 100, 3)).toBe(1);
-    expect(fadeGain(100, 100, 3)).toBe(0);
-    expect(fadeGain(105, 100, 3)).toBe(0);
+    expect(fadeGain(90, part, 3)).toBe(1);
+    expect(fadeGain(97, part, 3)).toBe(1);
+    expect(fadeGain(100, part, 3)).toBe(0);
+    expect(fadeGain(105, part, 3)).toBe(0);
   });
 
   it("fades evenly to the ear (squared curve) and stays off without a length", () => {
-    expect(fadeGain(98.5, 100, 3)).toBeCloseTo(0.25);
-    expect(fadeGain(99, 100, null)).toBe(1);
+    expect(fadeGain(98.5, part, 3)).toBeCloseTo(0.25);
+    expect(fadeGain(99, part, null)).toBe(1);
   });
 
   it("lasts the same as heard at a slower Live speed", () => {
     // At half speed 3 s as heard are 1.5 s of the file
-    expect(fadeGain(98.5, 100, 3, 0.5)).toBe(1);
-    expect(fadeGain(99.25, 100, 3, 0.5)).toBeCloseTo(0.25);
+    expect(fadeGain(98.5, part, 3, 0.5)).toBe(1);
+    expect(fadeGain(99.25, part, 3, 0.5)).toBeCloseTo(0.25);
+  });
+
+  it("never lasts longer than the part: it starts at full level with it", () => {
+    const short = { start: 10, end: 13 };
+    expect(fadeGain(10, short, 12)).toBe(1);
+    expect(fadeGain(11.5, short, 12)).toBeCloseTo(0.25);
   });
 });

@@ -8,10 +8,13 @@ import { formatBytes } from "@/lib/bytes";
 
 const d = t.settings.data;
 
-/** "13/11/2026 09:56" from a backup's local date and time. */
+/** A backup's local date and time in the app's language: "13/11/2026, 09:56", "11/13/2026, 9:56 AM". */
 function when(backup: BackupInfo) {
-  const [y, m, day] = backup.day.split("-");
-  return `${day}/${m}/${y} ${backup.time}`;
+  const [y = 0, m = 1, day = 1] = backup.day.split("-").map(Number);
+  const [hours = 0, minutes = 0] = backup.time.split(":").map(Number);
+  const date = new Date(y, m - 1, day, hours, minutes);
+  if (Number.isNaN(date.getTime())) return `${backup.day} ${backup.time}`;
+  return date.toLocaleString(t.common.locale, { dateStyle: "short", timeStyle: "short" });
 }
 
 /** Settings → Data: the library file, its backups (made, listed, restored), the second copy and where the exported tracks go. */

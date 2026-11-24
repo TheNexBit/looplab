@@ -94,7 +94,6 @@ function CuePoint({
   );
 }
 
-/** The key of the song, picked from a menu like a DAW's key selector (major, then minor). */
 /** Fade out at the cue out: a lit key, and its length from a menu (choosing one turns it on). */
 function FadeOut({
   value,
@@ -141,6 +140,7 @@ function FadeOut({
   );
 }
 
+/** The key of the song, picked from a menu like a DAW's key selector (major, then minor). */
 function KeyPicker({
   value,
   onChange,
