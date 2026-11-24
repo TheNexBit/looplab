@@ -783,6 +783,7 @@ export const en = {
     removeSong: "Remove from the setlist",
     fromTime: (time: string) => `from ${time}`,
     toTime: (time: string) => `to ${time}`,
+    fadeChip: (seconds: number) => `fade ${seconds} s`,
     liveChanges: "Live · changes",
     liveHint:
       "The setlist on the whole window (Stage view), from where you are or where you left off",

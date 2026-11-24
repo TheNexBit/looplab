@@ -59,6 +59,7 @@ function Chips({ song }: { song: Song }) {
   if (song.cueOut !== null && song.length !== null && song.cueOut < song.length - 0.5) {
     chips.push(s.toTime(formatLength(song.cueOut)));
   }
+  if (song.path && song.fadeOut) chips.push(s.fadeChip(song.fadeOut));
   if (song.bpm) chips.push(`${Math.round(song.bpm)} BPM`);
   if (chips.length === 0) return null;
   return (

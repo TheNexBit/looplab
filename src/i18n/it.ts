@@ -786,6 +786,7 @@ export const it = {
     duplicateSong: "Duplica",
     removeSong: "Togli dalla setlist",
     fromTime: (time: string) => `da ${time}`,
+    fadeChip: (seconds: number) => `sfuma ${seconds} s`,
     toTime: (time: string) => `fino a ${time}`,
     liveChanges: "Live · cambi",
     liveHint: "La setlist a tutta finestra (Stage view), da dove sei o da dove ti eri fermato",

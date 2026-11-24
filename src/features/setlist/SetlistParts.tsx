@@ -117,7 +117,7 @@ async function addFromDisk(setlistId: string) {
   );
 }
 
-/** Short Live settings of a row: «+2 st · 95% · 0:12→3:40». */
+/** Short Live settings of a row: «+2 st · 95% · 0:12→3:40 · fade 3 s». */
 function liveSummary(song: Song): string {
   const parts: string[] = [];
   if (song.semitones) parts.push(signed(song.semitones, "st"));
@@ -127,6 +127,7 @@ function liveSummary(song: Song): string {
       `${formatLength(song.cueIn ?? 0)}→${song.cueOut !== null ? formatLength(song.cueOut) : s.end}`,
     );
   }
+  if (song.path && song.fadeOut) parts.push(s.fadeChip(song.fadeOut));
   if (!song.path && song.bpm) parts.push(`${Math.round(song.bpm)} BPM`);
   return parts.join(" · ");
 }
