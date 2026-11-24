@@ -12,12 +12,23 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
+## 0.31.0 — 2026-11-24
+
+Fase 31 (Stems da file), provata dall'utente e collaudata (registro `docs/collaudo/2026-11-24_fase-31-stems.md`).
+Prima release pubblica su GitHub.
+
 ### Aggiunto
 
 - **Stems da file** (come «Open as stems» di Song Master): più file insieme (es. il solo e la sua base) una corsia
   sotto l'altra, allineati dal suono, con Solo, Mute e volume per corsia e il selettore **«Ascolta»** (Tutte, o una
-  corsia da sola) per passare dall'una all'altra senza fermare la musica. Si aprono dal menu Apri, da Ctrl+K, col tasto «Stems» delle lezioni con base o trascinando più
-  file o una cartella; il brano se le ricorda.
+  corsia da sola) per passare dall'una all'altra senza fermare la musica. Si aprono dal menu Apri, da Ctrl+K, col
+  tasto «Stems» delle lezioni con base o trascinando più file o una cartella; il brano se le ricorda.
+
+### Progetto
+
+- Pubblicato su GitHub (`TheNexBit/looplab`) con licenza **GPL-3.0-or-later**, README in inglese e in italiano,
+  guida per chi collabora, codice di condotta e moduli per segnalazioni e proposte.
+- **Sito** su GitHub Pages (`site/`), in inglese con tasto per l'italiano, screenshot veri e link a Ko-fi.
 
 ## 0.30.0 — 2026-11-24
 

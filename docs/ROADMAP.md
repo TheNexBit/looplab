@@ -33,7 +33,7 @@
 | 28  | Rifinitura grafica         | ✅ provata (23/11/2026)      |
 | 29  | Comodità delle lezioni     | ✅ provata (24/11/2026)      |
 | 30  | Setlist e Live mode        | ✅ provata (24/11/2026)      |
-| 31  | Stems da file              | 🔧 in corso (ramo `fase-31`) |
+| 31  | Stems da file              | ✅ provata (24/11/2026)      |
 
 ## 1. Fondamenta ✅
 
@@ -1175,7 +1175,7 @@ col suo conto alla rovescia quando ci si arriva.
 per brano, ripasso dei punti difficili di tutta la scaletta, piano del giorno, conto alla rovescia con i brani da
 studiare), dissolvenza al cue out, comandi MIDI per avanzare nella setlist, esportazione del set in un file audio.
 
-## 31. Stems da file 🔧 (ramo `fase-31`)
+## 31. Stems da file ✅
 
 **Obiettivo (utente 24/11, da Song Master Pro):** aprire una cartella o più file (es. il solo e la sua base) come
 **stems**: una corsia per file, una sotto l'altra, con S/M, volume, cambio istantaneo tra solo e base senza fermare
@@ -1200,8 +1200,7 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
   ingressi delle tracce separate (max 8), già spostati sul tempo del brano: velocità, tonalità, EQ e loop valgono per
   tutto il mix. Le tracce separate dall'IA restano ferme finché ci sono stems da file (scheda Tracce lo dice).
 - **Salvataggio:** corsie, spostamenti e mix nel progetto del brano (`Project.stem_files`): riaprendolo tornano.
-- Lanciatore di prova `13-prova-stems.cmd` (copia dei dati in `D:\.cache\looplab\prova-stems`): da togliere a fine
-  fase.
+- Chiusa come versione 0.31.0 (24/11/2026), prima release pubblica su GitHub; il lanciatore di prova è stato tolto.
 
 - Collaudo (registro `docs/collaudo/2026-11-24_fase-31-stems.md`): 9 difetti corretti, riprova con R1 (volume
   nascosto con molte corsie) e R2 (mix azzerato riaprendo) corretti e verificati. **Rimandato:** se si sposta tutta
