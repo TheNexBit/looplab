@@ -729,6 +729,8 @@ export const en = {
     addWithoutFileHint:
       "A song played without a recording: it counts in the set length and Live mode shows its title, notes and the beat of its BPM",
     newSong: "New song",
+    songsLabel: "Setlist songs",
+    rename: "Rename",
     renameSong: "Song title",
     dragHint: "Drag to change the order",
     songMenu: "Song options",

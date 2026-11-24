@@ -13,6 +13,7 @@ import {
   ListMusic,
   MoreHorizontal,
   Music,
+  Pencil,
   Play,
   Plus,
   Printer,
@@ -25,7 +26,6 @@ import {
 import { ContextMenu, DropdownMenu } from "radix-ui";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { InlineName } from "@/components/ui/InlineName";
 import { MenuChoice } from "@/components/ui/MenuChoice";
 import { menuContent, menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { Stepper } from "@/components/ui/Stepper";
@@ -151,11 +151,13 @@ function SongMenuItems({
   setlist,
   index,
   onSettings,
+  onRename,
   parts: { Item, CheckboxItem, Separator },
 }: {
   setlist: Setlist;
   index: number;
   onSettings: () => void;
+  onRename: () => void;
   parts: MenuParts;
 }) {
   const song = setlist.songs[index];
@@ -203,6 +205,11 @@ function SongMenuItems({
         </CheckboxItem>
       )}
       <Separator className={menuSeparator} />
+      <Item className={menuItem} onSelect={onRename}>
+        <Pencil className="size-4" />
+        {s.rename}
+        <kbd className="ml-auto pl-4 text-[10px] opacity-70">F2</kbd>
+      </Item>
       <Item className={menuItem} disabled={index === 0} onSelect={() => move(index - 1)}>
         {s.moveUp}
       </Item>
@@ -237,6 +244,41 @@ function SongMenuItems({
   );
 }
 
+/** The title being renamed: Enter or leaving the field keeps it, Esc cancels, empty is ignored. */
+function RenameField({ value, onDone }: { value: string; onDone: (title: string | null) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const done = useRef(false);
+  const finish = (title: string | null) => {
+    if (done.current) return;
+    done.current = true;
+    onDone(title);
+  };
+  useEffect(() => {
+    // After the menu that asked for it has closed and given the focus back
+    const frame = requestAnimationFrame(() => {
+      ref.current?.focus();
+      ref.current?.select();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return (
+    <input
+      ref={ref}
+      aria-label={s.renameSong}
+      defaultValue={value}
+      onBlur={(event) => finish(event.target.value.trim() || null)}
+      onClick={(event) => event.stopPropagation()}
+      onDoubleClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        event.stopPropagation();
+        if (event.key === "Enter") finish(event.currentTarget.value.trim() || null);
+        if (event.key === "Escape") finish(null);
+      }}
+      className="min-w-0 flex-1 rounded-[4px] bg-surface px-1 text-sm text-fg outline-none ring-1 ring-accent/70"
+    />
+  );
+}
+
 function SongRow({
   setlist,
   song,
@@ -247,6 +289,10 @@ function SongRow({
   dropLine,
   onGrab,
   onSettings,
+  selected,
+  onSelect,
+  renaming,
+  onRename,
 }: {
   setlist: Setlist;
   song: Song;
@@ -257,6 +303,11 @@ function SongRow({
   dropLine: "above" | "below" | null;
   onGrab: (event: React.PointerEvent) => void;
   onSettings: () => void;
+  selected: boolean;
+  onSelect: () => void;
+  renaming: boolean;
+  /** `true` starts renaming, `false` ends it */
+  onRename: (on: boolean) => void;
 }) {
   const files = useSetlistsStore((st) => st.files);
   const isOpen = usePlayerStore((st) => samePath(st.track?.path, song.path));
@@ -270,12 +321,25 @@ function SongRow({
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>
-        <li
+        <div
           data-song-index={index}
+          // A click selects the row, like a track in a DAW; F2 renames it
+          role="option"
+          tabIndex={0}
+          aria-selected={selected}
+          onClick={onSelect}
+          onKeyDown={(event) => {
+            if (event.key === "F2" && !renaming) {
+              event.preventDefault();
+              event.stopPropagation();
+              onRename(true);
+            }
+          }}
           className={cn(
-            "group relative flex items-center gap-1.5 rounded-control px-1 hover:bg-surface-hover",
+            "group relative flex items-center gap-1.5 rounded-control px-1 outline-none hover:bg-surface-hover",
             pause ? "my-1 h-8 border-y border-dashed border-border" : "h-9",
             isOpen && "bg-accent-soft",
+            selected && "ring-1 ring-accent/60 ring-inset",
             dragging && "opacity-40",
           )}
           // In the side panel a double-click opens the song to practise it; on the Home its Live settings
@@ -306,12 +370,25 @@ function SongRow({
             className={cn("size-3.5 shrink-0", isOpen ? "text-accent" : "text-fg-subtle")}
             aria-hidden
           />
-          <InlineName
-            value={song.title || s.untitledSong}
-            label={s.renameSong}
-            onRename={(title) => store().editSong(setlist.id, song.id, { title })}
-            className={cn("truncate", pause && "text-fg-muted italic")}
-          />
+          {renaming ? (
+            <RenameField
+              value={song.title}
+              onDone={(title) => {
+                if (title && title !== song.title) store().editSong(setlist.id, song.id, { title });
+                onRename(false);
+              }}
+            />
+          ) : (
+            <span
+              title={song.title}
+              className={cn(
+                "min-w-0 flex-1 cursor-default truncate px-1 text-sm",
+                pause && "text-fg-muted italic",
+              )}
+            >
+              {song.title || s.untitledSong}
+            </span>
+          )}
           <KeyBadge songKey={song.key} />
           {missing && (
             <span title={`${s.fileMissing}: ${song.path ?? ""}`} className="shrink-0 text-red-400">
@@ -373,21 +450,37 @@ function SongRow({
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
-              <DropdownMenu.Content align="end" sideOffset={4} className={menuContent}>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={4}
+                className={menuContent}
+                // Rename puts the focus in the title: the menu must not take it back
+                onCloseAutoFocus={(event) => renaming && event.preventDefault()}
+              >
                 <SongMenuItems
                   setlist={setlist}
                   index={index}
                   onSettings={onSettings}
+                  onRename={() => onRename(true)}
                   parts={DROPDOWN}
                 />
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
-        </li>
+        </div>
       </ContextMenu.Trigger>
       <ContextMenu.Portal>
-        <ContextMenu.Content className={menuContent}>
-          <SongMenuItems setlist={setlist} index={index} onSettings={onSettings} parts={CONTEXT} />
+        <ContextMenu.Content
+          className={menuContent}
+          onCloseAutoFocus={(event) => renaming && event.preventDefault()}
+        >
+          <SongMenuItems
+            setlist={setlist}
+            index={index}
+            onSettings={onSettings}
+            onRename={() => onRename(true)}
+            parts={CONTEXT}
+          />
         </ContextMenu.Content>
       </ContextMenu.Portal>
     </ContextMenu.Root>
@@ -436,7 +529,9 @@ export function SetlistDropZone({
 export function SongList({ setlist, compact = false }: { setlist: Setlist; compact?: boolean }) {
   const [drag, setDrag] = useState<{ from: number; to: number } | null>(null);
   const [settingsOf, setSettingsOf] = useState<string | null>(null);
-  const listRef = useRef<HTMLOListElement>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const numbers = songNumbers(setlist.songs);
 
   const grab = (from: number) => (event: React.PointerEvent) => {
@@ -477,7 +572,7 @@ export function SongList({ setlist, compact = false }: { setlist: Setlist; compa
           <p className="text-xs text-fg-subtle">{compact ? s.noSongsPanelHint : s.noSongsHint}</p>
         </div>
       ) : (
-        <ol ref={listRef} className="flex flex-col">
+        <div ref={listRef} role="listbox" aria-label={s.songsLabel} className="flex flex-col">
           {setlist.songs.map((song, index) => (
             <SongRow
               key={song.id}
@@ -498,9 +593,13 @@ export function SongList({ setlist, compact = false }: { setlist: Setlist; compa
               }
               onGrab={grab(index)}
               onSettings={() => setSettingsOf(song.id)}
+              selected={selected === song.id}
+              onSelect={() => setSelected(song.id)}
+              renaming={renaming === song.id}
+              onRename={(on) => setRenaming(on ? song.id : null)}
             />
           ))}
-        </ol>
+        </div>
       )}
       <LiveSettingsDialog
         key={settingsOf ?? ""}

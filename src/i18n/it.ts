@@ -733,6 +733,8 @@ export const it = {
     addWithoutFileHint:
       "Un brano che suoni senza registrazione: conta nella durata del set e nel Live mode mostra titolo, note e il battito del suo BPM",
     newSong: "Nuovo brano",
+    songsLabel: "Brani della setlist",
+    rename: "Rinomina",
     renameSong: "Titolo del brano",
     dragHint: "Trascina per cambiare l'ordine",
     songMenu: "Opzioni del brano",
