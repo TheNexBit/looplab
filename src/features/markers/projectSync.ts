@@ -111,6 +111,33 @@ export function adoptSharedProject(path: string, file: Project_Serialize) {
   adoptShared?.(path, file);
 }
 
+/**
+ * Live mode plays the tracks with the setlist's transpose, speed and cues: nothing of that
+ * may land in their study projects. While held, nothing is saved; on release the open
+ * track's project is read again, so the study settings come back.
+ */
+let held = false;
+/** Set by `syncProject`: reads the open track's project again, or writes what is waiting. */
+let reload: (() => Promise<void>) | null = null;
+let flush: (() => Promise<void>) | null = null;
+const appliedListeners = new Set<(path: string) => void>();
+
+export function holdProjectSaves(on: boolean) {
+  if (held === on) return;
+  // Study edits still waiting are written first (the check runs before `held` changes)
+  if (on) void flush?.();
+  held = on;
+  if (!on) void reload?.();
+}
+
+/** Called with the track's path each time its project has been applied (Live waits for it). */
+export function onProjectApplied(listener: (path: string) => void): () => void {
+  appliedListeners.add(listener);
+  return () => {
+    appliedListeners.delete(listener);
+  };
+}
+
 let defaults: Promise<ProjectData> | null = null;
 
 /** Settings of a track with no project yet, asked once to Rust (the only copy of the defaults). */
@@ -138,7 +165,7 @@ export function syncProject(): () => void {
 
   const save = async () => {
     clearTimeout(timer);
-    if (!track || !writable) return;
+    if (!track || !writable || held) return;
     // Taken right now: the stores may already hold the next track when the write runs
     const path = track;
     const data = snapshot();
@@ -150,7 +177,7 @@ export function syncProject(): () => void {
   };
 
   const schedule = () => {
-    if (applying || !track) return;
+    if (applying || !track || held) return;
     clearTimeout(timer);
     timer = setTimeout(() => void save(), SAVE_DELAY_MS);
   };
@@ -175,12 +202,28 @@ export function syncProject(): () => void {
     }
     lastSaved = JSON.stringify(snapshot());
     applying = false;
+    for (const listener of appliedListeners) listener(path);
     // No tab yet: the one beside the track (or picked on the lesson Home) is linked
     if (writable) void autoLinkScore(path);
     // Undo never reaches back into the previous track
     useHistoryStore.getState().reset();
     resetTempoAnalysis();
     void useRecentStore.getState().refresh();
+  };
+
+  flush = save;
+  reload = async () => {
+    const path = track;
+    if (!path) return;
+    applying = true;
+    clearTimeout(timer);
+    const [result, fallback] = await Promise.all([commands.loadProject(path), projectDefaults()]);
+    if (track !== path) return;
+    const duration = usePlayerStore.getState().track?.duration ?? 0;
+    apply(result.status === "ok" && result.data ? fromFile(result.data, duration) : fallback);
+    lastSaved = JSON.stringify(snapshot());
+    applying = false;
+    useHistoryStore.getState().reset();
   };
 
   adoptShared = (path, file) => {
@@ -242,6 +285,8 @@ export function syncProject(): () => void {
 
   return () => {
     adoptShared = null;
+    reload = null;
+    flush = null;
     for (const stop of stops) stop();
     void unlistenClose.then((stop) => stop());
     clearTimeout(timer);

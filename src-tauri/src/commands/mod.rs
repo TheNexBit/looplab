@@ -13,6 +13,7 @@ mod library;
 mod metronome;
 mod player;
 mod scores;
+mod setlists;
 mod sound;
 mod spectrum;
 mod stems;
@@ -114,6 +115,9 @@ pub fn builder() -> Builder<tauri::Wry> {
             lessons::score_beside,
             lessons::forget_score_beside,
             lessons::open_document,
+            setlists::setlist_library,
+            setlists::save_setlist,
+            setlists::delete_setlist,
         ])
         .events(collect_events![
             PlaybackStatus,

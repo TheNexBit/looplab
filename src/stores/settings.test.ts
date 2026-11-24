@@ -33,6 +33,9 @@ describe("factory values (docs/VALORI-DI-FABBRICA.md)", () => {
       scoreSynth: false,
       infoBar: false,
       referencePitch: 440,
+      homeView: "courses",
+      liveMode: "set",
+      liveChangeSeconds: 10,
     });
   });
 });

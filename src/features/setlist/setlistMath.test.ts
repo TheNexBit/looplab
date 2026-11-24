@@ -1,0 +1,62 @@
+import { describe, expect, it } from "vitest";
+import {
+  cueRange,
+  daysTo,
+  livePlan,
+  moved,
+  playLength,
+  setLength,
+  songFromFile,
+  songWithoutFile,
+  titleOf,
+  todayIso,
+} from "./setlistMath";
+
+describe("setlist math", () => {
+  it("names a song after its file", () => {
+    expect(titleOf("C:\\Gig\\Highway Star.mp3")).toBe("Highway Star");
+    expect(titleOf("/a/.hidden")).toBe(".hidden");
+  });
+
+  it("measures a song from its cues and Live speed", () => {
+    const song = { ...songFromFile("a.mp3", 200), cueIn: 20, cueOut: 180, speed: 0.8 };
+    expect(cueRange(song)).toEqual({ start: 20, end: 180 });
+    expect(playLength(song)).toBeCloseTo(200);
+    expect(playLength(songFromFile("b.mp3"))).toBeNull();
+    expect(playLength({ ...songWithoutFile("Jam"), length: 300 })).toBe(300);
+    // A cue out before the cue in is ignored
+    expect(cueRange({ ...songFromFile("c.mp3", 100), cueIn: 50, cueOut: 10 })).toEqual({
+      start: 50,
+      end: 100,
+    });
+  });
+
+  it("adds up the set and counts the songs of unknown length", () => {
+    const songs = [songFromFile("a.mp3", 100), songFromFile("b.mp3"), songWithoutFile("Jam")];
+    expect(setLength(songs)).toEqual({ seconds: 340, unknown: 1 });
+  });
+
+  it("counts the days to the gig", () => {
+    const today = new Date(2026, 10, 24);
+    expect(todayIso(today)).toBe("2026-11-24");
+    expect(daysTo("2026-11-24", today)).toBe(0);
+    expect(daysTo("2026-12-01", today)).toBe(7);
+    expect(daysTo("2026-11-20", today)).toBe(-4);
+  });
+
+  it("moves a song", () => {
+    expect(moved(["a", "b", "c", "d"], 0, 2)).toEqual(["b", "c", "a", "d"]);
+    expect(moved(["a", "b", "c"], 2, 0)).toEqual(["c", "a", "b"]);
+    expect(moved(["a", "b"], 5, 0)).toEqual(["a", "b"]);
+  });
+
+  it("plans the changes rehearsal: head and tail of each song", () => {
+    const range = { start: 0, end: 200 };
+    expect(livePlan(range, "set", 10)).toEqual([range]);
+    expect(livePlan(range, "changes", 10)).toEqual([
+      { start: 0, end: 10 },
+      { start: 190, end: 200 },
+    ]);
+    expect(livePlan({ start: 0, end: 15 }, "changes", 10)).toEqual([{ start: 0, end: 15 }]);
+  });
+});

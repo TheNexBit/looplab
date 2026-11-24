@@ -22,6 +22,7 @@ mod prefs;
 mod project;
 mod recent;
 mod scores;
+mod setlist;
 mod state;
 mod stems_out;
 mod voice;

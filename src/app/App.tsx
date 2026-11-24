@@ -19,6 +19,8 @@ import { runPlaylist } from "@/features/practice/playlist";
 import { startTrainer } from "@/features/practice/trainer";
 import { startRemoteControl } from "@/features/remote/remoteControl";
 import { ScoreLayout } from "@/features/score/ScoreLayout";
+import { useLiveStore } from "@/features/setlist/live";
+import { StageView } from "@/features/setlist/StageView";
 import { feedDetachedVideo } from "@/features/video/detach";
 import { LessonLayout } from "@/features/video/LessonLayout";
 import { VideoLayout } from "@/features/video/VideoLayout";
@@ -51,6 +53,7 @@ export function App() {
   const mini = useUiStore((s) => s.mini);
   const metronomeOpen = useMetronomeStore((s) => s.open);
   const homeOpen = useLessonsStore((s) => s.open);
+  const liveActive = useLiveStore((s) => s.active);
   const infoBar = useSettingsStore((s) => s.infoBar);
   const hovering = useFileDrop(openDroppedFiles);
 
@@ -153,6 +156,8 @@ export function App() {
         <AboutDialog />
         <DiaryDialog />
         <ExportDialog />
+        {/* Live mode: the setlist on stage, over everything */}
+        {liveActive && <StageView />}
       </div>
     </TooltipProvider>
   );

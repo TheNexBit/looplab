@@ -3,11 +3,13 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Kbd } from "@/components/ui/Kbd";
 import { LessonHome } from "@/features/lessons/LessonHome";
+import { SetlistHome } from "@/features/setlist/SetlistHome";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { useLessonsStore } from "@/stores/lessons";
 import { useMetronomeStore } from "@/stores/metronome";
 import { useRecentStore } from "@/stores/recent";
+import { useSettingsStore } from "@/stores/settings";
 import { formatsLabel } from "./formats";
 import { pickAndOpenFile } from "./pickFile";
 import { NowCard, RecentList } from "./RecentList";
@@ -81,6 +83,7 @@ export function EmptyState({
   overTrack?: boolean;
 }) {
   const files = useRecentStore((s) => s.files);
+  const homeView = useSettingsStore((s) => s.homeView);
 
   useEffect(() => {
     void useRecentStore.getState().refresh();
@@ -110,7 +113,7 @@ export function EmptyState({
     <div className="flex h-full w-full flex-col gap-6 overflow-y-auto px-6 pt-8 pb-10 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
       {/* The courses, the whole height: the place most used */}
       <div className="flex min-h-0 flex-col gap-3">
-        <LessonHome />
+        {homeView === "setlists" ? <SetlistHome /> : <LessonHome />}
       </div>
       <div className="flex min-h-0 flex-col gap-4">
         <NowCard overTrack={overTrack} />

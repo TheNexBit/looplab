@@ -4,7 +4,7 @@ import {
   Download,
   FileMusic,
   FolderOpen,
-  GraduationCap,
+  House,
   Metronome,
   PanelRight,
   Piano,
@@ -45,7 +45,7 @@ function HomeKey() {
         disabled={!hasTrack}
         onClick={() => useLessonsStore.getState().toggle()}
       >
-        <GraduationCap className="size-4" />
+        <House className="size-4" />
         <HomeLabel />
       </Button>
     </Tooltip>

@@ -18,7 +18,7 @@ use crate::{backup, legacy, log};
 /// The library file, in the user folder.
 pub const FILE: &str = "libreria.db";
 /// Bumped (with a step in `upgrade`) whenever the tables change.
-const SCHEMA: i32 = 3;
+const SCHEMA: i32 = 4;
 
 const SCHEMA_1: &str = "
 CREATE TABLE projects (
@@ -122,6 +122,15 @@ CREATE TABLE lesson_choices (
 );
 ";
 
+/// Version 4: the setlists of the gigs (songs in order with their Live settings).
+const SCHEMA_4: &str = "
+CREATE TABLE setlists (
+    id         TEXT PRIMARY KEY,
+    data       TEXT NOT NULL,       -- the Setlist as JSON (schema in setlist.rs)
+    updated_at REAL NOT NULL
+);
+";
+
 /// Opens a library file only to read it (a backup being checked).
 pub fn open_read_only(path: &Path) -> rusqlite::Result<Connection> {
     Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
@@ -151,6 +160,11 @@ fn upgrade(conn: &Connection) -> Result<(), OpenError> {
     if version < 3 {
         conn.execute_batch(&format!(
             "BEGIN; {SCHEMA_3} PRAGMA user_version = 3; COMMIT;"
+        ))?;
+    }
+    if version < 4 {
+        conn.execute_batch(&format!(
+            "BEGIN; {SCHEMA_4} PRAGMA user_version = 4; COMMIT;"
         ))?;
     }
     Ok(())

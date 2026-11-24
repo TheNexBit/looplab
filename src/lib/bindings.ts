@@ -223,6 +223,12 @@ export const commands = {
 	forgetScoreBeside: (track: string) => typedError<null, AppError>(__TAURI_INVOKE("forget_score_beside", { track })),
 	/**  Opens a lesson's document (a PDF study guide) in the system's own viewer. */
 	openDocument: (path: string) => typedError<null, AppError>(__TAURI_INVOKE("open_document", { path })),
+	/**  Every setlist, next gig first, and whether their files are still on the disk. */
+	setlistLibrary: () => typedError<SetlistLibrary_Serialize, AppError>(__TAURI_INVOKE("setlist_library")),
+	/**  Saves a setlist (a new one, with an empty id, gets its own); returns it as saved. */
+	saveSetlist: (setlist: Setlist_Deserialize) => typedError<Setlist_Serialize, AppError>(__TAURI_INVOKE("save_setlist", { setlist })),
+	/**  Deletes a setlist; its songs' files are not touched. */
+	deleteSetlist: (id: string) => typedError<null, AppError>(__TAURI_INVOKE("delete_setlist", { id })),
 };
 
 /** Events */
@@ -1267,6 +1273,104 @@ export type SequenceRequest_Deserialize = {
 export type SequenceRequest_Serialize = {
 	parts: PartRequest_Serialize[],
 	repeat: boolean,
+};
+
+export type Setlist = Setlist_Serialize | Setlist_Deserialize;
+
+export type SetlistLibrary = SetlistLibrary_Serialize | SetlistLibrary_Deserialize;
+
+export type SetlistLibrary_Deserialize = {
+	/**  Next gig first, then the ones without a date, then the past ones */
+	setlists: Setlist_Deserialize[],
+	/**  Every file named by a setlist, once */
+	files: SongFile[],
+};
+
+export type SetlistLibrary_Serialize = {
+	/**  Next gig first, then the ones without a date, then the past ones */
+	setlists: Setlist_Serialize[],
+	/**  Every file named by a setlist, once */
+	files: SongFile[],
+};
+
+export type SetlistSong = SetlistSong_Serialize | SetlistSong_Deserialize;
+
+export type SetlistSong_Deserialize = {
+	/**  Made by the app, never shown: tells two songs apart when they are dragged */
+	id: string,
+	/**  The audio or video file; `None` for a song played without a recording */
+	path?: string | null,
+	title: string,
+	/**  Length of the whole file (read when added), or the planned length of a song without file */
+	length?: number | null,
+	/**  Live starts here (seconds in the file); `None` = from the start */
+	cueIn?: number | null,
+	/**  Live stops here; `None` = at the end */
+	cueOut?: number | null,
+	/**  Live transpose in semitones; `None` = as in the track's project */
+	semitones?: number | null,
+	/**  Live speed (1 = original); `None` = original speed */
+	speed?: number | null,
+	/**  For the count-in and a song without file */
+	bpm?: number | null,
+	/**  Stage notes: tuning, capo, sound, who starts… */
+	notes?: string,
+};
+
+export type SetlistSong_Serialize = {
+	/**  Made by the app, never shown: tells two songs apart when they are dragged */
+	id: string,
+	/**  The audio or video file; `None` for a song played without a recording */
+	path: string | null,
+	title: string,
+	/**  Length of the whole file (read when added), or the planned length of a song without file */
+	length: number | null,
+	/**  Live starts here (seconds in the file); `None` = from the start */
+	cueIn: number | null,
+	/**  Live stops here; `None` = at the end */
+	cueOut: number | null,
+	/**  Live transpose in semitones; `None` = as in the track's project */
+	semitones: number | null,
+	/**  Live speed (1 = original); `None` = original speed */
+	speed: number | null,
+	/**  For the count-in and a song without file */
+	bpm: number | null,
+	/**  Stage notes: tuning, capo, sound, who starts… */
+	notes: string,
+};
+
+export type Setlist_Deserialize = {
+	/**  Empty for a new setlist: saving gives it one */
+	id: string,
+	name: string,
+	/**  Day of the gig, `YYYY-MM-DD` */
+	date?: string | null,
+	venue?: string,
+	/**  How long the set may last, minutes */
+	limitMinutes?: number | null,
+	/**  Seconds between songs in Live mode; 0 = wait for the next key */
+	gapSeconds?: number,
+	songs: SetlistSong_Deserialize[],
+};
+
+export type Setlist_Serialize = {
+	/**  Empty for a new setlist: saving gives it one */
+	id: string,
+	name: string,
+	/**  Day of the gig, `YYYY-MM-DD` */
+	date: string | null,
+	venue: string,
+	/**  How long the set may last, minutes */
+	limitMinutes: number | null,
+	/**  Seconds between songs in Live mode; 0 = wait for the next key */
+	gapSeconds: number,
+	songs: SetlistSong_Serialize[],
+};
+
+/**  A song file as it is now on the disk. */
+export type SongFile = {
+	path: string,
+	exists: boolean,
 };
 
 /**  Which kind of click: accent, beat, subdivision or cross rhythm. */

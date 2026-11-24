@@ -202,6 +202,17 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   titoli (`knobTurn.ts`: valore ↔ giro, con il normale a metà per le manopole centrate); `MuteKey.tsx` il mute.
   `features/player/Levels.tsx` tiene volume e mute di brano e click; `syncEngine` manda 0 al motore quando un
   livello è muto.
+- **Setlist e Live mode (fase 30)**: `setlist.rs` tiene le scalette in `libreria.db` (schema 4: `setlists`, una
+  riga JSON per setlist, quindi anche nei backup). Ogni `SetlistSong` ha file (o nessuno: titolo, BPM e durata
+  prevista), cue in/out, trasposizione, velocità e note da palco; `tidy` tiene tutto nei limiti, `save` legge la
+  durata dei file nuovi (dai recenti o dall'intestazione con `Decoder::open`). Comandi `setlist_library`,
+  `save_setlist`, `delete_setlist`. UI: `features/setlist/` (`SetlistHome.tsx` nella Home, scheda «Setlist» di
+  `HomeTabs.tsx`; `LiveSettingsDialog.tsx`; `setlistMath.ts` per durate, conto alla rovescia e piano dei cambi),
+  store `stores/setlists.ts` (modifica subito a schermo, salva 400 ms dopo). Il Live mode (`live.ts` +
+  `StageView.tsx`) apre ogni brano, aspetta `onProjectApplied` di `projectSync`, applica le impostazioni Live e
+  controlla il playhead ogni 40 ms per fermarsi al cue out e passare al brano dopo. Mentre è attivo
+  `holdProjectSaves(true)` impedisce di salvare nei progetti di studio; all'uscita il progetto del brano aperto
+  viene riletto, così tornano loop, velocità e tonalità di studio.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

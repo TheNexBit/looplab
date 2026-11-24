@@ -21,6 +21,15 @@ finestra `create_main` (`src-tauri/src/window.rs`), tasti `shortcuts` (`src/lib/
 | Barra informazioni in basso  | Spenta                     |
 | Grandezza interfaccia        | 100%                       |
 
+## Setlist e Live mode
+
+| Cosa                              | Valore                              |
+| --------------------------------- | ----------------------------------- |
+| Home, a sinistra                  | Corsi (la scheda Setlist a un clic) |
+| Live mode                         | Set completo                        |
+| Solo cambi: secondi per lato      | 10                                  |
+| Pausa tra i brani (nuova setlist) | Attendi il tasto (0 s)              |
+
 ## Ascolto
 
 | Cosa                           | Valore                                        |

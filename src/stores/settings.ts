@@ -74,6 +74,14 @@ export interface Settings {
   lessonFolds: string[];
   /** Lessons of the Home showing their files (by lesson id) */
   lessonFilesOpen: string[];
+  /** What the left of the Home shows: the course folders or the setlists */
+  homeView: HomeView;
+  /** The setlist open on the Home (its id; empty = the first one) */
+  setlistOpen: string;
+  /** Live mode: the whole songs, or only the changes between them (head and tail of each) */
+  liveMode: LiveMode;
+  /** Seconds of each song played around a change in the «changes» Live mode */
+  liveChangeSeconds: number;
   /** PDFs whose bars differ from their Guitar Pro twin and are fine as they are: file + ":" + bars */
   pdfBarsAccepted: string[];
   /** Media keys reach Looplab even while another program has the focus */
@@ -127,6 +135,8 @@ export const SETTING_CHOICES = {
   followMode: ["center", "page"],
   openView: ["start", "whole"],
   afterLoop: ["stay", "start", "play"],
+  homeView: ["courses", "setlists"],
+  liveMode: ["set", "changes"],
 } as const;
 export type Language = (typeof SETTING_CHOICES.language)[number];
 type WaveStyle = (typeof SETTING_CHOICES.waveStyle)[number];
@@ -136,6 +146,8 @@ type DoubleClick = (typeof SETTING_CHOICES.doubleClick)[number];
 type FollowMode = (typeof SETTING_CHOICES.followMode)[number];
 type OpenView = (typeof SETTING_CHOICES.openView)[number];
 type AfterLoop = (typeof SETTING_CHOICES.afterLoop)[number];
+type HomeView = (typeof SETTING_CHOICES.homeView)[number];
+type LiveMode = (typeof SETTING_CHOICES.liveMode)[number];
 type ChoiceSetting = keyof typeof SETTING_CHOICES;
 
 type NumericSetting = {
@@ -143,6 +155,7 @@ type NumericSetting = {
 }[keyof Settings];
 
 export const SETTING_LIMITS = {
+  liveChangeSeconds: { min: 5, max: 30, step: 5 },
   seekStep: { min: 1, max: 30, step: 1 },
   fineSeekStep: { min: 0.1, max: 5, step: 0.1 },
   speedStep: { min: 0.01, max: 0.25, step: 0.01 },
@@ -210,6 +223,10 @@ export const SETTINGS_DEFAULTS: Settings = {
   lessonFolds: [],
   pdfBarsAccepted: [],
   lessonFilesOpen: [],
+  homeView: "courses",
+  setlistOpen: "",
+  liveMode: "set",
+  liveChangeSeconds: 10,
   globalMediaKeys: false,
   showGrid: true,
   waveStyle: "filled",

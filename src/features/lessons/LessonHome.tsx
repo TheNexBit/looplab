@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/menu";
 import { withRightClick } from "@/components/ui/Tooltip";
 import { isVideoPath } from "@/features/library/formats";
+import { HomeTabs } from "@/features/setlist/HomeTabs";
 import { t } from "@/i18n";
 import {
   commands,
@@ -738,12 +739,20 @@ export function LessonHome() {
   );
   const modules = useMemo(() => modulesByCourse(library.lessons), [library]);
 
-  if (library.roots.length === 0) return <Invite />;
+  if (library.roots.length === 0) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <HomeTabs />
+        <Invite />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex shrink-0 items-center gap-3">
-        <h2 className="panel-label flex-1 text-fg-subtle">{l.title}</h2>
+        <HomeTabs />
+        <span className="flex-1" />
         {scanning && (
           <span className="flex items-center gap-1.5 text-[11px] text-fg-subtle">
             <RefreshCw className="size-3 animate-spin" aria-hidden />

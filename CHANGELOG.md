@@ -12,6 +12,18 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
+### Aggiunto
+
+- **Setlist** (scheda nella Home): le scalette dei concerti con data, locale e conto alla rovescia; brani dal brano
+  aperto, dai recenti, da file o senza file; ordine trascinando; durata del set con limite; impostazioni Live per
+  brano (cue in/out, trasposizione, velocità, note da palco) che non toccano lo studio.
+- **Live mode** con **Stage view**: la setlist suonata di fila come sul palco, comandabile da tastiera o pedale
+  voltapagina, con pausa tra i brani a scelta e la **prova dei cambi** (solo inizio e fine di ogni brano).
+
+### Modificato
+
+- Il tasto «Lezioni» della barra in alto si chiama «Home» (icona casa).
+
 ## 0.29.0 — 2026-11-24
 
 Fase 29 (comodità delle lezioni), chiusa e provata.

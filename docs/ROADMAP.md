@@ -1,37 +1,38 @@
 # Roadmap
 
-| #   | Fase                       | Stato                      |
-| --- | -------------------------- | -------------------------- |
-| 1   | Fondamenta                 | ✅ completata              |
-| 2   | Cuore audio                | ✅ completata              |
-| 3   | Velocità, tonalità e loop  | ✅ completata              |
-| 4   | Marker e sezioni           | ✅ collaudata (19/11/2026) |
-| 5   | EQ e isolamento base       | ✅ completata — da provare |
-| 6   | Video                      | ✅ completata — da provare |
-| 7   | Rifinitura e distribuzione | ✅ completata — da provare |
-| 8   | Strumenti di pratica       | ✅ completata              |
-| 9   | Comodità mentre suoni      | ✅ completata              |
-| 10  | Esportare e vedere le note | ✅ completata — da provare |
-| 11  | Scorciatoie per lo studio  | ✅ completata              |
-| 12  | Versione portable          | ✅ completata              |
-| 13  | Finestra mini              | ✅ completata              |
-| 14  | Appunti su loop e sezioni  | ✅ completata              |
-| 15  | Sezioni come region        | ✅ completata              |
-| 16  | Nota di riferimento        | ✅ completata              |
-| M   | Metronomo integrato        | ✅ completata              |
-| 17  | Mappa del tempo            | ✅ da perfezionare         |
-| 18  | Separazione strumenti      | ✅ completata              |
-| 19  | Archivio unico e backup    | ✅ completata              |
-| 20  | Esporta tracce separate    | ✅ completata              |
-| 21  | Tab Guitar Pro             | ✅ provata (19/11/2026)    |
-| 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)    |
-| 23  | Spartiti PDF               | ✅ provata (19/11/2026)    |
-| 24  | Extra dello spartito       | ✅ provata (21/11/2026)    |
-| 25  | Lezione: video e tab       | ✅ provata (21/11/2026)    |
-| 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)    |
-| 27  | Home delle lezioni         | ✅ provata (22/11/2026)    |
-| 28  | Rifinitura grafica         | ✅ provata (23/11/2026)    |
-| 29  | Comodità delle lezioni     | ✅ provata (24/11/2026)    |
+| #   | Fase                       | Stato                          |
+| --- | -------------------------- | ------------------------------ |
+| 1   | Fondamenta                 | ✅ completata                  |
+| 2   | Cuore audio                | ✅ completata                  |
+| 3   | Velocità, tonalità e loop  | ✅ completata                  |
+| 4   | Marker e sezioni           | ✅ collaudata (19/11/2026)     |
+| 5   | EQ e isolamento base       | ✅ completata — da provare     |
+| 6   | Video                      | ✅ completata — da provare     |
+| 7   | Rifinitura e distribuzione | ✅ completata — da provare     |
+| 8   | Strumenti di pratica       | ✅ completata                  |
+| 9   | Comodità mentre suoni      | ✅ completata                  |
+| 10  | Esportare e vedere le note | ✅ completata — da provare     |
+| 11  | Scorciatoie per lo studio  | ✅ completata                  |
+| 12  | Versione portable          | ✅ completata                  |
+| 13  | Finestra mini              | ✅ completata                  |
+| 14  | Appunti su loop e sezioni  | ✅ completata                  |
+| 15  | Sezioni come region        | ✅ completata                  |
+| 16  | Nota di riferimento        | ✅ completata                  |
+| M   | Metronomo integrato        | ✅ completata                  |
+| 17  | Mappa del tempo            | ✅ da perfezionare             |
+| 18  | Separazione strumenti      | ✅ completata                  |
+| 19  | Archivio unico e backup    | ✅ completata                  |
+| 20  | Esporta tracce separate    | ✅ completata                  |
+| 21  | Tab Guitar Pro             | ✅ provata (19/11/2026)        |
+| 22  | Editor di sincronizzazione | ✅ provata (19/11/2026)        |
+| 23  | Spartiti PDF               | ✅ provata (19/11/2026)        |
+| 24  | Extra dello spartito       | ✅ provata (21/11/2026)        |
+| 25  | Lezione: video e tab       | ✅ provata (21/11/2026)        |
+| 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)        |
+| 27  | Home delle lezioni         | ✅ provata (22/11/2026)        |
+| 28  | Rifinitura grafica         | ✅ provata (23/11/2026)        |
+| 29  | Comodità delle lezioni     | ✅ provata (24/11/2026)        |
+| 30  | Setlist e Live mode        | 🔧 da provare (ramo `fase-30`) |
 
 ## 1. Fondamenta ✅
 
@@ -1090,6 +1091,39 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
 7 battute, ma la tab .gp della lezione ne ha 8: probabilmente una battuta del PDF non è stata riconosciuta, e lo
 spartito potrebbe andare fuori tempo con la musica»; tasti «Riconosci di nuovo le battute» (anche nel menu
 Sincronizza) e «Il PDF è giusto, non avvisare più»; «Battute riconosciute nel PDF: 8» nel menu e nel messaggio.
+
+## 30. Setlist e Live mode 🔧 (ramo `fase-30`, da provare)
+
+**Obiettivo:** preparare un concerto: la scaletta dei brani e la prova del set come sul palco (richiesta
+dell'utente del 24/11/2026, nomi del mestiere: Setlist, Live mode, Stage view, cue).
+
+- **Tasto «Home»** al posto di «Lezioni» (icona casa), più universale.
+- **Home a schede** «Corsi | Setlist», come le schede del browser di un DAW; la scelta si ricorda (`homeView`).
+- **Setlist**: più scalette, ognuna con nome, data dal calendario (conto alla rovescia: «Tra 12 giorni»), locale.
+  Prima le prossime date, poi quelle senza data, poi le passate. Duplica, elimina con conferma (i file restano).
+- **Brani**: dal brano aperto, dai recenti, da file (anche più insieme) o senza file (titolo, BPM, durata prevista).
+  Ordine trascinando la maniglia (col puntatore: il trascinamento di sistema della finestra è per i file), o dal
+  menu Sposta su/giù. Ogni riga: numero, titolo modificabile, file mancante in rosso, impostazioni Live in breve,
+  durata sul palco.
+- **Impostazioni Live per brano** (`LiveSettingsDialog`): cue in e cue out con − / + e rotella o «Dal playhead»,
+  trasposizione, velocità, note da palco. Valgono solo nel Live mode: il progetto di studio non cambia.
+- **Durata del set** con limite (− / + a passi di 5 minuti) e barra che diventa rossa oltre il limite; i brani mai
+  aperti senza durata nota sono contati a parte.
+- **Live mode** (tasto «Live», ▾ per le opzioni): suona la setlist di fila sulla **Stage view** a tutta finestra
+  (titolo grande, note da palco, tempo che resta, prossimo brano, orologio del set). Spazio = play/pausa, frecce o
+  pedale voltapagina (PagGiù/PagSu) = brano successivo/precedente, Esc = esci. Pausa tra i brani: «Attendi» il
+  tasto o 1-60 s, poi parte da solo. Il count-in del brano vale anche qui. Un brano senza file mostra una luce che
+  batte i quarti del suo BPM e finisce dopo la sua durata prevista.
+- **Prova dei cambi** (Live mode «Solo i cambi»): di ogni brano i primi e gli ultimi 5-30 s (10 di fabbrica), per
+  provare i passaggi da un brano all'altro.
+
+**Scelte prese da me (da confermare in prova):** trasposizione e velocità Live partono da 0 st e 100% (non da quelle
+di studio del brano); «Brano precedente» nei primi 3 secondi torna al brano prima, dopo riparte da capo; durante
+il Live il brano non salva niente nel suo progetto (anche loop o marker toccati lì).
+
+**Fase 31 (proposta):** studio verso la data: stato «pronto / quasi / da studiare» per brano, ripasso dei punti
+difficili di tutta la scaletta, piano del giorno. Poi: stampa/PDF della scaletta, comandi MIDI per avanzare,
+esportazione di tutto il set in un file audio.
 
 ## Dopo la prima versione
 
