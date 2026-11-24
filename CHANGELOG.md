@@ -32,8 +32,14 @@ Fase 32 (Looplab in inglese per tutti).
 
 - **Dissolvenza al cue out** nel Live mode (issue #4): tasto «Fade out» nelle Live settings, con durata da 1 a 12 s.
 
+### Aggiunto (fase 34)
+
+- **Esporta audio con il mix delle stems** come lo senti (livelli, Mute e Solo), per le tracce separate e per le
+  stems da file.
+
 ### Corretto
 
+- Stems da file: se sposti tutta la cartella del brano, gli altri file vengono ritrovati da soli.
 - Le schede del pannello laterale (Sezioni, Pratica, EQ, Tracce) non si toccano più a 1280 px (issue #3).
 
 ## 0.31.0 — 2026-11-24

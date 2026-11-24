@@ -23,6 +23,12 @@ pub struct Stems {
     tracks: Vec<Pcm>,
 }
 
+impl std::fmt::Debug for Stems {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Stems({} tracks)", self.tracks.len())
+    }
+}
+
 impl Stems {
     /// At most [`MAX_STEMS`] tracks; extra ones are ignored.
     pub fn new(mut tracks: Vec<Pcm>) -> Self {
@@ -108,7 +114,8 @@ pub(crate) struct Source<'a> {
 }
 
 impl<'a> Source<'a> {
-    /// The song alone, at full level (exports, tests).
+    /// The song alone, at full level (tests).
+    #[cfg(test)]
     pub fn track(track: Option<&'a Pcm>) -> Self {
         let mut full = [0.0; INPUTS];
         full[ORIGINAL] = 1.0;

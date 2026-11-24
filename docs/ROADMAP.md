@@ -668,8 +668,8 @@ il metro.
 6. ✅ Interfaccia: scheda "Tracce" del pannello laterale, "Separa strumenti", sei canali (S, M, fader con rotella e
    doppio clic), "Mix originale"; il mix è salvato nel progetto.
 7. ✅ Provata dall'utente il 13/11/2026 (Mute e Solo, mix e originale, tracce ricaricate dalla cache, mix salvato
-   nel progetto). Unita in `main` insieme alla fase 19. Resta aperto: l'export usa il brano originale, non il mix
-   delle tracce.
+   nel progetto). Unita in `main` insieme alla fase 19. L'export con il mix delle tracce è arrivato
+   nella fase 34.
 
 ## 19. Archivio unico e backup ✅
 
@@ -1241,6 +1241,17 @@ Issue #4. Nel Live mode un brano con il cue out prima della fine si fermava di c
   al quadrato, che all'orecchio suona uniforme (`fadeGain` in `setlistMath.ts`). La durata è quella che si sente:
   a velocità Live più bassa vale lo stesso. La manopola del volume non si muove: la dissolvenza la moltiplica
   (`useLiveStore.fade` → `syncEngine`). Nella prova dei cambi vale solo sulla coda.
+
+## 34. Stems: cartella spostata ed esportazione del mix 🚧
+
+- **Cartella spostata (R4 della fase 31):** se il brano principale ha cambiato posto, le altre corsie si cercano nella
+  stessa posizione relativa (`movedWith` in `lib/format.ts`, anche da una cartella vicina come «Audio» accanto a
+  «Video»). Il comando `open_stem_files` prova il nuovo indirizzo (`moved_to`) solo se il vecchio non esiste più;
+  il mix salvato resta.
+- **Esporta audio con il mix delle stems:** nuova scelta «Mix delle stems attuale (livelli, Mute e Solo)», accesa
+  di serie quando ci sono tracce separate o stems da file. Il motore ricorda le stems e i livelli inviati
+  (`Engine::mix`) e l'esportazione li usa fermi per tutta la durata (`export::Mix`).
+- Fase 33, in più: la durata della dissolvenza si vede sulla riga della setlist e nella Stage view («fade 3 s»).
 
 ## Dopo la prima versione
 

@@ -171,6 +171,9 @@ pub struct Engine {
 pub(crate) struct Control {
     pub commands: rtrb::Producer<Command>,
     pub garbage: rtrb::Consumer<Garbage>,
+    /// The mix last sent to the audio thread, for exports of what is heard
+    pub stems: Option<Arc<Stems>>,
+    pub levels: StemLevels,
 }
 
 impl Engine {
@@ -229,6 +232,11 @@ impl Engine {
 
     /// Replaces the track; playback stops at the start of the new one.
     pub fn set_track(&self, pcm: Arc<Pcm>) {
+        // The separated tracks were of the song before (as the audio thread does)
+        self.remember(|control| {
+            control.stems = None;
+            control.levels = StemLevels::default();
+        });
         self.send(Command::SetTrack(pcm));
     }
 
@@ -274,6 +282,8 @@ impl Engine {
 
     /// The separated tracks of the open song, at the engine's rate; None removes them.
     pub fn set_stems(&self, stems: Option<Arc<Stems>>) {
+        let kept = stems.clone();
+        self.remember(|control| control.stems = kept);
         self.send(Command::SetStems(stems));
     }
 
@@ -283,7 +293,24 @@ impl Engine {
         for g in &mut levels.gains {
             *g = g.clamp(0.0, 1.0);
         }
+        self.remember(|control| control.levels = levels);
         self.send(Command::SetStemLevels(levels));
+    }
+
+    /// The song's mix as heard now: its stems (if any) and their levels, for an export.
+    pub fn mix(&self) -> (Option<Arc<Stems>>, StemLevels) {
+        let control = self.lock();
+        (control.stems.clone(), control.levels)
+    }
+
+    fn remember(&self, change: impl FnOnce(&mut Control)) {
+        change(&mut self.lock());
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, Control> {
+        self.control
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
     /// Tempo, metronome and count-in.
@@ -344,10 +371,7 @@ impl Engine {
     }
 
     fn send(&self, command: Command) {
-        let mut control = self
-            .control
-            .lock()
-            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let mut control = self.lock();
         // Free tracks the audio thread has let go of
         while control.garbage.pop().is_ok() {}
         // A full queue means the audio thread is stalled; dropping the command is the safe choice
@@ -385,7 +409,13 @@ pub(crate) fn channel(sample_rate: u32) -> (Control, Arc<Shared>, Renderer) {
     let (garbage_tx, garbage) = rtrb::RingBuffer::new(GARBAGE_SLOTS);
     let shared = Arc::new(Shared::default());
     let renderer = Renderer::new(sample_rate, command_rx, garbage_tx, Arc::clone(&shared));
-    (Control { commands, garbage }, shared, renderer)
+    let control = Control {
+        commands,
+        garbage,
+        stems: None,
+        levels: StemLevels::default(),
+    };
+    (control, shared, renderer)
 }
 
 #[cfg(test)]

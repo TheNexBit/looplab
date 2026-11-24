@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 
 use audio_engine::export::{self, ExportError};
-use audio_engine::{BitDepth, ChannelMode, EqSettings, ExportSettings, time};
+use audio_engine::{BitDepth, ChannelMode, EqSettings, ExportSettings, StemLevels, time};
 use serde::Deserialize;
 use tauri::ipc::Channel;
 use tauri::{AppHandle, State};
@@ -38,6 +38,9 @@ pub struct ExportRequest {
     pub eq: EqSettings,
     pub channels: ChannelMode,
     pub format: ExportFormat,
+    /// With the mix of the separated tracks or stems from files as heard (off: the song alone)
+    #[serde(default)]
+    pub with_stems: bool,
 }
 
 impl From<ExportError> for AppError {
@@ -99,6 +102,11 @@ pub async fn export_audio(
         ExportFormat::Wav24 | ExportFormat::Flac => BitDepth::Pcm24,
     };
     let cache = super::cache_dir(&app)?;
+    let (stems, levels) = if request.with_stems {
+        state.engine()?.mix()
+    } else {
+        (None, StemLevels::default())
+    };
     state.export_cancel.store(false, Ordering::Relaxed);
 
     let app = app.clone();
@@ -108,8 +116,12 @@ pub async fn export_audio(
         let report = |fraction: f32| {
             let _ = on_progress.send(fraction);
         };
+        let mix = export::Mix {
+            stems: stems.as_deref(),
+            levels,
+        };
         let Some(args) = encoder else {
-            export::export_wav(&pcm, &settings, depth, &target, report, cancel)?;
+            export::export_wav(&pcm, mix, &settings, depth, &target, report, cancel)?;
             return Ok(());
         };
         // FFmpeg encodes a temporary WAV in the cache, removed afterwards
@@ -118,6 +130,7 @@ pub async fn export_audio(
         let wav = dir.join("render.wav");
         export::export_wav(
             &pcm,
+            mix,
             &settings,
             depth,
             &wav,

@@ -15,7 +15,7 @@ use crate::dsp::stretch::Stretch;
 use crate::engine::{LoopSettings, MAX_SPEED, MIN_SPEED};
 use crate::pcm::{CHANNELS, Pcm};
 use crate::render::{Reader, SPLICE_SECONDS};
-use crate::stems::Source;
+use crate::stems::{Source, StemLevels, Stems};
 use crate::wav::{BitDepth, WavWriter};
 
 /// What to render, in frames of the track.
@@ -31,6 +31,13 @@ pub struct ExportSettings {
     pub semitones: f32,
     pub eq: EqSettings,
     pub channels: ChannelMode,
+}
+
+/// The mix of the song as heard: its separated tracks or stems from files, at their levels.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Mix<'a> {
+    pub stems: Option<&'a Stems>,
+    pub levels: StemLevels,
 }
 
 #[derive(Debug)]
@@ -66,6 +73,7 @@ const BLOCK: usize = 512;
 /// `progress` receives 0..1; setting `cancel` stops at the next block. Returns the frames written.
 pub fn render(
     pcm: &Pcm,
+    mix: Mix<'_>,
     settings: &ExportSettings,
     mut sink: impl FnMut(&[f32]) -> io::Result<()>,
     mut progress: impl FnMut(f32),
@@ -96,6 +104,14 @@ pub fn render(
     let mut notes = crate::synth::NoteQueue::new();
     let mut reader = Reader::new(rate);
     reader.jump(start);
+    // The mix as heard, held still for the whole export
+    let gains = mix.levels.inputs(mix.stems);
+    let source = Source {
+        track: Some(pcm),
+        stems: mix.stems,
+        from: gains,
+        to: gains,
+    };
     let mut fed = 0_u64;
     let mut read = |reader: &mut Reader, fed: &mut u64, out: &mut [f32]| {
         let rules = crate::render::Rules {
@@ -104,14 +120,7 @@ pub fn render(
             tempo: &tempo,
             notes: &[],
         };
-        reader.read(
-            &Source::track(Some(pcm)),
-            rules,
-            *fed,
-            &mut clicks,
-            &mut notes,
-            out,
-        );
+        reader.read(&source, rules, *fed, &mut clicks, &mut notes, out);
         *fed += (out.len() / CHANNELS) as u64;
     };
 
@@ -183,6 +192,7 @@ pub fn render(
 /// a cancelled or failed export leaves nothing behind.
 pub fn export_wav(
     pcm: &Pcm,
+    mix: Mix<'_>,
     settings: &ExportSettings,
     depth: BitDepth,
     path: &Path,
@@ -192,7 +202,14 @@ pub fn export_wav(
     let partial = path.with_extension("wav.partial");
     let result = (|| {
         let mut wav = WavWriter::create(&partial, pcm.sample_rate(), depth)?;
-        let frames = render(pcm, settings, |block| wav.write(block), progress, cancel)?;
+        let frames = render(
+            pcm,
+            mix,
+            settings,
+            |block| wav.write(block),
+            progress,
+            cancel,
+        )?;
         wav.finish()?;
         Ok(frames)
     })();
@@ -246,9 +263,14 @@ mod tests {
     }
 
     fn run(pcm: &Pcm, settings: &ExportSettings) -> Vec<f32> {
+        run_mix(pcm, Mix::default(), settings)
+    }
+
+    fn run_mix(pcm: &Pcm, mix: Mix<'_>, settings: &ExportSettings) -> Vec<f32> {
         let mut out = Vec::new();
         render(
             pcm,
+            mix,
             settings,
             |block| {
                 out.extend_from_slice(block);
@@ -313,10 +335,40 @@ mod tests {
     }
 
     #[test]
+    fn the_stems_mix_is_exported_as_heard() {
+        let song = track(1.0, 0.5);
+        let stem = track(1.0, 0.25);
+        let stems = Stems::new(vec![stem]);
+        let mut levels = StemLevels {
+            original: Some(0.0),
+            ..StemLevels::default()
+        };
+        // The open file muted, the other lane alone: its click is the one heard
+        levels.gains[0] = 1.0;
+        let mix = Mix {
+            stems: Some(&stems),
+            levels,
+        };
+        let out = run_mix(&song, mix, &settings(0.0, 1.0));
+        assert!((loudest_at(&out) - 0.25).abs() < 0.01);
+        // Untouched separated tracks: the original song
+        let out = run_mix(
+            &song,
+            Mix {
+                stems: Some(&stems),
+                levels: StemLevels::default(),
+            },
+            &settings(0.0, 1.0),
+        );
+        assert!((loudest_at(&out) - 0.5).abs() < 0.01);
+    }
+
+    #[test]
     fn a_cancelled_export_leaves_no_file() {
         let path = crate::pcm::tests::test_dir("export").join("cancelled.wav");
         let result = export_wav(
             &track(2.0, 1.0),
+            Mix::default(),
             &settings(0.0, 2.0),
             BitDepth::Pcm16,
             &path,

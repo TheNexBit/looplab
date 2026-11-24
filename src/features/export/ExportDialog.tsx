@@ -13,9 +13,11 @@ import { fileNameOf, formatPercent, signed } from "@/lib/format";
 import { readPrefs, writeStored } from "@/lib/storage";
 import { formatTime } from "@/lib/time";
 import { eqToRust, useEqStore } from "@/stores/eq";
+import { useFileStemsStore } from "@/stores/fileStems";
 import { normalizeRegion, useLoopStore } from "@/stores/loop";
 import { sortedSections, useMarkersStore } from "@/stores/markers";
 import { usePlayerStore } from "@/stores/player";
+import { useStemsStore } from "@/stores/stems";
 import { useUiStore } from "@/stores/ui";
 import {
   type ExportSource,
@@ -34,6 +36,8 @@ interface Prefs {
   format: ExportFormat;
   withSound: boolean;
   withEq: boolean;
+  /** Missing in older prefs: on, the mix as heard */
+  withStems?: boolean;
 }
 
 /** The last choices are a per-machine convenience, like the render settings of a DAW. */
@@ -102,6 +106,11 @@ export function ExportDialog() {
   const [prefs, setPrefs] = useState(loadPrefs);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [ffmpeg, setFfmpeg] = useState(true);
+  // Separated tracks or stems from files: the export can take their mix as heard
+  const separated = useStemsStore((state) => state.names !== null);
+  const fileStems = useFileStemsStore((state) => state.lanes.length > 1);
+  const hasStems = separated || fileStems;
+  const withStems = hasStems && prefs.withStems !== false;
 
   // Each opening starts from what was asked (a section's menu) or the loop, if there is one
   useEffect(() => {
@@ -152,6 +161,7 @@ export function ExportDialog() {
         eq: eqToRust({ ...eq.settings, bypass: !prefs.withEq || eq.settings.bypass }),
         channels: prefs.withEq ? eq.channels : "stereo",
         format: prefs.format,
+        withStems,
       },
       progress,
     );
@@ -244,6 +254,13 @@ export function ExportDialog() {
               onChange={(withEq) => updatePrefs({ withEq })}
               label={x.withEq}
             />
+            {hasStems && (
+              <Check
+                checked={withStems}
+                onChange={(on) => updatePrefs({ withStems: on })}
+                label={x.withStems}
+              />
+            )}
           </div>
         </Row>
 

@@ -577,6 +577,8 @@ export type ExportRequest_Deserialize = {
 	eq: EqSettings_Deserialize,
 	channels: ChannelMode,
 	format: ExportFormat,
+	/**  With the mix of the separated tracks or stems from files as heard (off: the song alone) */
+	withStems?: boolean,
 };
 
 export type ExportRequest_Serialize = {
@@ -592,6 +594,8 @@ export type ExportRequest_Serialize = {
 	eq: EqSettings_Serialize,
 	channels: ChannelMode,
 	format: ExportFormat,
+	/**  With the mix of the separated tracks or stems from files as heard (off: the song alone) */
+	withStems: boolean,
 };
 
 /**  The separated tracks saved as WAV files. */

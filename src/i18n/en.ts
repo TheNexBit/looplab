@@ -126,6 +126,7 @@ export const en = {
     sound: "Sound",
     withSound: "Current speed and pitch",
     withEq: "Current EQ and channels",
+    withStems: "Current stems mix (levels, Mute and Solo)",
     format: "Format",
     formats: { wav16: "WAV 16 bit", wav24: "WAV 24 bit", flac: "FLAC", mp3: "MP3 320k" },
     needsFfmpeg: "Needs FFmpeg, missing from the Looplab folder: reinstall Looplab",
