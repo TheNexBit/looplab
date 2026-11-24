@@ -671,6 +671,11 @@ export const en = {
     title: (lanes: number) => `Stems · ${lanes}`,
     loading: "Lining up the stems…",
     failed: "Stems not opened",
+    unreadable: "It cannot be read.",
+    leftOut: (name: string, why: string) => `«${name}» left out: ${why}`,
+    tooMany: (most: number, left: number) =>
+      `At most ${most} files besides the track: ${left === 1 ? "1 left out" : `${left} left out`}`,
+    dismissNotice: "Close the notice",
     solo: "Solo",
     soloHint: "Solo: turn S on for one or more tracks to hear only those",
     mute: "Mute this track",
@@ -696,7 +701,7 @@ export const en = {
       "Open several files together (a solo and its backing track): one track under the other, in time, with Solo and Mute",
     lessonKey: "Stems",
     lessonKeyHint:
-      "Open the lesson with its backing as stems: one track under the other, X to switch",
+      "Open the lesson with its backing as stems: one track under the other, «Listen» to pick what you hear",
     separatedOff:
       "Stems from files are open: the separated tracks of this song are not used until you close them.",
   },

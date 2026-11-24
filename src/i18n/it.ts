@@ -674,6 +674,11 @@ export const it = {
     title: (lanes: number) => `Stems · ${lanes}`,
     loading: "Allineo le stems…",
     failed: "Stems non aperte",
+    unreadable: "Non si riesce a leggere.",
+    leftOut: (name: string, why: string) => `«${name}» lasciato fuori: ${why}`,
+    tooMany: (most: number, left: number) =>
+      `Al massimo ${most} file oltre al brano: ${left === 1 ? "1 lasciato fuori" : `${left} lasciati fuori`}`,
+    dismissNotice: "Chiudi l'avviso",
     solo: "Solo",
     soloHint: "Solo: accendi S su una o più tracce per sentire solo quelle",
     mute: "Silenzia questa traccia",
@@ -699,7 +704,7 @@ export const it = {
       "Apri più file insieme (es. il solo e la sua base): una traccia sotto l'altra, a tempo, con Solo e Mute",
     lessonKey: "Stems",
     lessonKeyHint:
-      "Apri la lezione con la sua base come stems: una traccia sotto l'altra, X per cambiare",
+      "Apri la lezione con la sua base come stems: una traccia sotto l'altra, «Ascolta» per scegliere cosa sentire",
     separatedOff:
       "Ci sono stems da file aperte: le tracce separate di questo brano non si usano finché non le chiudi.",
   },

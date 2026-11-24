@@ -1190,7 +1190,7 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
 - **Vista:** nella forma d'onda grande una fascia per corsia, nel colore della corsia mentre si sente, grigia quando
   no; a sinistra, in una **colonna tutta loro** (mai sopra la forma d'onda: prima prova dell'utente, i clic su S/M
   finivano sulla musica), la testa di ogni corsia alta quanto lei: nome breve (le parole comuni ai file tolte:
-  «Backing»), **S** (Ctrl+clic aggiunge), **M**, volume, ✕ per toglierla. Loop, marker, playhead e righello su tutte.
+  «Backing»), **S**, **M**, volume; tasto destro: Solo, Mute, volume 100%, togli. Loop, marker, playhead e righello su tutte.
 - **Barra «Stems · N»** nel titolo delle forme d'onda: **«Ascolta: Tutte | corsia | corsia»** (la voce accesa è
   quella che si sente; un clic cambia senza fermare la musica), **+ Traccia**, **Chiudi stems** (il suggerimento dice
   come riaprirle). S è un interruttore semplice come in Reaper; tasto destro sulla testa: Solo, Mute, volume 100%,

@@ -210,7 +210,7 @@ export function Knob({
       className={cn(
         "lcd rounded-control px-1 text-center font-mono tabular leading-[18px]",
         size === "md" ? "h-5 w-[52px] text-[11px]" : "h-[18px] w-11 text-[10px] leading-4",
-        off && "text-fg-subtle [text-shadow:none]",
+        off ? "text-fg-subtle [text-shadow:none]" : "text-lcd-fg",
       )}
     >
       {text}

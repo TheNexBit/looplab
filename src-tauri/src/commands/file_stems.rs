@@ -43,6 +43,8 @@ pub fn open_for(track: &Arc<Pcm>) -> bool {
 pub struct StemFileRequest {
     pub path: String,
     pub shift: Option<f64>,
+    /// With a saved shift: whether it was found from the sound (false keeps the warning)
+    pub lined_up: Option<bool>,
 }
 
 /// A lane as opened: what is heard at `t` of the open track is at `t + shift` in this file.
@@ -53,6 +55,22 @@ pub struct StemFileLane {
     pub shift: f64,
     /// Lined up from the sound (or a saved shift); false: it starts with the open track
     pub lined_up: bool,
+}
+
+/// A file that could not be opened as a stem, and why (the others open all the same).
+#[derive(Debug, Clone, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct StemFileFailure {
+    pub path: String,
+    pub kind: ErrorKind,
+}
+
+/// The lanes opened, in the order asked, and the files left out.
+#[derive(Debug, Clone, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenedStems {
+    pub lanes: Vec<StemFileLane>,
+    pub failed: Vec<StemFileFailure>,
 }
 
 /// A file decoded at `rate`; through FFmpeg when its own format cannot be read (a video).
@@ -99,7 +117,8 @@ fn peaks_of(pcm: &Pcm) -> Vec<u8> {
 }
 
 /// Opens `files` as stems of the open track `track` (at most `MAX_STEMS`), lining up those
-/// without a known shift. Returns the lanes in the same order; their waveforms come from
+/// without a known shift. A file missing or unreadable is left out (listed in `failed`), the
+/// others open all the same. Returns the lanes in the order asked; their waveforms come from
 /// `get_stem_peaks`. Replaces the separated tracks of the song, if any were loaded.
 #[tauri::command]
 #[specta::specta]
@@ -108,7 +127,7 @@ pub async fn open_stem_files(
     state: State<'_, AppState>,
     track: String,
     files: Vec<StemFileRequest>,
-) -> Result<Vec<StemFileLane>, AppError> {
+) -> Result<OpenedStems, AppError> {
     let engine = state.engine()?;
     let rate = engine.sample_rate();
     let cache = super::cache_dir(&app)?;
@@ -117,15 +136,25 @@ pub async fn open_stem_files(
     let open = before.clone().filter(|pcm| pcm.is_complete());
     let files: Vec<StemFileRequest> = files.into_iter().take(MAX_STEMS).collect();
     let main = PathBuf::from(&track);
-    let (lanes, tracks, peaks) = tauri::async_runtime::spawn_blocking(move || {
+    let (lanes, failed, tracks, peaks) = tauri::async_runtime::spawn_blocking(move || {
         let mut base: Option<Sound> = None;
         let mut lanes = Vec::new();
+        let mut failed = Vec::new();
         let mut tracks = Vec::new();
         let mut peaks = Vec::new();
         for file in &files {
-            let pcm = decode(&cache, Path::new(&file.path), rate)?;
+            let pcm = match decode(&cache, Path::new(&file.path), rate) {
+                Ok(pcm) => pcm,
+                Err(error) => {
+                    failed.push(StemFileFailure {
+                        path: file.path.clone(),
+                        kind: error.kind,
+                    });
+                    continue;
+                }
+            };
             let (shift, lined_up) = match file.shift {
-                Some(shift) => (shift, true),
+                Some(shift) => (shift, file.lined_up.unwrap_or(true)),
                 None => {
                     if base.is_none() {
                         let pcm = match &open {
@@ -151,7 +180,7 @@ pub async fn open_stem_files(
                 lined_up,
             });
         }
-        Ok::<_, AppError>((lanes, tracks, peaks))
+        Ok::<_, AppError>((lanes, failed, tracks, peaks))
     })
     .await
     .map_err(AppError::internal)??;
@@ -166,10 +195,14 @@ pub async fn open_stem_files(
             "another track was opened",
         ));
     }
-    *LANE_PEAKS.lock().unwrap_or_else(PoisonError::into_inner) = peaks;
-    *OPEN_FOR.lock().unwrap_or_else(PoisonError::into_inner) = before.as_ref().map(Arc::downgrade);
-    engine.set_stems(Some(Arc::new(Stems::new(tracks))));
-    Ok(lanes)
+    // Nothing could be opened: the track stays alone (and its separated tracks, if any)
+    if !tracks.is_empty() {
+        *LANE_PEAKS.lock().unwrap_or_else(PoisonError::into_inner) = peaks;
+        *OPEN_FOR.lock().unwrap_or_else(PoisonError::into_inner) =
+            before.as_ref().map(Arc::downgrade);
+        engine.set_stems(Some(Arc::new(Stems::new(tracks))));
+    }
+    Ok(OpenedStems { lanes, failed })
 }
 
 /// Back to the open track alone.

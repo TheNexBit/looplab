@@ -57,7 +57,8 @@ export function BackingKey({ lesson, disabled }: { lesson: Lesson; disabled: boo
 export function StemsKey({ lesson, disabled }: { lesson: Lesson; disabled: boolean }) {
   const backing = backingOf(lesson);
   const main = lesson.main;
-  if (!backing || !main) return null;
+  // A lesson whose only file is its backing has nothing to stack
+  if (!backing || !main || samePath(main, backing.path)) return null;
   return (
     <button
       type="button"

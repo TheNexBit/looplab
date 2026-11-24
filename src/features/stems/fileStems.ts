@@ -1,5 +1,5 @@
 import { open as pickFiles } from "@tauri-apps/plugin-dialog";
-import { isSupported, MEDIA_EXTENSIONS } from "@/features/library/formats";
+import { isSupported, isVideoPath, MEDIA_EXTENSIONS } from "@/features/library/formats";
 import { onProjectApplied } from "@/features/markers/projectSync";
 import { t } from "@/i18n";
 import { commands } from "@/lib/bindings";
@@ -16,7 +16,15 @@ const BACKING_WORDS = /\b(backing|base|bt|minus|karaoke|instrumental|playback|ja
  * the song), else the first one. The others follow in name order.
  */
 export function orderStems(paths: readonly string[]): string[] {
-  const sorted = [...paths].sort((a, b) =>
+  // A video with the same name as an audio file is the same performance filmed: its sound
+  // would only double the audio lane (a lesson folder: «Solo.mp4» and «Solo.mp3»)
+  const title = (path: string) =>
+    fileNameOf(path)
+      .replace(/\.[^.]+$/, "")
+      .toLowerCase();
+  const audio = new Set(paths.filter((path) => !isVideoPath(path)).map(title));
+  const kept = paths.filter((path) => !isVideoPath(path) || !audio.has(title(path)));
+  const sorted = [...kept].sort((a, b) =>
     fileNameOf(a).localeCompare(fileNameOf(b), undefined, { numeric: true }),
   );
   const main = sorted.find((path) => !BACKING_WORDS.test(fileNameOf(path))) ?? sorted[0];

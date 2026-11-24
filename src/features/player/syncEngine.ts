@@ -1,6 +1,6 @@
 import { commands, type SoundsRequest } from "@/lib/bindings";
 import { eqToRust, useEqStore } from "@/stores/eq";
-import { laneGains, useFileStemsStore } from "@/stores/fileStems";
+import { laneGains, onStemsClosed, useFileStemsStore } from "@/stores/fileStems";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
@@ -101,6 +101,11 @@ export function syncWithEngine(): () => void {
       pushStems(true);
     }
   };
+  // Stems from files closed by hand: the song's separated tracks (if any) come back at once
+  onStemsClosed(() => {
+    const path = usePlayerStore.getState().track?.path;
+    if (path) void loadStems(path);
+  });
   const pushTrackVolume = (force = false) => {
     const { trackVolume, trackMuted } = useSettingsStore.getState();
     sendTrackVolume(trackMuted ? 0 : trackVolume, force);

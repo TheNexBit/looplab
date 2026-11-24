@@ -102,10 +102,13 @@ function restoreStemFiles(saved: ProjectData["stemFiles"]) {
     if (useFileStemsStore.getState().lanes.length > 0) void stems.close();
     return;
   }
+  // The track's own lane is the open file even if the project found it moved or copied (the
+  // project follows a file by its content): never its old path as one more lane
+  const paths = [track, ...saved.slice(1).map((lane) => lane.path)];
   const open = useFileStemsStore.getState();
   const same =
-    open.lanes.length === saved.length &&
-    open.lanes.every((lane, i) => samePath(lane.path, saved[i]?.path));
+    open.lanes.length === paths.length &&
+    open.lanes.every((lane, i) => samePath(lane.path, paths[i]));
   if (same) {
     useFileStemsStore.setState({
       lanes: open.lanes.map((lane, i) => ({
@@ -117,11 +120,7 @@ function restoreStemFiles(saved: ProjectData["stemFiles"]) {
     });
     return;
   }
-  void open.open(
-    track,
-    saved.map((lane) => lane.path),
-    saved,
-  );
+  void open.open(track, paths, saved);
 }
 
 /** Back to where the playhead was when the track was last closed (unless near its end). */

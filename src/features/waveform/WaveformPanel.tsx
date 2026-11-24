@@ -5,7 +5,7 @@ import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { SectionLane } from "@/features/markers/SectionLane";
 import { NoteView } from "@/features/notes/NoteView";
 import { TrackLevel } from "@/features/player/Levels";
-import { StemsBar } from "@/features/stems/StemLanes";
+import { COMPACT_LANES, StemsBar } from "@/features/stems/StemLanes";
 import { t } from "@/i18n";
 import { DETAIL_HEIGHT, OVERVIEW_HEIGHT } from "@/lib/appearance";
 import { clamp } from "@/lib/time";
@@ -58,6 +58,8 @@ function moveDetailEdge(height: number, from: number): number {
 /** Ruler of the detailed view, and the least height of a stem lane (its waveform and head). */
 const RULER_CSS = 20;
 const LANE_CSS = 58;
+/** With many lanes (heads on one row) each needs less: nine still fit at 1280 × 800. */
+const LOW_LANE_CSS = 30;
 
 export function WaveformPanel() {
   const notesOpen = useNotesStore((s) => s.open);
@@ -67,7 +69,12 @@ export function WaveformPanel() {
   // Stems from files: every lane gets room for its waveform and its head
   const lanes = useFileStemsStore((s) => s.lanes.length);
   const detailHeight =
-    lanes > 1 ? Math.max(chosenHeight, RULER_CSS + lanes * LANE_CSS) : chosenHeight;
+    lanes > 1
+      ? Math.max(
+          chosenHeight,
+          RULER_CSS + lanes * (lanes > COMPACT_LANES ? LOW_LANE_CSS : LANE_CSS),
+        )
+      : chosenHeight;
   const overviewHeight = useAppearanceStore((s) => s.overviewHeight);
   const hasNeighbour = useWavesStore((s) => s.neighbour !== null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -100,7 +107,7 @@ export function WaveformPanel() {
       className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden bg-stage p-2.5"
     >
       {/* The shared panel title (as video and score): the arrow folds the overview; Shift+O too */}
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1">
         <PanelTitle
           label={t.waveform.overview}
           icon={<AudioWaveform className="size-3.5 shrink-0 text-accent" aria-hidden />}

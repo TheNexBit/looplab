@@ -333,6 +333,13 @@ pub struct StemFile {
     pub level: f64,
     pub mute: bool,
     pub solo: bool,
+    /// Lined up from the sound; false: it starts with the track (its head keeps the warning)
+    #[serde(default = "lined_up_by_default")]
+    pub lined_up: bool,
+}
+
+const fn lined_up_by_default() -> bool {
+    true
 }
 
 /// Seconds since 1970.
