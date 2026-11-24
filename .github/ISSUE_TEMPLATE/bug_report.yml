@@ -1,0 +1,41 @@
+name: Bug report
+description: Something in Looplab does not work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time! Italian is fine too.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a song…
+        2. Drag a loop…
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Looplab version
+      placeholder: "0.30.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows
+      options: [Windows 11, Windows 10]
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, files or notes
+      description: Drag images or a short clip here. If a DAW (e.g. Reaper) does it differently, describe how.

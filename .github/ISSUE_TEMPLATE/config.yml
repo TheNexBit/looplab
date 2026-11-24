@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/TheNexBit/looplab/discussions
+    about: Ask a question or share a loose idea in Discussions.
+  - name: Support Looplab
+    url: https://ko-fi.com/roxfod
+    about: Buy the developer a coffee on Ko-fi.

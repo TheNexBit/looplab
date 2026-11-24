@@ -83,6 +83,18 @@ Le istruzioni per sviluppatori sono nel [README inglese](README.md#build-from-so
 tecnica è in italiano: [architettura](docs/ARCHITECTURE.md) · [roadmap](docs/ROADMAP.md) ·
 [specifica](docs/SPEC.md) · [licenze di terze parti](docs/THIRD_PARTY_LICENSES.md).
 
+## Collaborare
+
+Ogni aiuto è benvenuto: segnalazioni, idee, traduzioni e codice. Parti da [CONTRIBUTING.md](CONTRIBUTING.md)
+(in inglese), cerca le issue con l'etichetta
+[`good first issue`](https://github.com/TheNexBit/looplab/labels/good%20first%20issue) o passa a salutare in
+[Discussions](https://github.com/TheNexBit/looplab/discussions).
+
+## Licenza
+
+Looplab è software libero, distribuito con la [GNU General Public License v3.0 o successiva](LICENSE):
+puoi usarlo, studiarlo, condividerlo e modificarlo, e ogni versione che distribuisci resta libera.
+
 ## Crediti
 
 Looplab usa, tra gli altri, [alphaTab](https://alphatab.net/), [pdf.js](https://mozilla.github.io/pdf.js/) e

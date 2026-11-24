@@ -4,6 +4,7 @@ description = "Looplab beat and downbeat detection: a pure-Rust port of Beat Thi
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+license.workspace = true
 publish = false
 
 [dependencies]

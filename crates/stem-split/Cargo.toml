@@ -4,6 +4,7 @@ description = "Looplab stem separation: HTDemucs (Demucs v4) run in pure Rust."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+license.workspace = true
 publish = false
 
 [dependencies]

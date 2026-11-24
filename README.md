@@ -115,6 +115,18 @@ Docs (in Italian): [architecture](docs/ARCHITECTURE.md) · [roadmap](docs/ROADMA
 
 </details>
 
+## Contributing
+
+Contributions are welcome: bug reports, ideas, translations and code. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md), look for issues labelled
+[`good first issue`](https://github.com/TheNexBit/looplab/labels/good%20first%20issue), or say hello in
+[Discussions](https://github.com/TheNexBit/looplab/discussions).
+
+## License
+
+Looplab is free software, released under the [GNU General Public License v3.0 or later](LICENSE):
+you can use, study, share and change it, and any version you distribute stays free too.
+
 ## Credits
 
 Looplab uses [alphaTab](https://alphatab.net/), [pdf.js](https://mozilla.github.io/pdf.js/) and
