@@ -10,6 +10,33 @@ export const fileNameOf = (path: string) => path.split(/[\\/]/).pop() ?? path;
 export const samePath = (a: string | null | undefined, b: string | null | undefined) =>
   !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
+/** Folders of a Windows path, without the file name: "D:\\a\\b.mp3" → ["D:", "a"]. */
+const foldersOf = (path: string) => path.split(/[\\/]+/).slice(0, -1);
+
+/**
+ * Where `file` would be now if it moved together with `oldMain`, which is at `newMain`: the
+ * same way from the main file's folder to it ("..\\Backing\\x.mp3" too). Null if they share
+ * no drive, or nothing moved.
+ */
+export function movedWith(oldMain: string, newMain: string, file: string): string | null {
+  const from = foldersOf(oldMain);
+  const to = foldersOf(newMain);
+  const target = file.split(/[\\/]+/);
+  if (samePath(from.join("\\"), to.join("\\"))) return null;
+  let common = 0;
+  while (
+    common < from.length &&
+    common < target.length - 1 &&
+    samePath(from[common], target[common])
+  ) {
+    common += 1;
+  }
+  if (common === 0) return null;
+  const up = from.length - common;
+  if (up > to.length) return null;
+  return [...to.slice(0, to.length - up), ...target.slice(common)].join("\\");
+}
+
 /**
  * A value with its sign always shown when not zero, as on the pitch and gain readouts of
  * DAWs: 2 → "+2", -3 → "-3", 0 → "0". With a unit: "+2 st".

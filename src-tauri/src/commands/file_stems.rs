@@ -45,6 +45,19 @@ pub struct StemFileRequest {
     pub shift: Option<f64>,
     /// With a saved shift: whether it was found from the sound (false keeps the warning)
     pub lined_up: Option<bool>,
+    /// Where the file would be if its whole folder moved with the track: tried when `path` is gone
+    #[serde(default)]
+    pub moved_to: Option<String>,
+}
+
+/// The file to open: `path`, or `moved_to` when only that one exists (the song's folder moved).
+fn located(file: &StemFileRequest) -> String {
+    match &file.moved_to {
+        Some(moved) if !Path::new(&file.path).exists() && Path::new(moved).is_file() => {
+            moved.clone()
+        }
+        _ => file.path.clone(),
+    }
 }
 
 /// A lane as opened: what is heard at `t` of the open track is at `t + shift` in this file.
@@ -148,7 +161,8 @@ pub async fn open_stem_files(
         let mut tracks = Vec::new();
         let mut peaks = Vec::new();
         for file in &files {
-            let pcm = match decode(&cache, Path::new(&file.path), rate) {
+            let path = located(file);
+            let pcm = match decode(&cache, Path::new(&path), rate) {
                 Ok(pcm) => pcm,
                 Err(error) => {
                     failed.push(StemFileFailure {
@@ -180,7 +194,7 @@ pub async fn open_stem_files(
             peaks.push(peaks_of(&moved));
             tracks.push(moved);
             lanes.push(StemFileLane {
-                path: file.path.clone(),
+                path,
                 shift,
                 lined_up,
             });
@@ -264,4 +278,33 @@ pub fn media_in_folder(folder: String) -> Result<Vec<String>, AppError> {
         .collect();
     files.sort_by_key(|path| path.to_lowercase());
     Ok(files)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::project::tests::temp_dir;
+
+    fn request(path: &Path, moved_to: Option<&Path>) -> StemFileRequest {
+        StemFileRequest {
+            path: path.to_string_lossy().into_owned(),
+            shift: None,
+            lined_up: None,
+            moved_to: moved_to.map(|p| p.to_string_lossy().into_owned()),
+        }
+    }
+
+    #[test]
+    fn a_moved_folder_is_followed_only_when_the_old_file_is_gone() {
+        let dir = temp_dir("stems-moved");
+        let old = dir.join("old").join("backing.mp3");
+        let new = dir.join("new").join("backing.mp3");
+        std::fs::create_dir_all(new.parent().unwrap()).unwrap();
+        std::fs::write(&new, b"x").unwrap();
+        assert_eq!(located(&request(&old, Some(&new))), new.to_string_lossy());
+        assert_eq!(located(&request(&old, None)), old.to_string_lossy());
+        std::fs::create_dir_all(old.parent().unwrap()).unwrap();
+        std::fs::write(&old, b"x").unwrap();
+        assert_eq!(located(&request(&old, Some(&new))), old.to_string_lossy());
+    }
 }

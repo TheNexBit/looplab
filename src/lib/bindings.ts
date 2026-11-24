@@ -1490,6 +1490,8 @@ export type StemFileRequest_Deserialize = {
 	shift?: number | null,
 	/**  With a saved shift: whether it was found from the sound (false keeps the warning) */
 	linedUp?: boolean | null,
+	/**  Where the file would be if its whole folder moved with the track: tried when `path` is gone */
+	movedTo?: string | null,
 };
 
 /**  A file to open as a stem; `shift` when it was lined up before (saved in the project). */
@@ -1498,6 +1500,8 @@ export type StemFileRequest_Serialize = {
 	shift: number | null,
 	/**  With a saved shift: whether it was found from the sound (false keeps the warning) */
 	linedUp: boolean | null,
+	/**  Where the file would be if its whole folder moved with the track: tried when `path` is gone */
+	movedTo: string | null,
 };
 
 /**  One lane of the stems from files: the file, where it lines up, its level and its keys. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatAgo, samePath, signed } from "./format";
+import { formatAgo, movedWith, samePath, signed } from "./format";
 import { formatLength } from "./time";
 
 describe("signed", () => {
@@ -51,5 +51,33 @@ describe("samePath", () => {
     expect(samePath("", "")).toBe(false);
     expect(samePath(null, null)).toBe(false);
     expect(samePath(undefined, "C:\\a.mp3")).toBe(false);
+  });
+});
+
+describe("files that moved with the track", () => {
+  it("follow the track's folder, also from a sibling folder", () => {
+    expect(
+      movedWith(
+        String.raw`D:\Songs\A\song.mp3`,
+        String.raw`E:\Music\A\song.mp3`,
+        String.raw`D:\Songs\A\bass.wav`,
+      ),
+    ).toBe(String.raw`E:\Music\A\bass.wav`);
+    expect(
+      movedWith(
+        String.raw`D:\Course\L1\Video\v.mp4`,
+        String.raw`E:\Course\L1\Video\v.mp4`,
+        String.raw`D:\Course\L1\Audio\b.mp3`,
+      ),
+    ).toBe(String.raw`E:\Course\L1\Audio\b.mp3`);
+  });
+
+  it("give nothing when the track did not move or the drives share nothing", () => {
+    expect(
+      movedWith(String.raw`D:\A\s.mp3`, String.raw`d:\a\s.mp3`, String.raw`D:\A\b.wav`),
+    ).toBeNull();
+    expect(
+      movedWith(String.raw`D:\A\s.mp3`, String.raw`E:\A\s.mp3`, String.raw`F:\B\b.wav`),
+    ).toBeNull();
   });
 });

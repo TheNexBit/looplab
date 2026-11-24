@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { fetchStemPeaks, type Peaks } from "@/features/waveform/peaks";
 import { t } from "@/i18n";
 import { type AppError, commands, type StemFile } from "@/lib/bindings";
-import { fileNameOf, samePath } from "@/lib/format";
+import { fileNameOf, movedWith, samePath } from "@/lib/format";
 
 /** One lane of the stems from files: lane 0 is the open track itself. */
 export interface StemLane {
@@ -192,12 +192,17 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
     const token = ++openToken;
     set({ loading: true, error: null, notice: null });
     const find = (path: string) => saved.find((lane) => samePath(lane.path, path));
+    // The first saved lane is where the track was: if it moved, its stems may have moved with it
+    const before = saved[0]?.path;
+    const movedTo = (path: string) =>
+      before && !samePath(before, track) ? movedWith(before, track, path) : null;
     const result = await commands.openStemFiles(
       track,
       others.map((path) => ({
         path,
         shift: find(path)?.shift ?? null,
         linedUp: find(path)?.linedUp ?? null,
+        movedTo: movedTo(path),
       })),
     );
     if (token !== openToken) return;
@@ -252,7 +257,8 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
           shift: lane.shift ?? 0,
           linedUp: lane.linedUp,
           peaks: peaks[i] ?? null,
-          ...mix(find(lane.path)),
+          // Found in the moved folder: its saved mix is under its old path
+          ...mix(find(lane.path) ?? saved.find((old) => samePath(movedTo(old.path), lane.path))),
         })),
       ],
     });
