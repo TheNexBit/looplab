@@ -212,7 +212,11 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
   `StageView.tsx`) apre ogni brano, aspetta `onProjectApplied` di `projectSync`, applica le impostazioni Live e
   controlla il playhead ogni 40 ms per fermarsi al cue out e passare al brano dopo. Mentre è attivo
   `holdProjectSaves(true)` impedisce di salvare nei progetti di studio; all'uscita il progetto del brano aperto
-  viene riletto, così tornano loop, velocità e tonalità di studio.
+  viene riletto, così tornano loop, velocità e tonalità di studio. Pezzi condivisi tra Home e pannello laterale in
+  `SetlistParts.tsx` (`SetlistPanel.tsx` è la scheda del pannello). Trascinamento: `setlistDrop.ts` trova la zona
+  `data-setlist-drop` sotto il puntatore, sia per i file del sistema (`useFileDrop` passa la posizione, `App` li dà
+  alla setlist invece di aprirli) sia per i brani trascinati dai recenti (`dragTrack`, col puntatore). Righe di tipo
+  `break` (pause), `segue`, `key` (lista `SETLIST_KEYS` da Rust); `printSetlist.ts` stampa da un iframe nascosto.
 - Il plugin Vite di alphaTab porta solo il worker (`assetOutputDir: false`, niente worklet): il font Bravura è
   importato con `?url` e finisce nel bundle.
 

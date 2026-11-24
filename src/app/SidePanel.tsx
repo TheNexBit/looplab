@@ -6,6 +6,7 @@ import { ResizeHandle } from "@/components/ui/ResizeHandle";
 import { EqPanel } from "@/features/eq/EqPanel";
 import { SectionList } from "@/features/markers/SectionList";
 import { PracticePanel } from "@/features/practice/PracticePanel";
+import { SetlistPanel } from "@/features/setlist/SetlistPanel";
 import { StemsPanel } from "@/features/stems/StemsPanel";
 import { t } from "@/i18n";
 import { SIDE_PANEL_WIDTH, type SidePanelTab, useUiStore } from "@/stores/ui";
@@ -15,6 +16,7 @@ const tabs: { id: SidePanelTab; label: string; content: ReactNode }[] = [
   { id: "practice", label: t.sidePanel.practice, content: <PracticePanel /> },
   { id: "eq", label: t.sidePanel.eq, content: <EqPanel /> },
   { id: "stems", label: t.sidePanel.stems, content: <StemsPanel /> },
+  { id: "setlist", label: t.sidePanel.setlist, content: <SetlistPanel /> },
 ];
 
 export function SidePanel() {
@@ -53,9 +55,9 @@ export function SidePanel() {
             className="flex h-full flex-col"
             style={{ width }}
           >
-            <Tabs.List className="flex gap-0.5 border-b border-edge p-2">
+            <Tabs.List className="flex flex-wrap gap-0.5 border-b border-edge p-2">
               {tabs.map(({ id, label }) => (
-                <Tabs.Trigger key={id} value={id} className={`${tabTrigger} flex-1`}>
+                <Tabs.Trigger key={id} value={id} className={`${tabTrigger} min-w-fit flex-1 px-2`}>
                   {label}
                 </Tabs.Trigger>
               ))}

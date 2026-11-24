@@ -1117,9 +1117,38 @@ dell'utente del 24/11/2026, nomi del mestiere: Setlist, Live mode, Stage view, c
 - **Prova dei cambi** (Live mode «Solo i cambi»): di ogni brano i primi e gli ultimi 5-30 s (10 di fabbrica), per
   provare i passaggi da un brano all'altro.
 
+**Seconda tornata (24/11, dopo la prima prova 6/15):** l'utente voleva la setlist anche nel pannello laterale,
+con i brani aggiunti trascinandoli, e funzioni studiate sui programmi del mestiere. Confronto fatto:
+
+| Programma         | Cosa ha                                                                                                           | Preso in Looplab                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| BandHelper        | pause tra set con conto alla rovescia, pausa/medley tra brani, avanzamento automatico, ora di fine prevista       | pause («Break»), Segue, pausa tra i brani, «Fine prevista» sulla Stage view        |
+| OnSong            | trasposizione per setlist senza toccare il brano, pedali voltapagina, «bumper» che dice cosa fa il prossimo tasto | impostazioni Live per brano, PagGiù/PagSu, «Prossimo» sempre visibile              |
+| Setlist Helper    | durata totale mentre si costruisce, tonalità per brano, stampa pulita in un clic                                  | durata e limite, tonalità (menu maggiori/minori), «Stampa la scaletta» (anche PDF) |
+| AbleSet (Ableton) | sezioni del brano, salto al brano dopo senza fermarsi, vista da palco con orologio                                | sezione in corso e quella dopo sulla Stage view, Segue, orologio del set           |
+| Anytune / Moises  | setlist di brani con le proprie impostazioni di ascolto                                                           | velocità e trasposizione Live per brano                                            |
+
+- **Scheda «Setlist» nel pannello laterale** (accanto a Sezioni, Pratica, EQ, Tracce; le schede vanno a capo se il
+  pannello è stretto): scelta della setlist, Live, durata e conto alla rovescia, elenco compatto (doppio clic apre il
+  brano, il brano aperto è evidenziato), «Questo brano» e «Aggiungi ▾» (file, senza file, pausa, recenti).
+- **Trascinamento:** file da Esplora risorse rilasciati su una setlist (Home o pannello) entrano in scaletta; i
+  brani dei recenti nella Home si trascinano sulla setlist; la zona si illumina. Nel menu col tasto destro di
+  recenti e lezioni: «Aggiungi alla setlist «…»».
+- **Pause** tra i set, **Segue** (il brano dopo parte subito), **tonalità** del brano, **stampa**, **ora di fine
+  prevista** e **sezione in corso** sulla Stage view.
+
+Fonti: [BandHelper](https://www.bandhelper.com/tutorials/building_set_lists.html),
+[OnSong](https://onsongapp.com/docs/interface/menubar/songs-menu/sets/editor),
+[Setlist Helper](https://setlisthelper.com), [AbleSet](https://isotonikstudios.com/product/ableset-3-by-leolabs/),
+[Anytune](https://apps.apple.com/us/app/anytune/id415365180),
+[Moises](https://moises.ai/features/band-collaborative-setlist/).
+
 **Scelte prese da me (da confermare in prova):** trasposizione e velocità Live partono da 0 st e 100% (non da quelle
 di studio del brano); «Brano precedente» nei primi 3 secondi torna al brano prima, dopo riparte da capo; durante
 il Live il brano non salva niente nel suo progetto (anche loop o marker toccati lì).
+
+Altre scelte: dopo una pausa il brano seguente aspetta il tasto (la band torna sul palco); una pausa parte da sola
+col suo conto alla rovescia quando ci si arriva.
 
 **Fase 31 (proposta):** studio verso la data: stato «pronto / quasi / da studiare» per brano, ripasso dei punti
 difficili di tutta la scaletta, piano del giorno. Poi: stampa/PDF della scaletta, comandi MIDI per avanzare,

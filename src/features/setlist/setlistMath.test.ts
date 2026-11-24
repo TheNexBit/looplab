@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  breakItem,
   cueRange,
   daysTo,
   livePlan,
   moved,
   playLength,
+  remainingFrom,
   setLength,
   songFromFile,
+  songNumbers,
   songWithoutFile,
   titleOf,
   todayIso,
@@ -58,5 +61,18 @@ describe("setlist math", () => {
       { start: 190, end: 200 },
     ]);
     expect(livePlan({ start: 0, end: 15 }, "changes", 10)).toEqual([{ start: 0, end: 15 }]);
+  });
+
+  it("counts breaks in the set but not as songs", () => {
+    const songs = [
+      songFromFile("a.mp3", 100),
+      { ...breakItem("Pausa"), length: 600 },
+      { ...songFromFile("b.mp3", 50), segue: true },
+      songFromFile("c.mp3", 50),
+    ];
+    expect(setLength(songs).seconds).toBe(800);
+    expect([...songNumbers(songs).values()]).toEqual([1, 2, 3]);
+    // Gap after «a» and none after the break, the segue or the last song
+    expect(remainingFrom(songs, 0, 10)).toBe(810);
   });
 });

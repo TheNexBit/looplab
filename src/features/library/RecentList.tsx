@@ -5,6 +5,7 @@ import {
   FileAudio,
   FileVideo,
   FolderOpen,
+  ListPlus,
   Play,
   Search,
   X,
@@ -17,6 +18,8 @@ import { floatingPanel, menuContent, menuItem, menuSeparator } from "@/component
 import { withRightClick } from "@/components/ui/Tooltip";
 import { lessonAround, lessonHolding } from "@/features/lessons/lessonOrder";
 import { openLesson } from "@/features/lessons/openLesson";
+import { useAddToOpenSetlist } from "@/features/setlist/SetlistParts";
+import { dragTrack } from "@/features/setlist/setlistDrop";
 import { t } from "@/i18n";
 import { commands, type RecentFile } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
@@ -69,6 +72,7 @@ export const ago = (file: RecentFile) =>
 
 /** Right-click on a recent track: open it, show it in its folder, take it off the list. */
 function RecentMenu({ file, children }: { file: RecentFile; children: ReactNode }) {
+  const setlist = useAddToOpenSetlist();
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>{children}</ContextMenu.Trigger>
@@ -90,6 +94,16 @@ function RecentMenu({ file, children }: { file: RecentFile; children: ReactNode 
             <FolderOpen className="size-4" />
             {r.reveal}
           </ContextMenu.Item>
+          {setlist && (
+            <ContextMenu.Item
+              className={menuItem}
+              disabled={!file.exists}
+              onSelect={() => setlist.add(file.path, file.duration)}
+            >
+              <ListPlus className="size-4" />
+              {t.setlist.addToSetlist(setlist.name)}
+            </ContextMenu.Item>
+          )}
           <ContextMenu.Separator className={menuSeparator} />
           <ContextMenu.Item
             className={menuItem}
@@ -284,6 +298,11 @@ export function RecentList() {
                     r.rightClick,
                   )}
                   onClick={() => open(file)}
+                  // Dragged onto a setlist it joins it, like a clip from Ableton's browser
+                  onPointerDown={(event) =>
+                    file.exists &&
+                    dragTrack(event, { path: file.path, name: file.name, length: file.duration })
+                  }
                   className={cn(
                     "grid min-w-0 flex-1 grid-cols-[1rem_minmax(0,1fr)_auto_3.5rem_4.5rem] items-center gap-3 rounded-control px-2 py-1.5 text-left text-sm transition-colors",
                     file.exists

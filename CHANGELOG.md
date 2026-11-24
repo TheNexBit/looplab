@@ -17,6 +17,10 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 - **Setlist** (scheda nella Home): le scalette dei concerti con data, locale e conto alla rovescia; brani dal brano
   aperto, dai recenti, da file o senza file; ordine trascinando; durata del set con limite; impostazioni Live per
   brano (cue in/out, trasposizione, velocità, note da palco) che non toccano lo studio.
+- **Setlist nel pannello laterale** (scheda «Setlist»): aggiungi il brano aperto o trascina file da Esplora risorse e
+  brani dai recenti; «Aggiungi alla setlist» nei menu di recenti e lezioni.
+- **Pause** tra i set, **Segue** (il brano dopo parte subito), **tonalità** di ogni brano e **stampa** della scaletta
+  (anche in PDF).
 - **Live mode** con **Stage view**: la setlist suonata di fila come sul palco, comandabile da tastiera o pedale
   voltapagina, con pausa tra i brani a scelta e la **prova dei cambi** (solo inizio e fine di ogni brano).
 

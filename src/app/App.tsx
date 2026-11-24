@@ -21,6 +21,7 @@ import { startRemoteControl } from "@/features/remote/remoteControl";
 import { ScoreLayout } from "@/features/score/ScoreLayout";
 import { useLiveStore } from "@/features/setlist/live";
 import { StageView } from "@/features/setlist/StageView";
+import { dropFilesOnSetlist, hoverFilesOver } from "@/features/setlist/setlistDrop";
 import { feedDetachedVideo } from "@/features/video/detach";
 import { LessonLayout } from "@/features/video/LessonLayout";
 import { VideoLayout } from "@/features/video/VideoLayout";
@@ -33,6 +34,7 @@ import { useLessonsStore } from "@/stores/lessons";
 import { useMetronomeStore } from "@/stores/metronome";
 import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
+import { useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { useVideoStore } from "@/stores/video";
@@ -46,6 +48,11 @@ import { SidePanel } from "./SidePanel";
 import { shortcutHandlers } from "./shortcutHandlers";
 import { TopBar } from "./TopBar";
 
+/** Files dropped on a setlist join it; anywhere else they open (or link a tab) as before. */
+function dropFiles(paths: string[], position: { x: number; y: number } | null) {
+  if (!dropFilesOnSetlist(paths, position)) openDroppedFiles(paths);
+}
+
 export function App() {
   const [info, setInfo] = useState<AppInfo>();
   const hasTrack = usePlayerStore((s) => s.track !== null);
@@ -55,7 +62,8 @@ export function App() {
   const homeOpen = useLessonsStore((s) => s.open);
   const liveActive = useLiveStore((s) => s.active);
   const infoBar = useSettingsStore((s) => s.infoBar);
-  const hovering = useFileDrop(openDroppedFiles);
+  const hovering = useFileDrop(dropFiles, hoverFilesOver);
+  const overSetlist = useSetlistsStore((s) => s.dropTarget !== null);
 
   useEffect(() => {
     void commands.appInfo().then(setInfo);
@@ -126,7 +134,7 @@ export function App() {
             ) : (
               <EmptyState hovering={hovering} />
             )}
-            <DropOverlay visible={hovering && hasTrack} />
+            <DropOverlay visible={hovering && hasTrack && !overSetlist} />
             <ErrorBanner />
             {info && !hasTrack && (
               <span className="absolute right-3 bottom-2 text-[11px] text-fg-subtle tabular">

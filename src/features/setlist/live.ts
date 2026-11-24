@@ -6,7 +6,7 @@ import { useLoopStore } from "@/stores/loop";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
-import { cueRange, livePlan } from "./setlistMath";
+import { cueRange, isBreak, livePlan } from "./setlistMath";
 
 /**
  * - `loading`: the song's file is opening
@@ -172,16 +172,32 @@ export const useLiveStore = create<LiveState>((set, get) => {
   };
 
   /** The song is over: the next one is cued, then waits for the key or runs the gap. */
+  /**
+   * The song is over. After a segue the next one starts at once (a medley); a break starts its
+   * countdown at once; after a break the next song waits for the key (the band comes back on
+   * stage); otherwise the gap runs, or Live waits for the key.
+   */
   const songOver = () => {
     pausePlayer();
+    const list = songs();
+    const current = list[get().index];
     const index = get().index + 1;
-    if (index >= songs().length) {
+    const next = list[index];
+    if (!next) {
       set({ phase: "done" });
       return;
     }
     const gap =
       useSetlistsStore.getState().setlists.find((s) => s.id === get().setlistId)?.gapSeconds ?? 0;
-    void load(index, gap > 0 ? "gap" : "wait");
+    const then: Then =
+      current?.segue || isBreak(next)
+        ? "play"
+        : current && isBreak(current)
+          ? "wait"
+          : gap > 0
+            ? "gap"
+            : "wait";
+    void load(index, then);
   };
 
   const tick = () => {

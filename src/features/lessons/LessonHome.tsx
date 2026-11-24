@@ -13,6 +13,7 @@ import {
   FolderPlus,
   FoldVertical,
   GraduationCap,
+  ListPlus,
   Play,
   RefreshCw,
   RotateCcw,
@@ -35,6 +36,7 @@ import {
 import { withRightClick } from "@/components/ui/Tooltip";
 import { isVideoPath } from "@/features/library/formats";
 import { HomeTabs } from "@/features/setlist/HomeTabs";
+import { useAddToOpenSetlist } from "@/features/setlist/SetlistParts";
 import { t } from "@/i18n";
 import {
   commands,
@@ -107,6 +109,7 @@ function fileTitle(file: LessonFile) {
 
 /** Right-click on a lesson: open one of its files, pick what opens and which tab goes with it. */
 function LessonMenu({ lesson, children }: { lesson: Lesson; children: ReactNode }) {
+  const setlist = useAddToOpenSetlist();
   const media = lesson.files.filter((f) => f.kind === "video" || f.kind === "audio");
   const scores = lesson.files.filter((f) => f.kind === "score" || f.kind === "pdf");
   return (
@@ -118,6 +121,15 @@ function LessonMenu({ lesson, children }: { lesson: Lesson; children: ReactNode 
             <Play className="size-4" />
             {lesson.main ? l.open : l.openDocument}
           </ContextMenu.Item>
+          {setlist && lesson.main && (
+            <ContextMenu.Item
+              className={menuItem}
+              onSelect={() => lesson.main && setlist.add(lesson.main)}
+            >
+              <ListPlus className="size-4" />
+              {t.setlist.addToSetlist(setlist.name)}
+            </ContextMenu.Item>
+          )}
           <ContextMenu.Separator className={menuSeparator} />
           <MarkItems lesson={lesson} />
           {media.length > 0 && (

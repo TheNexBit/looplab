@@ -243,6 +243,8 @@ export const events = {
 /* Constants */
 export const AUDIO_FORMATS = ["mp3","wav","wave","flac","m4a","m4b","aac","ogg","oga","aiff","aif","mka"] as const;
 
+export const SETLIST_KEYS = ["C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","Cm","C#m","Dbm","Dm","D#m","Ebm","Em","Fm","F#m","Gbm","Gm","G#m","Abm","Am","A#m","Bbm","Bm"] as const;
+
 export const VIDEO_FORMATS = ["mp4","m4v","mov","mkv","webm"] as const;
 
 /* Types */
@@ -1277,6 +1279,11 @@ export type SequenceRequest_Serialize = {
 
 export type Setlist = Setlist_Serialize | Setlist_Deserialize;
 
+/**  What a row of the setlist is: a song, or a break between sets (BandHelper, Setlist Helper). */
+export type SetlistItemKind = "song" | 
+/**  A pause in the gig («Pausa», «Bis»): only a title and a length, counted in the set */
+"break";
+
 export type SetlistLibrary = SetlistLibrary_Serialize | SetlistLibrary_Deserialize;
 
 export type SetlistLibrary_Deserialize = {
@@ -1298,6 +1305,7 @@ export type SetlistSong = SetlistSong_Serialize | SetlistSong_Deserialize;
 export type SetlistSong_Deserialize = {
 	/**  Made by the app, never shown: tells two songs apart when they are dragged */
 	id: string,
+	kind?: SetlistItemKind,
 	/**  The audio or video file; `None` for a song played without a recording */
 	path?: string | null,
 	title: string,
@@ -1315,11 +1323,16 @@ export type SetlistSong_Deserialize = {
 	bpm?: number | null,
 	/**  Stage notes: tuning, capo, sound, who starts… */
 	notes?: string,
+	/**  The key the song is played in live («Am», «F#»), shown on the row and the Stage view */
+	key?: string | null,
+	/**  Segue: the next song follows at once, without the gap or waiting for the key (a medley) */
+	segue?: boolean,
 };
 
 export type SetlistSong_Serialize = {
 	/**  Made by the app, never shown: tells two songs apart when they are dragged */
 	id: string,
+	kind: SetlistItemKind,
 	/**  The audio or video file; `None` for a song played without a recording */
 	path: string | null,
 	title: string,
@@ -1337,6 +1350,10 @@ export type SetlistSong_Serialize = {
 	bpm: number | null,
 	/**  Stage notes: tuning, capo, sound, who starts… */
 	notes: string,
+	/**  The key the song is played in live («Am», «F#»), shown on the row and the Stage view */
+	key: string | null,
+	/**  Segue: the next song follows at once, without the gap or waiting for the key (a medley) */
+	segue: boolean,
 };
 
 export type Setlist_Deserialize = {

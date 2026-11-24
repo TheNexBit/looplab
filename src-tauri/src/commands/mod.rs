@@ -129,6 +129,8 @@ pub fn builder() -> Builder<tauri::Wry> {
         // The media files the app opens: one list, read by the UI too
         .constant("AUDIO_FORMATS", crate::formats::AUDIO)
         .constant("VIDEO_FORMATS", crate::formats::VIDEO)
+        // The keys a setlist song can be marked in
+        .constant("SETLIST_KEYS", crate::setlist::KEYS)
 }
 
 /// The cache folder, as a command error if it cannot be found.

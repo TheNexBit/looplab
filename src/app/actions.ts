@@ -80,6 +80,12 @@ export function buildActions(): Action[] {
     },
     { id: "tab-eq", label: t.sidePanel.eq, group: g.view, run: () => ui.setSidePanelTab("eq") },
     {
+      id: "tab-setlist",
+      label: t.sidePanel.setlist,
+      group: g.view,
+      run: () => ui.setSidePanelTab("setlist"),
+    },
+    {
       id: "eq-bypass",
       label: `${t.eq.title}: ${t.eq.bypass}`,
       group: g.sound,

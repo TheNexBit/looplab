@@ -26,6 +26,11 @@ interface SetlistsState {
   /** Changes a setlist at once on screen; it is saved a moment later. */
   edit: (id: string, change: (setlist: Setlist) => Setlist) => void;
   editSong: (id: string, songId: string, change: Partial<Song>) => void;
+  /** Adds songs at the end (or before `at`); files Looplab cannot play are left out. */
+  addSongs: (id: string, songs: Song[], at?: number) => void;
+  /** The setlist a file or a track is being dragged over (its drop zone lights up) */
+  dropTarget: string | null;
+  setDropTarget: (id: string | null) => void;
   /** Saves now what is waiting (before Live mode starts, before the window closes). */
   flush: () => Promise<void>;
 }
@@ -128,6 +133,18 @@ export const useSetlistsStore = create<SetlistsState>((set, get) => {
         id,
         setTimeout(() => void save(id), SAVE_DELAY_MS),
       );
+    },
+    addSongs: (id, songs, at) =>
+      get().edit(id, (setlist) => {
+        const place = at ?? setlist.songs.length;
+        return {
+          ...setlist,
+          songs: [...setlist.songs.slice(0, place), ...songs, ...setlist.songs.slice(place)],
+        };
+      }),
+    dropTarget: null,
+    setDropTarget: (dropTarget) => {
+      if (dropTarget !== get().dropTarget) set({ dropTarget });
     },
     editSong: (id, songId, change) =>
       get().edit(id, (setlist) => ({

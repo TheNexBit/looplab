@@ -25,11 +25,30 @@ const BPM: (f64, f64) = (20.0, 400.0);
 /// Gap between songs in Live mode, seconds (0 = wait for the next key).
 const MAX_GAP: u32 = 60;
 
+/// What a row of the setlist is: a song, or a break between sets (BandHelper, Setlist Helper).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum SetlistItemKind {
+    #[default]
+    Song,
+    /// A pause in the gig («Pausa», «Bis»): only a title and a length, counted in the set
+    Break,
+}
+
+/// The keys a song can be marked in, as musicians write them.
+pub const KEYS: &[&str] = &[
+    "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B",
+    "Cm", "C#m", "Dbm", "Dm", "D#m", "Ebm", "Em", "Fm", "F#m", "Gbm", "Gm", "G#m", "Abm", "Am",
+    "A#m", "Bbm", "Bm",
+];
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct SetlistSong {
     /// Made by the app, never shown: tells two songs apart when they are dragged
     pub id: String,
+    #[serde(default)]
+    pub kind: SetlistItemKind,
     /// The audio or video file; `None` for a song played without a recording
     pub path: Option<String>,
     pub title: String,
@@ -48,6 +67,12 @@ pub struct SetlistSong {
     /// Stage notes: tuning, capo, sound, who starts…
     #[serde(default)]
     pub notes: String,
+    /// The key the song is played in live («Am», «F#»), shown on the row and the Stage view
+    #[serde(default)]
+    pub key: Option<String>,
+    /// Segue: the next song follows at once, without the gap or waiting for the key (a medley)
+    #[serde(default)]
+    pub segue: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
@@ -151,6 +176,18 @@ fn tidy(mut setlist: Setlist) -> Setlist {
             .bpm
             .filter(|b| b.is_finite())
             .map(|b| b.clamp(BPM.0, BPM.1));
+        song.key = song.key.take().filter(|k| KEYS.contains(&k.as_str()));
+        if song.kind == SetlistItemKind::Break {
+            // A break has no file and nothing to play
+            song.path = None;
+            song.cue_in = None;
+            song.cue_out = None;
+            song.semitones = None;
+            song.speed = None;
+            song.bpm = None;
+            song.key = None;
+            song.segue = false;
+        }
     }
     setlist
 }
@@ -268,6 +305,7 @@ mod tests {
     fn song(title: &str) -> SetlistSong {
         SetlistSong {
             id: title.into(),
+            kind: SetlistItemKind::Song,
             path: None,
             title: title.into(),
             length: Some(200.0),
@@ -277,6 +315,8 @@ mod tests {
             speed: None,
             bpm: None,
             notes: String::new(),
+            key: None,
+            segue: false,
         }
     }
 
@@ -331,7 +371,11 @@ mod tests {
         set.songs[0].cue_in = Some(30.0);
         set.songs[0].cue_out = Some(10.0);
         set.songs[0].bpm = Some(f64::NAN);
+        set.songs[0].key = Some("H".into());
+        set.songs[1].key = Some("F#m".into());
         let set = tidy(set);
+        assert_eq!(set.songs[0].key, None);
+        assert_eq!(set.songs[1].key.as_deref(), Some("F#m"));
         assert_eq!(set.name, "Festa");
         assert_eq!(set.date, None);
         assert_eq!(set.gap_seconds, MAX_GAP);
@@ -367,6 +411,26 @@ mod tests {
         sort(&mut sets);
         let names: Vec<&str> = sets.iter().map(|s| s.name.as_str()).collect();
         assert_eq!(names, ["Soon", "Later", "Undated", "Past"]);
+    }
+
+    #[test]
+    fn a_break_keeps_only_its_title_and_length() {
+        let mut set = setlist("Gig", None);
+        set.songs[1].kind = SetlistItemKind::Break;
+        set.songs[1].path = Some("x.mp3".into());
+        set.songs[1].segue = true;
+        let set = tidy(set);
+        assert_eq!(set.songs[1].path, None);
+        assert!(!set.songs[1].segue);
+        assert_eq!(set.songs[1].length, Some(200.0));
+    }
+
+    #[test]
+    fn reads_setlists_saved_before_breaks_and_keys() {
+        let old = r#"{"id":"set-1","name":"Old","songs":[{"id":"a","path":null,"title":"A","length":60,"cueIn":null,"cueOut":null,"semitones":null,"speed":null,"bpm":null}]}"#;
+        let set: Setlist = serde_json::from_str(old).unwrap();
+        assert_eq!(set.songs[0].kind, SetlistItemKind::Song);
+        assert!(!set.songs[0].segue);
     }
 
     #[test]

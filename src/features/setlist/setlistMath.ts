@@ -9,8 +9,10 @@ export const LIVE_SEMITONES = { min: -12, max: 12, step: 1, default: 0 } as cons
 export const LIVE_BPM = { min: 20, max: 400, step: 1, default: 120 } as const;
 export const LIMIT_MINUTES = { min: 0, max: 300, step: 5 } as const;
 export const GAP_SECONDS = { min: 0, max: 60, step: 1 } as const;
-/** A song without file: planned length, 30 s steps. */
+/** A song without file: planned length, 15 s steps. */
 export const PLANNED_LENGTH = { min: 30, max: 1800, step: 15 } as const;
+/** A break between sets: 1 to 60 minutes, by the minute. */
+export const BREAK_LENGTH = { min: 60, max: 3600, step: 60, default: 900 } as const;
 
 /** A file's name without its extension: «Highway Star.mp3» → «Highway Star». */
 export function titleOf(path: string): string {
@@ -29,6 +31,7 @@ export function newSongId(): string {
 export function songFromFile(path: string, length: number | null = null): Song {
   return {
     id: newSongId(),
+    kind: "song",
     path,
     title: titleOf(path),
     length,
@@ -38,12 +41,21 @@ export function songFromFile(path: string, length: number | null = null): Song {
     speed: null,
     bpm: null,
     notes: "",
+    key: null,
+    segue: false,
   };
 }
 
 export function songWithoutFile(title: string): Song {
   return { ...songFromFile(""), path: null, title, length: DEFAULT_SONG_LENGTH, bpm: 120 };
 }
+
+/** A break between sets («Pausa», «Bis»): a title and a length, nothing to play. */
+export function breakItem(title: string): Song {
+  return { ...songFromFile(""), kind: "break", path: null, title, length: BREAK_LENGTH.default };
+}
+
+export const isBreak = (song: Song) => song.kind === "break";
 
 /** Where Live starts and stops in the file (seconds), or null when the length is unknown. */
 export function cueRange(song: Song): { start: number; end: number } | null {
@@ -55,7 +67,7 @@ export function cueRange(song: Song): { start: number; end: number } | null {
 
 /** How long the song lasts on stage: its cue range at its Live speed (planned length without file). */
 export function playLength(song: Song): number | null {
-  if (!song.path) return song.length;
+  if (!song.path || isBreak(song)) return song.length;
   const range = cueRange(song);
   if (!range) return null;
   return (range.end - range.start) / (song.speed ?? 1);
@@ -85,6 +97,28 @@ export function daysTo(date: string, today = new Date()): number {
 export function todayIso(today = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+}
+
+/**
+ * Seconds still to play from song `index` on (its whole length; the gaps between songs too,
+ * except after a segue), for the projected end of the gig.
+ */
+export function remainingFrom(songs: readonly Song[], index: number, gapSeconds: number): number {
+  let seconds = 0;
+  for (let i = index; i < songs.length; i += 1) {
+    const song = songs[i] as Song;
+    seconds += playLength(song) ?? 0;
+    const last = i === songs.length - 1;
+    if (!last && !song.segue && !isBreak(song)) seconds += gapSeconds;
+  }
+  return seconds;
+}
+
+/** The songs only (breaks left out), each with its number in the set: 1, 2, 3… */
+export function songNumbers(songs: readonly Song[]): Map<string, number> {
+  const numbers = new Map<string, number>();
+  for (const song of songs) if (!isBreak(song)) numbers.set(song.id, numbers.size + 1);
+  return numbers;
 }
 
 /** The list with the item at `from` moved to `to` (both clamped). */
