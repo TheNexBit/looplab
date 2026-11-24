@@ -334,6 +334,14 @@ export const useLiveStore = create<LiveState>((set, get) => {
   };
 });
 
+// The set being played is deleted: set mode ends, the study project comes back
+useSetlistsStore.subscribe((state) => {
+  const live = useLiveStore.getState();
+  if (live.active && state.loaded && !state.setlists.some((x) => x.id === live.setlistId)) {
+    live.stop();
+  }
+});
+
 // A track that is not the set's song opens (recent list, a course, a file): set mode ends, with
 // a notice to go back. Studying a single track never finds the setlist in the way.
 usePlayerStore.subscribe((state, previous) => {
@@ -351,6 +359,16 @@ usePlayerStore.subscribe((state, previous) => {
 });
 
 setPlaysOnFromHere(() => useLiveStore.getState().active);
+
+/**
+ * The Play key and the space bar: in set mode they play or pause the set's song (a song without
+ * file or a break has no track of its own); otherwise the open track, as always.
+ */
+export function playOrPause() {
+  const live = useLiveStore.getState();
+  if (live.active && live.phase !== "done") live.toggle();
+  else usePlayerStore.getState().togglePlay();
+}
 
 /** Seconds played of a song without file (for the Stage view's clock). */
 export function liveElapsed(state: LiveState = useLiveStore.getState()): number {

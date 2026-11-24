@@ -759,7 +759,7 @@ export const en = {
     modeChangesHint: "Head and tail of each song: rehearse the changes",
     changeSeconds: "Seconds each side",
     stageKeys:
-      "On stage: Space = play/pause · arrows or pedal (PgDn/PgUp) = next/previous song · Esc = leave",
+      "On stage: Space = play/pause · arrows or pedal (PgDn/PgUp) = next/previous song · Esc = normal view",
     addThis: "This track",
     addMore: "Add",
     addBreak: "Break",
@@ -774,7 +774,7 @@ export const en = {
     dropHint: "…or drag files here from Explorer, or tracks from the recent list",
     noSongsPanelHint: "Press «This track», or drag files here from Explorer.",
     emptyTextShort: "The running order of a gig: the songs in order, rehearsed with Live mode.",
-    panelHint: "Double-click a song to open it · drag files here to add them",
+    panelHint: "Double-click a song to play it · drag files here to add them",
     keyOf: (key: string) => `Key: ${key}`,
     segue: "Segue",
     segueHint: "The next song starts at once, with no gap or key (a medley)",

@@ -2,6 +2,7 @@ import { open as pickFiles } from "@tauri-apps/plugin-dialog";
 import {
   AlertCircle,
   ArrowDownToLine,
+  Check,
   ChevronDown,
   Coffee,
   Copy,
@@ -149,16 +150,19 @@ export function KeyBadge({ songKey, large = false }: { songKey: string | null; l
 type MenuParts = {
   Item: typeof DropdownMenu.Item | typeof ContextMenu.Item;
   CheckboxItem: typeof DropdownMenu.CheckboxItem | typeof ContextMenu.CheckboxItem;
+  ItemIndicator: typeof DropdownMenu.ItemIndicator | typeof ContextMenu.ItemIndicator;
   Separator: typeof DropdownMenu.Separator | typeof ContextMenu.Separator;
 };
 const DROPDOWN: MenuParts = {
   Item: DropdownMenu.Item,
   CheckboxItem: DropdownMenu.CheckboxItem,
+  ItemIndicator: DropdownMenu.ItemIndicator,
   Separator: DropdownMenu.Separator,
 };
 const CONTEXT: MenuParts = {
   Item: ContextMenu.Item,
   CheckboxItem: ContextMenu.CheckboxItem,
+  ItemIndicator: ContextMenu.ItemIndicator,
   Separator: ContextMenu.Separator,
 };
 
@@ -167,7 +171,7 @@ function SongMenuItems({
   index,
   onSettings,
   onRename,
-  parts: { Item, CheckboxItem, Separator },
+  parts: { Item, CheckboxItem, ItemIndicator, Separator },
 }: {
   setlist: Setlist;
   index: number;
@@ -216,6 +220,9 @@ function SongMenuItems({
         >
           <ArrowDownToLine className="size-4" />
           {s.segue}
+          <ItemIndicator className="ml-auto pl-4">
+            <Check className="size-4" />
+          </ItemIndicator>
         </CheckboxItem>
       )}
       {!pause && (
@@ -233,6 +240,9 @@ function SongMenuItems({
         >
           <OctagonPause className="size-4" />
           {s.stopAfter}
+          <ItemIndicator className="ml-auto pl-4">
+            <Check className="size-4" />
+          </ItemIndicator>
         </CheckboxItem>
       )}
       <Separator className={menuSeparator} />
@@ -342,6 +352,7 @@ function SongRow({
 }) {
   const files = useSetlistsStore((st) => st.files);
   const isOpen = usePlayerStore((st) => samePath(st.track?.path, song.path));
+  const rowRef = useRef<HTMLDivElement>(null);
   const liveIndex = useLiveStore((st) =>
     st.active && st.setlistId === setlist.id ? st.index : -1,
   );
@@ -358,6 +369,7 @@ function SongRow({
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>
         <div
+          ref={rowRef}
           data-song-index={index}
           // A click selects the row, like a track in a DAW; F2 renames it
           role="option"
@@ -379,7 +391,6 @@ function SongRow({
             selected && "ring-1 ring-accent/60 ring-inset",
             dragging && "opacity-40",
           )}
-          // In the side panel a double-click opens the song to practise it; on the Home its Live settings
           // In the side panel (set mode) a double-click plays the song; on the Home it opens its Live settings
           onDoubleClick={() =>
             compact && !pause ? useLiveStore.getState().playSong(index) : onSettings()
@@ -425,6 +436,8 @@ function SongRow({
               onDone={(title) => {
                 if (title && title !== song.title) store().editSong(setlist.id, song.id, { title });
                 onRename(false);
+                // Back on the row, so F2 or the arrows go on from here
+                requestAnimationFrame(() => rowRef.current?.focus());
               }}
             />
           ) : (
@@ -454,10 +467,15 @@ function SongRow({
               type="button"
               onClick={onSettings}
               title={s.liveSettings}
-              className="shrink-0 rounded-control px-1.5 py-0.5 font-mono text-[11px] text-readout hover:bg-surface"
+              className="shrink-0 rounded-control px-1.5 py-0.5 font-mono text-[11px] text-fg-muted hover:bg-surface hover:text-fg"
             >
               {summary}
             </button>
+          )}
+          {song.stopAfter && (
+            <span title={s.stopAfterHint} className="shrink-0 text-accent">
+              <OctagonPause className="size-3.5" aria-label={s.stopAfter} />
+            </span>
           )}
           {song.segue && (
             <span title={s.segueHint} className="shrink-0 text-accent">
@@ -963,7 +981,8 @@ export function LiveKey({ setlist, compact = false }: { setlist: Setlist; compac
         <DropdownMenu.Trigger asChild>
           <Button
             variant="hardware"
-            className="w-6 rounded-l-none border-l border-edge px-0"
+            size="icon"
+            className="rounded-l-none border-l border-edge"
             aria-label={s.liveOptions}
             title={s.liveOptions}
           >

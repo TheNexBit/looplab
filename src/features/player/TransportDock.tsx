@@ -7,6 +7,7 @@ import { menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
+import { playOrPause } from "@/features/setlist/live";
 import { t } from "@/i18n";
 import { formatPercent, signed } from "@/lib/format";
 import { clamp } from "@/lib/time";
@@ -26,7 +27,6 @@ const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
 export function TransportDock() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const playing = usePlayerStore((s) => s.playing);
-  const { togglePlay } = usePlayerStore.getState();
   const snap = useSettingsStore((s) => s.snap);
   // While Shift suspends it during a drag, the magnet's lamp goes out
   const suspended = useSnapHoldStore((s) => s.shift && s.pressing);
@@ -46,7 +46,7 @@ export function TransportDock() {
               led="green"
               active={playing}
               disabled={!hasTrack}
-              onClick={togglePlay}
+              onClick={playOrPause}
               aria-label={playLabel}
             >
               {playing ? (

@@ -9,7 +9,7 @@ import { setDownbeatHere, tapBeat, toggleMetronome } from "@/features/practice/a
 import { togglePlaylist } from "@/features/practice/playlist";
 import { isTapping, tapSync } from "@/features/score/syncActions";
 import { nextTab } from "@/features/score/TabMenu";
-import { useLiveStore } from "@/features/setlist/live";
+import { playOrPause, useLiveStore } from "@/features/setlist/live";
 import type { ShortcutHandlers } from "@/lib/useShortcuts";
 import { useHistoryStore } from "@/stores/history";
 import { useLessonsStore } from "@/stores/lessons";
@@ -83,7 +83,7 @@ const recallSection = (index: number) => {
 
 /** What every shortcut of `lib/shortcuts.ts` does. The command palette reuses them. */
 export const shortcutHandlers: Required<ShortcutHandlers> = {
-  playPause: () => (metronomeMode() ? toggleMetronomeRun() : player().togglePlay()),
+  playPause: () => (metronomeMode() ? toggleMetronomeRun() : playOrPause()),
   seekBack: () => player().seekBy(-settings().seekStep),
   seekForward: () => player().seekBy(settings().seekStep),
   seekBackFine: () => player().seekBy(-settings().fineSeekStep),

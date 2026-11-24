@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useCurrentMemo } from "@/features/markers/CurrentMemo";
 import { TimeDisplay } from "@/features/player/TimeDisplay";
+import { playOrPause } from "@/features/setlist/live";
 import { t } from "@/i18n";
 import { formatPercent } from "@/lib/format";
 import { formatTime } from "@/lib/time";
@@ -28,7 +29,7 @@ export function MiniBar() {
   const regionEnd = useLoopStore((s) => s.region()?.end ?? null);
   const region =
     regionStart !== null && regionEnd !== null ? { start: regionStart, end: regionEnd } : null;
-  const { togglePlay, setSpeed } = usePlayerStore.getState();
+  const { setSpeed } = usePlayerStore.getState();
   const step = useSettingsStore((s) => s.speedStep);
   const playLabel = playing ? t.transport.pause : t.transport.play;
   const memo = useCurrentMemo();
@@ -42,7 +43,7 @@ export function MiniBar() {
           led="green"
           active={playing}
           disabled={!hasTrack}
-          onClick={togglePlay}
+          onClick={playOrPause}
           aria-label={playLabel}
         >
           {playing ? (

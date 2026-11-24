@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { create } from "zustand";
 import {
   type AppError,
@@ -164,7 +165,11 @@ export function openSetlist(setlists: readonly Setlist[], picked: string): Setli
   return setlists.find((s) => s.id === picked) ?? setlists[0] ?? null;
 }
 
-// Edits still waiting are saved before the window closes
-if (typeof window !== "undefined") {
-  window.addEventListener("beforeunload", () => void useSetlistsStore.getState().flush());
+/**
+ * Edits still waiting are written before the window closes (the close waits for them, as for
+ * the projects in `projectSync`). Started once by the app shell; returns the function that stops it.
+ */
+export function saveSetlistsOnClose(): () => void {
+  const unlisten = getCurrentWindow().onCloseRequested(() => useSetlistsStore.getState().flush());
+  return () => void unlisten.then((stop) => stop());
 }

@@ -94,7 +94,13 @@ export function EmptyState({
     if (!overTrack) return;
     const onKey = (event: KeyboardEvent) => {
       // An open menu takes its own Esc
-      if (event.key !== "Escape" || document.querySelector('[role="menu"]')) return;
+      if (
+        event.key !== "Escape" ||
+        document.querySelector('[role="menu"]') ||
+        document.querySelector('[role="dialog"]')
+      ) {
+        return;
+      }
       // A search being typed takes the first Esc (it empties it)
       const typing = document.activeElement;
       if (typing instanceof HTMLInputElement && typing.value !== "") return;

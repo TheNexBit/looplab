@@ -28,7 +28,10 @@ export function printableSetlist(setlist: Setlist): string {
       )}${segue}</div>${notes}</td><td class="key">${escapeHtml(song.key ?? "")}</td><td class="time">${time}</td></tr>`;
     })
     .join("");
-  const details = [setlist.date ?? "", setlist.venue].filter(Boolean).map(escape).join(" · ");
+  const date = setlist.date
+    ? new Date(`${setlist.date}T12:00:00`).toLocaleDateString(s.locale, { dateStyle: "full" })
+    : "";
+  const details = [date, setlist.venue].filter(Boolean).map(escapeHtml).join(" · ");
   const total = formatLength(setLength(setlist.songs).seconds);
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(setlist.name)}</title>
 <style>

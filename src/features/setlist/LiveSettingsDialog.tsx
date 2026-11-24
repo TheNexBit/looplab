@@ -41,7 +41,8 @@ function CuePoint({
   label,
   value,
   edge,
-  length,
+  min,
+  max,
   isOpen,
   onChange,
 }: {
@@ -49,7 +50,9 @@ function CuePoint({
   value: number | null;
   /** Where the song starts or ends without this cue */
   edge: number;
-  length: number;
+  /** The other cue bounds this one: they never cross */
+  min: number;
+  max: number;
   isOpen: boolean;
   onChange: (value: number | null) => void;
 }) {
@@ -58,8 +61,8 @@ function CuePoint({
       <Stepper
         label={label}
         value={value ?? edge}
-        min={0}
-        max={length}
+        min={min}
+        max={max}
         step={1}
         format={formatLength}
         onChange={onChange}
@@ -68,7 +71,9 @@ function CuePoint({
         variant="hardware"
         disabled={!isOpen}
         title={isOpen ? s.live.fromPlayheadHint : s.live.openToUsePlayhead}
-        onClick={() => onChange(Math.round(currentPosition() * 10) / 10)}
+        onClick={() =>
+          onChange(Math.min(max, Math.max(min, Math.round(currentPosition() * 10) / 10)))
+        }
       >
         <Crosshair className="size-3.5" />
         {s.live.fromPlayhead}
@@ -196,7 +201,8 @@ export function LiveSettingsDialog({
                   label={s.live.cueIn}
                   value={song.cueIn}
                   edge={0}
-                  length={length}
+                  min={0}
+                  max={Math.max(0, (song.cueOut ?? length) - 1)}
                   isOpen={isOpen}
                   onChange={(cueIn) => edit({ cueIn: cueIn === 0 ? null : cueIn })}
                 />
@@ -206,7 +212,8 @@ export function LiveSettingsDialog({
                   label={s.live.cueOut}
                   value={song.cueOut}
                   edge={length}
-                  length={length}
+                  min={Math.min(length, (song.cueIn ?? 0) + 1)}
+                  max={length}
                   isOpen={isOpen}
                   onChange={(cueOut) =>
                     edit({ cueOut: cueOut !== null && cueOut >= length ? null : cueOut })

@@ -181,7 +181,10 @@ export function TopBar() {
   return (
     <header className="shrink-0 border-b border-edge bg-[linear-gradient(var(--color-topbar-from),var(--color-topbar-to))] px-3 py-1 shadow-[inset_0_-1px_0_var(--color-sheen)]">
       {/* Every key stays: names give way to icons first, then a second row */}
-      <FitBar className="min-h-9 gap-x-3" resetKey={homeOpen ? "home" : "track"}>
+      <FitBar
+        className="min-h-9 gap-x-3"
+        resetKey={`${homeOpen ? "home" : "track"}-${setMode ? "set" : "single"}`}
+      >
         <div className="flex h-6 items-center gap-2 border-r border-border pr-3">
           <AudioLines className="size-4 text-accent" aria-hidden />
           <BrandName />

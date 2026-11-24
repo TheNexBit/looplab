@@ -14,11 +14,11 @@ import { Button } from "@/components/ui/Button";
 import { t } from "@/i18n";
 import type { SetlistSong_Serialize as Song } from "@/lib/bindings";
 import { cn } from "@/lib/cn";
-import { formatPercent, signed } from "@/lib/format";
+import { formatPercent, samePath, signed } from "@/lib/format";
 import { formatElapsed, formatLength } from "@/lib/time";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
 import { sortedSections, useMarkersStore } from "@/stores/markers";
-import { currentPosition } from "@/stores/player";
+import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
 import { liveElapsed, useLiveStore } from "./live";
@@ -123,7 +123,9 @@ function useLiveClocks(songs: readonly Song[], index: number, gapSeconds: number
     }
     // When the gig ends, if it goes on from here as planned (BandHelper's projected end)
     if (endRef.current) {
-      const rest = Math.max(0, total - done) + remainingFrom(songs, index + 1, gapSeconds);
+      // This song's rest, then what follows it (its gap included) as `remainingFrom` counts it
+      const after = remainingFrom(songs, index, gapSeconds) - (playLength(song) ?? 0);
+      const rest = Math.max(0, total - done) + Math.max(0, after);
       endRef.current.textContent = clock(new Date(Date.now() + rest * 1000));
     }
     // A song without file: a light on every beat of its BPM, to count it in by eye
@@ -134,7 +136,10 @@ function useLiveClocks(songs: readonly Song[], index: number, gapSeconds: number
     }
     // The section being played and the one after it (from the song's own sections)
     if (sectionRef.current && nextSectionRef.current) {
-      const sections = song.path ? sortedSections(useMarkersStore.getState().sections) : [];
+      // Only the song's own sections: none while its file is missing (another track is open)
+      const own =
+        song.path && !live.missing && samePath(usePlayerStore.getState().track?.path, song.path);
+      const sections = own ? sortedSections(useMarkersStore.getState().sections) : [];
       const position = currentPosition();
       const at = sections.findIndex((x) => position >= x.start && position < x.end);
       const upcoming = sections.find((x) => x.start > position);
@@ -240,10 +245,10 @@ export function StageView() {
       </header>
 
       {/* The song being played, as big as the window allows */}
-      <main className="flex min-h-0 flex-1 flex-col justify-center gap-5">
+      <main className="flex min-h-0 flex-1 flex-col justify-center gap-4 overflow-hidden">
         {song ? (
           <>
-            <div className="flex items-center gap-4">
+            <div className="flex shrink-0 items-center gap-4">
               {pause && <Coffee className="size-14 shrink-0 text-accent" aria-hidden />}
               {!song.path && !pause && song.bpm && (
                 <span
@@ -254,7 +259,8 @@ export function StageView() {
               )}
               <h2
                 className={cn(
-                  "min-w-0 text-[clamp(2.5rem,7vw,6rem)] leading-none font-bold break-words",
+                  // At most two lines: a long title gets smaller instead of covering the rest
+                  "line-clamp-2 min-w-0 text-[clamp(2rem,min(6vw,9vh),5.5rem)] leading-tight font-bold break-words",
                   pause && "text-fg-muted",
                 )}
               >
@@ -262,17 +268,22 @@ export function StageView() {
               </h2>
               <KeyBadge songKey={song.key} large />
             </div>
-            {!pause && <Chips song={song} />}
-            <p className="flex items-baseline gap-4 text-[clamp(1.25rem,2.4vw,2rem)]">
+            {!pause && (
+              <div className="shrink-0">
+                <Chips song={song} />
+              </div>
+            )}
+            <p className="flex shrink-0 items-baseline gap-4 text-[clamp(1.25rem,2.4vw,2rem)]">
               <span ref={clocks.sectionRef} className="font-semibold text-accent" />
               <span ref={clocks.nextSectionRef} className="text-fg-subtle" />
             </p>
             {song.notes && (
-              <p className="max-w-5xl text-[clamp(1.25rem,2.6vw,2.25rem)] leading-snug whitespace-pre-wrap text-fg-muted">
+              // Long notes scroll in their own space: the clocks below always stay in view
+              <p className="min-h-0 max-w-5xl overflow-y-auto text-[clamp(1.25rem,2.6vw,2.25rem)] leading-snug whitespace-pre-wrap text-fg-muted">
                 {song.notes}
               </p>
             )}
-            <div className="flex flex-col gap-2">
+            <div className="flex shrink-0 flex-col gap-2">
               <div className="well h-3 overflow-hidden rounded-full">
                 <div ref={clocks.barRef} className="h-full w-0 bg-accent" />
               </div>
@@ -290,7 +301,7 @@ export function StageView() {
         {status && (
           <p
             className={cn(
-              "flex items-center gap-2 text-2xl",
+              "flex shrink-0 items-center gap-2 text-2xl",
               missing ? "text-red-400" : "text-accent",
             )}
           >

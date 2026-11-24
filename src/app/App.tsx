@@ -35,7 +35,7 @@ import { useLessonsStore } from "@/stores/lessons";
 import { useMetronomeStore } from "@/stores/metronome";
 import { usePlayerStore } from "@/stores/player";
 import { useScoreStore } from "@/stores/score";
-import { useSetlistsStore } from "@/stores/setlists";
+import { saveSetlistsOnClose, useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
 import { useVideoStore } from "@/stores/video";
@@ -83,6 +83,7 @@ export function App() {
     window.addEventListener("wheel", blockPageZoom, { passive: false });
     const stopEngineSync = syncWithEngine();
     const stopProjectSync = syncProject();
+    const stopSetlistSaves = saveSetlistsOnClose();
     const stopVideo = followTrackVideo();
     const stopExercise = followExercise();
     const stopDetached = feedDetachedVideo();
@@ -99,6 +100,7 @@ export function App() {
       window.removeEventListener("wheel", blockPageZoom);
       stopEngineSync();
       stopProjectSync();
+      stopSetlistSaves();
       stopVideo();
       stopExercise();
       stopDetached();

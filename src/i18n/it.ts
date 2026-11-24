@@ -762,7 +762,7 @@ export const it = {
     modeChangesHint: "Inizio e fine di ogni brano: si provano i passaggi",
     changeSeconds: "Secondi per lato",
     stageKeys:
-      "Sul palco: Spazio = play/pausa · frecce o pedale (PagGiù/PagSu) = brano successivo/precedente · Esc = esci",
+      "Sul palco: Spazio = play/pausa · frecce o pedale (PagGiù/PagSu) = brano successivo/precedente · Esc = vista normale",
     addThis: "Questo brano",
     addMore: "Aggiungi",
     addBreak: "Pausa",
@@ -777,7 +777,7 @@ export const it = {
     dropHint: "…oppure trascina qui file da Esplora risorse o brani dai recenti",
     noSongsPanelHint: "Premi «Questo brano», oppure trascina qui dei file da Esplora risorse.",
     emptyTextShort: "La scaletta di una data: i brani in ordine, da provare col Live mode.",
-    panelHint: "Doppio clic su un brano per aprirlo · trascina qui file per aggiungerli",
+    panelHint: "Doppio clic su un brano per suonarlo · trascina qui file per aggiungerli",
     keyOf: (key: string) => `Tonalità: ${key}`,
     segue: "Segue",
     segueHint: "Il brano dopo parte subito, senza pausa né tasto (medley)",
