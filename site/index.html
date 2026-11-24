@@ -98,7 +98,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline
 .top nav { display: flex; gap: 18px; margin-left: auto; flex-wrap: wrap; font-size: 14px; }
 .top nav a { text-decoration: none; color: var(--muted); transition: color .15s, text-shadow .15s; }
 .top nav a:hover { color: var(--fg); text-shadow: 0 0 12px var(--amber-glow); }
-.lang { display: flex; border: 1px solid var(--edge); border-radius: 7px; overflow: hidden; }
+.lang { margin: 0; padding: 0; min-width: 0; display: flex; border: 1px solid var(--edge); border-radius: 7px; overflow: hidden; }
 .lang button { all: unset; cursor: pointer; padding: 4px 10px; font: 700 11px var(--font-mono); letter-spacing: .1em; color: var(--subtle); }
 .lang button[aria-pressed="true"] { background: var(--amber); color: var(--amber-ink); box-shadow: 0 0 12px var(--amber-glow); }
 .lang button:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
@@ -184,7 +184,7 @@ section { padding-block: 64px; border-top: 1px solid var(--edge); }
 .stems { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 28px; align-items: center; }
 .demo { background: linear-gradient(#232723, #171a17); border: 1px solid #343a34; border-radius: 12px; padding: 14px; color: #e8ece6; box-shadow: 0 20px 50px rgb(0 0 0 / .35); }
 .listen { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: #a7ada4; }
-.seg { display: flex; flex-wrap: wrap; border: 1px solid #343a34; border-radius: 6px; overflow: hidden; }
+.seg { margin: 0; padding: 0; min-width: 0; display: flex; flex-wrap: wrap; border: 1px solid #343a34; border-radius: 6px; overflow: hidden; }
 .seg button {
   font: 600 12px var(--font-body); color: #a7ada4; background: #1b1f1b; border: 0; padding: 7px 12px;
   display: inline-flex; align-items: center; gap: 7px; cursor: pointer; transition: color .15s, background .15s;
@@ -206,6 +206,7 @@ section { padding-block: 64px; border-top: 1px solid var(--edge); }
 .photo { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; grid-column: span 2; }
 .photo.wide { grid-column: 1 / -1; }
 .photo.half { grid-column: span 3; }
+/* biome-ignore lint/style/noDescendingSpecificity: no earlier rule targets these buttons */
 .photo button {
   all: unset; cursor: zoom-in; display: block; border-radius: 12px; overflow: hidden; position: relative;
   border: 1px solid #2e332e; background: #121512;
@@ -218,7 +219,9 @@ section { padding-block: 64px; border-top: 1px solid var(--edge); }
 .photo img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
 .photo.wide button { box-shadow: 0 30px 80px rgb(0 0 0 / .5), 0 0 60px var(--loop-glow); }
 .photo figcaption { display: flex; flex-direction: column; gap: 4px; }
+/* biome-ignore lint/style/noDescendingSpecificity: no earlier rule targets captions */
 .photo figcaption b { font-size: 16px; }
+/* biome-ignore lint/style/noDescendingSpecificity: no earlier rule targets captions */
 .photo figcaption span { color: var(--muted); font-size: 14px; }
 .viewer { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; overflow: visible; }
 .viewer::backdrop { background: rgb(4 6 4 / .86); backdrop-filter: blur(4px); }
@@ -248,7 +251,7 @@ section { padding-block: 64px; border-top: 1px solid var(--edge); }
 details { background: var(--panel); border: 1px solid var(--edge); border-radius: 10px; padding: 14px 18px; transition: border-color .2s; }
 details[open] { border-color: color-mix(in srgb, var(--amber) 40%, var(--edge)); }
 summary { cursor: pointer; font-weight: 600; }
-details p { margin-top: 10px; color: var(--muted); }
+.faq details p { margin-top: 10px; color: var(--muted); }
 footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var(--subtle); font-size: 13px; display: grid; gap: 8px; }
 
 @media (max-width: 900px) {
@@ -263,6 +266,7 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
   .top nav { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
+  /* biome-ignore lint/complexity/noImportantStyles: the reduced-motion choice must override every animation */
   *, *::before { animation: none !important; transition: none !important; }
   .rack { transform: none; }
 }
@@ -280,12 +284,12 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
       <a href="#scarica" data-it="Scarica">Download</a>
       <a href="#sostieni" data-it="Sostieni">Support</a>
       <a href="#domande" data-it="Domande">FAQ</a>
-      <a href="#" data-link="repo">GitHub</a>
+      <a href="https://github.com/TheNexBit/looplab" rel="noopener">GitHub</a>
     </nav>
-    <div class="lang" role="group" aria-label="Language" data-it-aria="Lingua">
+    <fieldset class="lang" aria-label="Language" data-it-aria="Lingua">
       <button type="button" data-lang="en" aria-pressed="true">EN</button>
       <button type="button" data-lang="it" aria-pressed="false">IT</button>
-    </div>
+    </fieldset>
   </header>
 
   <div class="hero">
@@ -295,7 +299,7 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
       <p class="lead" data-it="Looplab è il laboratorio di pratica per i tuoi brani e le tue lezioni: loop al millisecondo, velocità e tonalità indipendenti, tab sincronizzate, il solo e la base una sotto l'altra. Gratis, sul tuo PC, senza account.">Looplab is the practice lab for your songs and lessons: millisecond-precise loops, independent speed and pitch, synced tabs, the solo and the backing track one above the other. Free, on your PC, no account.</p>
       <div class="cta">
         <a class="btn primary" href="#scarica" data-it="Scarica per Windows">Download for Windows</a>
-        <a class="btn" href="#sostieni" data-link="kofi" rel="noopener" data-it='<span class="lamp" aria-hidden="true"></span>Sostieni su Ko-fi'><span class="lamp" aria-hidden="true"></span>Support on Ko-fi</a>
+        <a class="btn" href="https://ko-fi.com/roxfod" rel="noopener" data-it='<span class="lamp" aria-hidden="true"></span>Sostieni su Ko-fi'><span class="lamp" aria-hidden="true"></span>Support on Ko-fi</a>
       </div>
       <p class="meta" data-it="Windows 10 e 11 · 64 bit · versione 0.30">Windows 10 and 11 · 64-bit · version 0.30</p>
     </div>
@@ -324,15 +328,15 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
       <p data-it="Pensato come un DAW: tasti con la spia, manopole, scorciatoie e pedali. Niente da digitare mentre suoni.">Built like a DAW: lit buttons, knobs, shortcuts and pedals. Nothing to type while you play.</p>
     </div>
     <div class="features" id="features">
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span><h3 data-it="Loop precisi">Precise loops</h3><p data-it="Trascina sulla forma d'onda, aggiungi un attacco prima del loop e una pausa tra le ripetizioni. Salva i loop e mettili in fila.">Drag across the waveform, add a lead-in before the loop and a gap between repeats. Save your loops and line them up.</p><p class="spec" data-it="lead-in 0–10 s · pausa 0–10 s">lead-in 0–10 s · gap 0–10 s</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-4"/><path d="M9 2h6"/></svg></span><h3 data-it="Velocità e tonalità">Speed and pitch</h3><p data-it="Rallenta senza cambiare l'intonazione, oppure trasponi senza cambiare il tempo. Lo speed trainer alza la velocità da solo.">Slow down without changing the pitch, or transpose without changing the tempo. The speed trainer raises the speed for you.</p><p class="spec" data-it="velocità 25–200% · ±12 st e ±50 cent">speed 25–200% · ±12 st and ±50 cents</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 10h18M3 14h18M3 18h18"/><circle cx="8" cy="10" r="1.5" fill="currentColor"/><circle cx="15" cy="14" r="1.5" fill="currentColor"/></svg></span><h3 data-it="Tab sincronizzate">Synced tabs</h3><p data-it="Apri Guitar Pro, MusicXML o PDF accanto al brano: la battuta che suona si accende, un clic sulla tab sposta la musica.">Open Guitar Pro, MusicXML or PDF next to the song: the bar that plays lights up, and a click on the tab moves the music.</p><p class="spec">Guitar Pro · MusicXML · PDF</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg></span><h3 data-it="Solo e base insieme">Solo and backing together</h3><p data-it="Apri il solo e la sua base come stems, allineati dal suono. Con «Ascolta» passi dall'uno all'altro senza fermare la musica.">Open the solo and its backing track as stems, lined up by their sound. «Listen» switches between them without stopping the music.</p><p class="spec" data-it="fino a 9 corsie · S · M · volume">up to 9 lanes · S · M · volume</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span><h3 data-it="Tracce separate">Stem separation</h3><p data-it="Separa voce, chitarra, basso, batteria e piano da qualsiasi brano e regola ognuna con il suo cursore.">Split vocals, guitar, bass, drums and piano out of any song and set each one with its own fader.</p><p class="spec" data-it="6 tracce · elaborato sul tuo PC">6 stems · processed on your PC</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M10 8l4 2.5-4 2.5z" fill="currentColor"/></svg></span><h3>Setlist &amp; Live mode</h3><p data-it="Prepara la scaletta del concerto, prova i cambi e suona il set sulla Stage view a tutto schermo, anche con il pedale.">Build the setlist for your gig, rehearse the changeovers and play the set on the full-screen Stage view, pedal included.</p><p class="spec" data-it="pausa tra i brani · segue · fine prevista">gap between songs · segue · expected end</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></span><h3 data-it="I tuoi corsi in un posto">All your courses in one place</h3><p data-it="Aggiungi la cartella di un corso: ogni lezione si apre già pronta con video, inquadrature, base e tab.">Add a course folder: every lesson opens ready to go, with video, camera angles, backing track and tab.</p><p class="spec" data-it="lezioni fatte · da ripassare · riprendi">done · to review · pick up where you left off</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 21h8l-2-17h-4z"/><path d="M12 15l5-9"/></svg></span><h3 data-it="Metronomo serio">A serious metronome</h3><p data-it="Click sul brano con la mappa del tempo, count-in, suddivisioni, accenti ed esercizi ritmici, anche da solo.">A click that follows the song's tempo map, count-in, subdivisions, accents and rhythm drills, or on its own.</p><p class="spec" data-it="20–400 BPM · suoni personalizzabili">20–400 BPM · custom sounds</p></article>
-      <article class="feat"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><h3 data-it="Tutto resta tuo">Everything stays yours</h3><p data-it="Funziona senza internet. Loop, marker e appunti stanno in una libreria sul tuo PC, con backup automatici.">Works offline. Loops, markers and notes live in a library on your PC, with automatic backups.</p><p class="spec" data-it="nessun account · nessun abbonamento">no account · no subscription</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span><h3 data-it="Loop precisi">Precise loops</h3><p data-it="Trascina sulla forma d'onda, aggiungi un attacco prima del loop e una pausa tra le ripetizioni. Salva i loop e mettili in fila.">Drag across the waveform, add a lead-in before the loop and a gap between repeats. Save your loops and line them up.</p><p class="spec" data-it="lead-in 0–10 s · pausa 0–10 s">lead-in 0–10 s · gap 0–10 s</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-4"/><path d="M9 2h6"/></svg></span><h3 data-it="Velocità e tonalità">Speed and pitch</h3><p data-it="Rallenta senza cambiare l'intonazione, oppure trasponi senza cambiare il tempo. Lo speed trainer alza la velocità da solo.">Slow down without changing the pitch, or transpose without changing the tempo. The speed trainer raises the speed for you.</p><p class="spec" data-it="velocità 25–200% · ±12 st e ±50 cent">speed 25–200% · ±12 st and ±50 cents</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 10h18M3 14h18M3 18h18"/><circle cx="8" cy="10" r="1.5" fill="currentColor"/><circle cx="15" cy="14" r="1.5" fill="currentColor"/></svg></span><h3 data-it="Tab sincronizzate">Synced tabs</h3><p data-it="Apri Guitar Pro, MusicXML o PDF accanto al brano: la battuta che suona si accende, un clic sulla tab sposta la musica.">Open Guitar Pro, MusicXML or PDF next to the song: the bar that plays lights up, and a click on the tab moves the music.</p><p class="spec">Guitar Pro · MusicXML · PDF</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg></span><h3 data-it="Solo e base insieme">Solo and backing together</h3><p data-it="Apri il solo e la sua base come stems, allineati dal suono. Con «Ascolta» passi dall'uno all'altro senza fermare la musica.">Open the solo and its backing track as stems, lined up by their sound. «Listen» switches between them without stopping the music.</p><p class="spec" data-it="fino a 9 corsie · S · M · volume">up to 9 lanes · S · M · volume</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span><h3 data-it="Tracce separate">Stem separation</h3><p data-it="Separa voce, chitarra, basso, batteria e piano da qualsiasi brano e regola ognuna con il suo cursore.">Split vocals, guitar, bass, drums and piano out of any song and set each one with its own fader.</p><p class="spec" data-it="6 tracce · elaborato sul tuo PC">6 stems · processed on your PC</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M10 8l4 2.5-4 2.5z" fill="currentColor"/></svg></span><h3>Setlist &amp; Live mode</h3><p data-it="Prepara la scaletta del concerto, prova i cambi e suona il set sulla Stage view a tutto schermo, anche con il pedale.">Build the setlist for your gig, rehearse the changeovers and play the set on the full-screen Stage view, pedal included.</p><p class="spec" data-it="pausa tra i brani · segue · fine prevista">gap between songs · segue · expected end</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></span><h3 data-it="I tuoi corsi in un posto">All your courses in one place</h3><p data-it="Aggiungi la cartella di un corso: ogni lezione si apre già pronta con video, inquadrature, base e tab.">Add a course folder: every lesson opens ready to go, with video, camera angles, backing track and tab.</p><p class="spec" data-it="lezioni fatte · da ripassare · riprendi">done · to review · pick up where you left off</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 21h8l-2-17h-4z"/><path d="M12 15l5-9"/></svg></span><h3 data-it="Metronomo serio">A serious metronome</h3><p data-it="Click sul brano con la mappa del tempo, count-in, suddivisioni, accenti ed esercizi ritmici, anche da solo.">A click that follows the song's tempo map, count-in, subdivisions, accents and rhythm drills, or on its own.</p><p class="spec" data-it="20–400 BPM · suoni personalizzabili">20–400 BPM · custom sounds</p></article>
+      <article class="feat"><span class="ico"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><h3 data-it="Tutto resta tuo">Everything stays yours</h3><p data-it="Funziona senza internet. Loop, marker e appunti stanno in una libreria sul tuo PC, con backup automatici.">Works offline. Loops, markers and notes live in a library on your PC, with automatic backups.</p><p class="spec" data-it="nessun account · nessun abbonamento">no account · no subscription</p></article>
     </div>
   </section>
 
@@ -346,11 +350,11 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
       <div class="demo">
         <div class="listen">
           <span data-it="Ascolta">Listen</span>
-          <div class="seg" role="group" aria-label="Listen" data-it-aria="Ascolta">
+          <fieldset class="seg" aria-label="Listen" data-it-aria="Ascolta">
             <button type="button" id="l-all" aria-pressed="true" data-it='<span class="dot"></span>Tutte'><span class="dot"></span>All</button>
             <button type="button" id="l-solo" aria-pressed="false"><span class="dot"></span>Solo</button>
             <button type="button" id="l-back" aria-pressed="false"><span class="dot"></span>Backing</button>
-          </div>
+          </fieldset>
         </div>
         <div class="lanes">
           <div class="lane-head" id="h-solo" style="--c:#7f8cff">Solo<span class="keys"><span>S</span><span>M</span></span></div>
@@ -388,8 +392,8 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
       </div>
       <div class="dl-card">
         <div class="dl-row">
-          <a class="btn primary" href="#scarica" data-link="download" data-it="Installazione per Windows">Windows installer</a>
-          <a class="btn" href="#scarica" data-link="download" data-it="Versione portatile">Portable version</a>
+          <a class="btn primary" href="https://github.com/TheNexBit/looplab/releases/latest" rel="noopener" data-it="Installazione per Windows">Windows installer</a>
+          <a class="btn" href="https://github.com/TheNexBit/looplab/releases/latest" rel="noopener" data-it="Versione portatile">Portable version</a>
         </div>
         <ul class="reqs">
           <li data-it="Windows 10 o 11, 64 bit">Windows 10 or 11, 64-bit</li>
@@ -408,7 +412,7 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
         <h2 data-it="Looplab è gratuito e resterà gratuito">Looplab is free and will stay free</h2>
         <p data-it="Niente pubblicità e niente abbonamenti. Se ti fa risparmiare ore di studio, puoi offrirmi un caffè su Ko-fi: aiuta a pagare il tempo per le nuove funzioni e la firma del programma.">No ads and no subscriptions. If it saves you hours of practice, you can buy me a coffee on Ko-fi: it helps pay for the time behind new features and for signing the program.</p>
       </div>
-      <a class="btn primary" href="#sostieni" data-link="kofi" rel="noopener" data-it='<span class="lamp" aria-hidden="true"></span>Sostieni su Ko-fi'><span class="lamp" aria-hidden="true"></span>Support on Ko-fi</a>
+      <a class="btn primary" href="https://ko-fi.com/roxfod" rel="noopener" data-it='<span class="lamp" aria-hidden="true"></span>Sostieni su Ko-fi'><span class="lamp" aria-hidden="true"></span>Support on Ko-fi</a>
     </div>
   </section>
 
@@ -429,31 +433,28 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
 
   <footer>
     <p data-it="Looplab · fatto da un musicista per musicisti · software libero GPL-3.0.">Looplab · made by a musician, for musicians · free software under GPL-3.0.</p>
-    <p><a href="#" data-link="repo" data-it="Codice sorgente su GitHub">Source code on GitHub</a> · <a href="#" data-link="download" data-it="Tutte le versioni">All releases</a></p>
+    <p><a href="https://github.com/TheNexBit/looplab" rel="noopener" data-it="Codice sorgente su GitHub">Source code on GitHub</a> · <a href="https://github.com/TheNexBit/looplab/releases/latest" rel="noopener" data-it="Tutte le versioni">All releases</a></p>
     <p data-it="Usa alphaTab, pdf.js e FFmpeg (versione LGPL): licenze e crediti nella pagina Licenze.">Uses alphaTab, pdf.js and FFmpeg (LGPL build): licences and credits on the Licences page.</p>
   </footer>
 </div>
 
 <script>
-(function () {
-  // The site's two outside addresses: fill these in once the GitHub repository and the Ko-fi page exist
-  const REPO = "https://github.com/TheNexBit/looplab";
-  const KOFI = "https://ko-fi.com/roxfod";
-  const links = { repo: REPO, download: REPO + "/releases/latest", kofi: KOFI };
-  document.querySelectorAll("[data-link]").forEach((a) => { a.href = links[a.dataset.link]; if (a.dataset.link !== "download") a.rel = "noopener"; });
-
+(() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // The same made-up waveform at every load (seeded)
   function peaksOf(count, seed, quietUntil) {
     let s = seed;
-    const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const r = () => {
+      s = (s * 16807) % 2147483647;
+      return s / 2147483647;
+    };
     return Array.from({ length: count }, (_, i) => {
       const t = i / count;
       const body = t < quietUntil ? 0.12 + r() * 0.15 : 0.42 + r() * 0.5;
       return Math.min(1, body + (i % 11 === 0 ? 0.2 : 0));
     });
   }
-  function fit(canvas) {
+  function fitCanvas(canvas) {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
@@ -483,7 +484,7 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
   const SPAN = 30, LOOP = [14.8, 17.7];
   let time = LOOP[0];
   function drawHero() {
-    const { ctx, w, h } = fit(wave);
+    const { ctx, w, h } = fitCanvas(wave);
     ctx.clearRect(0, 0, w, h);
     const x = (s) => (s / SPAN) * w;
     const grad = ctx.createLinearGradient(0, 0, 0, h);
@@ -521,9 +522,9 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
     for (const [name, lane] of Object.entries(lanes)) {
       const heard = listen === "all" || listen === name;
       lane.head.classList.toggle("off", !heard);
-      const { ctx, w, h } = fit(lane.canvas);
+      const { ctx, w, h } = fitCanvas(lane.canvas);
       ctx.clearRect(0, 0, w, h);
-      bars(ctx, lane.peaks, 0, 0, w, h, heard ? lane.color + "66" : "#2c312c", heard ? lane.color : null, demoTime, heard ? lane.color : "#3a403a");
+      bars(ctx, lane.peaks, 0, 0, w, h, heard ? `${lane.color}66` : "#2c312c", heard ? lane.color : null, demoTime, heard ? lane.color : "#3a403a");
       ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#fff"; ctx.shadowBlur = 8;
       ctx.fillRect(demoTime * w - 1, 0, 2, h); ctx.shadowBlur = 0;
     }
@@ -546,26 +547,33 @@ footer { padding-block: 32px 48px; border-top: 1px solid var(--edge); color: var
     ["itAria", (el) => el.getAttribute("aria-label"), (el, v) => el.setAttribute("aria-label", v)],
   ];
   const english = new Map(swaps.map(([key]) => [key, new Map()]));
-  const attr = (key) => "[data-" + key.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()) + "]";
-  swaps.forEach(([key, get]) => document.querySelectorAll(attr(key)).forEach((el) => english.get(key).set(el, get(el))));
+  const attr = (key) => `[data-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}]`;
+  for (const [key, get] of swaps) {
+    for (const el of document.querySelectorAll(attr(key))) english.get(key).set(el, get(el));
+  }
   function setLang(lang) {
-    swaps.forEach(([key, , set]) => english.get(key).forEach((en, el) => set(el, lang === "it" ? el.dataset[key] : en)));
+    for (const [key, , set] of swaps) {
+      for (const [el, en] of english.get(key)) set(el, lang === "it" ? el.dataset[key] : en);
+    }
     document.documentElement.lang = lang;
-    document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    for (const b of document.querySelectorAll(".lang button")) b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
     try { localStorage.setItem("looplab-lang", lang); } catch {}
   }
-  document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  for (const b of document.querySelectorAll(".lang button")) b.addEventListener("click", () => setLang(b.dataset.lang));
   let saved = null;
   try { saved = localStorage.getItem("looplab-lang"); } catch {}
   setLang(saved === "it" ? "it" : "en");
 
   // Tap a screenshot to see it full size
   const viewer = document.querySelector(".viewer");
-  document.querySelectorAll(".photo button").forEach((b) => b.addEventListener("click", () => {
-    const img = viewer.querySelector("img");
-    img.src = b.dataset.src; img.alt = b.querySelector("img").alt;
-    viewer.showModal();
-  }));
+  for (const b of document.querySelectorAll(".photo button")) {
+    b.addEventListener("click", () => {
+      const img = viewer.querySelector("img");
+      img.src = b.dataset.src;
+      img.alt = b.querySelector("img").alt;
+      viewer.showModal();
+    });
+  }
   viewer.addEventListener("click", () => viewer.close());
   function drawAll() { drawHero(); drawLanes(); }
   drawAll();

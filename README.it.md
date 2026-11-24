@@ -30,17 +30,17 @@ niente abbonamenti, niente internet.
 
 ## Funzioni
 
-|     |     |
-| --- | --- |
-| 🔁 **Loop precisi** | Trascina sulla forma d'onda, aggiungi un attacco e una pausa tra le ripetizioni. Salva i loop e mettili in fila. |
-| 🎚️ **Velocità e tonalità** | Velocità 25–200% senza cambiare l'intonazione, ±12 semitoni senza cambiare il tempo, e lo speed trainer che accelera da solo. |
-| 🎼 **Tab sincronizzate** | Guitar Pro, MusicXML o PDF accanto al brano: la battuta che suona si accende, un clic sulla tab sposta la musica. |
-| 🎸 **Solo e base come stems** | Apri più file come corsie, allineate dal suono. «Ascolta» passa dall'una all'altra mentre suona; S, M e volume su ogni corsia. |
-| 🥁 **Tracce separate** | Separa voce, chitarra, basso, batteria e piano da qualsiasi brano, elaborato sul tuo PC. |
-| 🎤 **Setlist e Live mode** | Prepara la scaletta del concerto, prova i cambi e suona il set sulla Stage view a tutto schermo, anche con il pedale voltapagina. |
+|                                 |                                                                                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔁 **Loop precisi**             | Trascina sulla forma d'onda, aggiungi un attacco e una pausa tra le ripetizioni. Salva i loop e mettili in fila.                          |
+| 🎚️ **Velocità e tonalità**      | Velocità 25–200% senza cambiare l'intonazione, ±12 semitoni senza cambiare il tempo, e lo speed trainer che accelera da solo.             |
+| 🎼 **Tab sincronizzate**        | Guitar Pro, MusicXML o PDF accanto al brano: la battuta che suona si accende, un clic sulla tab sposta la musica.                         |
+| 🎸 **Solo e base come stems**   | Apri più file come corsie, allineate dal suono. «Ascolta» passa dall'una all'altra mentre suona; S, M e volume su ogni corsia.            |
+| 🥁 **Tracce separate**          | Separa voce, chitarra, basso, batteria e piano da qualsiasi brano, elaborato sul tuo PC.                                                  |
+| 🎤 **Setlist e Live mode**      | Prepara la scaletta del concerto, prova i cambi e suona il set sulla Stage view a tutto schermo, anche con il pedale voltapagina.         |
 | 🎓 **I tuoi corsi in un posto** | Aggiungi la cartella di un corso: ogni lezione si apre pronta con video, inquadrature, base e tab. Segna cosa hai fatto e cosa ripassare. |
-| ⏱️ **Metronomo serio** | Click che segue la mappa del tempo del brano, count-in, suddivisioni, accenti ed esercizi ritmici. |
-| 🔒 **Tutto resta tuo** | Loop, marker e appunti stanno in una libreria locale con backup automatici. |
+| ⏱️ **Metronomo serio**          | Click che segue la mappa del tempo del brano, count-in, suddivisioni, accenti ed esercizi ritmici.                                        |
+| 🔒 **Tutto resta tuo**          | Loop, marker e appunti stanno in una libreria locale con backup automatici.                                                               |
 
 Pensato come un DAW: tasti con la spia, manopole, scorciatoie e pedali MIDI. Niente da digitare mentre suoni.
 

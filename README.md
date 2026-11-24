@@ -30,17 +30,17 @@ account, no subscription, no internet needed.
 
 ## Features
 
-|     |     |
-| --- | --- |
-| 🔁 **Precise loops** | Drag across the waveform, add a lead-in and a gap between repeats. Save loops and chain them. |
-| 🎚️ **Speed and pitch** | 25–200% speed without changing the pitch, ±12 semitones without changing the tempo, plus a speed trainer that speeds up for you. |
-| 🎼 **Synced tabs** | Guitar Pro, MusicXML or PDF next to the song: the playing bar lights up, a click on the tab moves the music. |
-| 🎸 **Solo and backing as stems** | Open several files as lanes, lined up by their sound. «Listen» switches between them while it plays; S, M and volume on every lane. |
-| 🥁 **Stem separation** | Split vocals, guitar, bass, drums and piano out of any song, processed locally on your PC. |
-| 🎤 **Setlist & Live mode** | Build the set for your gig, rehearse the changeovers, then play it on a full-screen Stage view, page-turner pedal included. |
+|                                  |                                                                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔁 **Precise loops**             | Drag across the waveform, add a lead-in and a gap between repeats. Save loops and chain them.                                          |
+| 🎚️ **Speed and pitch**           | 25–200% speed without changing the pitch, ±12 semitones without changing the tempo, plus a speed trainer that speeds up for you.       |
+| 🎼 **Synced tabs**               | Guitar Pro, MusicXML or PDF next to the song: the playing bar lights up, a click on the tab moves the music.                           |
+| 🎸 **Solo and backing as stems** | Open several files as lanes, lined up by their sound. «Listen» switches between them while it plays; S, M and volume on every lane.    |
+| 🥁 **Stem separation**           | Split vocals, guitar, bass, drums and piano out of any song, processed locally on your PC.                                             |
+| 🎤 **Setlist & Live mode**       | Build the set for your gig, rehearse the changeovers, then play it on a full-screen Stage view, page-turner pedal included.            |
 | 🎓 **Your courses in one place** | Add a course folder: every lesson opens ready, with video, camera angles, backing track and tab. Track what's done and what to review. |
-| ⏱️ **A serious metronome** | A click that follows the song's tempo map, count-in, subdivisions, accents and rhythm drills. |
-| 🔒 **Everything stays yours** | Loops, markers and notes live in a local library with automatic backups. |
+| ⏱️ **A serious metronome**       | A click that follows the song's tempo map, count-in, subdivisions, accents and rhythm drills.                                          |
+| 🔒 **Everything stays yours**    | Loops, markers and notes live in a local library with automatic backups.                                                               |
 
 Built like a DAW: lit buttons, knobs, keyboard shortcuts and MIDI pedals, nothing to type while you play.
 
@@ -97,16 +97,16 @@ npm run app
 
 The launchers in `scripts\` (double-click) wrap the common tasks; the logic lives in `scripts\powershell\`:
 
-| Script | What it does |
-| --- | --- |
-| `01-dev.cmd` | runs the app in development |
-| `02-test.cmd` | every check: Biome, TypeScript, Vitest, rustfmt, Clippy, cargo test |
-| `03-prova-build.cmd` | release build, opened with trial data |
-| `04-build.cmd` | official build: signed NSIS installer, `latest.json`, portable ZIP |
-| `05-fetch-ffmpeg.cmd` | downloads the LGPL build of FFmpeg (once) |
-| `06-genera-chiave.cmd` | creates the update-signing key (once) |
-| `07-pulisci.cmd` | deletes `dist` and the development and trial data |
-| `08-portable.cmd` | portable ZIP only |
+| Script                 | What it does                                                        |
+| ---------------------- | ------------------------------------------------------------------- |
+| `01-dev.cmd`           | runs the app in development                                         |
+| `02-test.cmd`          | every check: Biome, TypeScript, Vitest, rustfmt, Clippy, cargo test |
+| `03-prova-build.cmd`   | release build, opened with trial data                               |
+| `04-build.cmd`         | official build: signed NSIS installer, `latest.json`, portable ZIP  |
+| `05-fetch-ffmpeg.cmd`  | downloads the LGPL build of FFmpeg (once)                           |
+| `06-genera-chiave.cmd` | creates the update-signing key (once)                               |
+| `07-pulisci.cmd`       | deletes `dist` and the development and trial data                   |
+| `08-portable.cmd`      | portable ZIP only                                                   |
 
 From a terminal: `npm run app`, `npm run lint`, `npm test`, `npm run test:rust`, `npm run bindings`.
 

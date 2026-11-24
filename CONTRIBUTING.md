@@ -5,9 +5,9 @@ contribution counts: a clear bug report, an idea, a translation, a fix or a whol
 
 ## Ways to help
 
-- **Report a bug** — open an issue with the *Bug report* form. Steps to reproduce and a screenshot
+- **Report a bug** — open an issue with the _Bug report_ form. Steps to reproduce and a screenshot
   help a lot. If it can be compared with how a DAW such as Reaper behaves, say so.
-- **Suggest a feature** — use the *Feature request* form, or start a thread in
+- **Suggest a feature** — use the _Feature request_ form, or start a thread in
   [Discussions](https://github.com/TheNexBit/looplab/discussions) if the idea is still loose.
 - **Translate** — the interface is in Italian today; an English version is the most wanted help.
 - **Write code** — pick an issue labelled
