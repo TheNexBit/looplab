@@ -85,8 +85,13 @@ fn decode(cache: &Path, path: &Path, rate: u32) -> Result<Arc<Pcm>, AppError> {
         Err(LoadError::UnsupportedCodec | LoadError::UnsupportedFormat)
             if media::ffmpeg().is_some() =>
         {
-            let extracted =
-                media::extract_audio(cache, path, |_| {}).map_err(AppError::internal)?;
+            // FFmpeg cannot read it either: the file is damaged (or not music at all)
+            let extracted = media::extract_audio(cache, path, |_| {}).map_err(|error| {
+                AppError::new(
+                    ErrorKind::CorruptFile,
+                    format!("{}: {error}", path.display()),
+                )
+            })?;
             audio_engine::load(&extracted, rate, |_| {})?
         }
         other => other?,

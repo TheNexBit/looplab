@@ -4,7 +4,7 @@ import { resetTempoAnalysis } from "@/features/practice/tempoAnalysis";
 import { commands, type Project_Serialize } from "@/lib/bindings";
 import { samePath } from "@/lib/format";
 import { useEqStore } from "@/stores/eq";
-import { savedLanes, useFileStemsStore } from "@/stores/fileStems";
+import { projectStems, useFileStemsStore } from "@/stores/fileStems";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
@@ -42,7 +42,7 @@ function snapshot(): ProjectData {
     eq,
     channels,
     stemMix: useStemsStore.getState().channels,
-    stemFiles: savedLanes(useFileStemsStore.getState().lanes),
+    stemFiles: projectStems(useFileStemsStore.getState()),
     score: useScoreStore.getState().link,
     otherScores: useScoreStore.getState().shelf,
   };
@@ -99,7 +99,8 @@ function restoreStemFiles(saved: ProjectData["stemFiles"]) {
   if (!track) return;
   if (stems.track && !samePath(stems.track, track)) stems.forget();
   if (saved.length < 2) {
-    if (useFileStemsStore.getState().lanes.length > 0) void stems.close();
+    const now = useFileStemsStore.getState();
+    if (now.lanes.length > 0 || now.missing.length > 0) void stems.close();
     return;
   }
   // The track's own lane is the open file even if the project found it moved or copied (the
@@ -313,7 +314,7 @@ export function syncProject(): () => void {
       if (state.channels !== previous.channels) schedule();
     }),
     useFileStemsStore.subscribe((state, previous) => {
-      if (state.lanes !== previous.lanes) schedule();
+      if (state.lanes !== previous.lanes || state.missing !== previous.missing) schedule();
     }),
     useScoreStore.subscribe((state, previous) => {
       if (state.link !== previous.link || state.shelf !== previous.shelf) schedule();

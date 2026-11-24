@@ -33,6 +33,11 @@ interface FileStemsState {
   /** What was left out of the last opening (files missing or unreadable, too many files) */
   notice: string | null;
   /**
+   * Lanes whose file is not found right now (a drive unplugged, a folder renamed): kept in the
+   * project and tried again at every opening, so they come back with their file.
+   */
+  missing: StemFile[];
+  /**
    * Opens `files` as stems of the open `track` (its own lane first). `saved` brings back the
    * shifts and the mix of a project; files already lined up are not compared again.
    */
@@ -128,6 +133,26 @@ export function laneLabels(paths: readonly string[]): string[] {
   return typed.map((label, i) => (twice(typed, i) ? `${label} ${i + 1}` : label));
 }
 
+/**
+ * What the project keeps: the lanes, then those whose file is missing for now. With every
+ * other file missing, the track's own lane still comes first.
+ */
+export function projectStems(
+  state: Pick<FileStemsState, "track" | "lanes" | "missing">,
+): StemFile[] {
+  const lanes = savedLanes(state.lanes);
+  if (state.missing.length === 0) return lanes;
+  const own: StemFile = {
+    path: state.track ?? "",
+    shift: 0,
+    level: 1,
+    mute: false,
+    solo: false,
+    linedUp: true,
+  };
+  return [...(lanes.length > 0 ? lanes : [own]), ...state.missing];
+}
+
 /** The lanes as saved in the project. */
 export const savedLanes = (lanes: readonly StemLane[]): StemFile[] =>
   lanes.map(({ path, shift, level, mute, solo, linedUp }) => ({
@@ -185,8 +210,22 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
         : []),
     ];
     const notice = notes.length > 0 ? notes.join(" · ") : null;
+    // Files not found are kept for later, with their shift and mix
+    const missing = failed
+      .filter((f) => f.kind === "fileNotFound")
+      .map(
+        (f): StemFile =>
+          find(f.path) ?? {
+            path: f.path,
+            shift: 0,
+            level: 1,
+            mute: false,
+            solo: false,
+            linedUp: false,
+          },
+      );
     if (opened.length === 0) {
-      set({ track: null, lanes: [], loading: false, notice });
+      set({ track: missing.length > 0 ? track : null, lanes: [], loading: false, notice, missing });
       return;
     }
     const peaks = await Promise.all(opened.map((_, i) => fetchStemPeaks(i).catch(() => null)));
@@ -202,6 +241,7 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
       track,
       loading: false,
       notice,
+      missing,
       lanes: [
         { path: track, shift: 0, linedUp: true, peaks: null, ...mix(own) },
         ...opened.map((lane, i) => ({
@@ -221,32 +261,37 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
     loading: false,
     error: null,
     notice: null,
+    missing: [],
     open,
     add: async (files) => {
-      const { track, lanes } = get();
+      const { track, lanes, missing } = get();
       if (!track) return;
       const fresh = files.filter((path) => !lanes.some((lane) => samePath(lane.path, path)));
-      await open(track, [...lanes.slice(1).map((lane) => lane.path), ...fresh], savedLanes(lanes));
+      await open(
+        track,
+        [...lanes.slice(1).map((lane) => lane.path), ...missing.map((m) => m.path), ...fresh],
+        [...savedLanes(lanes), ...missing],
+      );
     },
     remove: async (index) => {
-      const { track, lanes } = get();
+      const { track, lanes, missing } = get();
       if (!track || index === 0) return;
       const kept = lanes.filter((_, i) => i !== index);
       // The last other file goes: back to the track alone, at full level
-      if (kept.length < 2) {
+      if (kept.length < 2 && missing.length === 0) {
         await get().close();
         return;
       }
       await open(
         track,
-        kept.slice(1).map((lane) => lane.path),
-        savedLanes(kept),
+        [...kept.slice(1).map((lane) => lane.path), ...missing.map((m) => m.path)],
+        [...savedLanes(kept), ...missing],
       );
     },
     close: async () => {
       openToken += 1;
       const had = get().lanes.length > 0;
-      set({ track: null, lanes: [], loading: false, error: null });
+      set({ track: null, lanes: [], loading: false, error: null, missing: [] });
       if (had) {
         await commands.closeStemFiles();
         afterClose?.();
@@ -254,7 +299,7 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
     },
     forget: () => {
       openToken += 1;
-      set({ track: null, lanes: [], loading: false, error: null, notice: null });
+      set({ track: null, lanes: [], loading: false, error: null, notice: null, missing: [] });
     },
     dismissNotice: () => set({ notice: null }),
     setLevel: (index, level) => editLane(index, (lane) => ({ ...lane, level: clampLevel(level) })),
