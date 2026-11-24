@@ -1,7 +1,7 @@
 # ===================================================================
 #  Prova della fase 31 (Stems da file), dal ramo fase-31.
 #  - usa una COPIA dei tuoi dati di sviluppo (libreria, spartiti, suoni)
-#    in D:.cacheooplabprova-stems: le stems si salvano nei progetti
+#    in D:\.cache\looplab\prova-stems: le stems si salvano nei progetti
 #    della copia, i dati veri non vengono toccati
 #  - la copia resta tra un avvio e l'altro; -DaCapo la rifà da zero
 #  - va tolto (con la cartella) quando la fase 31 entra in main
