@@ -48,39 +48,39 @@ function SoloKey({ index, solo }: { index: number; solo: boolean }) {
 }
 
 /**
- * The heads of the lanes, one small row over the left edge of each (like the track heads of a
- * DAW): colour, name, S and M, level. A lane that is not heard is drawn grey.
+ * The heads of the lanes, in a column of their own left of the detailed view (like the track
+ * heads of Song Master or a DAW): never over the waveform, so a click on S or M is never a click
+ * on the music. Each head is as tall as its lane: colour, name, S and M, level. A lane that is
+ * not heard is drawn grey.
  */
-export function StemLaneHeads({ top }: { top: number }) {
+export function StemLaneHeads({ ruler }: { ruler: number }) {
   const lanes = useFileStemsStore((s) => s.lanes);
   if (lanes.length < 2) return null;
   const labels = laneLabels(lanes.map((lane) => lane.path));
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col" style={{ top }}>
+    <div className="well flex w-44 shrink-0 flex-col overflow-hidden rounded-panel">
+      {/* Level with the ruler of the waveform beside it */}
+      <div
+        aria-hidden
+        className="shrink-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
+        style={{ height: ruler }}
+      />
       {lanes.map((lane, index) => {
         const heard = laneHeard(lanes, index);
         return (
           <div
             key={lane.path}
             className={cn(
-              "relative flex min-h-0 flex-1 items-start",
-              index > 0 && "border-t border-edge/70",
+              "flex min-h-0 flex-1 flex-col justify-center gap-1 overflow-hidden py-1 pr-1.5 pl-2",
+              index > 0 && "border-t border-edge",
             )}
+            style={{ borderLeft: `3px solid ${heard ? laneColor(index) : "var(--color-border)"}` }}
           >
-            <div
-              // The head takes its own clicks: they never move the playhead
-              onPointerDown={(event) => event.stopPropagation()}
-              onWheel={(event) => event.stopPropagation()}
-              className={cn(
-                "pointer-events-auto m-1 flex min-w-0 items-center gap-1.5 overflow-hidden rounded-control border border-edge/60 bg-bg-from/85 py-0.5 pr-1.5 pl-2 shadow-sm backdrop-blur-[2px]",
-                !heard && "opacity-75",
-              )}
-              style={{ borderLeft: `3px solid ${laneColor(index)}` }}
-            >
+            <div className="flex min-w-0 items-center gap-1">
               <span
                 title={fileNameOf(lane.path)}
                 className={cn(
-                  "max-w-36 truncate text-xs font-semibold",
+                  "min-w-0 flex-1 truncate text-xs font-semibold",
                   heard ? "text-fg" : "text-fg-subtle",
                 )}
               >
@@ -91,13 +91,6 @@ export function StemLaneHeads({ top }: { top: number }) {
                   <AlertTriangle className="size-3" aria-label={f.notLinedUp} />
                 </span>
               )}
-              <SoloKey index={index} solo={lane.solo} />
-              <MuteKey
-                muted={lane.mute}
-                label={f.mute}
-                onChange={() => store().toggleMute(index)}
-              />
-              <LaneLevel index={index} />
               {index > 0 && (
                 <button
                   type="button"
@@ -109,6 +102,15 @@ export function StemLaneHeads({ top }: { top: number }) {
                   <X className="size-3" />
                 </button>
               )}
+            </div>
+            <div className="flex items-center gap-1">
+              <SoloKey index={index} solo={lane.solo} />
+              <MuteKey
+                muted={lane.mute}
+                label={f.mute}
+                onChange={() => store().toggleMute(index)}
+              />
+              <LaneLevel index={index} />
             </div>
           </div>
         );

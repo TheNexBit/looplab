@@ -196,77 +196,80 @@ export function DetailView() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="well relative min-h-0 flex-1 cursor-pointer overflow-hidden rounded-panel"
-    >
-      {/* Ruler strip and centre line, drawn behind the transparent canvas */}
+    // Stems from files: the lane heads stand in their own column, the waveform stays free
+    <div className="flex min-h-0 flex-1 gap-1">
+      <StemLaneHeads ruler={RULER_CSS} />
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
-        style={{ height: RULER_CSS }}
-      />
-      {centerLine && !stemLanes && (
+        ref={containerRef}
+        className="well relative min-h-0 min-w-0 flex-1 cursor-pointer overflow-hidden rounded-panel"
+      >
+        {/* Ruler strip and centre line, drawn behind the transparent canvas */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
-          style={{ top: RULER_CSS }}
-        >
-          <div className="h-px w-full bg-grid" />
-        </div>
-      )}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 size-full"
-        aria-label={t.waveform.detail}
-      />
-      <LoopOverlay ref={loopRef} />
-      <LoopOverlay ref={braceRef} variant="brace" height={RULER_CSS - 4} />
-      <MarkerFlags area={containerRef} top={RULER_CSS} />
-      <TempoFlags area={containerRef} />
-      <SyncFlags area={containerRef} />
-      <CurrentMemo top={RULER_CSS} />
-      <StemLaneHeads top={RULER_CSS} />
-      <div
-        ref={shadeRef}
-        aria-hidden
-        className="pointer-events-none invisible absolute bottom-0 left-0 bg-cue/15 will-change-transform"
-        style={{ top: RULER_CSS }}
-      />
-      <div
-        ref={cueRef}
-        aria-hidden
-        title={t.transport.cue}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 will-change-transform"
-      >
-        {/* Dashed full-height line, like Reaper's edit cursor: the playhead is the solid one */}
+          className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
+          style={{ height: RULER_CSS }}
+        />
+        {centerLine && !stemLanes && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
+            style={{ top: RULER_CSS }}
+          >
+            <div className="h-px w-full bg-grid" />
+          </div>
+        )}
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 size-full"
+          aria-label={t.waveform.detail}
+        />
+        <LoopOverlay ref={loopRef} />
+        <LoopOverlay ref={braceRef} variant="brace" height={RULER_CSS - 4} />
+        <MarkerFlags area={containerRef} top={RULER_CSS} />
+        <TempoFlags area={containerRef} />
+        <SyncFlags area={containerRef} />
+        <CurrentMemo top={RULER_CSS} />
         <div
-          className="absolute bottom-0 -left-px border-l-2 border-dashed border-cue opacity-80"
+          ref={shadeRef}
+          aria-hidden
+          className="pointer-events-none invisible absolute bottom-0 left-0 bg-cue/15 will-change-transform"
           style={{ top: RULER_CSS }}
         />
-        {/* Flag at the foot of the ruler, outlined so it stands out on any waveform */}
-        <svg
+        <div
+          ref={cueRef}
           aria-hidden
-          width="14"
-          height="11"
-          viewBox="0 0 14 11"
-          className="absolute -translate-x-1/2 overflow-visible"
-          style={{ top: RULER_CSS - 10 }}
+          title={t.transport.cue}
+          className="pointer-events-none absolute top-0 bottom-0 left-0 will-change-transform"
         >
-          <path
-            d="M1 1 H13 L7 10 Z"
-            className="fill-cue stroke-edge"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
+          {/* Dashed full-height line, like Reaper's edit cursor: the playhead is the solid one */}
+          <div
+            className="absolute bottom-0 -left-px border-l-2 border-dashed border-cue opacity-80"
+            style={{ top: RULER_CSS }}
           />
-        </svg>
-      </div>
-      <div
-        ref={playheadRef}
-        className="pointer-events-none absolute top-0 bottom-0 left-0 bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
-        style={{ width: playheadWidth }}
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
+          {/* Flag at the foot of the ruler, outlined so it stands out on any waveform */}
+          <svg
+            aria-hidden
+            width="14"
+            height="11"
+            viewBox="0 0 14 11"
+            className="absolute -translate-x-1/2 overflow-visible"
+            style={{ top: RULER_CSS - 10 }}
+          >
+            <path
+              d="M1 1 H13 L7 10 Z"
+              className="fill-cue stroke-edge"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div
+          ref={playheadRef}
+          className="pointer-events-none absolute top-0 bottom-0 left-0 bg-playhead shadow-[0_0_6px_color-mix(in_srgb,var(--color-playhead)_50%,transparent)] will-change-transform"
+          style={{ width: playheadWidth }}
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-playhead" />
+        </div>
       </div>
     </div>
   );

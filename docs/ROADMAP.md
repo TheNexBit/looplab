@@ -1188,8 +1188,9 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
   spostato col silenzio o tagliato all'inizio; lo spostamento si salva, la volta dopo non si rifà. Se non si trova,
   la corsia parte col brano e mostra un triangolo d'avviso.
 - **Vista:** nella forma d'onda grande una fascia per corsia, nel colore della corsia mentre si sente, grigia quando
-  no; sopra il bordo sinistro di ognuna una riga con nome breve (le parole comuni ai file tolte: «Backing»), **S**
-  (Ctrl+clic aggiunge), **M**, volume, ✕ per toglierla. Loop, marker, playhead e righello su tutte le corsie.
+  no; a sinistra, in una **colonna tutta loro** (mai sopra la forma d'onda: prima prova dell'utente, i clic su S/M
+  finivano sulla musica), la testa di ogni corsia alta quanto lei: nome breve (le parole comuni ai file tolte:
+  «Backing»), **S** (Ctrl+clic aggiunge), **M**, volume, ✕ per toglierla. Loop, marker, playhead e righello su tutte.
 - **Barra «Stems · N»** nel titolo delle forme d'onda: **Cambia (X)** passa alla corsia successiva da sola senza
   fermare la musica, **+** aggiunge file, **✕** torna al brano da solo.
 - **Motore:** il file aperto è una corsia del mix col suo volume (`StemLevels.original`), gli altri file sono gli
