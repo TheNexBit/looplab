@@ -846,6 +846,11 @@ export const en = {
       cueInHint: "Where the song starts live (skip an intro, a recorded count-in…)",
       cueOut: "Cue out",
       cueOutHint: "Where the song stops live (cut a fade-out, a long ending…)",
+      fadeOut: "Fade out",
+      fadeOutHint:
+        "The song fades out to silence over the last seconds before the cue out, instead of stopping dry",
+      fadeLength: "Fade length",
+      fadeSeconds: (seconds: number) => `${seconds} s`,
       fromPlayhead: "From playhead",
       fromPlayheadHint: "Use the playhead position of the open track",
       openToUsePlayhead: "Open this song to take the playhead position",

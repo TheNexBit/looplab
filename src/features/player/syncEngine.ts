@@ -1,3 +1,4 @@
+import { useLiveStore } from "@/features/setlist/live";
 import { commands, type SoundsRequest } from "@/lib/bindings";
 import { eqToRust, useEqStore } from "@/stores/eq";
 import { laneGains, onStemsClosed, useFileStemsStore } from "@/stores/fileStems";
@@ -108,7 +109,9 @@ export function syncWithEngine(): () => void {
   });
   const pushTrackVolume = (force = false) => {
     const { trackVolume, trackMuted } = useSettingsStore.getState();
-    sendTrackVolume(trackMuted ? 0 : trackVolume, force);
+    // A Live fade out scales the volume: the knob itself never moves
+    const fade = useLiveStore.getState().active ? useLiveStore.getState().fade : 1;
+    sendTrackVolume(trackMuted ? 0 : trackVolume * fade, force);
   };
   const sendTempo = sender(commands.setTempoMap);
   const pushTempo = (force = false) => sendTempo(clickTempoMap(), force);
@@ -148,6 +151,9 @@ export function syncWithEngine(): () => void {
       pushTrackVolume();
     }),
     useEqStore.subscribe(() => pushAll(false)),
+    useLiveStore.subscribe((state, previous) => {
+      if (state.fade !== previous.fade || state.active !== previous.active) pushTrackVolume();
+    }),
     useStemsStore.subscribe(() => pushStems()),
     useFileStemsStore.subscribe((state, previous) => {
       // Opened, closed or mixed: the engine gets the levels (at once after opening)

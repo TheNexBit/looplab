@@ -22,6 +22,8 @@ const SPEED: (f64, f64) = (
 const SEMITONES: (i32, i32) = (-12, 12);
 /// BPM limits of a song without file, the same as the metronome's.
 const BPM: (f64, f64) = (20.0, 400.0);
+/// Fade out at the cue out, in seconds (as heard, whatever the Live speed).
+const FADE_OUT: (f64, f64) = (0.5, 20.0);
 /// Gap between songs in Live mode, seconds (0 = wait for the next key).
 const MAX_GAP: u32 = 60;
 
@@ -76,6 +78,9 @@ pub struct SetlistSong {
     /// Stop after this song even with auto-advance on (AbleSet's STOP cue)
     #[serde(default)]
     pub stop_after: bool,
+    /// Fade out before the cue out (seconds as heard); `None` = the song stops dry
+    #[serde(default)]
+    pub fade_out: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
@@ -189,6 +194,10 @@ fn tidy(mut setlist: Setlist) -> Setlist {
             .filter(|b| b.is_finite())
             .map(|b| b.clamp(BPM.0, BPM.1));
         song.key = song.key.take().filter(|k| KEYS.contains(&k.as_str()));
+        song.fade_out = song
+            .fade_out
+            .filter(|f| f.is_finite())
+            .map(|f| f.clamp(FADE_OUT.0, FADE_OUT.1));
         if song.kind == SetlistItemKind::Break {
             // A break has no file and nothing to play
             song.path = None;
@@ -198,6 +207,7 @@ fn tidy(mut setlist: Setlist) -> Setlist {
             song.speed = None;
             song.bpm = None;
             song.key = None;
+            song.fade_out = None;
             song.segue = false;
             song.stop_after = false;
         }
@@ -331,6 +341,7 @@ mod tests {
             key: None,
             segue: false,
             stop_after: false,
+            fade_out: None,
         }
     }
 
@@ -388,7 +399,11 @@ mod tests {
         set.songs[0].bpm = Some(f64::NAN);
         set.songs[0].key = Some("H".into());
         set.songs[1].key = Some("F#m".into());
+        set.songs[0].fade_out = Some(99.0);
+        set.songs[1].fade_out = Some(f64::INFINITY);
         let set = tidy(set);
+        assert_eq!(set.songs[0].fade_out, Some(FADE_OUT.1));
+        assert_eq!(set.songs[1].fade_out, None);
         assert_eq!(set.songs[0].key, None);
         assert_eq!(set.songs[1].key.as_deref(), Some("F#m"));
         assert_eq!(set.name, "Festa");

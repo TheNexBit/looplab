@@ -4,6 +4,7 @@ import {
   breakItem,
   cueRange,
   daysTo,
+  fadeGain,
   livePlan,
   moved,
   playLength,
@@ -88,5 +89,25 @@ describe("setlist math", () => {
     expect(afterSong({ ...song, segue: true }, next, false, 3)).toBe("play");
     expect(afterSong(song, pause, false, 3)).toBe("play");
     expect(afterSong(pause, next, true, 3)).toBe("wait");
+  });
+});
+
+describe("fade out at the cue out", () => {
+  it("is full level before the fade and silent at the cue out", () => {
+    expect(fadeGain(90, 100, 3)).toBe(1);
+    expect(fadeGain(97, 100, 3)).toBe(1);
+    expect(fadeGain(100, 100, 3)).toBe(0);
+    expect(fadeGain(105, 100, 3)).toBe(0);
+  });
+
+  it("fades evenly to the ear (squared curve) and stays off without a length", () => {
+    expect(fadeGain(98.5, 100, 3)).toBeCloseTo(0.25);
+    expect(fadeGain(99, 100, null)).toBe(1);
+  });
+
+  it("lasts the same as heard at a slower Live speed", () => {
+    // At half speed 3 s as heard are 1.5 s of the file
+    expect(fadeGain(98.5, 100, 3, 0.5)).toBe(1);
+    expect(fadeGain(99.25, 100, 3, 0.5)).toBeCloseTo(0.25);
   });
 });

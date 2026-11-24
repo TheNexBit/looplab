@@ -849,6 +849,11 @@ export const it = {
       cueIn: "Cue in",
       cueInHint: "Dove parte il brano dal vivo (salta un'intro, il count-in registrato…)",
       cueOut: "Cue out",
+      fadeOut: "Dissolvenza",
+      fadeOutHint:
+        "Il brano sfuma fino al silenzio negli ultimi secondi prima del cue out, invece di fermarsi di colpo",
+      fadeLength: "Durata della dissolvenza",
+      fadeSeconds: (seconds: number) => `${seconds} s`,
       cueOutHint: "Dove si ferma il brano dal vivo (taglia una sfumatura, un finale lungo…)",
       fromPlayhead: "Dal playhead",
       fromPlayheadHint: "Usa la posizione del playhead del brano aperto",

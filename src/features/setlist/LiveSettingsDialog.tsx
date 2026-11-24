@@ -16,6 +16,8 @@ import { currentPosition, usePlayerStore } from "@/stores/player";
 import { useSetlistsStore } from "@/stores/setlists";
 import {
   BREAK_LENGTH,
+  FADE_OUT_CHOICES,
+  FADE_OUT_DEFAULT,
   isBreak,
   LIVE_BPM,
   LIVE_SEMITONES,
@@ -93,6 +95,52 @@ function CuePoint({
 }
 
 /** The key of the song, picked from a menu like a DAW's key selector (major, then minor). */
+/** Fade out at the cue out: a lit key, and its length from a menu (choosing one turns it on). */
+function FadeOut({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (seconds: number | null) => void;
+}) {
+  return (
+    <>
+      <OnOffKey
+        label={s.live.fadeOut}
+        on={value !== null}
+        onChange={(on) => onChange(on ? FADE_OUT_DEFAULT : null)}
+      />
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <Button
+            variant="hardware"
+            aria-label={s.live.fadeLength}
+            className={cn("min-w-20 justify-between font-mono", value === null && "text-fg-subtle")}
+          >
+            {s.live.fadeSeconds(value ?? FADE_OUT_DEFAULT)}
+            <ChevronDown className="size-3.5" />
+          </Button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content align="start" sideOffset={4} className={menuContent}>
+            <DropdownMenu.Label className={menuLabel}>{s.live.fadeLength}</DropdownMenu.Label>
+            <DropdownMenu.RadioGroup
+              value={value === null ? "" : String(value)}
+              onValueChange={(seconds) => onChange(Number(seconds))}
+            >
+              {FADE_OUT_CHOICES.map((seconds) => (
+                <MenuChoice key={seconds} value={String(seconds)} className="font-mono">
+                  {s.live.fadeSeconds(seconds)}
+                </MenuChoice>
+              ))}
+            </DropdownMenu.RadioGroup>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+    </>
+  );
+}
+
 function KeyPicker({
   value,
   onChange,
@@ -219,6 +267,9 @@ export function LiveSettingsDialog({
                     edit({ cueOut: cueOut !== null && cueOut >= length ? null : cueOut })
                   }
                 />
+              </Row>
+              <Row label={s.live.fadeOut} hint={s.live.fadeOutHint}>
+                <FadeOut value={song.fadeOut} onChange={(fadeOut) => edit({ fadeOut })} />
               </Row>
             </>
           ) : (

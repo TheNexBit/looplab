@@ -28,6 +28,10 @@ Fase 32 (Looplab in inglese per tutti).
 - Se mancano FFmpeg o i modelli nella cartella di Looplab, l'avviso dice di reinstallare (o estrarre di nuovo lo ZIP
   portatile) invece di citare gli script di sviluppo.
 
+### Aggiunto (fase 33)
+
+- **Dissolvenza al cue out** nel Live mode (issue #4): tasto «Fade out» nelle Live settings, con durata da 1 a 12 s.
+
 ### Corretto
 
 - Le schede del pannello laterale (Sezioni, Pratica, EQ, Tracce) non si toccano più a 1280 px (issue #3).

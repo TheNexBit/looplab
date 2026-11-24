@@ -8,7 +8,7 @@ import { currentPosition, setPlaysOnFromHere, usePlayerStore } from "@/stores/pl
 import { useSetlistsStore } from "@/stores/setlists";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from "@/stores/ui";
-import { afterSong, cueRange, livePlan } from "./setlistMath";
+import { afterSong, cueRange, fadeGain, livePlan } from "./setlistMath";
 
 /**
  * - `loading`: the song's file is opening
@@ -50,6 +50,8 @@ interface LiveState {
   missing: boolean;
   /** Set mode was just left by opening another track (shown as a notice with a way back) */
   left: LeftSet | null;
+  /** Level of the fade out at the cue out (1 = none): it scales the track volume */
+  fade: number;
   /** Turns set mode on at song `index` (or moves there if already on); `stage` shows the Stage view. */
   start: (setlistId: string, index?: number, stage?: boolean) => Promise<void>;
   /** Plays song `index` of the set at once (a double-click on it). */
@@ -164,7 +166,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
     const range = cueRange({ ...song, length: duration }) ?? { start: 0, end: duration };
     const { liveMode, liveChangeSeconds } = useSettingsStore.getState();
     const parts = livePlan(range, liveMode, liveChangeSeconds);
-    set({ parts, part: 0 });
+    set({ parts, part: 0, fade: 1 });
     player.seek(parts[0]?.start ?? 0);
   };
 
@@ -201,6 +203,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
   /** The song is over: the next one plays, waits or runs the gap (`afterSong`). */
   const songOver = () => {
     pausePlayer();
+    set({ fade: 1 });
     const list = songs();
     const current = list[get().index];
     const index = get().index + 1;
@@ -246,6 +249,11 @@ export const useLiveStore = create<LiveState>((set, get) => {
       songOver();
       return;
     }
+    // The last part ends at the cue out: the song may fade out towards it
+    if (!state.parts[state.part + 1]) {
+      const fade = fadeGain(position, part.end, song.fadeOut, song.speed ?? 1);
+      if (Math.abs(fade - state.fade) > 0.005 || (fade === 1 && state.fade !== 1)) set({ fade });
+    }
     // Stopped from elsewhere (a media key, the dock)
     if (!player.playing) set({ phase: "paused" });
   };
@@ -275,6 +283,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
     runningSince: 0,
     missing: false,
     left: null,
+    fade: 1,
 
     start: async (setlistId, index = 0, stage = false) => {
       if (get().active && get().setlistId === setlistId) {
@@ -303,7 +312,7 @@ export const useLiveStore = create<LiveState>((set, get) => {
       clearInterval(timer);
       timer = undefined;
       pausePlayer();
-      set({ active: false, stage: false, phase: "loading" });
+      set({ active: false, stage: false, phase: "loading", fade: 1 });
       showSetlistTab(false);
       // The study settings of the open track come back
       holdProjectSaves(false);

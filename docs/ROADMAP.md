@@ -1231,6 +1231,17 @@ la si rende pronta per chi non parla italiano.
 **Rimasti in italiano di proposito:** le cartelle interne `dati` (versione portatile) e `suoni`, il file
 `libreria.db` e i messaggi di sviluppo che citano gli script `scripts\05-…`, `10-…`, `11-…`.
 
+## 33. Dissolvenza al cue out 🚧
+
+Issue #4. Nel Live mode un brano con il cue out prima della fine si fermava di colpo.
+
+- **Live settings → «Fade out»:** tasto acceso/spento e durata da un menu (1, 2, 3, 5, 8, 12 s; scegliere una durata
+  la accende). Salvata nel brano della setlist (`SetlistSong.fade_out`, 0,5–20 s).
+- Negli ultimi secondi prima del cue out (o della fine del file) il volume della traccia scende a zero con una curva
+  al quadrato, che all'orecchio suona uniforme (`fadeGain` in `setlistMath.ts`). La durata è quella che si sente:
+  a velocità Live più bassa vale lo stesso. La manopola del volume non si muove: la dissolvenza la moltiplica
+  (`useLiveStore.fade` → `syncEngine`). Nella prova dei cambi vale solo sulla coda.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

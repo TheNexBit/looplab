@@ -1357,6 +1357,8 @@ export type SetlistSong_Deserialize = {
 	segue?: boolean,
 	/**  Stop after this song even with auto-advance on (AbleSet's STOP cue) */
 	stopAfter?: boolean,
+	/**  Fade out before the cue out (seconds as heard); `None` = the song stops dry */
+	fadeOut?: number | null,
 };
 
 export type SetlistSong_Serialize = {
@@ -1386,6 +1388,8 @@ export type SetlistSong_Serialize = {
 	segue: boolean,
 	/**  Stop after this song even with auto-advance on (AbleSet's STOP cue) */
 	stopAfter: boolean,
+	/**  Fade out before the cue out (seconds as heard); `None` = the song stops dry */
+	fadeOut: number | null,
 };
 
 export type Setlist_Deserialize = {
