@@ -58,7 +58,8 @@ Built like a DAW: lit buttons, knobs, keyboard shortcuts and MIDI pedals, nothin
 </table>
 
 > [!NOTE]
-> The interface is in Italian today; an English version is on the way.
+> The interface is in English and Italian: it starts in your Windows language and you can switch any time in
+> Settings → General.
 
 ## Download
 

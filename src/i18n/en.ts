@@ -39,14 +39,14 @@ export const en = {
     fileUnreadable: "The file cannot be read.",
     unsupportedFormat: "This format is not supported.",
     unsupportedCodec:
-      "This audio codec (Opus, for example) needs FFmpeg: run scripts\\05-fetch-ffmpeg.cmd and open the file again.",
+      "This audio codec (Opus, for example) needs FFmpeg, which is missing from the Looplab folder: reinstall Looplab (or extract the portable ZIP again) and open the file again. Developers: scripts\\05-fetch-ffmpeg.cmd.",
     noAudioTrack: "The file has no audio track.",
     emptyFile: "The file contains no audio.",
     corruptFile: "The file seems to be damaged.",
     audioDevice: "The audio device is not responding: check the audio output and try again.",
     noTrack: "No track open.",
     ffmpegMissing:
-      "This file needs FFmpeg, which is not installed: run scripts\\05-fetch-ffmpeg.cmd.",
+      "This file needs FFmpeg, which is missing from the Looplab folder: reinstall Looplab (or extract the portable ZIP again). Developers: scripts\\05-fetch-ffmpeg.cmd.",
     ffmpegFailed: "FFmpeg could not convert the file.",
     projectFile:
       "This track's project cannot be read (maybe written by a newer Looplab): markers and sections are not saved.",
@@ -58,9 +58,9 @@ export const en = {
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:
-      "The model for tempo analysis is missing: run scripts\\10-modello-tempo.cmd.",
+      "The model for tempo analysis is missing from the Looplab folder: reinstall Looplab (or extract the portable ZIP again). Developers: scripts\\10-modello-tempo.cmd.",
     stemModelMissing:
-      "The model for separating instruments is missing: run scripts\\11-modello-strumenti.cmd.",
+      "The model for separating instruments is missing from the Looplab folder: reinstall Looplab (or extract the portable ZIP again). Developers: scripts\\11-modello-strumenti.cmd.",
     notSeparated: "This track is not separated yet: press “Separate instruments” first.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
@@ -128,7 +128,7 @@ export const en = {
     withEq: "Current EQ and channels",
     format: "Format",
     formats: { wav16: "WAV 16 bit", wav24: "WAV 24 bit", flac: "FLAC", mp3: "MP3 320k" },
-    needsFfmpeg: "Needs FFmpeg (scripts\\05-fetch-ffmpeg.cmd)",
+    needsFfmpeg: "Needs FFmpeg, missing from the Looplab folder: reinstall Looplab",
     length: "Length",
     sourceGone: "It is gone: choose another part.",
     start: "Export…",

@@ -42,14 +42,14 @@ export const it = {
     fileUnreadable: "Impossibile leggere il file.",
     unsupportedFormat: "Questo formato non è supportato.",
     unsupportedCodec:
-      "Questo codec audio (per esempio Opus) richiede FFmpeg: esegui scripts\\05-fetch-ffmpeg.cmd e riapri il file.",
+      "Questo codec audio (per esempio Opus) richiede FFmpeg, che manca nella cartella di Looplab: reinstalla Looplab (o estrai di nuovo lo ZIP portatile) e riapri il file. Per chi sviluppa: scripts\\05-fetch-ffmpeg.cmd.",
     noAudioTrack: "Il file non contiene una traccia audio.",
     emptyFile: "Il file non contiene audio.",
     corruptFile: "Il file sembra danneggiato.",
     audioDevice: "La scheda audio non risponde: controlla l'uscita audio e riprova.",
     noTrack: "Nessun brano aperto.",
     ffmpegMissing:
-      "Per questo file serve FFmpeg, che non è installato: esegui scripts\\05-fetch-ffmpeg.cmd.",
+      "Per questo file serve FFmpeg, che manca nella cartella di Looplab: reinstalla Looplab (o estrai di nuovo lo ZIP portatile). Per chi sviluppa: scripts\\05-fetch-ffmpeg.cmd.",
     ffmpegFailed: "FFmpeg non è riuscito a convertire il file.",
     projectFile:
       "Il progetto di questo brano non si legge (forse scritto da un Looplab più nuovo): marker e sezioni non vengono salvati.",
@@ -61,9 +61,9 @@ export const it = {
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     tempoModelMissing:
-      "Manca il modello per analizzare il tempo: esegui scripts\\10-modello-tempo.cmd.",
+      "Manca il modello per analizzare il tempo nella cartella di Looplab: reinstalla Looplab (o estrai di nuovo lo ZIP portatile). Per chi sviluppa: scripts\\10-modello-tempo.cmd.",
     stemModelMissing:
-      "Manca il modello per separare gli strumenti: esegui scripts\\11-modello-strumenti.cmd.",
+      "Manca il modello per separare gli strumenti nella cartella di Looplab: reinstalla Looplab (o estrai di nuovo lo ZIP portatile). Per chi sviluppa: scripts\\11-modello-strumenti.cmd.",
     notSeparated: "Questo brano non è ancora separato: premi prima «Separa strumenti».",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
@@ -131,7 +131,7 @@ export const it = {
     withEq: "EQ e canali attuali",
     format: "Formato",
     formats: { wav16: "WAV 16 bit", wav24: "WAV 24 bit", flac: "FLAC", mp3: "MP3 320k" },
-    needsFfmpeg: "Serve FFmpeg (scripts\\05-fetch-ffmpeg.cmd)",
+    needsFfmpeg: "Serve FFmpeg, che manca nella cartella di Looplab: reinstalla Looplab",
     length: "Durata",
     sourceGone: "Non c'è più: scegli un'altra parte.",
     start: "Esporta…",

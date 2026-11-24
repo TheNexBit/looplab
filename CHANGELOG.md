@@ -12,6 +12,26 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
+Fase 32 (Looplab in inglese per tutti).
+
+### Aggiunto
+
+- **Lingua alla prima apertura** uguale a quella di Windows: italiano su Windows italiano, inglese altrove. Si cambia
+  sempre in Impostazioni → Generale.
+- **Installer in inglese e in italiano**, scelto da Windows.
+- **Tracce esportate in inglese** con l'app in inglese: `Documents\Looplab\Separated stems\<brano>\vocals.wav`…
+  (una cartella «Tracce separate» già esistente resta in uso).
+
+### Cambiato
+
+- Testi inglesi riletti: inglese americano, virgolette inglesi, date della setlist in formato americano.
+- Se mancano FFmpeg o i modelli nella cartella di Looplab, l'avviso dice di reinstallare (o estrarre di nuovo lo ZIP
+  portatile) invece di citare gli script di sviluppo.
+
+### Corretto
+
+- Le schede del pannello laterale (Sezioni, Pratica, EQ, Tracce) non si toccano più a 1280 px (issue #3).
+
 ## 0.31.0 — 2026-11-24
 
 Fase 31 (Stems da file), provata dall'utente e collaudata (registro `docs/collaudo/2026-11-24_fase-31-stems.md`).
