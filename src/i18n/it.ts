@@ -687,7 +687,7 @@ export const it = {
       "Non sono riuscito ad allinearla dal suono: parte insieme al brano. Se è sfasata, usa un'altra registrazione della stessa esecuzione",
     removeLane: "Togli dalle stems (il file resta)",
     levelReset: "Volume al 100%",
-    headRightClick: "Tasto destro: solo, mute, volume, togli dalle stems",
+    headRightClick: "solo, mute, volume, togli dalle stems",
     listen: "Ascolta",
     listenAll: "Tutte",
     listenAllHint: "Si sentono tutte le tracce insieme",

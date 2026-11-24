@@ -1203,8 +1203,13 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
 - Lanciatore di prova `13-prova-stems.cmd` (copia dei dati in `D:\.cache\looplab\prova-stems`): da togliere a fine
   fase.
 
+- Collaudo (registro `docs/collaudo/2026-11-24_fase-31-stems.md`): 9 difetti corretti, riprova con R1 (volume
+  nascosto con molte corsie) e R2 (mix azzerato riaprendo) corretti e verificati. **Rimandato:** se si sposta tutta
+  la cartella del brano, i file delle altre corsie non vengono cercati nella nuova cartella (restano «mancanti» e
+  tornano quando il file è di nuovo al suo posto).
+
 **Scelte prese da me (da confermare in prova):** la durata è quella del file principale (una base più lunga si
-ferma con lui); con più di 3 corsie la manopola del volume non si vede (restano S e M); i file video si possono
+ferma con lui); con più di 3 corsie le teste stanno su una riga (nome, S, M, volume); i file video si possono
 usare come stems (se ne usa l'audio).
 
 ## Dopo la prima versione

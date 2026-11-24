@@ -85,7 +85,12 @@ export async function openAsStems(
   // (levels, mute, solo) are kept and never reset to 100%
   await stemsIdle();
   const stems = useFileStemsStore.getState();
-  await stems.open(main, [main, ...others], projectStems(stems));
+  const saved = projectStems(stems);
+  // Added to the lanes already saved, never in place of them (a lesson's «Stems» key brings only
+  // its backing: a lane added by hand before stays)
+  const kept = saved.slice(1).map((lane) => lane.path);
+  const fresh = others.filter((path) => !kept.some((known) => samePath(known, path)));
+  await stems.open(main, [main, ...kept, ...fresh], saved);
 }
 
 /** «Open as stems…»: several files picked in the dialog. */

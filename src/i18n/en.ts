@@ -684,7 +684,7 @@ export const en = {
       "It could not be lined up from its sound: it starts with the track. If it is off, use another recording of the same performance",
     removeLane: "Remove from the stems (the file stays)",
     levelReset: "Level back to 100%",
-    headRightClick: "Right-click: solo, mute, level, remove from the stems",
+    headRightClick: "solo, mute, level, remove from the stems",
     listen: "Listen",
     listenAll: "All",
     listenAllHint: "Every track is heard together",
