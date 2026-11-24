@@ -12,6 +12,10 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
+## 0.29.0 — 2026-11-24
+
+Fase 29 (comodità delle lezioni), chiusa e provata.
+
 ### Aggiunto
 
 - Menu «Tab» nella barra dello spartito: tutte le tab della lezione (.gp e PDF) a un clic, ognuna

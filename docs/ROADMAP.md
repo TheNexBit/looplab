@@ -30,6 +30,8 @@
 | 25  | Lezione: video e tab       | ✅ provata (21/11/2026)    |
 | 26  | Inquadrature, basi, file   | ✅ provata (22/11/2026)    |
 | 27  | Home delle lezioni         | ✅ provata (22/11/2026)    |
+| 28  | Rifinitura grafica         | ✅ provata (23/11/2026)    |
+| 29  | Comodità delle lezioni     | ✅ provata (24/11/2026)    |
 
 ## 1. Fondamenta ✅
 
@@ -987,7 +989,7 @@ solo dopo la prova completa dell'utente il ramo si unisce in main.
 
 **Unione:** il 23/11/2026 il ramo `fase-28` è stato unito in main.
 
-## 29. Comodità delle lezioni 🔧 (ramo `fase-29`)
+## 29. Comodità delle lezioni ✅ (provata 24/11/2026)
 
 **Obiettivo:** le sei priorità dell'utente del 23/11/2026.
 
