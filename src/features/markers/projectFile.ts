@@ -1,6 +1,6 @@
 import { GAP, LEAD_IN, SPEED } from "@/features/player/limits";
 import { BEATS_PER_BAR, sanitizeTempoMap, type TempoMap } from "@/features/practice/tempo";
-import type { ChannelMode, Project_Deserialize, Project_Serialize } from "@/lib/bindings";
+import type { ChannelMode, Project_Deserialize, Project_Serialize, StemFile } from "@/lib/bindings";
 import { type EqData, eqFromFile, eqToRust } from "@/stores/eq";
 import type { LoopOptions } from "@/stores/loop";
 import { type MarkerData, type SectionData, withEnds } from "@/stores/markers";
@@ -31,6 +31,8 @@ export interface ProjectData {
   channels: ChannelMode;
   /** Levels, Mute and Solo of the separated tracks */
   stemMix: StemChannelData[];
+  /** Stems from files (the track own lane first), with their shifts and mix */
+  stemFiles: StemFile[];
   /** The linked score (tab, notation or PDF) */
   score: ProjectScore | null;
   /** The other scores used with the track, each with its own sync and view */
@@ -78,6 +80,11 @@ export function fromFile(file: Project_Serialize, duration = 0): ProjectData {
     eq: eqFromFile(file.eq),
     channels: file.channels,
     stemMix: (file.stemMix ?? []).map((c) => ({ ...c, level: num(c.level, 1) })),
+    stemFiles: (file.stemFiles ?? []).map((l) => ({
+      ...l,
+      shift: num(l.shift, 0),
+      level: num(l.level, 1),
+    })),
     score: scoreOf(file.score),
     // Older files have none; a damaged entry is left out
     otherScores: (file.otherScores ?? []).flatMap((score) => scoreOf(score) ?? []),

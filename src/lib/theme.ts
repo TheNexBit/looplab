@@ -13,7 +13,9 @@ type ThemeToken =
   | "bar"
   | "key-white"
   | "key-black"
-  | "on-accent";
+  | "on-accent"
+  // The section palette: also the colours of the stem lanes
+  | `section-${number}`;
 
 /** Colour themes; each id has a palette block `[data-theme="<id>"]` in `styles/theme.css`. */
 export const THEMES = [

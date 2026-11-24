@@ -2,7 +2,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { autoLinkScore } from "@/features/lessons/openLesson";
 import { resetTempoAnalysis } from "@/features/practice/tempoAnalysis";
 import { commands, type Project_Serialize } from "@/lib/bindings";
+import { samePath } from "@/lib/format";
 import { useEqStore } from "@/stores/eq";
+import { savedLanes, useFileStemsStore } from "@/stores/fileStems";
 import { useHistoryStore } from "@/stores/history";
 import { useLoopStore } from "@/stores/loop";
 import { useMarkersStore } from "@/stores/markers";
@@ -40,6 +42,7 @@ function snapshot(): ProjectData {
     eq,
     channels,
     stemMix: useStemsStore.getState().channels,
+    stemFiles: savedLanes(useFileStemsStore.getState().lanes),
     score: useScoreStore.getState().link,
     otherScores: useScoreStore.getState().shelf,
   };
@@ -81,8 +84,44 @@ function apply(data: ProjectData) {
   useEqStore.getState().setSettings(data.eq);
   useEqStore.getState().setChannels(data.channels);
   useStemsStore.getState().replace(data.stemMix);
+  restoreStemFiles(data.stemFiles);
   useScoreStore.getState().restore(data.score, data.otherScores);
   resume(data.position);
+}
+
+/**
+ * The stems from files of the track project: opened again (decoded and lined up only once:
+ * the shifts are saved), or only their mix when they are already open (a project read again).
+ */
+function restoreStemFiles(saved: ProjectData["stemFiles"]) {
+  const track = usePlayerStore.getState().track?.path;
+  const stems = useFileStemsStore.getState();
+  if (!track) return;
+  if (stems.track && !samePath(stems.track, track)) stems.forget();
+  if (saved.length < 2) {
+    if (useFileStemsStore.getState().lanes.length > 0) void stems.close();
+    return;
+  }
+  const open = useFileStemsStore.getState();
+  const same =
+    open.lanes.length === saved.length &&
+    open.lanes.every((lane, i) => samePath(lane.path, saved[i]?.path));
+  if (same) {
+    useFileStemsStore.setState({
+      lanes: open.lanes.map((lane, i) => ({
+        ...lane,
+        level: saved[i]?.level ?? lane.level,
+        mute: saved[i]?.mute ?? lane.mute,
+        solo: saved[i]?.solo ?? lane.solo,
+      })),
+    });
+    return;
+  }
+  void open.open(
+    track,
+    saved.map((lane) => lane.path),
+    saved,
+  );
 }
 
 /** Back to where the playhead was when the track was last closed (unless near its end). */
@@ -273,6 +312,9 @@ export function syncProject(): () => void {
     }),
     useStemsStore.subscribe((state, previous) => {
       if (state.channels !== previous.channels) schedule();
+    }),
+    useFileStemsStore.subscribe((state, previous) => {
+      if (state.lanes !== previous.lanes) schedule();
     }),
     useScoreStore.subscribe((state, previous) => {
       if (state.link !== previous.link || state.shelf !== previous.shelf) schedule();

@@ -65,7 +65,7 @@ fn main() {
     builder
         .manage(state::AppState::default())
         .invoke_handler(move |invoke| {
-            if invoke.message.command() == commands::waveform::GET_PEAKS {
+            if commands::waveform::BINARY.contains(&invoke.message.command()) {
                 binary(invoke)
             } else {
                 typed(invoke)

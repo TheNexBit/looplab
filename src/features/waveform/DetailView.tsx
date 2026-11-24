@@ -3,10 +3,13 @@ import { CurrentMemo } from "@/features/markers/CurrentMemo";
 import { MarkerFlags } from "@/features/markers/MarkerFlags";
 import { TempoFlags } from "@/features/markers/TempoFlags";
 import { SyncFlags } from "@/features/score/SyncFlags";
+import { StemLaneHeads } from "@/features/stems/StemLanes";
 import { t } from "@/i18n";
 import { themeColor } from "@/lib/theme";
 import { useAnimationFrame } from "@/lib/useAnimationFrame";
+import { laneHeard, useFileStemsStore } from "@/stores/fileStems";
 import { useLoopStore } from "@/stores/loop";
+import { SECTION_COLORS } from "@/stores/markers";
 import { currentPosition, usePlayerStore } from "@/stores/player";
 import { currentTempoMap, usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
@@ -42,6 +45,8 @@ export function DetailView() {
   const peaks = usePlayerStore((s) => s.peaks);
   const playheadWidth = useSettingsStore((s) => s.playheadWidth);
   const centerLine = useSettingsStore((s) => s.centerLine && s.waveStyle !== "half");
+  // Stems from files: one band per lane (the centre line would cross them)
+  const stemLanes = useFileStemsStore((s) => s.lanes.length > 1);
   const containerRef = useRef<HTMLDivElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef<HTMLDivElement>(null);
@@ -74,10 +79,27 @@ export function DetailView() {
     });
     const beats = settings.showGrid ? currentTempoMap() : null;
     if (beats) drawBeatGrid(ctx, view, beats, dpr, "beats", { line: themeColor("beat") });
-    drawWaveform(ctx, peaks, view, themeColor("wave"), {
-      style: settings.waveStyle,
-      zoom: settings.waveZoom,
-    });
+    const look = { style: settings.waveStyle, zoom: settings.waveZoom };
+    const { lanes } = useFileStemsStore.getState();
+    if (lanes.length > 1) {
+      // Stems from files: one band per lane, in its colour while heard, grey when not
+      const band = (height - view.top) / lanes.length;
+      for (const [index, lane] of lanes.entries()) {
+        const lanePeaks = index === 0 ? peaks : lane.peaks;
+        const top = view.top + index * band;
+        if (index > 0) {
+          ctx.fillStyle = themeColor("border");
+          ctx.fillRect(0, Math.round(top), width, Math.max(1, dpr));
+        }
+        if (!lanePeaks) continue;
+        const color = laneHeard(lanes, index)
+          ? themeColor(`section-${index % SECTION_COLORS}`)
+          : themeColor("wave-dim");
+        drawWaveform(ctx, lanePeaks, { ...view, top, height: top + band }, color, look);
+      }
+    } else {
+      drawWaveform(ctx, peaks, view, themeColor("wave"), look);
+    }
     if (beats) {
       drawBeatGrid(ctx, view, beats, dpr, "bars", {
         line: themeColor("bar"),
@@ -99,12 +121,16 @@ export function DetailView() {
     if (peaks) dirty.current = true;
   }, [peaks]);
 
-  // A new tempo, first beat or grid switch: redraw the grid
+  // A new tempo, first beat or grid switch, lanes opened or mixed: redraw
   useEffect(() => {
     const redraw = () => {
       dirty.current = true;
     };
-    const stops = [usePracticeStore.subscribe(redraw), useSettingsStore.subscribe(redraw)];
+    const stops = [
+      usePracticeStore.subscribe(redraw),
+      useSettingsStore.subscribe(redraw),
+      useFileStemsStore.subscribe(redraw),
+    ];
     return () => {
       for (const stop of stops) stop();
     };
@@ -180,7 +206,7 @@ export function DetailView() {
         className="pointer-events-none absolute inset-x-0 top-0 border-b border-edge bg-[linear-gradient(var(--color-ruler-from),var(--color-ruler-to))]"
         style={{ height: RULER_CSS }}
       />
-      {centerLine && (
+      {centerLine && !stemLanes && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center"
@@ -200,6 +226,7 @@ export function DetailView() {
       <TempoFlags area={containerRef} />
       <SyncFlags area={containerRef} />
       <CurrentMemo top={RULER_CSS} />
+      <StemLaneHeads top={RULER_CSS} />
       <div
         ref={shadeRef}
         aria-hidden

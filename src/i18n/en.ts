@@ -667,6 +667,34 @@ export const en = {
     collapse: "Collapse",
     expand: "Expand",
   },
+  fileStems: {
+    title: (lanes: number) => `Stems · ${lanes}`,
+    loading: "Lining up the stems…",
+    failed: "Stems not opened",
+    solo: "Solo",
+    soloHint: "Hear only this track (Ctrl+click: add it to the other soloed ones)",
+    mute: "Mute this track",
+    level: "Track level",
+    notLinedUp:
+      "It could not be lined up from its sound: it starts with the track. If it is off, use another recording of the same performance",
+    removeLane: "Remove this track from the stems (the file stays)",
+    cycle: "Switch",
+    cycleHint: "Go to the next track alone (solo → backing → solo…), without stopping the music",
+    add: "Add a track",
+    addHint: "Add more files as stems of this track",
+    close: "Close the stems",
+    closeHint: "Back to the track alone (the stems can be opened again)",
+    pickTitle: "Pick the files to open together as stems",
+    addTitle: "Pick the files to add as stems",
+    openAsStems: "Open as stems…",
+    openAsStemsHint:
+      "Open several files together (a solo and its backing track): one track under the other, in time, with Solo and Mute",
+    lessonKey: "Stems",
+    lessonKeyHint:
+      "Open the lesson with its backing as stems: one track under the other, X to switch",
+    separatedOff:
+      "Stems from files are open: the separated tracks of this song are not used until you close them.",
+  },
   setlist: {
     locale: "en-GB",
     homeTabs: "What the Home shows",
@@ -1536,6 +1564,7 @@ export const en = {
     toggleHome: "Home",
     toggleScorePaper: "Score: light / dark paper",
     toggleOverview: "Track overview: show / hide",
+    cycleStemSolo: "Stems: next track alone",
     nextTab: "Next tab of the lesson",
     previousLesson: "Previous lesson of the course",
     nextLesson: "Next lesson of the course",

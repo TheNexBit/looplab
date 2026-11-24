@@ -262,6 +262,9 @@ pub struct Project {
     pub channels: ChannelMode,
     /// Levels, Mute and Solo of the separated tracks (empty until the song is separated)
     pub stem_mix: Vec<StemChannel>,
+    /// Stems from files opened with this track (its own lane first), each with its shift and
+    /// its mix; empty when it plays alone
+    pub stem_files: Vec<StemFile>,
     /// The linked score (tab, notation or PDF), if any
     pub score: Option<ProjectScore>,
     /// The other scores used with this track, each with its own sync and view, so switching
@@ -297,6 +300,7 @@ impl Default for Project {
             eq: EqSettings::default(),
             channels: ChannelMode::Stereo,
             stem_mix: Vec::new(),
+            stem_files: Vec::new(),
             score: None,
             other_scores: Vec::new(),
             shared_at: 0.0,
@@ -312,6 +316,19 @@ impl Default for Project {
 pub struct StemChannel {
     /// "vocals", "drums", "bass", "guitar", "piano", "other"
     pub name: String,
+    /// 0..1
+    pub level: f64,
+    pub mute: bool,
+    pub solo: bool,
+}
+
+/// One lane of the stems from files: the file, where it lines up, its level and its keys.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct StemFile {
+    pub path: String,
+    /// What is heard at `t` of the track is at `t + shift` in this file (0 for the track itself)
+    pub shift: f64,
     /// 0..1
     pub level: f64,
     pub mute: bool,

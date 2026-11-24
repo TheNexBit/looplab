@@ -670,6 +670,35 @@ export const it = {
     collapse: "Comprimi",
     expand: "Espandi",
   },
+  fileStems: {
+    title: (lanes: number) => `Stems · ${lanes}`,
+    loading: "Allineo le stems…",
+    failed: "Stems non aperte",
+    solo: "Solo",
+    soloHint: "Ascolta solo questa traccia (Ctrl+clic: aggiungila alle altre in solo)",
+    mute: "Silenzia questa traccia",
+    level: "Volume della traccia",
+    notLinedUp:
+      "Non sono riuscito ad allinearla dal suono: parte insieme al brano. Se è sfasata, usa un'altra registrazione della stessa esecuzione",
+    removeLane: "Togli questa traccia dalle stems (il file resta)",
+    cycle: "Cambia",
+    cycleHint:
+      "Passa alla traccia successiva da sola (solo → base → solo…), senza fermare la musica",
+    add: "Aggiungi una traccia",
+    addHint: "Aggiungi altri file come stems di questo brano",
+    close: "Chiudi le stems",
+    closeHint: "Torna al brano da solo (le stems si possono riaprire)",
+    pickTitle: "Scegli i file da aprire insieme come stems",
+    addTitle: "Scegli i file da aggiungere come stems",
+    openAsStems: "Apri come stems…",
+    openAsStemsHint:
+      "Apri più file insieme (es. il solo e la sua base): una traccia sotto l'altra, a tempo, con Solo e Mute",
+    lessonKey: "Stems",
+    lessonKeyHint:
+      "Apri la lezione con la sua base come stems: una traccia sotto l'altra, X per cambiare",
+    separatedOff:
+      "Ci sono stems da file aperte: le tracce separate di questo brano non si usano finché non le chiudi.",
+  },
   setlist: {
     locale: "it-IT",
     homeTabs: "Cosa mostra la Home",
@@ -1546,6 +1575,7 @@ export const it = {
     toggleHome: "Home",
     toggleScorePaper: "Spartito: carta chiara / scura",
     toggleOverview: "Panoramica: mostra / nascondi",
+    cycleStemSolo: "Stems: traccia successiva da sola",
     nextTab: "Tab successiva della lezione",
     previousLesson: "Lezione precedente del corso",
     nextLesson: "Lezione successiva del corso",

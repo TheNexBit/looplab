@@ -8,6 +8,7 @@ mod data;
 mod error;
 mod exercise;
 mod export;
+pub(crate) mod file_stems;
 mod lessons;
 mod library;
 mod metronome;
@@ -102,6 +103,9 @@ pub fn builder() -> Builder<tauri::Wry> {
             stems::cancel_stems,
             stems::export_stems,
             stems::set_stem_levels,
+            file_stems::open_stem_files,
+            file_stems::close_stem_files,
+            file_stems::media_in_folder,
             exercise::open_exercise,
             exercise::save_exercise,
             exercise::align_exercise,

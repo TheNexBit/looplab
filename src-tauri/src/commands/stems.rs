@@ -83,6 +83,13 @@ pub async fn load_stems(
     let found = tauri::async_runtime::spawn_blocking(move || open_stems(&stem, rate))
         .await
         .map_err(AppError::internal)?;
+    // Stems from files opened meanwhile for this song stay: they were chosen by hand
+    if state
+        .track()
+        .is_some_and(|track| super::file_stems::open_for(&track))
+    {
+        return Ok(None);
+    }
     Ok(found.map(|tracks| {
         engine.set_stems(Some(Arc::new(Stems::new(tracks))));
         info()
@@ -215,11 +222,19 @@ pub fn cancel_stems(state: State<'_, AppState>) {
 }
 
 /// Levels of the separated tracks, 0..1, in the order of `StemsInfo::names`, mute and solo
-/// already applied. All at 1 plays the original song.
+/// already applied. All at 1 plays the original song. With stems from files, `original` is the
+/// open file's own level and `levels` are the other files', in the order they were opened.
 #[tauri::command]
 #[specta::specta]
-pub fn set_stem_levels(state: State<'_, AppState>, levels: Vec<f32>) -> Result<(), AppError> {
-    let mut gains = StemLevels::default();
+pub fn set_stem_levels(
+    state: State<'_, AppState>,
+    levels: Vec<f32>,
+    original: Option<f32>,
+) -> Result<(), AppError> {
+    let mut gains = StemLevels {
+        original: original.map(|level| level.clamp(0.0, 1.0)),
+        ..StemLevels::default()
+    };
     for (slot, level) in gains.gains.iter_mut().zip(levels.iter().take(MAX_STEMS)) {
         *slot = level.clamp(0.0, 1.0);
     }

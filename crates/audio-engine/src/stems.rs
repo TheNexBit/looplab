@@ -5,6 +5,10 @@
 //! The original song is one more input of the mix: while every track is at full level
 //! and none is muted or soloed, the original is heard (the separated tracks add up to it
 //! only nearly), and changing a level crossfades to the mix of the tracks.
+//!
+//! Stems from files (a solo and its backing track, opened together like Song Master's «Open as
+//! stems») use the same mix: the open file is one lane with its own level (`original`), the
+//! other files are the tracks, each moved onto the open file's time (`shifted`).
 
 use crate::pcm::{CHANNELS, Pcm};
 
@@ -39,6 +43,9 @@ impl Stems {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct StemLevels {
     pub gains: [f32; MAX_STEMS],
+    /// Stems from files: the open file's own level. `None` for separated tracks, where the
+    /// original is heard only while every track is untouched.
+    pub original: Option<f32>,
 }
 
 impl Default for StemLevels {
@@ -46,6 +53,7 @@ impl Default for StemLevels {
     fn default() -> Self {
         Self {
             gains: [1.0; MAX_STEMS],
+            original: None,
         }
     }
 }
@@ -55,6 +63,12 @@ impl StemLevels {
     pub(crate) fn inputs(&self, stems: Option<&Stems>) -> [f32; INPUTS] {
         let mut out = [0.0; INPUTS];
         let count = stems.map_or(0, Stems::len);
+        if let Some(original) = self.original {
+            // Stems from files: every lane, the open file too, at its own level
+            out[ORIGINAL] = original;
+            out[..count].copy_from_slice(&self.gains[..count]);
+            return out;
+        }
         if count == 0 || self.gains[..count].iter().all(|&g| g >= 1.0) {
             out[ORIGINAL] = 1.0;
         } else {
@@ -62,6 +76,26 @@ impl StemLevels {
         }
         out
     }
+}
+
+/// `pcm` moved onto another file's time: what it plays at `frames` from its start is heard at
+/// 0 (the file starts earlier, its first frames are cut), or `-frames` of silence come first
+/// (it starts later).
+pub fn shifted(pcm: &Pcm, frames: i64) -> Pcm {
+    let total = pcm.frames() as i64;
+    let skip = frames.max(0);
+    let silence = (-frames).max(0) as usize;
+    let kept = (total - skip).max(0) as usize;
+    let mut out = Pcm::with_capacity(pcm.sample_rate(), silence + kept);
+    let mut samples = vec![0.0; (silence + kept) * CHANNELS];
+    for i in 0..kept {
+        let [l, r] = pcm.frame(skip as usize + i);
+        let at = (silence + i) * CHANNELS;
+        samples[at] = l;
+        samples[at + 1] = r;
+    }
+    out.extend_from_f32(&samples);
+    out
 }
 
 /// Where the reader takes the song from, for one block: the gains glide from `from` at the
@@ -143,6 +177,50 @@ mod tests {
         };
         let [l, _] = source.frame(3, 0.0);
         assert!((l - 0.1).abs() < 1e-3, "only the first track: {l}");
+    }
+
+    #[test]
+    fn stems_from_files_mix_every_lane_at_its_level() {
+        let track = constant(0.3, 10);
+        let stems = Stems::new(vec![constant(0.1, 10)]);
+        // The backing alone (solo), the open file silent
+        let levels = StemLevels {
+            original: Some(0.0),
+            ..StemLevels::default()
+        };
+        let gains = levels.inputs(Some(&stems));
+        let source = Source {
+            track: Some(&track),
+            stems: Some(&stems),
+            from: gains,
+            to: gains,
+        };
+        let [l, _] = source.frame(3, 0.0);
+        assert!((l - 0.1).abs() < 1e-3, "only the backing: {l}");
+        // Both at full level: they add up, the original is not taken alone
+        let both = StemLevels {
+            original: Some(1.0),
+            ..StemLevels::default()
+        }
+        .inputs(Some(&stems));
+        assert_eq!(both[ORIGINAL], 1.0);
+        assert_eq!(both[0], 1.0);
+    }
+
+    #[test]
+    fn a_file_is_moved_onto_the_open_files_time() {
+        let mut pcm = Pcm::with_capacity(48_000, 4);
+        pcm.extend_from_f32(&[0.1, 0.1, 0.2, 0.2, 0.3, 0.3, 0.4, 0.4]);
+        // Starts later: silence first
+        let later = shifted(&pcm, -2);
+        assert_eq!(later.frames(), 6);
+        assert!(later.frame(1)[0].abs() < 1e-3);
+        assert!((later.frame(2)[0] - 0.1).abs() < 1e-3);
+        // Starts earlier: its first frames are cut
+        let earlier = shifted(&pcm, 1);
+        assert_eq!(earlier.frames(), 3);
+        assert!((earlier.frame(0)[0] - 0.2).abs() < 1e-3);
+        assert_eq!(shifted(&pcm, 10).frames(), 0);
     }
 
     #[test]
