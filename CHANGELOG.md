@@ -12,6 +12,10 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
+## 0.30.0 — 2026-11-24
+
+Fase 30 (Setlist e Live mode), provata dall'utente e collaudata (registro `docs/collaudo/2026-11-24_fase-30-setlist.md`).
+
 ### Aggiunto
 
 - **Setlist** (scheda nella Home): le scalette dei concerti con data, locale e conto alla rovescia; brani dal brano
