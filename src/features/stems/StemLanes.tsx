@@ -10,7 +10,13 @@ import { Tooltip, withRightClick } from "@/components/ui/Tooltip";
 import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { fileNameOf, formatPercent } from "@/lib/format";
-import { LANE_LEVEL, laneHeard, laneLabels, useFileStemsStore } from "@/stores/fileStems";
+import {
+  LANE_LEVEL,
+  laneHeard,
+  laneLabels,
+  listening,
+  useFileStemsStore,
+} from "@/stores/fileStems";
 import { sectionColor } from "@/stores/markers";
 import { pickAndAddStems } from "./fileStems";
 
@@ -23,7 +29,7 @@ const KNOB_LANES = 3;
 /** The colour of lane `index`: the section palette, as the lanes of a DAW. */
 export const laneColor = (index: number) => sectionColor(index);
 
-/** The mixer's solo key: «S» with an amber lamp; Ctrl+click adds the lane to the others. */
+/** The mixer's solo key: «S» with an amber lamp, on or off like Reaper's (several can be on). */
 function SoloKey({ index, solo }: { index: number; solo: boolean }) {
   return (
     <Tooltip label={f.soloHint}>
@@ -31,7 +37,7 @@ function SoloKey({ index, solo }: { index: number; solo: boolean }) {
         type="button"
         aria-label={f.solo}
         aria-pressed={solo}
-        onClick={(event) => store().toggleSolo(index, event.ctrlKey || event.metaKey)}
+        onClick={() => store().toggleSolo(index)}
         className={cn(
           "hw inline-flex h-[18px] shrink-0 items-center gap-1 rounded-control px-1.5 text-[9px] font-semibold transition-[filter] hover:brightness-125",
           solo ? "text-fg" : "text-fg-muted",
@@ -179,8 +185,75 @@ function LaneLevel({ index }: { index: number }) {
 }
 
 /**
- * The stems in the waveform panel title: how many lanes, the X key that goes from one lane to
- * the next alone, add a file, back to the track alone. While files are lined up, a spinner.
+ * «Listen»: which lanes are heard, as a row of keys (like an A/B switch): «All», or one lane
+ * alone. The lit key is what you hear; X goes to the next one without stopping the music.
+ */
+function ListenSwitch() {
+  const lanes = useFileStemsStore((s) => s.lanes);
+  const now = listening(lanes);
+  const labels = laneLabels(lanes.map((lane) => lane.path));
+  const key = (lit: boolean) =>
+    cn(
+      "inline-flex h-6 min-w-0 items-center gap-1.5 px-2 text-[11px] transition-[filter] hover:brightness-125",
+      lit ? "bg-well font-semibold text-accent" : "text-fg-muted hover:text-fg",
+    );
+  const lamp = (lit: boolean) => (
+    <span
+      aria-hidden
+      className={cn(
+        "size-1.5 shrink-0 rounded-full",
+        lit ? "bg-accent shadow-[0_0_6px_var(--color-accent)]" : "bg-led-off",
+      )}
+    />
+  );
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[11px] text-fg-subtle">{f.listen}</span>
+      <fieldset
+        aria-label={f.listen}
+        className="hw m-0 flex min-w-0 divide-x divide-edge overflow-hidden rounded-control p-0"
+      >
+        <button
+          type="button"
+          aria-pressed={now === null}
+          title={f.listenAllHint}
+          className={key(now === null)}
+          onClick={() => store().listenTo(null)}
+        >
+          {lamp(now === null)}
+          {f.listenAll}
+        </button>
+        {lanes.map((lane, index) => (
+          <button
+            key={lane.path}
+            type="button"
+            aria-pressed={now === index}
+            title={f.listenOneHint(labels[index] ?? "")}
+            className={key(now === index)}
+            onClick={() => store().listenTo(index)}
+          >
+            {lamp(now === index)}
+            <span
+              aria-hidden
+              className="size-2 shrink-0 rounded-[2px]"
+              style={{ background: laneColor(index) }}
+            />
+            <span className="max-w-28 truncate">{labels[index]}</span>
+          </button>
+        ))}
+      </fieldset>
+      <Tooltip label={f.cycleHint} shortcut="cycleStemSolo">
+        <span className="cursor-default">
+          <Kbd shortcut="cycleStemSolo" />
+        </span>
+      </Tooltip>
+    </div>
+  );
+}
+
+/**
+ * The stems in the waveform panel title: how many lanes, «Listen» (all or one lane alone, X to
+ * go on), add a file, close the stems. While files are lined up, a spinner.
  */
 export function StemsBar() {
   const lanes = useFileStemsStore((s) => s.lanes.length);
@@ -202,40 +275,30 @@ export function StemsBar() {
     ) : null;
   }
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex min-w-0 flex-wrap items-center gap-2">
       <span className="flex items-center gap-1 text-[11px] font-semibold tracking-[0.08em] text-accent uppercase">
         <Layers className="size-3.5" aria-hidden />
         {f.title(lanes)}
       </span>
-      <Tooltip label={f.cycleHint} shortcut="cycleStemSolo">
-        <Button
-          variant="hardware"
-          className="h-6 px-2 text-[11px]"
-          onClick={() => store().cycleSolo()}
-        >
-          {f.cycle}
-          <Kbd shortcut="cycleStemSolo" />
-        </Button>
-      </Tooltip>
+      <ListenSwitch />
       <Tooltip label={f.addHint}>
         <Button
           variant="hardware"
-          size="icon"
-          className="size-6"
-          aria-label={f.add}
+          className="h-6 px-2 text-[11px]"
           onClick={() => void pickAndAddStems()}
         >
           <Plus className="size-3.5" />
+          {f.add}
         </Button>
       </Tooltip>
       <Tooltip label={f.closeHint}>
         <Button
-          size="icon"
-          className="size-6"
-          aria-label={f.close}
+          variant="hardware"
+          className="h-6 px-2 text-[11px]"
           onClick={() => void store().close()}
         >
           <X className="size-3.5" />
+          {f.close}
         </Button>
       </Tooltip>
     </div>

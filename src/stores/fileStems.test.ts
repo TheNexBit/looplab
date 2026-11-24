@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { laneGains, laneLabels, nextSolo } from "./fileStems";
+import { laneGains, laneLabels, listening, nextSolo } from "./fileStems";
 
 const lane = (level = 1, mute = false, solo = false) => ({ level, mute, solo });
 
@@ -10,11 +10,14 @@ describe("stems from files", () => {
     expect(laneGains([lane(1, true, true), lane(0.7, false, true)])).toEqual([0, 0.7]);
   });
 
-  it("X goes to the next lane alone, round and round", () => {
-    expect(nextSolo([{ solo: false }, { solo: false }])).toBe(1);
-    expect(nextSolo([{ solo: false }, { solo: true }])).toBe(0);
-    expect(nextSolo([{ solo: true }, { solo: false }, { solo: false }])).toBe(1);
-    expect(nextSolo([{ solo: true }, { solo: true }, { solo: false }])).toBe(1);
+  it("X goes all → first → second → all, and Listen lights the lane heard alone", () => {
+    expect(nextSolo([{ solo: false }, { solo: false }])).toBe(0);
+    expect(nextSolo([{ solo: true }, { solo: false }])).toBe(1);
+    expect(nextSolo([{ solo: false }, { solo: true }])).toBeNull();
+    expect(nextSolo([{ solo: true }, { solo: true }, { solo: false }])).toBe(0);
+    expect(listening([{ solo: false }, { solo: false }])).toBeNull();
+    expect(listening([{ solo: false }, { solo: true }])).toBe(1);
+    expect(listening([{ solo: true }, { solo: true }])).toBeUndefined();
   });
 
   it("names the lanes by what tells them apart", () => {

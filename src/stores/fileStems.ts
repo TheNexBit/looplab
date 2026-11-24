@@ -44,9 +44,11 @@ interface FileStemsState {
   forget: () => void;
   setLevel: (index: number, level: number) => void;
   toggleMute: (index: number) => void;
-  /** Solo like a DAW: a click solos this lane alone, `additive` (Ctrl) adds it to the others. */
-  toggleSolo: (index: number, additive?: boolean) => void;
-  /** The key X: the next lane alone (solo → backing → solo…), without stopping the music. */
+  /** The S key of a lane: on or off, like Reaper's (several lanes can be soloed together). */
+  toggleSolo: (index: number) => void;
+  /** «Listen»: lane `index` alone (soloed, never muted), or every lane with `null`. */
+  listenTo: (index: number | null) => void;
+  /** The key X: what «Listen» shows next (all → first → second… → all), without stopping. */
   cycleSolo: () => void;
 }
 
@@ -63,11 +65,21 @@ export function laneGains(lanes: readonly Pick<StemLane, "level" | "mute" | "sol
 export const laneHeard = (lanes: readonly StemLane[], index: number) =>
   (laneGains(lanes)[index] ?? 0) > 0;
 
-/** The lane after the only soloed one (the first after none or several): what X solos next. */
-export function nextSolo(lanes: readonly Pick<StemLane, "solo">[]): number {
+/**
+ * What «Listen» shows: the lane heard alone (`index`), every lane (`null`: no solo), or
+ * `undefined` when several lanes are soloed (no single choice is lit).
+ */
+export function listening(lanes: readonly Pick<StemLane, "solo">[]): number | null | undefined {
   const soloed = lanes.flatMap((lane, i) => (lane.solo ? [i] : []));
-  if (soloed.length !== 1) return lanes.length > 1 ? 1 : 0;
-  return ((soloed[0] ?? 0) + 1) % lanes.length;
+  if (soloed.length === 0) return null;
+  return soloed.length === 1 ? soloed[0] : undefined;
+}
+
+/** What X listens to next: all → first lane → second… → last → all again. */
+export function nextSolo(lanes: readonly Pick<StemLane, "solo">[]): number | null {
+  const now = listening(lanes);
+  if (now === null || now === undefined) return 0;
+  return now + 1 < lanes.length ? now + 1 : null;
 }
 
 /**
@@ -189,25 +201,19 @@ export const useFileStemsStore = create<FileStemsState>((set, get) => {
     },
     setLevel: (index, level) => editLane(index, (lane) => ({ ...lane, level: clampLevel(level) })),
     toggleMute: (index) => editLane(index, (lane) => ({ ...lane, mute: !lane.mute })),
-    toggleSolo: (index, additive = false) => {
-      const lanes = get().lanes;
-      const lane = lanes[index];
-      if (!lane) return;
-      if (additive) {
-        editLane(index, (l) => ({ ...l, solo: !l.solo }));
-        return;
-      }
-      // A click on the only soloed lane un-solos it; otherwise it becomes the only one
-      const alone = lane.solo && lanes.filter((l) => l.solo).length === 1;
-      set({ lanes: lanes.map((l, i) => ({ ...l, solo: !alone && i === index })) });
-    },
+    toggleSolo: (index) => editLane(index, (l) => ({ ...l, solo: !l.solo })),
+    listenTo: (index) =>
+      set({
+        lanes: get().lanes.map((l, i) => ({
+          ...l,
+          solo: i === index,
+          // The lane chosen is heard even if it was muted
+          mute: i === index ? false : l.mute,
+        })),
+      }),
     cycleSolo: () => {
       const lanes = get().lanes;
-      if (lanes.length < 2) return;
-      const next = nextSolo(lanes);
-      set({
-        lanes: lanes.map((l, i) => ({ ...l, solo: i === next, mute: i === next ? false : l.mute })),
-      });
+      if (lanes.length > 1) get().listenTo(nextSolo(lanes));
     },
   };
 });
