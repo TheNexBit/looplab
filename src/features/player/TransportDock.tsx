@@ -7,7 +7,7 @@ import { menuItem, menuLabel, menuSeparator } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useSnapHoldStore } from "@/features/markers/snapHold";
 import { TempoModule } from "@/features/practice/TempoModule";
-import { playOrPause } from "@/features/setlist/live";
+import { playOrPause, useLiveStore } from "@/features/setlist/live";
 import { t } from "@/i18n";
 import { formatPercent, signed } from "@/lib/format";
 import { clamp } from "@/lib/time";
@@ -26,7 +26,10 @@ const GROUP = "well flex items-center gap-1 rounded-panel p-1.5";
 /** Bottom dock: transport, loop, tempo and click (like every DAW), speed and pitch. */
 export function TransportDock() {
   const hasTrack = usePlayerStore((s) => s.track !== null);
-  const playing = usePlayerStore((s) => s.playing);
+  // In set mode a song without file or a break plays without a track: its lamp lights too
+  const trackPlaying = usePlayerStore((s) => s.playing);
+  const setPlaying = useLiveStore((s) => s.active && s.phase === "playing");
+  const playing = trackPlaying || setPlaying;
   const snap = useSettingsStore((s) => s.snap);
   // While Shift suspends it during a drag, the magnet's lamp goes out
   const suspended = useSnapHoldStore((s) => s.shift && s.pressing);

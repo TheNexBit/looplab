@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useCurrentMemo } from "@/features/markers/CurrentMemo";
 import { TimeDisplay } from "@/features/player/TimeDisplay";
-import { playOrPause } from "@/features/setlist/live";
+import { playOrPause, useLiveStore } from "@/features/setlist/live";
 import { t } from "@/i18n";
 import { formatPercent } from "@/lib/format";
 import { formatTime } from "@/lib/time";
@@ -19,7 +19,10 @@ const m = t.mini;
  * bar that stays above a score, a tab or a lesson video. Every shortcut still works.
  */
 export function MiniBar() {
-  const playing = usePlayerStore((s) => s.playing);
+  // In set mode a song without file or a break plays without a track: its lamp lights too
+  const trackPlaying = usePlayerStore((s) => s.playing);
+  const setPlaying = useLiveStore((s) => s.active && s.phase === "playing");
+  const playing = trackPlaying || setPlaying;
   const hasTrack = usePlayerStore((s) => s.track !== null);
   const name = usePlayerStore((s) => s.track?.name);
   const speed = usePlayerStore((s) => s.speed);
