@@ -60,9 +60,14 @@ export function SidePanel() {
             className="flex h-full flex-col"
             style={{ width }}
           >
-            <Tabs.List className="flex flex-wrap gap-0.5 border-b border-edge p-2">
+            {/* Keys keep a clear gap and wrap onto a second row when the panel is narrow */}
+            <Tabs.List className="flex flex-wrap gap-1.5 border-b border-edge p-2">
               {shown.map(({ id, label }) => (
-                <Tabs.Trigger key={id} value={id} className={`${tabTrigger} min-w-fit flex-1 px-2`}>
+                <Tabs.Trigger
+                  key={id}
+                  value={id}
+                  className={`${tabTrigger} min-w-fit flex-1 px-2.5`}
+                >
                   {label}
                 </Tabs.Trigger>
               ))}
