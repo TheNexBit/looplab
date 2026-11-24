@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { systemLanguage } from "@/i18n/system";
 import { SETTINGS_DEFAULTS, sanitize } from "./settings";
 
 describe("factory values (docs/VALORI-DI-FABBRICA.md)", () => {
@@ -8,7 +9,7 @@ describe("factory values (docs/VALORI-DI-FABBRICA.md)", () => {
 
   it("keeps the values chosen with the user", () => {
     expect(SETTINGS_DEFAULTS).toMatchObject({
-      language: "it",
+      language: systemLanguage(),
       startup: "empty",
       trackVolume: 1,
       clickVolume: 0.8,

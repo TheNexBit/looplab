@@ -61,7 +61,7 @@ export const en = {
       "The model for tempo analysis is missing: run scripts\\10-modello-tempo.cmd.",
     stemModelMissing:
       "The model for separating instruments is missing: run scripts\\11-modello-strumenti.cmd.",
-    notSeparated: "This track is not separated yet: press «Separate instruments» first.",
+    notSeparated: "This track is not separated yet: press “Separate instruments” first.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
     internal: "Unexpected error.",
@@ -86,7 +86,7 @@ export const en = {
     reset: "Original mix",
     export: "Export tracks",
     exportHint:
-      "Saves the 6 tracks as WAV files (voce.wav, chitarra.wav…) in the folder chosen in Settings → Data (by default Documents\\Looplab\\Tracce separate), one folder per song: ready for Reaper. As they come out of the separation, with no levels or speed.",
+      "Saves the 6 tracks as WAV files (vocals.wav, guitar.wav…) in the folder chosen in Settings → Data (by default Documents\\Looplab\\Separated stems), one folder per song: ready for any DAW. As they come out of the separation, with no levels or speed.",
     exporting: "Saving…",
     exported: (folder: string) => `Tracks saved in ${folder}`,
     resetHint: "Every track at 100%, no Mute or Solo: the original song is heard",
@@ -94,7 +94,7 @@ export const en = {
     solo: "Solo",
     levelHint: "Wheel: ±5%, double-click: 100%",
     licence:
-      "HTDemucs model (Demucs v4): the licence of its weights is unclear, personal use only.",
+      "HTDemucs model (Demucs v4): the license of its weights is unclear, personal use only.",
     names: {
       vocals: "Vocals",
       guitar: "Guitar",
@@ -161,7 +161,7 @@ export const en = {
     stop: "Stop",
     tempo: "Tempo",
     tempoHint:
-      "Beats per minute: − / +, wheel or ↑ ↓ arrows; double-click for 120. Click «BPM» to choose what they count",
+      "Beats per minute: − / +, wheel or ↑ ↓ arrows; double-click for 120. Click “BPM” to choose what they count",
     pulseRate: (note: string, rate: number) => `${note} = ${rate}`,
     tempoBase: "BPM count",
     tempoBaseRight: "what the BPM count (quarters or pulses of the bar)",
@@ -305,11 +305,11 @@ export const en = {
       } as Record<string, string>,
     },
     voice: "Voice",
-    voiceHint: "A voice counts the pulses: «one, two, three…», in the count-in too",
+    voiceHint: "A voice counts the pulses: “one, two, three…”, in the count-in too",
     voiceRight: "subdivisions counted, language and volume of the voice",
     voiceSubdivisions: "Count the subdivisions too",
     voiceSubdivisionsHint:
-      "As in American counting: eighths «1 and», sixteenths «1 e and a», triplets «1 trip let», quintuplets «1 e and a da», sextuplets «1 trip let and trip let»",
+      "As in American counting: eighths “1 and”, sixteenths “1 e and a”, triplets “1 trip let”, quintuplets “1 e and a da”, sextuplets “1 trip let and trip let”",
     voiceLevel: "Voice volume",
     voiceLanguage: "Voice language",
     flash: "Flash",
@@ -344,7 +344,7 @@ export const en = {
       importHint: "Choose an audio file: it becomes a click for this kind",
       importFailed: "This file cannot be used as a sound.",
       none: "No imported sounds.",
-      remove: (name: string) => `Delete «${name}»`,
+      remove: (name: string) => `Delete “${name}”`,
       try: "Listen",
       level: "Volume",
       audioFiles: "Audio files",
@@ -366,7 +366,7 @@ export const en = {
       repeat: "Da capo",
       repeatHint: "After the last part it starts again from the first; off, it stops",
       noParts:
-        "A sequence plays its parts one after the other, each with its own bar, tempo and exercises for a number of bars: a setlist, a practice routine or the bars of a prog song (4 × 7/8, 2 × 5/4…). Set the bar and press «Add».",
+        "A sequence plays its parts one after the other, each with its own bar, tempo and exercises for a number of bars: a setlist, a practice routine or the bars of a prog song (4 × 7/8, 2 × 5/4…). Set the bar and press “Add”.",
       addCurrent: "Add",
       addCurrentHint: "Adds the current bar (tempo and exercises included) as a new part",
       addSong: "Song",
@@ -441,7 +441,7 @@ export const en = {
     remove: "Remove from the setlist",
   },
   remote: {
-    hint: "Click a key to change it and press the new one (Esc cancels). With «Learn MIDI» press the pedal or the controller key to use. The keyboard's media keys always work.",
+    hint: "Click a key to change it and press the new one (Esc cancels). With “Learn MIDI” press the pedal or the controller key to use. The keyboard's media keys always work.",
     changeKey: "Change key",
     pressKey: "Press a key…",
     noKey: "—",
@@ -496,15 +496,15 @@ export const en = {
     needsBpm: "Set the BPM first: type it in the display or use Tap tempo.",
     noBpmSet: "The BPM is not set yet.",
     clearBpmHint: "Remove the BPM: grid, metronome and count-in switch off",
-    analyze: "Analyse tempo",
+    analyze: "Analyze tempo",
     analyzeHint:
       "Finds the beats, tempo and meter changes of the track. Proposed markers are dashed: check them, Ctrl+Z undoes.",
     analyzeAgainHint:
       "Runs the analysis again: the markers you set or edited stay and guide the rest.",
-    analyzing: "Analysing",
+    analyzing: "Analyzing",
     analyzed: (count: number) =>
       count === 1 ? "Found 1 tempo marker." : `Found ${count} tempo markers.`,
-    analyzedNothing: "No beats recognised in this track.",
+    analyzedNothing: "No beats recognized in this track.",
     confirmProposed: "Confirm the proposed markers",
     confirmProposedHint: "They become yours: a new analysis will keep them.",
     removeProposed: "Remove the proposed markers",
@@ -603,7 +603,7 @@ export const en = {
     noMarkers: "M adds a marker, B a bar.",
     loopSection: "Loop this section",
     rename: "Rename",
-    color: "Colour",
+    color: "Color",
     remove: "Delete",
     markerRightClick: "delete",
     tempoMarker: "Tempo marker",
@@ -611,10 +611,10 @@ export const en = {
     tempoMarkerProposed: "proposed by the analysis: edit or confirm it to make it yours",
     tempoRightClick: "delete",
     removeTempoMarker: "Delete the tempo marker",
-    sectionRightClick: "loop, export, colour, delete",
+    sectionRightClick: "loop, export, color, delete",
   },
   eq: {
-    title: "Equaliser",
+    title: "Equalizer",
     bypass: "A/B",
     bypassHint: "Compare with the original sound",
     band: "Band",
@@ -644,9 +644,9 @@ export const en = {
       left: "L only",
       right: "R only",
       mono: "Mono",
-      removeCenter: "No centre",
-      isolateCenter: "Centre only",
-      hint: '"No centre" removes what sits in the middle of the mix (often vocals and bass).',
+      removeCenter: "No center",
+      isolateCenter: "Center only",
+      hint: '"No center" removes what sits in the middle of the mix (often vocals and bass).',
     },
   },
   video: {
@@ -672,7 +672,7 @@ export const en = {
     loading: "Lining up the stems…",
     failed: "Stems not opened",
     unreadable: "It cannot be read.",
-    leftOut: (name: string, why: string) => `«${name}» left out: ${why}`,
+    leftOut: (name: string, why: string) => `“${name}” left out: ${why}`,
     tooMany: (most: number, left: number) =>
       `At most ${most} files besides the track: ${left === 1 ? "1 left out" : `${left} left out`}`,
     dismissNotice: "Close the notice",
@@ -688,12 +688,12 @@ export const en = {
     listen: "Listen",
     listenAll: "All",
     listenAllHint: "Every track is heard together",
-    listenOneHint: (name: string) => `Only «${name}» is heard`,
+    listenOneHint: (name: string) => `Only “${name}” is heard`,
     add: "Track",
     addHint: "Add more files as stems of this track",
     close: "Close stems",
     closeHint:
-      "Closes the stems: only the main track stays. To open them again: the lesson's «Stems» key, «Open as stems…» in the Open ▾ menu, or drop the files on the window",
+      "Closes the stems: only the main track stays. To open them again: the lesson's “Stems” key, “Open as stems…” in the Open ▾ menu, or drop the files on the window",
     pickTitle: "Pick the files to open together as stems",
     addTitle: "Pick the files to add as stems",
     openAsStems: "Open as stems…",
@@ -701,13 +701,13 @@ export const en = {
       "Open several files together (a solo and its backing track): one track under the other, in time, with Solo and Mute",
     lessonKey: "Stems",
     lessonKeyHint:
-      "Open the lesson with its backing as stems: one track under the other, «Listen» to pick what you hear",
+      "Open the lesson with its backing as stems: one track under the other, “Listen” to pick what you hear",
     separatedOff:
       "Stems from files are open: the separated tracks of this song are not used until you close them.",
   },
   setlist: {
-    locale: "en-GB",
-    homeTabs: "What the Home shows",
+    locale: "en-US",
+    homeTabs: "What Home shows",
     tabCourses: "Courses",
     tabSetlists: "Setlists",
     emptyTitle: "Get ready for the next gig",
@@ -722,7 +722,7 @@ export const en = {
     duplicateSetlist: "Duplicate the setlist",
     copyName: (name: string) => `${name} (copy)`,
     deleteSetlist: "Delete the setlist",
-    deleteAsk: (name: string) => `Delete «${name}»?`,
+    deleteAsk: (name: string) => `Delete “${name}”?`,
     deleteHint: "The running order and the Live settings are lost; the files stay where they are.",
     keep: "Keep it",
     date: "Gig date",
@@ -750,14 +750,14 @@ export const en = {
     overBy: (time: string) => `${time} over`,
     gap: "Gap between songs",
     gapHint:
-      "With auto-advance, how long the next song waits before starting (with a countdown). «At once»: it starts as soon as the previous one ends",
+      "With auto-advance, how long the next song waits before starting (with a countdown). “At once”: it starts as soon as the previous one ends",
     gapWait: "At once",
     end: "end",
     noSongs: "No songs in the setlist",
     noSongsHint:
       "Add the open track, a recent one, files, a song without file (only title, BPM and length) or a break with the keys below; or drag files here from Explorer or tracks from the recent list.",
     addOpen: "Open track",
-    addOpenHint: (name: string) => `Adds «${name}» at the end of the setlist`,
+    addOpenHint: (name: string) => `Adds “${name}” at the end of the setlist`,
     addOpenNone: "Open a track to add it",
     addRecent: "From recent",
     noRecent: "No recent tracks",
@@ -775,7 +775,7 @@ export const en = {
     fileMissing: "File not found",
     hasNotes: "Has stage notes",
     liveSettings: "Live settings…",
-    openToStudy: "Open to practise",
+    openToStudy: "Open to practice",
     replaceFile: "Find the file…",
     moveUp: "Move up",
     moveDown: "Move down",
@@ -802,15 +802,15 @@ export const en = {
     addMore: "Add",
     addBreak: "Break",
     addBreakHint:
-      "A break between sets («Break», «Encore»): it counts in the set length and in Live mode its countdown starts by itself",
+      "A break between sets (“Break”, “Encore”): it counts in the set length and in Live mode its countdown starts by itself",
     addBreakAfter: "Insert a break after",
     breakName: "Break",
     breakSettings: "Break settings…",
     removeBreak: "Remove the break",
-    addToSetlist: (name: string) => `Add to setlist «${name}»`,
+    addToSetlist: (name: string) => `Add to setlist “${name}”`,
     dropHere: "Drop to add to the setlist",
     dropHint: "…or drag files here from Explorer, or tracks from the recent list",
-    noSongsPanelHint: "Press «This track», or drag files here from Explorer.",
+    noSongsPanelHint: "Press “This track”, or drag files here from Explorer.",
     emptyTextShort: "The running order of a gig: the songs in order, rehearsed with Live mode.",
     panelHint: "Double-click a song to play it · drag files here to add them",
     keyOf: (key: string) => `Key: ${key}`,
@@ -838,7 +838,7 @@ export const en = {
     nextSongKey: "Next song of the setlist",
     stageKey: "Stage view",
     stageHint: "The setlist on the whole window, to read on stage (Esc comes back here)",
-    leftNotice: (name: string) => `Setlist «${name}» closed: you opened a track that is not in it`,
+    leftNotice: (name: string) => `Setlist “${name}” closed: you opened a track that is not in it`,
     backToSet: "Back to the setlist",
     live: {
       title: (song: string) => `Live settings · ${song}`,
@@ -915,10 +915,10 @@ export const en = {
       "Add the folder of a guitar course, or of any videos and songs: every lesson opens ready, with its camera angles, its backing and its tab linked.",
     search: "Search a lesson, module or course…",
     searchHint:
-      "Type one or more words, in any order: «legato 02», «funk timing». Esc clears the search",
+      "Type one or more words, in any order: “legato 02”, “funk timing”. Esc clears the search",
     clearSearch: "Clear the search",
-    noMatch: (query: string) => `No lesson found for «${query}»`,
-    noMatchHint: "Try fewer words or part of the name (e.g. «legato» instead of «legato 03»)",
+    noMatch: (query: string) => `No lesson found for “${query}”`,
+    noMatchHint: "Try fewer words or part of the name (e.g. “legato” instead of “legato 03”)",
     found: (lessons: number, courses: number) =>
       `${lessons === 1 ? "1 lesson found" : `${lessons} lessons found`} in ${courses === 1 ? "1 course" : `${courses} courses`}`,
     scanning: "Updating the lessons…",
@@ -946,7 +946,7 @@ export const en = {
     backingWords: "backing base",
     document: "Document",
     practice: (minutes: number) => `${minutes} min`,
-    practiceHint: "Minutes practised (from the diary)",
+    practiceHint: "Minutes practiced (from the diary)",
     tab: {
       none: "No tab",
       found: "Tab found",
@@ -970,7 +970,7 @@ export const en = {
     rescan: "Update now",
     removeCourse: "Remove from Home",
     removeCourseHint: "The course files stay where they are",
-    removeAsk: (name: string) => `Remove «${name}» from the Home?`,
+    removeAsk: (name: string) => `Remove “${name}” from Home?`,
     keep: "Keep",
     foldModules: "Fold all modules",
     unfoldModules: "Open all modules",
@@ -1016,7 +1016,7 @@ export const en = {
       pending: "Not lined up yet",
       sound: "Lined up from the sound",
       hand: "Lined up by hand",
-      noSound: "No sound: line it up by hand with «Move»",
+      noSound: "No sound: line it up by hand with “Move”",
       mismatch: "Its sound differs (another version): kept apart",
     },
     thisTrack: "This is the open file: the others line up with it",
@@ -1092,7 +1092,7 @@ export const en = {
     syncGrid: "Follow the tempo grid",
     syncGridHint: "Every bar locks to the tempo map, with the meter written in the tab",
     syncGridNeedsTempo:
-      "Needs a tempo map: “Analyse tempo” in the Tempo module, or set one by hand",
+      "Needs a tempo map: “Analyze tempo” in the Tempo module, or set one by hand",
     tempoFromScore: "Make the tempo map from the tab",
     tempoFromScoreHint:
       "Tempo and meter at every change (e.g. a 7/4 intro): metronome and grid become right",
@@ -1111,7 +1111,7 @@ export const en = {
     findBarsAgainHint:
       "Looks for them in the pages again; the sync starts over (Ctrl+Z brings it back)",
     barsDiffer: (pdf: number, gp: number, name: string) =>
-      `The PDF has ${pdf} bars, the tab «${name}» has ${gp}: the score may not follow the music well.`,
+      `The PDF has ${pdf} bars, the tab “${name}” has ${gp}: the score may not follow the music well.`,
     barsAccept: "It's fine",
     barsFound: (n: number) => (n === 1 ? "Found 1 bar in the PDF" : `Found ${n} bars in the PDF`),
     pdfBarCount: (n: number) => (n === 1 ? "The PDF has 1 bar" : `The PDF has ${n} bars`),
@@ -1128,7 +1128,7 @@ export const en = {
     autoDoneCheck: (bars: string) =>
       `Synced from the notes. Check bars ${bars}: the match was uncertain there.`,
     autoCheckFirst:
-      "Synced, but bar 1 is uncertain (the notes repeat the same). If it is wrong: put the playhead on its first beat, Sync → «Bar 1 starts here», then run «Sync from the notes» again.",
+      "Synced, but bar 1 is uncertain (the notes repeat the same). If it is wrong: put the playhead on its first beat, Sync → “Bar 1 starts here”, then run “Sync from the notes” again.",
     synth: "Synth",
     synthHint: "Synth: plays the tab's notes over the recording, in time even slowed down",
     synthRightClick: "synth volume",
@@ -1186,7 +1186,7 @@ export const en = {
       "Settings, look, keys, panel sizes and the metronome go back to factory values. Courses, tracks, loops, markers, sections, diary, backups and the metronome's saved rhythms stay.",
     factoryResetCancel: "Cancel",
     waveform: "Waveform",
-    behaviour: "Behaviour",
+    behaviour: "Behavior",
     mouse: "Mouse",
     steps: "Steps",
     language: "Lingua / Language",
@@ -1218,7 +1218,7 @@ export const en = {
     showGridHint: "Lines of beats and bars when the tempo is known (snap uses them)",
     rulerLines: "Ruler lines",
     rulerLinesHint: "Light lines under every time on the ruler",
-    centerLine: "Centre line",
+    centerLine: "Center line",
     centerLineHint: "The line across the middle of the big waveform",
     cueShade: "Shade up to the start point",
     cueShadeHint:
@@ -1241,7 +1241,7 @@ export const en = {
       title: "Appearance",
       theme: "Theme",
       themeHint:
-        "The colours of the whole app, like Ableton's Theme menu: applied at once and kept on this PC. Markers and sections keep their colours.",
+        "The colors of the whole app, like Ableton's Theme menu: applied at once and kept on this PC. Markers and sections keep their colors.",
       themes: {
         rack: {
           name: "Rack",
@@ -1257,7 +1257,7 @@ export const en = {
         },
         light: {
           name: "Light studio",
-          description: "Light grey panels for bright rooms; dark displays.",
+          description: "Light gray panels for bright rooms; dark displays.",
         },
         sunset: {
           name: "Sunset",
@@ -1284,9 +1284,9 @@ export const en = {
           description: "Black, white and yellow: readable from afar too.",
         },
       } satisfies Record<ThemeId, { name: string; description: string }>,
-      colorsTitle: "Custom colours",
+      colorsTitle: "Custom colors",
       colorsHint:
-        "Change the colours of the chosen theme, like Reaper's theme tweaker. Each theme remembers its own; ↺ puts back the theme's.",
+        "Change the colors of the chosen theme, like Reaper's theme tweaker. Each theme remembers its own; ↺ puts back the theme's.",
       colors: {
         accent: { name: "Accent", hint: "Lit keys, sliders, selections" },
         wave: { name: "Waveform", hint: "Big one and overview" },
@@ -1296,9 +1296,9 @@ export const en = {
         lcd: { name: "Display", hint: "Digits of time and BPM" },
         bar: { name: "Grid", hint: "Lines of bars and beats" },
       } satisfies Record<CustomColor, { name: string; hint: string }>,
-      otherColor: "Other colour…",
-      themeColor: "Theme colour",
-      resetColors: "Theme colours",
+      otherColor: "Other color…",
+      themeColor: "Theme color",
+      resetColors: "Theme colors",
       layoutTitle: "Interface",
       layoutHint: "Size, font and shapes of the whole app.",
       uiScale: "Size",
@@ -1332,7 +1332,7 @@ export const en = {
       cache: "FFmpeg conversions",
       cacheHint: (limit: string) =>
         `Tracks already read (they reopen at once; ${limit} at most, the oldest go by themselves), extracted audio and videos made compatible. If they are needed again, Looplab makes them again by itself; the open track stays.`,
-      portable: "Portable version: data and backups live in the «dati» folder next to Looplab.exe.",
+      portable: "Portable version: data and backups live in the “dati” folder next to Looplab.exe.",
       kinds: {
         decoded: "Tracks ready to play",
         audio: "Extracted audio",
@@ -1346,7 +1346,7 @@ export const en = {
       showLog: "Show the file",
       archive: "Library",
       archiveHint:
-        "All your work in one file: track projects, diary, recent tracks and settings. Imported click sounds sit beside it, in the «suoni» folder.",
+        "All your work in one file: track projects, diary, recent tracks and settings. Imported click sounds sit beside it, in the “suoni” folder.",
       showLibrary: "Show the file",
       backups: "Backups",
       backupsHint:
@@ -1373,22 +1373,22 @@ export const en = {
       mirrorFailed: (detail: string) => `The second copy failed: ${detail}`,
       stems: "Exported tracks",
       stemsHint:
-        "Where «Export tracks» saves the WAV files of the separated tracks, one folder per song. You can choose another one, for example your Reaper projects folder.",
+        "Where “Export tracks” saves the WAV files of the separated tracks, one folder per song. You can choose another one, for example your Reaper projects folder.",
       stemsDefault: "default",
       stemsReset: "Default",
       recovered: (name: string) =>
-        `The library was damaged: it was set aside in the backup folder and replaced by the backup «${name}».`,
+        `The library was damaged: it was set aside in the backup folder and replaced by the backup “${name}”.`,
     },
   },
   about: {
-    title: "About and licences",
+    title: "About and licenses",
   },
   updates: {
     check: "Check for updates",
     latest: "You already have the latest version.",
     installing: "Installing version",
     portable: (version: string) =>
-      `Version ${version} is out. The portable version is updated by hand: download the new ZIP from github.com/TheNexBit/Looplab/releases and replace the files (the «dati» folder stays).`,
+      `Version ${version} is out. The portable version is updated by hand: download the new ZIP from github.com/TheNexBit/Looplab/releases and replace the files (the “dati” folder stays).`,
     unavailable:
       "Updates not available: they only work in the installed version, with a connection.",
   },
@@ -1400,7 +1400,7 @@ export const en = {
     clearAsk: (n: number) =>
       n === 1 ? "Clear the list (1 track)?" : `Clear the list (${n} tracks)?`,
     clearHint:
-      "Only the list goes, here and in the lessons' «Last opened»: the files, their loops and markers and the diary stay.",
+      "Only the list goes, here and in the lessons' “Last opened”: the files, their loops and markers and the diary stay.",
     clearAll: "Clear all",
     clearMissing: (n: number) =>
       n === 1 ? "Only the missing file" : `Only the ${n} missing files`,
@@ -1574,7 +1574,7 @@ export const en = {
     toggleHome: "Home",
     toggleScorePaper: "Score: light / dark paper",
     toggleOverview: "Track overview: show / hide",
-    cycleStemSolo: "Stems: next choice of «Listen»",
+    cycleStemSolo: "Stems: next choice of “Listen”",
     nextTab: "Next tab of the lesson",
     previousLesson: "Previous lesson of the course",
     nextLesson: "Next lesson of the course",

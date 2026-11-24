@@ -41,13 +41,11 @@ pub fn archive_info(library: State<'_, Library>) -> Result<ArchiveInfo, AppError
     let mirror_dir = library
         .with(|conn| Ok(backup::mirror(conn)?))?
         .map(|dir| dir.to_string_lossy().into_owned());
-    let chosen = library.with(|conn| Ok(stems_out::chosen(conn)?))?;
+    let (chosen, stems_dir) =
+        library.with(|conn| Ok((stems_out::chosen(conn)?, stems_out::root(conn, places)?)))?;
     Ok(ArchiveInfo {
         stems_dir_chosen: chosen.is_some(),
-        stems_dir: chosen
-            .unwrap_or_else(|| places.stems_out.clone())
-            .to_string_lossy()
-            .into_owned(),
+        stems_dir: stems_dir.to_string_lossy().into_owned(),
         library_bytes: std::fs::metadata(&file).map_or(0.0, |m| m.len() as f64),
         library: file.to_string_lossy().into_owned(),
         backup_dir: places.backup.to_string_lossy().into_owned(),
@@ -131,7 +129,7 @@ pub fn show_archive_folder(
             super::data::explore(&dir, false)
         }
         ArchiveFolder::Stems => {
-            let dir = library.with(|conn| Ok(stems_out::root(conn, places)?))?;
+            let dir = library.with(|conn| stems_out::root(conn, places))?;
             std::fs::create_dir_all(&dir).map_err(AppError::internal)?;
             super::data::explore(&dir, false)
         }

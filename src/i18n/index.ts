@@ -1,5 +1,6 @@
 import { en } from "./en";
 import { it } from "./it";
+import { systemLanguage, type UiLanguage } from "./system";
 
 /** A translation's text: every key and function of the Italian strings, any wording. */
 type Widen<T> = T extends string
@@ -24,13 +25,14 @@ const SETTINGS_KEY = "looplab.settings";
  * The language chosen in Settings, read once at start, before any string is used: every
  * module keeps its strings, so a change takes effect by reloading the window.
  */
-function chosenLanguage(): "it" | "en" {
+function chosenLanguage(): UiLanguage {
   try {
     const stored = JSON.parse(globalThis.localStorage?.getItem(SETTINGS_KEY) ?? "null");
-    return stored?.language === "en" ? "en" : "it";
+    if (stored?.language === "en" || stored?.language === "it") return stored.language;
   } catch {
-    return "it";
+    // Unreadable settings: fall back to the system's language
   }
+  return systemLanguage();
 }
 
 export const language = chosenLanguage();

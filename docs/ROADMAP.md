@@ -1211,6 +1211,26 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
 ferma con lui); con più di 3 corsie le teste stanno su una riga (nome, S, M, volume); i file video si possono
 usare come stems (se ne usa l'audio).
 
+## 32. Looplab in inglese per tutti 🚧
+
+L'interfaccia era già tradotta dalla fase 10 (`src/i18n/en.ts`, controllata chiave per chiave contro `it.ts`); qui
+la si rende pronta per chi non parla italiano.
+
+- **Lingua alla prima apertura** = quella di Windows (`i18n/system.ts`): italiano su Windows italiano, inglese
+  altrove. La prima apertura la salva subito nelle impostazioni, così non cambia più da sola e la libreria la
+  conosce (`prefs::language`).
+- **Rilettura di `en.ts`:** inglese americano (Analyze, Color, Equalizer, license…), virgolette inglesi “ ” al
+  posto di « », data della setlist in formato americano. Test `en.test.ts`: nessuna parola italiana rimasta.
+- **Tracce esportate in inglese:** `Documents\Looplab\Separated stems\<song>\vocals.wav`, `guitar.wav`… Se la
+  cartella italiana «Tracce separate» esiste già, si continua a usare quella (niente esportazioni divise in due).
+- **Installer** in inglese e italiano, scelto da Windows (`bundle.windows.nsis.languages`).
+- **Prova:** `scripts\13-prova-da-zero-inglese.cmd` apre l'app da zero come su un Windows inglese
+  (`prova-da-zero.ps1 -Lingua en`, lingua passata a WebView2).
+- **Resta per la pubblicazione:** screenshot del sito con l'app in inglese; aggiornare la issue #1.
+
+**Rimasti in italiano di proposito:** le cartelle interne `dati` (versione portatile) e `suoni`, il file
+`libreria.db` e i messaggi di sviluppo che citano gli script `scripts\05-…`, `10-…`, `11-…`.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

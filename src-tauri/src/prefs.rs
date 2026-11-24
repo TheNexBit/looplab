@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::db::{self, LibraryError};
 
@@ -18,6 +18,36 @@ pub fn all(conn: &Connection) -> Result<(BTreeMap<String, String>, bool), Librar
         .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
         .collect::<Result<_, _>>()?;
     Ok((values, db::meta(conn, IMPORTED)?.is_some()))
+}
+
+/// Where the UI keeps its settings (a JSON object with a `language` field).
+const SETTINGS: &str = "looplab.settings";
+
+/// Language of the interface, for the few names the library writes on disk.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UiLanguage {
+    Italian,
+    English,
+}
+
+/// The interface's language as the UI saved it. The UI writes it at its first start; libraries
+/// from before that rule were all Italian.
+pub fn language(conn: &Connection) -> Result<UiLanguage, LibraryError> {
+    let text: Option<String> = conn
+        .query_row(
+            "SELECT value FROM prefs WHERE key = ?1",
+            [SETTINGS],
+            |row| row.get(0),
+        )
+        .optional()?;
+    let english = text
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .is_some_and(|value| value["language"] == "en");
+    Ok(if english {
+        UiLanguage::English
+    } else {
+        UiLanguage::Italian
+    })
 }
 
 /// Saves one preference, or removes it with `None`.

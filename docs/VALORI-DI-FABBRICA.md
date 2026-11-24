@@ -11,15 +11,15 @@ finestra `create_main` (`src-tauri/src/window.rs`), tasti `shortcuts` (`src/lib/
 
 ## Finestra e avvio
 
-| Cosa                         | Valore                     |
-| ---------------------------- | -------------------------- |
-| Finestra alla prima apertura | 1280 × 800, centrata       |
-| Lingua                       | Italiano                   |
-| Tema                         | «Rack» (scuro, ambra)      |
-| All'avvio                    | Schermata vuota (la Home)  |
-| Pannello laterale            | Aperto (solo con un brano) |
-| Barra informazioni in basso  | Spenta                     |
-| Grandezza interfaccia        | 100%                       |
+| Cosa                         | Valore                      |
+| ---------------------------- | --------------------------- |
+| Finestra alla prima apertura | 1280 × 800, centrata        |
+| Lingua                       | Come Windows (it, sennò en) |
+| Tema                         | «Rack» (scuro, ambra)       |
+| All'avvio                    | Schermata vuota (la Home)   |
+| Pannello laterale            | Aperto (solo con un brano)  |
+| Barra informazioni in basso  | Spenta                      |
+| Grandezza interfaccia        | 100%                        |
 
 ## Setlist e Live mode
 

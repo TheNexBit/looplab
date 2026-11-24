@@ -265,12 +265,17 @@ pub async fn export_stems(
     let song = PathBuf::from(&request.path);
     let stem = cache_stem(&app, &song, rate)?;
     let library = app.state::<crate::db::Library>();
-    let root = library.with(|conn| Ok(crate::stems_out::root(conn, library.places())?))?;
+    let (root, language) = library.with(|conn| {
+        Ok((
+            crate::stems_out::root(conn, library.places())?,
+            crate::prefs::language(conn)?,
+        ))
+    })?;
     let files = tauri::async_runtime::spawn_blocking(move || {
         let tracks = open_stems(&stem, rate)
             .ok_or_else(|| AppError::new(ErrorKind::NotSeparated, "no separated tracks"))?;
         let named: Vec<(&str, Pcm)> = SOURCES.iter().copied().zip(tracks).collect();
-        crate::stems_out::save(&root, &song, &named)
+        crate::stems_out::save(&root, &song, &named, language)
             .map_err(|err| AppError::new(ErrorKind::ExportFailed, err))
     })
     .await

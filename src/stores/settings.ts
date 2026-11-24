@@ -7,6 +7,7 @@ import {
   type ReferenceTuning,
 } from "@/features/practice/reference";
 import { t } from "@/i18n";
+import { systemLanguage } from "@/i18n/system";
 import type { ClickSound } from "@/lib/bindings";
 import { readStored, writeStored } from "@/lib/storage";
 import { clamp } from "@/lib/time";
@@ -182,7 +183,8 @@ export const SETTING_LIMITS = {
 
 /** The factory values: what a first start shows (docs/VALORI-DI-FABBRICA.md lists them). */
 export const SETTINGS_DEFAULTS: Settings = {
-  language: "it",
+  // Follows Windows: Italian on an Italian system, English elsewhere
+  language: systemLanguage(),
   seekStep: 5,
   fineSeekStep: 1,
   speedStep: 0.05,
@@ -313,12 +315,19 @@ export function sanitize(values: Partial<Settings>): Settings {
 /** Preferences of this PC: kept in the WebView's local storage, so they survive updates. */
 function load(): Settings {
   const stored = readStored(KEY);
-  return stored && typeof stored === "object"
-    ? sanitize(stored as Partial<Settings>)
-    : SETTINGS_DEFAULTS;
+  const settings =
+    stored && typeof stored === "object"
+      ? sanitize(stored as Partial<Settings>)
+      : SETTINGS_DEFAULTS;
+  // A first start writes the language it picked from Windows: the library reads it to name
+  // the folders and files it creates (exported tracks), and it must not change later
+  if ((stored as Partial<Settings> | undefined)?.language === undefined) persist(settings);
+  return settings;
 }
 
-const persist = (settings: Settings) => writeStored(KEY, settings);
+function persist(settings: Settings) {
+  writeStored(KEY, settings);
+}
 
 interface SettingsState extends Settings {
   update: (patch: Partial<Settings>) => void;

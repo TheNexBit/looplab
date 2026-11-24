@@ -92,7 +92,8 @@ UI (React, src/)  ──comandi tipizzati──▶  App Tauri (src-tauri/)  ─�
     `backup_mirror`). `restore` chiude la libreria, fa il backup di sicurezza, rimette file e suoni e la riapre.
     Comandi in `commands/archive.rs`, interfaccia in `app/ArchiveSettings.tsx` (Impostazioni → Dati).
   - `stems_out.rs` (fase 20): «Esporta tracce» salva le tracce separate in WAV a 16 bit in `Places::stems_out`
-    (`Documenti\Looplab\Tracce separate\<brano>\voce.wav`…), una cartella per brano con `origine.txt`; cartella scelta dall'utente in `meta` `stems_out_dir`
+    (`Documenti\Looplab\Tracce separate\<brano>\voce.wav`…; in inglese `Separated stems\<song>\vocals.wav`, se la
+    cartella italiana non esiste già: lingua letta con `prefs::language`), una cartella per brano con `origine.txt`; cartella scelta dall'utente in `meta` `stems_out_dir`
     (`set_stems_folder`, riga «Tracce esportate» di `ArchiveSettings.tsx`); comando
     `export_stems` in `commands/stems.rs`, tasto in `features/stems/StemsPanel.tsx`.
   - `json_file.rs`: lettura e scrittura atomica (file temporaneo + rinomina) dei file JSON rimasti: posizioni
@@ -288,7 +289,7 @@ I comandi hanno `#[specta::specta]`; tauri-specta genera `src/lib/bindings.ts`
 | `components/ui/`   | componenti base su Radix (Button, Chip, Tooltip, Slider, NumberField, Stepper, OnOffKey, ChoiceKeys, OptionsKey, Kbd, Dialog, menu)        |
 | `lib/`             | `bindings.ts` (generato), `shortcuts.ts` (registro unico), utility                                                                         |
 | `stores/`          | uno per dominio: `ui`, `player`, `loop`, `view`, `markers`, `eq`, `video`, `recent`, `settings`, `appearance`                              |
-| `i18n/`            | tutti i testi della UI                                                                                                                     |
+| `i18n/`            | tutti i testi della UI (`it.ts`, `en.ts`); `system.ts` sceglie la lingua della prima apertura da Windows                                   |
 | `styles/theme.css` | unica fonte dei token: `@theme` Tailwind v4 dà i nomi, un blocco `[data-theme]` per tema i valori; utility `hw`/`well`/`lcd`/`panel-label` |
 
 ## Regole

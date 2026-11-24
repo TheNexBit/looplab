@@ -1,5 +1,6 @@
 //! "Export tracks": the separated tracks of a song saved as WAV files, ready for a DAW, in one
-//! place — by default `Documents\Looplab\Tracce separate\<song>\voce.wav`, `chitarra.wav`…,
+//! place — by default `Documents\Looplab\Tracce separate\<song>\voce.wav`, `chitarra.wav`… (in
+//! English `Separated stems\<song>\vocals.wav`, unless the Italian folder already exists),
 //! or a folder the user chose (kept in the library) — and never in the cache, which empties
 //! itself. Each song folder has an `origine.txt` naming the song file it came from, so two
 //! songs with the same name never overwrite each other.
@@ -12,8 +13,9 @@ use audio_engine::Pcm;
 use audio_engine::wav::{BitDepth, WavWriter};
 use rusqlite::Connection;
 
-use crate::db;
+use crate::db::{self, LibraryError};
 use crate::paths::Places;
+use crate::prefs::{self, UiLanguage};
 
 /// Names the song's folder after its file.
 const ORIGIN: &str = "origine.txt";
@@ -25,9 +27,25 @@ pub fn chosen(conn: &Connection) -> rusqlite::Result<Option<PathBuf>> {
     Ok(db::meta(conn, CHOSEN)?.map(PathBuf::from))
 }
 
+/// English name of the default folder, beside the Italian one in `Places::stems_out`.
+const ENGLISH_FOLDER: &str = "Separated stems";
+
+/// The default folder in `language`: an Italian folder that already holds tracks is kept, so
+/// switching the language never splits the exports in two places.
+pub fn default_root(places: &Places, language: UiLanguage) -> PathBuf {
+    if language == UiLanguage::English && !places.stems_out.exists() {
+        places.stems_out.with_file_name(ENGLISH_FOLDER)
+    } else {
+        places.stems_out.clone()
+    }
+}
+
 /// Where the tracks go: the chosen folder, or the default one.
-pub fn root(conn: &Connection, places: &Places) -> rusqlite::Result<PathBuf> {
-    Ok(chosen(conn)?.unwrap_or_else(|| places.stems_out.clone()))
+pub fn root(conn: &Connection, places: &Places) -> Result<PathBuf, LibraryError> {
+    Ok(match chosen(conn)? {
+        Some(dir) => dir,
+        None => default_root(places, prefs::language(conn)?),
+    })
 }
 
 /// Chooses the folder (or with `None` goes back to the default one).
@@ -37,8 +55,12 @@ pub fn choose(conn: &Connection, dir: Option<&str>) -> rusqlite::Result<()> {
 /// Frames written at a time.
 const CHUNK: usize = 16_384;
 
-/// The Italian file name of a separated track ("vocals" → "voce").
-pub fn file_name(source: &str) -> &'static str {
+/// The file name of a separated track: the source's own name in English ("vocals"), the
+/// Italian word otherwise ("voce").
+pub fn file_name(source: &str, language: UiLanguage) -> &str {
+    if language == UiLanguage::English {
+        return source;
+    }
     match source {
         "vocals" => "voce",
         "guitar" => "chitarra",
@@ -116,14 +138,19 @@ pub fn write_track(path: &Path, pcm: &Pcm) -> io::Result<()> {
 
 /// Saves the tracks (`(source name, audio)`) of `song` into its folder under `root`; returns the
 /// files written, in the given order.
-pub fn save(root: &Path, song: &Path, tracks: &[(&str, Pcm)]) -> io::Result<Vec<PathBuf>> {
+pub fn save(
+    root: &Path,
+    song: &Path,
+    tracks: &[(&str, Pcm)],
+    language: UiLanguage,
+) -> io::Result<Vec<PathBuf>> {
     let dir = song_folder(root, song);
     fs::create_dir_all(&dir)?;
     fs::write(dir.join(ORIGIN), song.to_string_lossy().as_bytes())?;
     tracks
         .iter()
         .map(|(source, pcm)| {
-            let file = dir.join(format!("{}.wav", file_name(source)));
+            let file = dir.join(format!("{}.wav", file_name(source, language)));
             write_track(&file, pcm).map(|()| file)
         })
         .collect()
@@ -149,6 +176,7 @@ mod tests {
             &root,
             &song,
             &[("vocals", tone(40_000)), ("guitar", tone(40_000))],
+            UiLanguage::Italian,
         )
         .unwrap();
         let dir = root.join("01 - The 12th Hour");
@@ -164,10 +192,10 @@ mod tests {
         let root = temp_dir("stems-out-names");
         let first = root.join("a").join("Song?.mp3");
         let other = root.join("b").join("Song?.mp3");
-        save(&root, &first, &[("bass", tone(10))]).unwrap();
+        save(&root, &first, &[("bass", tone(10))], UiLanguage::Italian).unwrap();
         assert_eq!(song_folder(&root, &first), root.join("Song_"));
         assert_eq!(song_folder(&root, &other), root.join("Song_ (2)"));
-        save(&root, &other, &[("bass", tone(10))]).unwrap();
+        save(&root, &other, &[("bass", tone(10))], UiLanguage::Italian).unwrap();
         assert_eq!(song_folder(&root, &other), root.join("Song_ (2)"));
     }
 
@@ -184,10 +212,33 @@ mod tests {
 
     #[test]
     fn every_source_has_a_name() {
-        let names: Vec<&str> = stem_split::SOURCES.iter().map(|s| file_name(s)).collect();
+        let names: Vec<&str> = stem_split::SOURCES
+            .iter()
+            .map(|s| file_name(s, UiLanguage::Italian))
+            .collect();
         assert_eq!(
             names,
             ["batteria", "basso", "altro", "voce", "chitarra", "piano"]
         );
+        let names: Vec<&str> = stem_split::SOURCES
+            .iter()
+            .map(|s| file_name(s, UiLanguage::English))
+            .collect();
+        assert_eq!(
+            names,
+            ["drums", "bass", "other", "vocals", "guitar", "piano"]
+        );
+    }
+
+    #[test]
+    fn the_default_folder_follows_the_language_but_keeps_an_italian_one() {
+        let conn = crate::db::tests::memory();
+        let data = temp_dir("stems-out-language");
+        let places = Places::under(&data);
+        assert_eq!(root(&conn, &places).unwrap(), places.stems_out);
+        prefs::set(&conn, "looplab.settings", Some(r#"{"language":"en"}"#)).unwrap();
+        assert_eq!(root(&conn, &places).unwrap(), data.join("Separated stems"));
+        fs::create_dir_all(&places.stems_out).unwrap();
+        assert_eq!(root(&conn, &places).unwrap(), places.stems_out);
     }
 }
