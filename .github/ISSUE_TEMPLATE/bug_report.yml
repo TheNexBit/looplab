@@ -1,6 +1,6 @@
 name: Bug report
 description: Something in Looplab does not work as it should
-labels: [bug]
+labels: [bug, user-request]
 body:
   - type: markdown
     attributes:

@@ -1,6 +1,6 @@
 name: Feature request
 description: An idea to make practising with Looplab better
-labels: [enhancement]
+labels: [enhancement, user-request]
 body:
   - type: textarea
     id: need
