@@ -12,41 +12,41 @@ Ogni versione ha un'etichetta git `vX.Y.Z` sul commit che la chiude.
 
 ## Non ancora uscita
 
-Fase 32 (Looplab in inglese per tutti).
+## 0.35.0 — 2026-11-25
+
+Fasi 32 (Looplab in inglese per tutti), 33 (dissolvenza al cue out), 34 (stems: cartella spostata ed esportazione
+del mix) e 35 (modelli scaricati dall'app). Collaudate, registro `docs/collaudo/2026-11-24_fasi-32-34.md`.
 
 ### Aggiunto
-
-- **Lingua alla prima apertura** uguale a quella di Windows: italiano su Windows italiano, inglese altrove. Si cambia
-  sempre in Impostazioni → Generale.
-- **Installer in inglese e in italiano**, scelto da Windows.
-- **Tracce esportate in inglese** con l'app in inglese: `Documents\Looplab\Separated stems\<brano>\vocals.wav`…
-  (una cartella «Tracce separate» già esistente resta in uso).
-
-### Cambiato
-
-- Testi inglesi riletti: inglese americano, virgolette inglesi, date della setlist in formato americano.
-- Se mancano FFmpeg o i modelli nella cartella di Looplab, l'avviso dice di reinstallare (o estrarre di nuovo lo ZIP
-  portatile) invece di citare gli script di sviluppo.
-
-### Aggiunto (fase 33)
-
-- **Dissolvenza al cue out** nel Live mode (issue #4): tasto «Fade out» nelle Live settings, con durata da 1 a 12 s.
-
-### Aggiunto (fase 34)
-
-- **Esporta audio con il mix delle stems** come lo senti (livelli, Mute e Solo), per le tracce separate e per le
-  stems da file.
-
-### Aggiunto (modelli)
 
 - **I modelli si scaricano dall'app**: «Analizza tempo» e «Separa strumenti» la prima volta scaricano il loro modello
   (83 e 115 MB) dalla release `models-v1` su GitHub, controllato con SHA-256, con avanzamento e Annulla. Prima non
   erano né nell'installer né nella versione portatile, e le due funzioni non partivano.
+- **Lingua alla prima apertura** uguale a quella di Windows: italiano su Windows italiano, inglese altrove. Si cambia
+  sempre in Impostazioni → Generale.
+- **Installer in inglese e in italiano**, scelto da Windows.
+- **Tracce esportate in inglese** con l'app in inglese: `Documents\Looplab\Separated stems\<brano>\vocals.wav`…
+  (una cartella «Tracce separate» già esistente resta in uso; esportando di nuovo, i file dell'altra lingua vengono
+  tolti).
+- **Dissolvenza al cue out** nel Live mode (issue #4): tasto «Fade out» nelle Live settings, durata da 1 a 12 s, mai
+  più lunga del brano; la durata si vede sulla riga della setlist e nella Stage view.
+- **Esporta audio con il mix delle stems** come lo senti (livelli, Mute e Solo), per le tracce separate e per le
+  stems da file.
+
+### Cambiato
+
+- Testi inglesi riletti: inglese americano, virgolette inglesi, date della setlist e dei backup nella lingua dell'app.
+- Mixer delle tracce separate: nomi sempre interi, le colonne vanno a capo se il pannello è stretto.
 
 ### Corretto
 
+- Il cambio di lingua in Impostazioni non aveva effetto.
 - Stems da file: se sposti tutta la cartella del brano, gli altri file vengono ritrovati da soli.
-- Le schede del pannello laterale (Sezioni, Pratica, EQ, Tracce) non si toccano più a 1280 px (issue #3).
+- Video MPEG-4 «vecchio tipo» (Xvid/DivX in .mp4) senza immagine: ora si prepara la copia compatibile.
+- Recenti: un file spostato non lascia più la vecchia voce barrata.
+- Due esportazioni delle tracce dello stesso brano insieme: una falliva.
+- Le schede del pannello laterale e del metronomo non si toccano più a 1280 px (issue #3); «0:00» del righello
+  leggibile accanto alla bandierina.
 
 ## 0.31.0 — 2026-11-24
 

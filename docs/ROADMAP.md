@@ -949,7 +949,7 @@ sincronizzata una volta vale per tutti, si cambia inquadratura e si passa alla b
   diario), cerca per nome; «Ultime aperte» in cima.
 - Anche aprendo un file da fuori (trascinato o Apri) Looplab cerca accanto la sua tab e la collega.
 
-**Prova e unione (fasi 21-27):** tutto si prova nel worktree del ramo `tab` (`scripts-dev.cmd` del worktree);
+**Prova e unione (fasi 21-27):** tutto si prova nel worktree del ramo `tab` (`scripts\01-dev.cmd` del worktree);
 solo dopo la prova completa dell'utente il ramo si unisce in main.
 
 **Unione:** il 22/11/2026 il ramo `tab` (fasi 21-27, tutte provate) è stato unito in main; worktree tolto.
@@ -1211,7 +1211,7 @@ la musica; allineate da sole; loop, marker, velocità e tonalità valgono per tu
 ferma con lui); con più di 3 corsie le teste stanno su una riga (nome, S, M, volume); i file video si possono
 usare come stems (se ne usa l'audio).
 
-## 32. Looplab in inglese per tutti 🚧
+## 32. Looplab in inglese per tutti ✅ (versione 0.35.0)
 
 L'interfaccia era già tradotta dalla fase 10 (`src/i18n/en.ts`, controllata chiave per chiave contro `it.ts`); qui
 la si rende pronta per chi non parla italiano.
@@ -1231,7 +1231,7 @@ la si rende pronta per chi non parla italiano.
 **Rimasti in italiano di proposito:** le cartelle interne `dati` (versione portatile) e `suoni`, il file
 `libreria.db` e i messaggi di sviluppo che citano gli script `scripts\05-…`, `10-…`, `11-…`.
 
-## 33. Dissolvenza al cue out 🚧
+## 33. Dissolvenza al cue out ✅ (versione 0.35.0)
 
 Issue #4. Nel Live mode un brano con il cue out prima della fine si fermava di colpo.
 
@@ -1242,7 +1242,7 @@ Issue #4. Nel Live mode un brano con il cue out prima della fine si fermava di c
   a velocità Live più bassa vale lo stesso. La manopola del volume non si muove: la dissolvenza la moltiplica
   (`useLiveStore.fade` → `syncEngine`). Nella prova dei cambi vale solo sulla coda.
 
-## 34. Stems: cartella spostata ed esportazione del mix 🚧
+## 34. Stems: cartella spostata ed esportazione del mix ✅ (versione 0.35.0)
 
 - **Cartella spostata (R4 della fase 31):** se il brano principale ha cambiato posto, le altre corsie si cercano nella
   stessa posizione relativa (`movedWith` in `lib/format.ts`, anche da una cartella vicina come «Audio» accanto a
@@ -1253,7 +1253,7 @@ Issue #4. Nel Live mode un brano con il cue out prima della fine si fermava di c
   (`Engine::mix`) e l'esportazione li usa fermi per tutta la durata (`export::Mix`).
 - Fase 33, in più: la durata della dissolvenza si vede sulla riga della setlist e nella Stage view («fade 3 s»).
 
-## 35. Modelli scaricati dall'app ✅
+## 35. Modelli scaricati dall'app ✅ (versione 0.35.0)
 
 Le release fino alla 0.31.0 non contenevano i modelli (scelta della fase 18 per la licenza): analisi del tempo e
 separazione non partivano per chi scaricava Looplab, con un avviso che citava gli script di sviluppo.
