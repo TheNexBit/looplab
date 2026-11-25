@@ -13,7 +13,7 @@
 
 <p align="center">
   <img alt="Windows 10 and 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0f110f?style=for-the-badge&logo=windows&logoColor=5fd38a">
-  <img alt="Version 0.30" src="https://img.shields.io/badge/version-0.30-0f110f?style=for-the-badge&labelColor=0f110f&color=ffb347">
+  <img alt="Version 0.35" src="https://img.shields.io/badge/version-0.35-0f110f?style=for-the-badge&labelColor=0f110f&color=ffb347">
   <img alt="Free, no account" src="https://img.shields.io/badge/free-no%20account-0f110f?style=for-the-badge&labelColor=0f110f&color=5fd38a">
   <img alt="Works offline" src="https://img.shields.io/badge/works-offline-0f110f?style=for-the-badge&labelColor=0f110f&color=5fd38a">
   <a href="https://ko-fi.com/roxfod"><img alt="Support on Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-0f110f?style=for-the-badge&logo=kofi&logoColor=ffb347&labelColor=0f110f&color=ffb347"></a>
