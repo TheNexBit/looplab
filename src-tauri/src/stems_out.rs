@@ -8,6 +8,7 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, PoisonError};
 
 use audio_engine::Pcm;
 use audio_engine::wav::{BitDepth, WavWriter};
@@ -60,6 +61,10 @@ pub fn root(conn: &Connection, places: &Places) -> Result<PathBuf, LibraryError>
 pub fn choose(conn: &Connection, dir: Option<&str>) -> rusqlite::Result<()> {
     db::set_meta(conn, CHOSEN, dir)
 }
+/// One export at a time: two of the same song would clean up and rename each other's files
+/// (a second click, the command palette, a panel opened again while the first one runs).
+static EXPORTING: Mutex<()> = Mutex::new(());
+
 /// Frames written at a time.
 const CHUNK: usize = 16_384;
 
@@ -161,6 +166,7 @@ pub fn save(
     tracks: &[(&str, Pcm)],
     language: UiLanguage,
 ) -> io::Result<Vec<PathBuf>> {
+    let _one_at_a_time = EXPORTING.lock().unwrap_or_else(PoisonError::into_inner);
     let dir = song_folder(root, song);
     fs::create_dir_all(&dir)?;
     // Exported before in the other language: only the files we wrote then go, never others
@@ -235,6 +241,32 @@ mod tests {
         assert!(dir.join("basso.wav").is_file() && dir.join("origine.txt").is_file());
         assert!(!dir.join("bass.wav").exists() && !dir.join("origin.txt").exists());
         assert!(dir.join("mix.wav").is_file());
+    }
+
+    #[test]
+    fn exports_of_the_same_song_at_the_same_time_both_succeed() {
+        let root = temp_dir("stems-out-together");
+        let song = root.join("Song.mp3");
+        let runs: Vec<_> = (0..4)
+            .map(|i| {
+                let (root, song) = (root.clone(), song.clone());
+                let language = if i % 2 == 0 {
+                    UiLanguage::Italian
+                } else {
+                    UiLanguage::English
+                };
+                std::thread::spawn(move || save(&root, &song, &[("bass", tone(20_000))], language))
+            })
+            .collect();
+        for run in runs {
+            assert!(run.join().unwrap().is_ok());
+        }
+        // One language's files only, whichever ran last
+        let names: Vec<String> = fs::read_dir(root.join("Song"))
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(names.len(), 2, "{names:?}");
     }
 
     #[test]
