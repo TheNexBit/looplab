@@ -153,8 +153,9 @@ pub fn model_file(app: &AppHandle, file: &str) -> Option<PathBuf> {
     if let Some(path) = bundled.filter(|p| p.is_file()) {
         return Some(path);
     }
+    // LOOPLAB_NO_DEV_MODELS: a development copy acting like a release, to try the downloads
     #[cfg(debug_assertions)]
-    {
+    if std::env::var_os("LOOPLAB_NO_DEV_MODELS").is_none() {
         let dev = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("models")
             .join(file);

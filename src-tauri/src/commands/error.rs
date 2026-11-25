@@ -24,10 +24,14 @@ pub enum ErrorKind {
     ExportFailed,
     /// The track is still loading in the background
     StillLoading,
-    /// The beat-tracking model is not installed (scripts/10-modello-tempo.cmd)
+    /// The beat-tracking model is not downloaded yet
     TempoModelMissing,
-    /// The stem separation model is not installed (scripts/11-modello-strumenti.cmd)
+    /// The stem separation model is not downloaded yet
     StemModelMissing,
+    /// A model could not be downloaded (no connection, server, disk)
+    ModelDownloadFailed,
+    /// A model arrived, but not the expected file (size or SHA-256)
+    ModelDamaged,
     /// The open song has no separated tracks to export
     NotSeparated,
     /// The library (libreria.db) could not be read or written

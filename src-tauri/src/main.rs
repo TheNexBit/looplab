@@ -16,6 +16,7 @@ mod log;
 mod media;
 mod media_keys;
 mod midi;
+mod models;
 mod paths;
 mod playback;
 mod prefs;

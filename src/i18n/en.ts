@@ -58,9 +58,12 @@ export const en = {
     cancelled: "Cancelled.",
     stillLoading: "The track is still loading: wait a few seconds and try again.",
     tempoModelMissing:
-      "The model for tempo analysis is missing from the Looplab folder: reinstall Looplab (or extract the portable ZIP again). Developers: scripts\\10-modello-tempo.cmd.",
+      "The tempo analysis model is missing: choose “Analyze tempo” again to download it.",
     stemModelMissing:
-      "The model for separating instruments is missing from the Looplab folder: reinstall Looplab (or extract the portable ZIP again). Developers: scripts\\11-modello-strumenti.cmd.",
+      "The model that separates the instruments is missing: press “Separate instruments” again to download it.",
+    modelDownloadFailed:
+      "The model could not be downloaded: check the internet connection and try again.",
+    modelDamaged: "The downloaded model did not arrive whole: try again.",
     notSeparated: "This track is not separated yet: press “Separate instruments” first.",
     exportFailed:
       "The exported file cannot be written: check the chosen folder and the free space.",
@@ -79,6 +82,10 @@ export const en = {
     intro:
       "Splits the song into vocals, guitar, bass, drums, piano and the rest, each with its fader, Mute and Solo. Done once per song (about a minute for 5 minutes of music), then the tracks stay in the cache.",
     separate: "Separate instruments",
+    separateDownload: (mb: number) => `Download the model (${mb} MB) and separate`,
+    downloadHint:
+      "The first time, Looplab downloads the model that separates the instruments (once, from GitHub), then separates the song",
+    downloadingModel: "Downloading the model",
     separateHint: "Works out the tracks of the open song, once",
     separating: "Separating",
     cancel: "Cancel",
@@ -498,6 +505,10 @@ export const en = {
     noBpmSet: "The BPM is not set yet.",
     clearBpmHint: "Remove the BPM: grid, metronome and count-in switch off",
     analyze: "Analyze tempo",
+    analyzeDownload: (mb: number) => `Download the model (${mb} MB) and analyze`,
+    downloadHint:
+      "The first time, Looplab downloads the tempo analysis model (once, from GitHub), then analyzes the song",
+    downloadingModel: "Downloading the model",
     analyzeHint:
       "Finds the beats, tempo and meter changes of the track. Proposed markers are dashed: check them, Ctrl+Z undoes.",
     analyzeAgainHint:

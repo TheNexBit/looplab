@@ -3,6 +3,18 @@
 Looplab usa questi componenti open source. Grazie ai loro autori.
 Questo file è mostrato in "Informazioni" e incluso nell'installer.
 
+## Modelli scaricati alla prima richiesta
+
+Non sono nell'installer né nello ZIP portatile: Looplab li scarica una volta, quando servono, dalla release
+`models-v1` del suo repository GitHub, e li controlla con la loro impronta SHA-256.
+
+| Modello                                                               | Uso                   | Licenza                                                                                                       | Sito                                       |
+| --------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Beat This! `final0` (Institute of Computational Perception, JKU Linz) | analisi del tempo     | codice e pesi pubblicati come MIT                                                                             | https://github.com/CPJKU/beat_this         |
+| HTDemucs a 6 tracce (Demucs v4, Meta / Alexandre Défossez)            | separazione strumenti | codice MIT; **licenza dei pesi non chiarita** (addestrati anche su dati solo per ricerca): solo uso personale | https://github.com/facebookresearch/demucs |
+
+Entrambi convertiti in ONNX per Looplab, senza cambiare i pesi.
+
 ## Inclusi nell'app
 
 | Componente                      | Uso                            | Licenza               | Sito                                                     |

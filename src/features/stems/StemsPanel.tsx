@@ -1,5 +1,5 @@
 import { FileDown, RotateCcw, SplitSquareHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Fader } from "@/components/ui/Fader";
@@ -8,6 +8,7 @@ import { t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { formatPercent } from "@/lib/format";
 import { useFileStemsStore } from "@/stores/fileStems";
+import { checkModel, useModelsStore } from "@/stores/models";
 import { usePlayerStore } from "@/stores/player";
 import { channelOf, STEM_LEVEL, STEM_ORDER, useStemsStore } from "@/stores/stems";
 import { cancelSeparation, exportStems, separateStems } from "./actions";
@@ -80,6 +81,11 @@ export function StemsPanel() {
   const track = usePlayerStore((state) => state.track);
   const names = useStemsStore((state) => state.names);
   const phase = useStemsStore((state) => state.phase);
+  const modelMissing = useModelsStore((state) => state.installed.stems === false);
+  const megabytes = useModelsStore((state) => state.megabytes.stems);
+  useEffect(() => {
+    void checkModel("stems");
+  }, []);
   const touched = useStemsStore((state) =>
     state.channels.some((c) => c.level !== STEM_LEVEL.default || c.mute || c.solo),
   );
@@ -112,10 +118,10 @@ export function StemsPanel() {
       {!names && (
         <div className="space-y-3">
           <p className="text-xs leading-relaxed text-fg-muted">{s.intro}</p>
-          {phase.kind === "running" ? (
+          {phase.kind === "running" || phase.kind === "downloading" ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between font-mono text-xs text-fg-muted tabular">
-                <span>{s.separating}…</span>
+                <span>{phase.kind === "downloading" ? s.downloadingModel : s.separating}…</span>
                 <span>{Math.round(phase.progress * 100)}%</span>
               </div>
               <div className="h-1 overflow-hidden rounded-full bg-led-off">
@@ -129,7 +135,7 @@ export function StemsPanel() {
               </Button>
             </div>
           ) : (
-            <Tooltip label={track ? s.separateHint : s.needsTrack}>
+            <Tooltip label={!track ? s.needsTrack : modelMissing ? s.downloadHint : s.separateHint}>
               <span>
                 <Button
                   variant="primary"
@@ -137,7 +143,7 @@ export function StemsPanel() {
                   onClick={() => void separateStems()}
                 >
                   <SplitSquareHorizontal className="size-4" />
-                  {s.separate}
+                  {modelMissing ? s.separateDownload(megabytes ?? 0) : s.separate}
                 </Button>
               </span>
             </Tooltip>
@@ -145,7 +151,7 @@ export function StemsPanel() {
           {phase.kind === "error" && (
             <p className="text-sm text-accent">{t.errors[phase.error.kind]}</p>
           )}
-          {track && !track.complete && phase.kind !== "running" && (
+          {track && !track.complete && phase.kind !== "running" && phase.kind !== "downloading" && (
             <p className="text-xs text-readout">{t.errors.stillLoading}</p>
           )}
         </div>

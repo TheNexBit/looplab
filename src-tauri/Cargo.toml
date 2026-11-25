@@ -29,6 +29,10 @@ tauri-plugin-updater = "2.14.1"
 midir = "0.11.1"
 tauri-plugin-global-shortcut = "2.4.1"
 rusqlite = { version = "0.42.0", features = ["bundled"] }
+# Model downloads: the same HTTP client and TLS the updater already brings in
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls-no-provider", "stream"] }
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
+sha2 = "0.10.9"
 
 [lints]
 workspace = true

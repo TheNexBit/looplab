@@ -12,10 +12,6 @@ use super::{AppError, ErrorKind};
 use crate::project::TempoMarker;
 use crate::state::AppState;
 
-/// The model file, in `models/` next to the app (a bundle resource) or in `src-tauri/models`
-/// while developing (`scripts/10-modello-tempo.cmd` puts it there).
-const MODEL_FILE: &str = "beat_this-final0.onnx";
-
 /// Share of the progress bar taken by the conversion to mono 22050 Hz; the network is the rest.
 const PREPARE_SHARE: f32 = 0.05;
 
@@ -70,8 +66,8 @@ pub async fn analyze_tempo(
             "track still loading",
         ));
     }
-    let model = crate::paths::model_file(&app, MODEL_FILE)
-        .ok_or_else(|| AppError::new(ErrorKind::TempoModelMissing, MODEL_FILE))?;
+    let model = crate::models::find(&app, crate::models::Model::Tempo)
+        .ok_or_else(|| AppError::new(ErrorKind::TempoModelMissing, "tempo model"))?;
     let analyzer = state.tempo_analyzer(&model).map_err(AppError::internal)?;
 
     tauri::async_runtime::spawn_blocking(move || {
@@ -160,7 +156,7 @@ mod tests {
     fn a_click_track_is_found_at_its_tempo() {
         let model = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("models")
-            .join(MODEL_FILE);
+            .join(crate::models::Model::Tempo.file().file);
         if !model.is_file() {
             eprintln!("SKIPPED: no model at {}", model.display());
             return;

@@ -165,6 +165,11 @@ export const commands = {
 	 *  are flagged `auto`, except the kept ones.
 	 */
 	analyzeTempo: (request: TempoRequest_Deserialize, onProgress: Channel<number | null>) => typedError<TempoMarker_Serialize[], AppError>(__TAURI_INVOKE("analyze_tempo", { request, onProgress })),
+	modelInfo: (model: Model) => __TAURI_INVOKE<ModelInfo>("model_info", { model }),
+	/**  Downloads `model` once, checked against its SHA-256; `on_progress` receives 0..1. */
+	downloadModel: (model: Model, onProgress: Channel<number | null>) => typedError<null, AppError>(__TAURI_INVOKE("download_model", { model, onProgress })),
+	/**  Stops the model download in progress (nothing is kept). */
+	cancelModelDownload: () => __TAURI_INVOKE<void>("cancel_model_download"),
 	/**
 	 *  The open song's separated tracks if they are in the cache: the engine gets them and
 	 *  the answer names them; None when the song has not been separated yet.
@@ -500,10 +505,14 @@ export type ErrorKind = "fileNotFound" | "fileUnreadable" | "unsupportedFormat" 
 "cancelled" | "exportFailed" | 
 /**  The track is still loading in the background */
 "stillLoading" | 
-/**  The beat-tracking model is not installed (scripts/10-modello-tempo.cmd) */
+/**  The beat-tracking model is not downloaded yet */
 "tempoModelMissing" | 
-/**  The stem separation model is not installed (scripts/11-modello-strumenti.cmd) */
+/**  The stem separation model is not downloaded yet */
 "stemModelMissing" | 
+/**  A model could not be downloaded (no connection, server, disk) */
+"modelDownloadFailed" | 
+/**  A model arrived, but not the expected file (size or SHA-256) */
+"modelDamaged" | 
 /**  The open song has no separated tracks to export */
 "notSeparated" | 
 /**  The library (libreria.db) could not be read or written */
@@ -852,6 +861,19 @@ export type MidiTrigger = {
 	channel: number,
 	/**  Note, controller or program number */
 	number: number,
+};
+
+/**  A model the app can download. */
+export type Model = 
+/**  Beat This! (beat and tempo analysis) */
+"tempo" | 
+/**  HTDemucs with 6 tracks (instrument separation) */
+"stems";
+
+/**  Whether a model is ready, and how big its download is. */
+export type ModelInfo = {
+	installed: boolean,
+	bytes: number | null,
 };
 
 /**  A backup made on request (never deleted by the rotation). */

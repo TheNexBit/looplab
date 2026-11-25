@@ -14,6 +14,8 @@ export interface StemChannelData {
 /** Where the separation of the open song stands. */
 type StemsPhase =
   | { kind: "idle" }
+  /** The separation model is being downloaded (once), then the separation starts */
+  | { kind: "downloading"; progress: number }
   | { kind: "running"; progress: number }
   | { kind: "error"; error: AppError };
 

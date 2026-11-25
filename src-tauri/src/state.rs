@@ -23,6 +23,8 @@ pub struct AppState {
     track: Mutex<Option<Arc<Pcm>>>,
     /// Set to stop the export in progress
     pub export_cancel: AtomicBool,
+    /// Set to stop the model download in progress
+    pub model_cancel: AtomicBool,
     /// FFT set up for the note view, reused between calls (with the rate it was made for)
     analyzer: Mutex<Option<(u32, Analyzer)>>,
     /// Imported sound of each kind of click (accent, beat, subdivision, cross), if any

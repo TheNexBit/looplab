@@ -15,9 +15,6 @@ use tauri::{AppHandle, Manager, State};
 use super::{AppError, ErrorKind};
 use crate::state::AppState;
 
-/// The model, in `models/` next to the app or in `src-tauri/models` while developing
-/// (`scripts/11-modello-strumenti.cmd` puts it there).
-const MODEL_FILE: &str = "htdemucs_6s.onnx";
 /// Conversion to 44.1 kHz, then the network: its share of the progress bar is the rest.
 const PREPARE_SHARE: f32 = 0.03;
 
@@ -118,8 +115,8 @@ pub async fn separate_stems(
             "track still loading",
         ));
     }
-    let model = crate::paths::model_file(&app, MODEL_FILE)
-        .ok_or_else(|| AppError::new(ErrorKind::StemModelMissing, MODEL_FILE))?;
+    let model = crate::models::find(&app, crate::models::Model::Stems)
+        .ok_or_else(|| AppError::new(ErrorKind::StemModelMissing, "stems model"))?;
     let separator = state.stem_separator(&model).map_err(AppError::internal)?;
     let stem = cache_stem(&app, Path::new(&request.path), rate)?;
     // Room in the cache: six tracks as large as the decoded song

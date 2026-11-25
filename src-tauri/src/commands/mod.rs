@@ -12,6 +12,7 @@ pub(crate) mod file_stems;
 mod lessons;
 mod library;
 mod metronome;
+mod models;
 mod player;
 mod scores;
 mod setlists;
@@ -99,6 +100,9 @@ pub fn builder() -> Builder<tauri::Wry> {
             export::cancel_export,
             spectrum::spectrum,
             tempo::analyze_tempo,
+            models::model_info,
+            models::download_model,
+            models::cancel_model_download,
             stems::load_stems,
             stems::separate_stems,
             stems::cancel_stems,

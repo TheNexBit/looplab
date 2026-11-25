@@ -1253,6 +1253,21 @@ Issue #4. Nel Live mode un brano con il cue out prima della fine si fermava di c
   (`Engine::mix`) e l'esportazione li usa fermi per tutta la durata (`export::Mix`).
 - Fase 33, in più: la durata della dissolvenza si vede sulla riga della setlist e nella Stage view («fade 3 s»).
 
+## 35. Modelli scaricati dall'app ✅
+
+Le release fino alla 0.31.0 non contenevano i modelli (scelta della fase 18 per la licenza): analisi del tempo e
+separazione non partivano per chi scaricava Looplab, con un avviso che citava gli script di sviluppo.
+
+- `src-tauri/src/models.rs`: elenco dei modelli (file, dimensione, SHA-256), cartella `models\` accanto alla libreria
+  (`dati\models` nella portatile), download in `.partial` con controllo di dimensione e SHA-256, poi il nome giusto.
+  Comandi `model_info`, `download_model`, `cancel_model_download`; errori `modelDownloadFailed`, `modelDamaged`.
+- I modelli sono nella release GitHub `models-v1` (non «latest», così l'aggiornamento automatico non cambia), con le
+  licenze: Beat This! MIT; HTDemucs pesi con licenza non chiarita, solo uso personale (scelta dell'utente: pubblicarli
+  entrambi con avviso). Le licenze sono anche in `docs/THIRD_PARTY_LICENSES.md`.
+- Interfaccia (`stores/models.ts`): se il modello manca il tasto diventa «Scarica il modello (N MB) e separa/analizza»,
+  poi la funzione parte da sola; Annulla ferma anche il download.
+- Sviluppo: `LOOPLAB_NO_DEV_MODELS=1` nasconde i modelli di `src-tauri\models` per provare il download.
+
 ## Dopo la prima versione
 
 - (vuoto per ora)

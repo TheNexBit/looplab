@@ -37,6 +37,12 @@ Fase 32 (Looplab in inglese per tutti).
 - **Esporta audio con il mix delle stems** come lo senti (livelli, Mute e Solo), per le tracce separate e per le
   stems da file.
 
+### Aggiunto (modelli)
+
+- **I modelli si scaricano dall'app**: «Analizza tempo» e «Separa strumenti» la prima volta scaricano il loro modello
+  (83 e 115 MB) dalla release `models-v1` su GitHub, controllato con SHA-256, con avanzamento e Annulla. Prima non
+  erano né nell'installer né nella versione portatile, e le due funzioni non partivano.
+
 ### Corretto
 
 - Stems da file: se sposti tutta la cartella del brano, gli altri file vengono ritrovati da soli.

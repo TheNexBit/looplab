@@ -61,9 +61,12 @@ export const it = {
     cancelled: "Operazione annullata.",
     stillLoading: "Il brano sta ancora caricando: aspetta qualche secondo e riprova.",
     tempoModelMissing:
-      "Manca il modello per analizzare il tempo nella cartella di Looplab: reinstalla Looplab (o estrai di nuovo lo ZIP portatile). Per chi sviluppa: scripts\\10-modello-tempo.cmd.",
+      "Manca il modello per analizzare il tempo: scegli di nuovo «Analizza tempo» per scaricarlo.",
     stemModelMissing:
-      "Manca il modello per separare gli strumenti nella cartella di Looplab: reinstalla Looplab (o estrai di nuovo lo ZIP portatile). Per chi sviluppa: scripts\\11-modello-strumenti.cmd.",
+      "Manca il modello per separare gli strumenti: premi di nuovo «Separa strumenti» per scaricarlo.",
+    modelDownloadFailed:
+      "Il modello non si è scaricato: controlla la connessione a internet e riprova.",
+    modelDamaged: "Il modello scaricato non è arrivato intero: riprova.",
     notSeparated: "Questo brano non è ancora separato: premi prima «Separa strumenti».",
     exportFailed:
       "Non riesco a scrivere il file esportato: controlla la cartella scelta e lo spazio libero.",
@@ -82,6 +85,10 @@ export const it = {
     intro:
       "Separa il brano in voce, chitarra, basso, batteria, piano e altro, ognuna con il suo fader, Mute e Solo. Si fa una volta per brano (circa un minuto ogni 5 minuti di musica), poi le tracce restano in cache.",
     separate: "Separa strumenti",
+    separateDownload: (mb: number) => `Scarica il modello (${mb} MB) e separa`,
+    downloadHint:
+      "La prima volta Looplab scarica il modello per separare gli strumenti (una volta sola, da GitHub), poi separa il brano",
+    downloadingModel: "Scarico il modello",
     separateHint: "Calcola le tracce del brano aperto, una volta sola",
     separating: "Separazione in corso",
     cancel: "Annulla",
@@ -500,6 +507,10 @@ export const it = {
     noBpmSet: "Il BPM non è ancora impostato.",
     clearBpmHint: "Togli il BPM: griglia, metronomo e count-in si spengono",
     analyze: "Analizza tempo",
+    analyzeDownload: (mb: number) => `Scarica il modello (${mb} MB) e analizza`,
+    downloadHint:
+      "La prima volta Looplab scarica il modello per analizzare il tempo (una volta sola, da GitHub), poi analizza il brano",
+    downloadingModel: "Scarico il modello",
     analyzeHint:
       "Trova battiti, tempo e cambi di metrica del brano. I marker proposti appaiono tratteggiati: controllali, Ctrl+Z annulla.",
     analyzeAgainHint:

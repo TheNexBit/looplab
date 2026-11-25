@@ -24,6 +24,7 @@ import { cn } from "@/lib/cn";
 import type { ShortcutId } from "@/lib/shortcuts";
 import { clamp } from "@/lib/time";
 import { useWheelSteps } from "@/lib/useWheelSteps";
+import { checkModel, useModelsStore } from "@/stores/models";
 import { usePlayerStore } from "@/stores/player";
 import { usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
@@ -114,23 +115,32 @@ function AnalyzeEntries() {
   const phase = useTempoAnalysisStore((s) => s.phase);
   const proposed = usePracticeStore((s) => s.tempoMap.some((m) => m.auto));
   const yoursToo = usePracticeStore((s) => s.tempoMap.some((m) => !m.auto));
-  const running = phase.kind === "running";
+  const modelMissing = useModelsStore((s) => s.installed.tempo === false);
+  const megabytes = useModelsStore((s) => s.megabytes.tempo);
+  useEffect(() => {
+    void checkModel("tempo");
+  }, []);
+  const running = phase.kind === "running" || phase.kind === "downloading";
   const status =
-    phase.kind === "running"
-      ? `${p.analyzing}… ${Math.round(phase.progress * 100)}%`
-      : phase.kind === "done"
-        ? phase.found > 0
-          ? p.analyzed(phase.found)
-          : p.analyzedNothing
-        : phase.kind === "error"
-          ? t.errors[phase.error.kind]
-          : null;
+    phase.kind === "downloading"
+      ? `${p.downloadingModel}… ${Math.round(phase.progress * 100)}%`
+      : phase.kind === "running"
+        ? `${p.analyzing}… ${Math.round(phase.progress * 100)}%`
+        : phase.kind === "done"
+          ? phase.found > 0
+            ? p.analyzed(phase.found)
+            : p.analyzedNothing
+          : phase.kind === "error"
+            ? t.errors[phase.error.kind]
+            : null;
   return (
     <>
       <MenuEntry
         icon={<Sparkles className="size-3.5" />}
-        label={p.analyze}
-        hint={status ?? (yoursToo ? p.analyzeAgainHint : p.analyzeHint)}
+        label={modelMissing ? p.analyzeDownload(megabytes ?? 0) : p.analyze}
+        hint={
+          status ?? (modelMissing ? p.downloadHint : yoursToo ? p.analyzeAgainHint : p.analyzeHint)
+        }
         closes={false}
         unavailable={
           !track ? p.needsTrack : !track.complete ? t.errors.stillLoading : running ? status : null

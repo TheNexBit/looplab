@@ -1,5 +1,6 @@
 import { Channel } from "@tauri-apps/api/core";
 import { commands } from "@/lib/bindings";
+import { cancelModelDownload, ensureModel } from "@/stores/models";
 import { usePlayerStore } from "@/stores/player";
 import { useStemsStore } from "@/stores/stems";
 
@@ -10,7 +11,23 @@ import { useStemsStore } from "@/stores/stems";
 export async function separateStems() {
   const stems = useStemsStore.getState();
   const track = usePlayerStore.getState().track;
-  if (!track || stems.phase.kind === "running") return;
+  if (!track || stems.phase.kind === "running" || stems.phase.kind === "downloading") return;
+  // The model comes first, once: downloaded and checked before the separation starts
+  stems.setPhase({ kind: "downloading", progress: 0 });
+  const missing = await ensureModel("stems", (progress) => {
+    if (useStemsStore.getState().phase.kind === "downloading")
+      useStemsStore.getState().setPhase({ kind: "downloading", progress });
+  });
+  if (missing) {
+    stems.setPhase(
+      missing.kind === "cancelled" ? { kind: "idle" } : { kind: "error", error: missing },
+    );
+    return;
+  }
+  if (usePlayerStore.getState().track?.path !== track.path) {
+    stems.setPhase({ kind: "idle" });
+    return;
+  }
   stems.setPhase({ kind: "running", progress: 0 });
   const progress = new Channel<number | null>();
   progress.onmessage = (value) => {
@@ -47,5 +64,6 @@ export async function exportStems() {
 }
 
 export function cancelSeparation() {
-  void commands.cancelStems();
+  if (useStemsStore.getState().phase.kind === "downloading") cancelModelDownload();
+  else void commands.cancelStems();
 }
