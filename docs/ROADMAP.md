@@ -1270,4 +1270,6 @@ separazione non partivano per chi scaricava Looplab, con un avviso che citava gl
 
 ## Dopo la prima versione
 
-- (vuoto per ora)
+Da 0.35.0 (25/11/2026) i compiti aperti, le richieste degli utenti e i difetti «da perfezionare» stanno nelle
+**issue di GitHub** (https://github.com/TheNexBit/looplab/issues), con etichette `priority:*` e `area:*`, traguardi
+per versione (0.36.0, 0.37.0, Later) e il tabellone del progetto. Qui resta la storia delle fasi fatte.
