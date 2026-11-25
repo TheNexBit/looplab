@@ -28,7 +28,7 @@ function Strip({ name }: { name: string }) {
   return (
     <div
       className={cn(
-        "flex min-w-10 flex-1 basis-10 flex-col items-center gap-1.5",
+        "flex min-w-fit flex-1 basis-10 flex-col items-center gap-1.5",
         silenced && "opacity-50",
       )}
     >

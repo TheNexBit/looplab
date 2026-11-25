@@ -67,7 +67,7 @@ export function Fader({
           </RadixSlider.Track>
           <RadixSlider.Thumb className="hw block h-3 w-5 rounded-[2px] bg-[linear-gradient(var(--color-thumb-from),var(--color-thumb-to))] transition-[filter] hover:brightness-125" />
         </RadixSlider.Root>
-        <span className="panel-label max-w-full truncate text-[10px] leading-none tracking-[0.02em]">
+        <span className="panel-label whitespace-nowrap text-[10px] leading-none tracking-[0.02em]">
           {short}
         </span>
       </div>

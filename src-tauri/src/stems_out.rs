@@ -125,6 +125,14 @@ pub fn song_folder(root: &Path, song: &Path) -> PathBuf {
     }
 }
 
+/// Removes `path` if it exists; a file that is not there is no error.
+fn remove_if_there(path: &Path) -> io::Result<()> {
+    match fs::remove_file(path) {
+        Err(err) if err.kind() != io::ErrorKind::NotFound => Err(err),
+        _ => Ok(()),
+    }
+}
+
 /// Writes one track as a 16-bit WAV (the cache keeps 16 bits: nothing is lost), first under a
 /// temporary name, so a half-written file never looks finished.
 pub fn write_track(path: &Path, pcm: &Pcm) -> io::Result<()> {
@@ -155,6 +163,18 @@ pub fn save(
 ) -> io::Result<Vec<PathBuf>> {
     let dir = song_folder(root, song);
     fs::create_dir_all(&dir)?;
+    // Exported before in the other language: only the files we wrote then go, never others
+    let other = match language {
+        UiLanguage::Italian => UiLanguage::English,
+        UiLanguage::English => UiLanguage::Italian,
+    };
+    for (source, _) in tracks {
+        let old = file_name(source, other);
+        if old != file_name(source, language) {
+            remove_if_there(&dir.join(format!("{old}.wav")))?;
+        }
+    }
+    remove_if_there(&dir.join(origin_name(other)))?;
     fs::write(
         dir.join(origin_name(language)),
         song.to_string_lossy().as_bytes(),
@@ -209,6 +229,12 @@ mod tests {
         assert!(dir.join("bass.wav").is_file());
         // The same song again, now in Italian: the folder is found by its English origin file
         assert_eq!(song_folder(&root, &song), dir);
+        // …and holds only the Italian files afterwards, with a user's own file left alone
+        fs::write(dir.join("mix.wav"), b"mine").unwrap();
+        save(&root, &song, &[("bass", tone(10))], UiLanguage::Italian).unwrap();
+        assert!(dir.join("basso.wav").is_file() && dir.join("origine.txt").is_file());
+        assert!(!dir.join("bass.wav").exists() && !dir.join("origin.txt").exists());
+        assert!(dir.join("mix.wav").is_file());
     }
 
     #[test]
